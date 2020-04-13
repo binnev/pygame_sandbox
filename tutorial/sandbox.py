@@ -13,7 +13,7 @@ thing = Thing(x=50, y=200, width=40, height=60)
 
 run = True
 while run:
-    pygame.time.delay(20)
+    pygame.time.delay(1000//30)
 
     # ============= react to key presses ==============
     keys = pygame.key.get_pressed()

@@ -46,7 +46,7 @@ while run:
     window.fill((0, 0, 0))
     for y, row in enumerate(board.grid):
         for x, char in enumerate(row):
-            color = (0, 0, 0) if char == 0 else colormap(char, 128)
+            color = (50, 50, 50) if char == 0 else colormap(char, 128)
             text = font.render(str(char), True, color, None)
             textRect = text.get_rect()
             textRect.center = (50 + x * 100, 50 + y * 100)

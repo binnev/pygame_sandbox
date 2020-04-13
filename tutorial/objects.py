@@ -1,7 +1,11 @@
 import pygame
 
 from tutorial.conf import SCREEN_WIDTH, SCREEN_HEIGHT, FLOOR_HEIGHT
-from tutorial.states import JUMPSQUAT, JUMPING, SQUAT, STANDING
+from tutorial.states import JUMPSQUAT, JUMPING, SQUAT, STANDING, RUNNING
+"""
+Try shapely: https://shapely.readthedocs.io/en/latest/manual.html
+For intersections of hitboxes, hurtboxes, etc
+"""
 
 
 class Thing:
@@ -15,12 +19,11 @@ class Thing:
     fall_acceleration = 2
     fall_speed = 15
     jump_power = 40
-    jumpsquat_frames = 5
+    jumpsquat_frames = 2
 
     # these are really instance variables...
     state = None
     jumpsquat_frames_elapsed = 0
-    color = (255, 0, 0)
 
     def __init__(self, x, y, height, width, u=None, v=None):
         self.x = x
@@ -29,6 +32,21 @@ class Thing:
         self.v = v if v else 0
         self._height = height
         self._width = width
+        self.keypress_lookup = {
+            pygame.K_LEFT: self.keypress_left,
+            pygame.K_RIGHT: self.keypress_right,
+            pygame.K_DOWN: self.keypress_down,
+            pygame.K_SPACE: self.keypress_space,
+        }
+
+    @property
+    def color(self):
+        # if not actionable
+        if self.state in [JUMPSQUAT, SQUAT]:
+            _color = (255, 0, 0)
+        else:
+            _color = (255, 255, 255)
+        return _color
 
     @property
     def width(self):
@@ -41,15 +59,11 @@ class Thing:
             return self._height * 0.8
         return self._height
 
-    @property
-    def screen_y(self):
-        return SCREEN_HEIGHT - self.y
-
     def draw(self, window):
         pygame.draw.rect(
             window,
             self.color,
-            (self.x, self.screen_y, self.width, self.height),
+            (self.x, self.y, self.width, self.height),
         )
 
     def debug_print(self):
@@ -75,24 +89,20 @@ class Thing:
 
         # update vertical position
         if self.airborne or self.state == JUMPING:
-            if (self.v < 0  # if moving downwards
-                    and abs(self.v) < self.fall_speed  # faster than fall speed
-               ):
+            # if moving downwards faster than fall speed
+            if self.v < 0 and abs(self.v) > self.fall_speed:
                 pass  # don't apply gravity
             else:  # if moving upwards, or if falling slower than the fall speed
                 self.v -= self.fall_acceleration
-        else:
-            self.state = STANDING
-            self.v = 0
 
         # finally, update position
         self.y += self.v
         self.x += self.u
 
         if self.airborne:
-            self.u * .7
+            self.u *= .7
         else:
-            self.u /= 2  # "friction"
+            self.u *= .5  # "friction"
 
         # enforce screen limits
         if self.x < 0:
@@ -109,26 +119,15 @@ class Thing:
             self.v = 0
 
     def handle_keypresses(self, keys):
-        """IDEA: do a for key in keys: handle_keypress(key). that function can kick off the
-        function assigned to dealing with each individual keypress, e.g. 'space'. Then
-        adding behaviour is as simple as adding a function for a keypress. And each function
-        can handle its own specific logic"""
         # todo: move this dict somewhere so it isn't evaluated every tick
-        keypress_lookup = {
-            pygame.K_LEFT: self.keypress_left,
-            pygame.K_RIGHT: self.keypress_right,
-            pygame.K_DOWN: self.keypress_down,
-            pygame.K_SPACE: self.keypress_space,
-        }
-        for keypress, func in keypress_lookup.items():
+        for keypress, func in self.keypress_lookup.items():
             if keys[keypress]:  # if key pressed
                 func()  # execute handler function
 
     def increment_jumpsquat(self):
         # if already in jumpsquat, increment frames elapsed.
         if self.state == JUMPSQUAT:
-            if self.jumpsquat_frames_elapsed > 0:
-                self.jumpsquat_frames_elapsed += 1
+            self.jumpsquat_frames_elapsed += 1
             # if end of jumpsquat reached, begin jump
             if self.jumpsquat_frames_elapsed == self.jumpsquat_frames:
                 self.v = self.jump_power
@@ -142,10 +141,12 @@ class Thing:
             # if squat key released, exit squat state
 
     def keypress_space(self):
-        # enter jumpsquat on keypress
-        if not self.airborne:
+        if (True
+            # not self.airborne
+            and self.state not in [JUMPSQUAT]
+        ):
             self.state = JUMPSQUAT
-            self.jumpsquat_frames_elapsed = 1
+            self.jumpsquat_frames_elapsed = 0
 
     def keypress_left(self):
         # todo: only able to run in actionable states
