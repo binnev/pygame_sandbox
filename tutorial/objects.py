@@ -8,8 +8,51 @@ For intersections of hitboxes, hurtboxes, etc
 """
 
 
+class SpriteSheet(object):
+
+    def __init__(self, filename):
+        try:
+            self.sheet = pygame.image.load(filename).convert()
+        except pygame.error as message:
+            print('Unable to load spritesheet image:', filename)
+            raise SystemExit(message)
+
+    # Load a specific image from a specific rectangle
+    def image_at(self, rectangle, colorkey=None):
+        "Loads image from x,y,x+offset,y+offset"
+        rect = pygame.Rect(rectangle)
+        image = pygame.Surface(rect.size).convert()
+        image.blit(self.sheet, (0, 0), rect)
+        if colorkey is not None:
+            if colorkey is -1:
+                colorkey = image.get_at((0, 0))
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
+        return image
+
+    # Load a whole bunch of images and return them as a list
+    def images_at(self, rects, colorkey=None):
+        "Loads multiple images, supply a list of coordinates"
+        return [self.image_at(rect, colorkey) for rect in rects]
+
+    # Load a whole strip of images
+    def load_strip(self, rect, image_count, colorkey=None):
+        "Loads a strip of images and returns them as a list"
+        tups = [(rect[0] + rect[2] * x, rect[1], rect[2], rect[3])
+                for x in range(image_count)]
+        return self.images_at(tups, colorkey)
+
+
 def sign(number):
     return 1 if number > 0 else -1
+
+
+class Sprite:
+
+    def __init__(self, frames: list):
+        self.frames = frames
+
+    def get_frame(self, index):
+        return self.frames[index % len(self.frames)]
 
 
 class Thing:
@@ -27,10 +70,26 @@ class Thing:
     jumpsquat_frames = 4
     _friction = 0.1
     air_resistance = 0.05
+    sprites = {
+        states.STAND:
+            Sprite([pygame.image.load("sprites/stand.png")]),
+        states.SQUAT:
+            Sprite([pygame.image.load("sprites/squat.png")]),
+        states.JUMPSQUAT:
+            Sprite([pygame.image.load("sprites/squat.png")]),
+        states.FALL:
+            Sprite([pygame.image.load("sprites/jump.png")]),
+        states.RUN:
+            Sprite([
+                pygame.image.load("sprites/walk_right_1.png"),
+                pygame.image.load("sprites/walk_right_2.png"),
+            ]),
+    }
 
     # these are really instance variables...
     state = None
     fastfall = None
+    frames_elapsed = None
     jumpsquat_frames_elapsed = None
 
     def __init__(self, x, y, height, width, u=None, v=None):
@@ -49,6 +108,7 @@ class Thing:
             states.RUN: self.state_run,
             states.SQUAT: self.state_squat,
         }
+        self.frames_elapsed = 0
 
     @property
     def color(self):
@@ -133,8 +193,13 @@ class Thing:
         )
 
     def draw(self, window):
-        pygame.draw.rect(window, self.color,
-                         (self.x, self.y, self.width, self.height))
+        sprite = self.sprites.get(self.state)
+        if sprite:
+            window.blit(sprite.get_frame(self.frames_elapsed),
+                        (self.x, self.y))  #, self.width, self.height))
+        else:
+            pygame.draw.rect(window, self.color,
+                             (self.x, self.y, self.width, self.height))
 
     @property
     def airborne(self):
@@ -150,6 +215,7 @@ class Thing:
             self.state = states.SQUAT
         if keys[Keys.LEFT] or keys[Keys.RIGHT]:
             self.state = states.RUN
+            self.frames_elapsed = 0
 
     def enter_jumpsquat(self):
         self.state = states.JUMPSQUAT
@@ -212,3 +278,5 @@ class Thing:
             self.enter_jumpsquat()
         if keys[Keys.DOWN]:
             self.state = states.SQUAT
+
+        self.frames_elapsed += 1  # animate sprite
