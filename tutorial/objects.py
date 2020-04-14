@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import pygame
 
 from tutorial import states
@@ -55,6 +57,9 @@ class Sprite:
         return self.frames[index % len(self.frames)]
 
 
+Point = namedtuple("Point", ["x", "y"])
+
+
 class Thing:
     # class properties (constants)
     width = 40
@@ -70,6 +75,7 @@ class Thing:
     jumpsquat_frames = 4
     _friction = 0.1
     air_resistance = 0.05
+    ticks_per_frame = 5
     sprites = {
         states.STAND:
             Sprite([pygame.image.load("sprites/stand.png")]),
@@ -186,6 +192,7 @@ class Thing:
             f"airborne = {self.airborne},",
             f"x = {self.x:.2f},",
             f"y = {self.y:.2f},",
+            f"base.y = {self.base.y:.2f},",
             f"u = {self.u:.2f},",
             f"v = {self.v:.2f},",
             f"friction = {self.friction:.2f},",
@@ -195,16 +202,35 @@ class Thing:
     def draw(self, window):
         sprite = self.sprites.get(self.state)
         if sprite:
-            window.blit(sprite.get_frame(self.frames_elapsed),
-                        (self.x, self.y))  #, self.width, self.height))
+            window.blit(
+                sprite.get_frame(self.frames_elapsed // self.ticks_per_frame),
+                (self.x, self.y))  #, self.width, self.height))
         else:
+            # bounding box
             pygame.draw.rect(window, self.color,
-                             (self.x, self.y, self.width, self.height))
+                             (self.x - self.width / 2, self.y - self.height / 2,
+                              self.width, self.height), 1)
+            # centroid
+            pygame.draw.rect(window, (255, 0, 0), (*self.centroid, 2, 2))
+            # base
+            pygame.draw.rect(window, (255, 0, 0), (*self.base, 2, 2))
+
+    @property
+    def screen_y(self, y):
+        return SCREEN_HEIGHT - y
+
+    @property
+    def centroid(self):
+        return Point(self.x, self.y)
+
+    @property
+    def base(self):
+        return Point(self.x, self.y - self.height / 2)
 
     @property
     def airborne(self):
         # todo: make this check for contact with all platforms
-        return self.y > FLOOR_HEIGHT
+        return self.base.y > FLOOR_HEIGHT
 
     # ========================= state functions ================================
 
