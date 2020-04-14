@@ -45,7 +45,12 @@ class SpriteSheet(object):
 
 
 def sign(number):
+    # todo: this will not work correctly for zero...
     return 1 if number > 0 else -1
+
+
+def screen_y(y):
+    return SCREEN_HEIGHT - y
 
 
 class Sprite:
@@ -58,6 +63,16 @@ class Sprite:
 
 
 Point = namedtuple("Point", ["x", "y"])
+
+
+class Platform:
+
+    def __init__(self, width, height, can_fall_through, rect):
+        self.can_fall_through = can_fall_through
+        self.rect = rect
+
+    def draw(self, window):
+        pygame.draw.rect(window, self.color, self.rect, 1)
 
 
 class Thing:
@@ -177,14 +192,14 @@ class Thing:
         if self.x < 0:
             self.x = 0
             self.u = 0
-        if self.x > SCREEN_WIDTH - self.width:
-            self.x = SCREEN_WIDTH - self.width
+        if self.x > SCREEN_WIDTH:
+            self.x = SCREEN_WIDTH
             self.u = 0
         if self.y < 0:
             self.y = 0
             self.v = 0
-        if self.y > SCREEN_HEIGHT - self.height:
-            self.y = SCREEN_HEIGHT - self.height
+        if self.y > SCREEN_HEIGHT:
+            self.y = SCREEN_HEIGHT
             self.v = 0
 
     def debug_print(self):
@@ -198,6 +213,7 @@ class Thing:
             f"v = {self.v:.2f},",
             f"friction = {self.friction:.2f},",
             f"jumpsquat_frames_elapsed = {self.jumpsquat_frames_elapsed}",
+            f"frames_elapsed = {self.frames_elapsed}",
         )
 
     def draw(self, window):
@@ -206,55 +222,52 @@ class Thing:
         if sprite:
             frame = sprite.get_frame(self.frames_elapsed //
                                      self.ticks_per_frame)
-            window.blit(
-                frame,
-                (
-                    self.centroid.x -
-                    frame.get_rect().width / 2,  # minus sprite width
-                    self.screen_y(self.y) -
-                    frame.get_rect().height / 2),  # minus sprite height
-            )
+            window.blit(frame, (self.x - frame.get_rect().width / 2,
+                                self.y - frame.get_rect().height))
         # bounding box
-        pygame.draw.rect(window, self.color,
-                         (self.x - self.width / 2, self.screen_y(self.y) -
-                          self.height / 2, self.width, self.height), 1)
+        pygame.draw.rect(window, self.color, (
+            self.x - self.width / 2,
+            self.y - self.height,
+            self.width,
+            self.height,
+        ), 1)
         # centroid
         centroid_width = 5
-        pygame.draw.rect(window, (255, 0, 0),
-                         (self.centroid.x - centroid_width / 2,
-                          self.screen_y(self.centroid.y) - centroid_width / 2,
-                          centroid_width, centroid_width), 1)
+        pygame.draw.rect(window, (255, 0, 0), (
+            self.centroid.x - centroid_width / 2,
+            self.centroid.y - centroid_width / 2,
+            centroid_width,
+            centroid_width,
+        ), 1)
         text = self.font.render("centroid", True, (255, 255, 255), None)
         textRect = text.get_rect()
-        # textRect.center = self.centroid.x, self.screen_y(self.centroid.y)
-        textRect.midleft = self.centroid.x, self.screen_y(self.centroid.y)
+        textRect.midleft = self.centroid
         window.blit(text, textRect)
         # base
-        pygame.draw.rect(
-            window, (0, 255, 0),
-            (self.base.x - centroid_width / 2, self.screen_y(self.base.y) -
-             centroid_width / 2, centroid_width, centroid_width), 1)
+        pygame.draw.rect(window, (0, 255, 0), (
+            self.base.x - centroid_width / 2,
+            self.base.y - centroid_width / 2,
+            centroid_width,
+            centroid_width,
+        ), 1)
         text = self.font.render("base", True, (255, 255, 255), None)
         textRect = text.get_rect()
-        textRect.midleft = self.base.x, self.screen_y(self.base.y)
+        textRect.midleft = self.base
         window.blit(text, textRect)
-
-    @staticmethod
-    def screen_y(y):
-        return SCREEN_HEIGHT - y
 
     @property
     def centroid(self):
-        return Point(self.x, self.y)
+        # todo: replace this with auto calculation centroid from sprite
+        return Point(self.x, self.y - self.height / 2)
 
     @property
     def base(self):
-        return Point(self.x, self.y - self.height / 2)
+        return Point(self.x, self.y)
 
     @property
     def airborne(self):
         # todo: make this check for contact with all platforms
-        return self.base.y > FLOOR_HEIGHT
+        return self.base.y < FLOOR_HEIGHT
 
     # ========================= state functions ================================
 
@@ -280,17 +293,17 @@ class Thing:
         # todo: add any other actions that are allowed in jumpsquat state... wavedash ahem.
 
     def enter_jump(self):
-        self.v = self.jump_power
+        self.v = -self.jump_power
         self.state = states.FALL
         self.fastfall = False
 
     def state_fall(self, keys):
         # update vertical position
         # if moving downwards faster than fall speed
-        if self.v < 0 and abs(self.v) > self.fall_speed:
+        if self.v > 0 and abs(self.v) > self.fall_speed:
             pass  # don't apply gravity
         else:  # if moving upwards, or if falling slower than the fall speed
-            self.v -= self.fall_acceleration
+            self.v += self.fall_acceleration
 
         # update horizontal position
         if keys[Keys.LEFT]:
@@ -301,9 +314,9 @@ class Thing:
             self.u = sign(self.u) * self.air_speed
 
         # fastfall if moving downwards
-        if keys[Keys.DOWN] and self.v < 0:
+        if keys[Keys.DOWN] and self.v > 0:
             self.fastfall = True
-            self.v = -self.fall_speed
+            self.v = self.fall_speed
 
         if not self.airborne:
             self.state = states.STAND
