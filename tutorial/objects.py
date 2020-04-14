@@ -115,6 +115,7 @@ class Thing:
             states.SQUAT: self.state_squat,
         }
         self.frames_elapsed = 0
+        self.font = pygame.font.Font("freesansbold.ttf", 10)
 
     @property
     def color(self):
@@ -200,23 +201,46 @@ class Thing:
         )
 
     def draw(self, window):
+        # sprite
         sprite = self.sprites.get(self.state)
         if sprite:
+            frame = sprite.get_frame(self.frames_elapsed //
+                                     self.ticks_per_frame)
             window.blit(
-                sprite.get_frame(self.frames_elapsed // self.ticks_per_frame),
-                (self.x, self.y))  #, self.width, self.height))
-        else:
-            # bounding box
-            pygame.draw.rect(window, self.color,
-                             (self.x - self.width / 2, self.y - self.height / 2,
-                              self.width, self.height), 1)
-            # centroid
-            pygame.draw.rect(window, (255, 0, 0), (*self.centroid, 2, 2))
-            # base
-            pygame.draw.rect(window, (255, 0, 0), (*self.base, 2, 2))
+                frame,
+                (
+                    self.centroid.x -
+                    frame.get_rect().width / 2,  # minus sprite width
+                    self.screen_y(self.y) -
+                    frame.get_rect().height / 2),  # minus sprite height
+            )
+        # bounding box
+        pygame.draw.rect(window, self.color,
+                         (self.x - self.width / 2, self.screen_y(self.y) -
+                          self.height / 2, self.width, self.height), 1)
+        # centroid
+        centroid_width = 5
+        pygame.draw.rect(window, (255, 0, 0),
+                         (self.centroid.x - centroid_width / 2,
+                          self.screen_y(self.centroid.y) - centroid_width / 2,
+                          centroid_width, centroid_width), 1)
+        text = self.font.render("centroid", True, (255, 255, 255), None)
+        textRect = text.get_rect()
+        # textRect.center = self.centroid.x, self.screen_y(self.centroid.y)
+        textRect.midleft = self.centroid.x, self.screen_y(self.centroid.y)
+        window.blit(text, textRect)
+        # base
+        pygame.draw.rect(
+            window, (0, 255, 0),
+            (self.base.x - centroid_width / 2, self.screen_y(self.base.y) -
+             centroid_width / 2, centroid_width, centroid_width), 1)
+        text = self.font.render("base", True, (255, 255, 255), None)
+        textRect = text.get_rect()
+        textRect.midleft = self.base.x, self.screen_y(self.base.y)
+        window.blit(text, textRect)
 
-    @property
-    def screen_y(self, y):
+    @staticmethod
+    def screen_y(y):
         return SCREEN_HEIGHT - y
 
     @property
@@ -283,6 +307,7 @@ class Thing:
 
         if not self.airborne:
             self.state = states.STAND
+            self.v = 0
 
     def state_squat(self, keys):
         if keys[Keys.JUMP]:

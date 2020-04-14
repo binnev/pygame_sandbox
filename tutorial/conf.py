@@ -2,7 +2,7 @@ import pygame
 
 SCREEN_WIDTH = 500
 SCREEN_HEIGHT = 500
-FLOOR_HEIGHT = 0
+FLOOR_HEIGHT = 10
 
 # key mapping
 class Keys:
