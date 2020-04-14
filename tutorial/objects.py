@@ -3,7 +3,7 @@ from collections import namedtuple
 import pygame
 
 from tutorial import states
-from tutorial.conf import SCREEN_WIDTH, SCREEN_HEIGHT, FLOOR_HEIGHT, Keys
+from tutorial.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
 """
 Try shapely: https://shapely.readthedocs.io/en/latest/manual.html
 For intersections of hitboxes, hurtboxes, etc
@@ -65,14 +65,18 @@ class Sprite:
 Point = namedtuple("Point", ["x", "y"])
 
 
-class Platform:
+class Platform(pygame.Rect):
 
-    def __init__(self, width, height, can_fall_through, rect):
+    def __init__(self, *args, can_fall_through=True, **kwargs):
+        super().__init__(*args, **kwargs)
         self.can_fall_through = can_fall_through
-        self.rect = rect
 
     def draw(self, window):
-        pygame.draw.rect(window, self.color, self.rect, 1)
+        pygame.draw.rect(window, self.color, self, 1)
+
+    @property
+    def color(self):
+        return (0, 255, 0) if self.can_fall_through else (255, 0, 0)
 
 
 class Thing:
@@ -86,7 +90,8 @@ class Thing:
     fall_acceleration = 2
     _fall_speed = 5
     fastfall_multiplier = 2.5
-    jump_power = 40
+    aerial_jumps = 2
+    jump_power = 20
     jumpsquat_frames = 4
     _friction = 0.1
     air_resistance = 0.05
@@ -112,8 +117,10 @@ class Thing:
     fastfall = None
     frames_elapsed = None
     jumpsquat_frames_elapsed = None
+    aerial_jumps_used = 0
 
-    def __init__(self, x, y, height, width, u=None, v=None):
+    def __init__(self, x, y, height, width, level, u=None, v=None):
+        self.level = level
         self.x = x
         self.y = y
         self.u = u if u else 0
@@ -167,15 +174,18 @@ class Thing:
         return self._height
 
     def update(self, keys, window):
-        self.handle_state(keys)  # respond to keypresses first
+        # todo: implement a state watcher that automatically resets frames_elapsed to zero
+        #  when object changes state.
+        self.keys = keys
+        self.handle_state()  # respond to keypresses first
         self.handle_physics()
         self.enforce_screen_limits()
         self.debug_print()
         self.draw(window)
 
-    def handle_state(self, keys):
+    def handle_state(self):
         func = self.state_lookup[self.state]
-        func(keys)
+        func()
 
     def handle_physics(self):
         # update position
@@ -201,6 +211,7 @@ class Thing:
         if self.y > SCREEN_HEIGHT:
             self.y = SCREEN_HEIGHT
             self.v = 0
+            self.state = states.STAND
 
     def debug_print(self):
         print(
@@ -212,6 +223,7 @@ class Thing:
             f"u = {self.u:.2f},",
             f"v = {self.v:.2f},",
             f"friction = {self.friction:.2f},",
+            f"aerial_jumps_used = {self.aerial_jumps_used}",
             f"jumpsquat_frames_elapsed = {self.jumpsquat_frames_elapsed}",
             f"frames_elapsed = {self.frames_elapsed}",
         )
@@ -266,25 +278,43 @@ class Thing:
 
     @property
     def airborne(self):
-        # todo: make this check for contact with all platforms
-        return self.base.y < FLOOR_HEIGHT
+        # todo: optimise this logic
+        # todo: add in clause to only land on platforms when moving downwards
+        # todo: prevent clipping through solid platforms. Should go somewhere else really.
+        for platform in self.level.platforms:
+            # is self within the horizontal bounds of the platform
+            # and is self.base.y within a few pixels of the top of the platform?
+            # then we're standing on the platform.
+            if (platform.left <= self.x <= platform.right
+                and platform.top -3 <= self.base.y <= platform.top + 3
+                and self.v >= 0  # moving downwards
+            ):
+                # if the platform is drop-through-able and the down key is pressed
+                if platform.can_fall_through and self.keys[Keys.DOWN]:
+                    return True
+                else:
+                    self.aerial_jumps_used = 0  # reset double jump counter
+                    return False
+        return True
 
     # ========================= state functions ================================
 
-    def state_stand(self, keys):
-        if keys[Keys.JUMP]:  # enter jumpsquat
+    def state_stand(self):
+        if self.keys[Keys.JUMP]:  # enter jumpsquat
             self.enter_jumpsquat()
-        if keys[Keys.DOWN]:  # enter squat
+        if self.keys[Keys.DOWN]:  # enter squat
             self.state = states.SQUAT
-        if keys[Keys.LEFT] or keys[Keys.RIGHT]:
+        if self.keys[Keys.LEFT] or self.keys[Keys.RIGHT]:
             self.state = states.RUN
             self.frames_elapsed = 0
+        if self.airborne:  # e.g. by walking off the edge of a platform
+            self.state = states.FALL
 
     def enter_jumpsquat(self):
         self.state = states.JUMPSQUAT
         self.jumpsquat_frames_elapsed = 0
 
-    def state_jumpsquat(self, keys):
+    def state_jumpsquat(self):
         self.jumpsquat_frames_elapsed += 1
         # if end of jumpsquat reached, begin jump
         if self.jumpsquat_frames_elapsed == self.jumpsquat_frames:
@@ -296,8 +326,9 @@ class Thing:
         self.v = -self.jump_power
         self.state = states.FALL
         self.fastfall = False
+        self.frames_elapsed = 0
 
-    def state_fall(self, keys):
+    def state_fall(self):
         # update vertical position
         # if moving downwards faster than fall speed
         if self.v > 0 and abs(self.v) > self.fall_speed:
@@ -306,15 +337,22 @@ class Thing:
             self.v += self.fall_acceleration
 
         # update horizontal position
-        if keys[Keys.LEFT]:
+        if self.keys[Keys.LEFT]:
             self.u -= self.air_acceleration
-        if keys[Keys.RIGHT]:
+        if self.keys[Keys.RIGHT]:
             self.u += self.air_acceleration
         if abs(self.u) > self.air_speed:
             self.u = sign(self.u) * self.air_speed
 
+        # double-jump todo: time limit on repeated double jumps
+        if (self.keys[Keys.JUMP] and
+                self.aerial_jumps_used < self.aerial_jumps and
+                self.frames_elapsed > 10):  # fixme don't hard-code this stuff
+            self.enter_jump()
+            self.aerial_jumps_used += 1
+
         # fastfall if moving downwards
-        if keys[Keys.DOWN] and self.v > 0:
+        if self.keys[Keys.DOWN] and self.v > 0:
             self.fastfall = True
             self.v = self.fall_speed
 
@@ -322,25 +360,27 @@ class Thing:
             self.state = states.STAND
             self.v = 0
 
-    def state_squat(self, keys):
-        if keys[Keys.JUMP]:
+        self.frames_elapsed += 1
+
+    def state_squat(self):
+        if self.keys[Keys.JUMP]:
             self.enter_jumpsquat()
         # if squat key released, exit squat state
-        if not keys[Keys.DOWN]:
+        if not self.keys[Keys.DOWN]:
             self.state = states.STAND
 
-    def state_run(self, keys):
-        if not keys[Keys.LEFT] and not keys[Keys.RIGHT]:
+    def state_run(self):
+        if not self.keys[Keys.LEFT] and not self.keys[Keys.RIGHT]:
             self.state = states.STAND
-        if keys[Keys.LEFT]:
+        if self.keys[Keys.LEFT]:
             self.u -= self.ground_acceleration
-        if keys[Keys.RIGHT]:
+        if self.keys[Keys.RIGHT]:
             self.u += self.ground_acceleration
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed
-        if keys[Keys.JUMP]:
+        if self.keys[Keys.JUMP]:
             self.enter_jumpsquat()
-        if keys[Keys.DOWN]:
+        if self.keys[Keys.DOWN]:
             self.state = states.SQUAT
 
         self.frames_elapsed += 1  # animate sprite
