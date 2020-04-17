@@ -65,21 +65,119 @@ class Sprite:
 Point = namedtuple("Point", ["x", "y"])
 
 
-class Platform(pygame.Rect):
+class Platform(pygame.sprite.Sprite):
 
-    def __init__(self, *args, can_fall_through=True, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, rect_args, can_fall_through=True, groups=[], **kwargs):
+        self.rect = pygame.Rect(*rect_args, **kwargs)
         self.can_fall_through = can_fall_through
+        super().__init__(*groups)
 
     def draw(self, window):
-        pygame.draw.rect(window, self.color, self, 1)
+        pygame.draw.rect(window, self.color, self.rect, 1)
 
     @property
     def color(self):
         return (0, 255, 0) if self.can_fall_through else (255, 0, 0)
 
 
-class Thing:
+class Entity(pygame.sprite.Sprite):
+    speed = 2
+
+    # Constructor. Pass in the color of the block,
+    # and its x and y position
+    def __init__(self,
+                 color,
+                 x,
+                 y,
+                 width,
+                 height,
+                 canvas_width=None,
+                 canvas_height=None,
+                 groups=[]):
+        self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"),
+                                     12)
+        self.x = x
+        self.y = y
+        self.color = color
+        self.width = width  # todo: give these more specific names e.g. collision_width
+        self.height = height
+        self.canvas_width = canvas_width if canvas_width else width * 2
+        self.canvas_height = canvas_height if canvas_height else height * 2
+        self.canvas = pygame.Surface([self.canvas_width, self.canvas_height])
+        self.canvas.fill((0, 0, 0, 0))
+        # fixme: don't use this rect for collisions
+        self.rect = self.canvas.get_rect()
+        self.rect.center = (self.x, self.y)
+        # fixme: move this rect to self.x, y in here.
+
+        # Call the parent class (Sprite) constructor
+        super().__init__(*groups)
+
+    @property
+    def centroid(self):
+        return self.x, self.y
+
+    @property
+    def image(self):
+        # todo: split this up into multiple functions that subclasses can edit
+        # ================== image ==================
+        # todo: this isn't always going to be a rectangle!
+        pygame.draw.rect(self.canvas, self.color, (
+            self.canvas_width/2-self.width/2,
+            self.canvas_height/2-self.height/2,
+            self.width, self.height))
+
+        # ================== debugging ==================
+        canvas_rect = self.canvas.get_rect()
+        # bounding box of the canvasace (the canvas onto which the sprites, hurt/hitboxes,
+        # etc are drawn)
+        pygame.draw.rect(self.canvas, self.color, canvas_rect, 1)
+        # centroid
+        centroid_width = 5
+        pygame.draw.rect(self.canvas, (255, 0, 0), (
+            canvas_rect.width / 2 - centroid_width / 2,
+            canvas_rect.height / 2 - centroid_width / 2,
+            centroid_width,
+            centroid_width,
+        ), 1)
+        text = self.font.render("CENTROID", True, (255, 255, 255), None)
+        textRect = text.get_rect()
+        textRect.midbottom = canvas_rect.width / 2, canvas_rect.height / 2
+        self.canvas.blit(text, textRect)
+        # # base
+        # pygame.draw.rect(self.canvas, (0, 255, 0), (
+        #     canvas_rect.width / 2 - centroid_width / 2,
+        #     canvas_rect.height - centroid_width / 2,
+        #     centroid_width,
+        #     centroid_width,
+        # ), 1)
+        # text = self.font.render("BASE", True, (255, 255, 255), None)
+        # textRect = text.get_rect()
+        # textRect.midbottom = canvas_rect.width/2, canvas_rect.height
+        # self.canvas.blit(text, textRect)
+
+        return self.canvas
+
+    def update(self, keys):
+        if keys[Keys.DOWN]:
+            self.y += self.speed
+        if keys[Keys.UP]:
+            self.y -= self.speed
+        if keys[Keys.RIGHT]:
+            self.x += self.speed
+        if keys[Keys.LEFT]:
+            self.x -= self.speed
+        self.debug_print()
+        self.rect.center = (self.x, self.y)  # fixme
+
+    def debug_print(self):
+        print(
+            f"x = {self.x}",
+            f"y = {self.y}",
+        )
+
+
+class Thing(pygame.sprite.Sprite):
     # class properties (constants)
     width = 40
     height = 60
@@ -119,7 +217,17 @@ class Thing:
     jumpsquat_frames_elapsed = None
     aerial_jumps_used = 0
 
-    def __init__(self, x, y, height, width, level, u=None, v=None):
+    def __init__(
+        self,
+        x,
+        y,
+        height,
+        width,
+        level,
+        groups,
+        u=None,
+        v=None,
+    ):
         self.level = level
         self.x = x
         self.y = y
@@ -138,6 +246,16 @@ class Thing:
         }
         self.frames_elapsed = 0
         self.font = pygame.font.Font("freesansbold.ttf", 10)
+        # Create an image of the block, and fill it with a color.
+        # This could also be an image loaded from the disk.
+        self.image = pygame.Surface([width, height])
+        self.image.fill(self.color)
+
+        # Fetch the rectangle object that has the dimensions of the image
+        # Update the position of this object by setting the values of rect.x and rect.y
+        self.rect = self.image.get_rect()
+
+        super().__init__(*groups)
 
     @property
     def color(self):
@@ -173,7 +291,7 @@ class Thing:
             return self._height * 0.8
         return self._height
 
-    def update(self, keys, window):
+    def update(self, keys):
         # todo: implement a state watcher that automatically resets frames_elapsed to zero
         #  when object changes state.
         self.keys = keys
@@ -181,7 +299,7 @@ class Thing:
         self.handle_physics()
         self.enforce_screen_limits()
         self.debug_print()
-        self.draw(window)
+        # self.draw(window)
 
     def handle_state(self):
         func = self.state_lookup[self.state]
@@ -285,10 +403,10 @@ class Thing:
             # is self within the horizontal bounds of the platform
             # and is self.base.y within a few pixels of the top of the platform?
             # then we're standing on the platform.
-            if (platform.left <= self.x <= platform.right
-                and platform.top -3 <= self.base.y <= platform.top + 3
-                and self.v >= 0  # moving downwards
-            ):
+            if (platform.rect.left <= self.x <= platform.rect.right and
+                    platform.rect.top - 3 <= self.base.y <=
+                    platform.rect.top + 3 and self.v >= 0  # moving downwards
+               ):
                 # if the platform is drop-through-able and the down key is pressed
                 if platform.can_fall_through and self.keys[Keys.DOWN]:
                     return True
@@ -382,5 +500,7 @@ class Thing:
             self.enter_jumpsquat()
         if self.keys[Keys.DOWN]:
             self.state = states.SQUAT
+        if self.airborne:  # e.g. by walking off the edge of a platform
+            self.state = states.FALL
 
         self.frames_elapsed += 1  # animate sprite
