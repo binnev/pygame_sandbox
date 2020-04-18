@@ -1,7 +1,7 @@
 import pygame
 
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-from platformer.objects import Thing, Platform, Entity
+from platformer.objects import Thing, Platform, Entity, SpriteGroup
 
 pygame.init()
 pygame.font.init()
@@ -12,10 +12,10 @@ pygame.display.set_caption("Hello World")
 
 class Level:
     sprite_groups = dict(
-        platforms=pygame.sprite.Group(),
-        characters=pygame.sprite.RenderPlain(),
-        projectiles=pygame.sprite.RenderPlain(),
-        enemies=pygame.sprite.RenderPlain(),
+        platforms=SpriteGroup(),
+        characters=SpriteGroup(),
+        projectiles=SpriteGroup(),
+        enemies=SpriteGroup(),
     )
     pass
 

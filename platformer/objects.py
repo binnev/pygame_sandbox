@@ -9,6 +9,16 @@ Try shapely: https://shapely.readthedocs.io/en/latest/manual.html
 For intersections of hitboxes, hurtboxes, etc
 """
 
+class SpriteGroup(pygame.sprite.Group):
+    def draw(self, surface):
+        """draw all sprites onto the surface
+        Group.draw(surface): return None
+        Draws all of the member sprites onto the given surface.
+        """
+        sprites = self.sprites()
+        for sprite in sprites:
+            sprite.draw(surface)
+        self.lostsprites = []
 
 class SpriteSheet(object):
 
@@ -47,10 +57,6 @@ class SpriteSheet(object):
 def sign(number):
     # todo: this will not work correctly for zero...
     return 1 if number > 0 else -1
-
-
-def screen_y(y):
-    return SCREEN_HEIGHT - y
 
 
 class Sprite:
