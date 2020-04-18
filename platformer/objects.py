@@ -92,90 +92,94 @@ class Entity(pygame.sprite.Sprite):
         # self.canvas_height = canvas_height if canvas_height else height * 2
         # self.canvas = pygame.Surface([self.canvas_width, self.canvas_height])
         # self.canvas.fill((0, 0, 0, 0))
-        # self.image = pygame.Ellip
         # fixme: don't use this rect for collisions
         # todo: create rect based on the image size. That makes more sense. Then you can
         #  have a circle image (or some random .png) and the rect will fit around it.
         self.rect = pygame.Rect(0, 0, self.width, self.height)
-        self.rect.center = (self.x, self.y)
-        # Call the parent class (Sprite) constructor
+        self.rect.center = self.centroid
+
+        # create a surface for sprite, so that I can use pygame.mask.from_surface() to
+        # generate a hurtbox.
+        self.sprite = pygame.Surface([self.width, self.height])
+        self.sprite.fill((0, 255, 0))  # set color to white
+        self.sprite.set_colorkey((0, 255, 0))  # set white = transparent
+        # self.sprite.rect = self.rect  # hopefully this tracks rect...
+        pygame.draw.ellipse(self.sprite, self.color, (0, 0, self.width, self.height))
+
+        self.mask = pygame.mask.from_surface(self.sprite)
         super().__init__(*groups)
 
     @property
     def centroid(self):
         return Point(self.x, self.y)
 
-    @property
-    def image(self):
-        return None
-
     def draw_sprite(self, surface):
         # todo: the rect argument here gives the position at which to blit. The top left
         #  corner of the rect is taken as the position to blit. The size of the rect doesn't
         #  affect the blitting. So make sure that top left corner is in the right place!
-        if self.image:
-            surface.blit(self.image, self.rect)
-        else:
-            pygame.draw.ellipse(surface, self.color, self.rect)
+        if self.sprite:
+            surface.blit(self.sprite, self.rect)
+        # else:
+        #     pygame.draw.ellipse(surface, self.color, self.rect)
 
     def draw_debug(self, surface):
         # bounding box
-        pygame.draw.rect(surface, (0, 255, 0), self.rect, 1)
+        pygame.draw.rect(surface, self.color, self.rect, 1)
         # centroid
         centroid_width = 10
         # todo: maybe store the centroid instead of generating it every time?
         centroid = pygame.Rect(0, 0, centroid_width, centroid_width)
         centroid.center = self.centroid
-        pygame.draw.ellipse(surface, (255, 0, 0), centroid, 1)
+        pygame.draw.ellipse(surface, self.color, centroid, 1)
         text = self.font.render("CENTROID", True, (255, 255, 255), None)
         textRect = text.get_rect()
-        textRect.midleft = self.centroid
+        textRect.midbottom = self.centroid
         surface.blit(text, textRect)
 
     def draw(self, surface):
         self.draw_sprite(surface)
         self.draw_debug(surface)
 
-    # @property
-    # def image(self):
-    #     # todo: split this up into multiple functions that subclasses can edit
-    #     # ================== image ==================
-    #     # todo: this isn't always going to be a rectangle!
-    #     pygame.draw.rect(
-    #         self.canvas, self.color,
-    #         (self.canvas_width / 2 - self.width / 2,
-    #          self.canvas_height / 2 - self.height / 2, self.width, self.height))
-    #
-    #     # ================== debugging ==================
-    #     canvas_rect = self.canvas.get_rect()
-    #     # bounding box of the canvas (the canvas onto which the sprites, hurt/hitboxes,
-    #     # etc are drawn)
-    #     pygame.draw.rect(self.canvas, self.color, canvas_rect, 1)
-    #     # centroid
-    #     centroid_width = 5
-    #     pygame.draw.rect(self.canvas, (255, 0, 0), (
-    #         canvas_rect.width / 2 - centroid_width / 2,
-    #         canvas_rect.height / 2 - centroid_width / 2,
-    #         centroid_width,
-    #         centroid_width,
-    #     ), 1)
-    #     text = self.font.render("CENTROID", True, (255, 255, 255), None)
-    #     textRect = text.get_rect()
-    #     textRect.midbottom = canvas_rect.width / 2, canvas_rect.height / 2
-    #     self.canvas.blit(text, textRect)
-    #     # # base
-    #     # pygame.draw.rect(self.canvas, (0, 255, 0), (
-    #     #     canvas_rect.width / 2 - centroid_width / 2,
-    #     #     canvas_rect.height - centroid_width / 2,
-    #     #     centroid_width,
-    #     #     centroid_width,
-    #     # ), 1)
-    #     # text = self.font.render("BASE", True, (255, 255, 255), None)
-    #     # textRect = text.get_rect()
-    #     # textRect.midbottom = canvas_rect.width/2, canvas_rect.height
-    #     # self.canvas.blit(text, textRect)
-    #
-    #     return self.canvas
+    @property
+    def image(self):
+        # todo: split this up into multiple functions that subclasses can edit
+        # ================== image ==================
+        # todo: this isn't always going to be a rectangle!
+        pygame.draw.rect(
+            self.canvas, self.color,
+            (self.canvas_width / 2 - self.width / 2,
+             self.canvas_height / 2 - self.height / 2, self.width, self.height))
+
+        # ================== debugging ==================
+        canvas_rect = self.canvas.get_rect()
+        # bounding box of the canvas (the canvas onto which the sprites, hurt/hitboxes,
+        # etc are drawn)
+        pygame.draw.rect(self.canvas, self.color, canvas_rect, 1)
+        # centroid
+        centroid_width = 5
+        pygame.draw.rect(self.canvas, (255, 0, 0), (
+            canvas_rect.width / 2 - centroid_width / 2,
+            canvas_rect.height / 2 - centroid_width / 2,
+            centroid_width,
+            centroid_width,
+        ), 1)
+        text = self.font.render("CENTROID", True, (255, 255, 255), None)
+        textRect = text.get_rect()
+        textRect.midbottom = canvas_rect.width / 2, canvas_rect.height / 2
+        self.canvas.blit(text, textRect)
+        # # base
+        # pygame.draw.rect(self.canvas, (0, 255, 0), (
+        #     canvas_rect.width / 2 - centroid_width / 2,
+        #     canvas_rect.height - centroid_width / 2,
+        #     centroid_width,
+        #     centroid_width,
+        # ), 1)
+        # text = self.font.render("BASE", True, (255, 255, 255), None)
+        # textRect = text.get_rect()
+        # textRect.midbottom = canvas_rect.width/2, canvas_rect.height
+        # self.canvas.blit(text, textRect)
+
+        return self.canvas
 
     def update(self, keys):
         if keys[Keys.DOWN]:

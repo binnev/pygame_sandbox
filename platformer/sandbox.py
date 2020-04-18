@@ -27,8 +27,8 @@ level = Level()
 #     Platform([5, 480, 480, 30], can_fall_through=False),
 # )
 level.sprite_groups["enemies"].add(
-    Entity((255, 0, 0), 400, 400, 50, 50),
-    Entity((255, 0, 0), 100, 100, 20, 20),
+    Entity((0, 255, 255), 400, 400, 50, 50),
+    Entity((0, 255, 255), 200, 200, 100, 100),
 )
 # Character(x=50, y=200, width=40, height=60, level=level, groups=[level.characters])
 entity = Entity((0, 255, 0),
@@ -41,9 +41,6 @@ clock = pygame.time.Clock()
 
 run = True
 while run:
-    # pygame.time.delay(1000//50)
-
-    # ============= react to key presses ==============
     keys = pygame.key.get_pressed()
     if keys[pygame.K_ESCAPE]:
         pygame.quit()
@@ -52,17 +49,29 @@ while run:
             run = False
 
     window.fill((0, 0, 0))
+
     # check for collision
     if pygame.sprite.spritecollide(entity,
                                    level.sprite_groups["enemies"],
                                    dokill=False):
         entity.color = (0, 0, 255)
+        print("rect collision")
+    elif pygame.sprite.spritecollide(entity,
+                                     level.sprite_groups["enemies"],
+                                     dokill=False,
+                                     collided=pygame.sprite.collide_mask):
+        entity.color = (255, 0, 0)
+        print("mask collision")
     else:
         entity.color = (0, 255, 0)
     for group_name, sprite_group in level.sprite_groups.items():
         if group_name == "characters":
             sprite_group.update(keys)
         sprite_group.draw(window)
+
+    # debug: blit entity.sprite to screen always to check it isn't empty
+    window.blit(entity.sprite, (0, 0, 0, 0))
+
     pygame.display.flip()
 
     clock.tick(50)
