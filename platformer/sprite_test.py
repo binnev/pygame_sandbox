@@ -1,7 +1,7 @@
 import pygame
 
-from tutorial.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-from tutorial.objects import SpriteSheet
+from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
+from platformer.objects import SpriteSheet
 
 pygame.init()
 

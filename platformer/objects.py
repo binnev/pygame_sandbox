@@ -2,8 +2,8 @@ from collections import namedtuple
 
 import pygame
 
-from tutorial import states
-from tutorial.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
+from platformer import states
+from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
 """
 Try shapely: https://shapely.readthedocs.io/en/latest/manual.html
 For intersections of hitboxes, hurtboxes, etc
@@ -129,7 +129,7 @@ class Entity(pygame.sprite.Sprite):
 
         # ================== debugging ==================
         canvas_rect = self.canvas.get_rect()
-        # bounding box of the canvasace (the canvas onto which the sprites, hurt/hitboxes,
+        # bounding box of the canvas (the canvas onto which the sprites, hurt/hitboxes,
         # etc are drawn)
         pygame.draw.rect(self.canvas, self.color, canvas_rect, 1)
         # centroid

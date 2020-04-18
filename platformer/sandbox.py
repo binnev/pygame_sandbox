@@ -1,7 +1,7 @@
 import pygame
 
-from tutorial.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-from tutorial.objects import Thing, Platform, Entity
+from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
+from platformer.objects import Thing, Platform, Entity
 
 pygame.init()
 pygame.font.init()
@@ -52,6 +52,13 @@ while run:
             run = False
 
     window.fill((0, 0, 0))
+    # check for collision
+    if pygame.sprite.spritecollide(entity,
+                                   level.sprite_groups["enemies"],
+                                   dokill=False):
+        entity.color = (0, 0, 255)
+    else:
+        entity.color = (0, 255, 0)
     for group_name, sprite_group in level.sprite_groups.items():
         if group_name == "characters":
             sprite_group.update(keys)
