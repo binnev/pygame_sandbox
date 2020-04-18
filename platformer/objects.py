@@ -4,12 +4,13 @@ import pygame
 
 from platformer import states
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
-"""
-Try shapely: https://shapely.readthedocs.io/en/latest/manual.html
-For intersections of hitboxes, hurtboxes, etc
-"""
+from platformer.utils import sign
+
+Point = namedtuple("Point", ["x", "y"])
+
 
 class SpriteGroup(pygame.sprite.Group):
+
     def draw(self, surface):
         """draw all sprites onto the surface
         Group.draw(surface): return None
@@ -19,6 +20,7 @@ class SpriteGroup(pygame.sprite.Group):
         for sprite in sprites:
             sprite.draw(surface)
         self.lostsprites = []
+
 
 class SpriteSheet(object):
 
@@ -54,11 +56,9 @@ class SpriteSheet(object):
         return self.images_at(tups, colorkey)
 
 
-def sign(number):
-    # todo: this will not work correctly for zero...
-    return 1 if number > 0 else -1
 
 
+# todo: rename this
 class Sprite:
 
     def __init__(self, frames: list):
@@ -66,9 +66,6 @@ class Sprite:
 
     def get_frame(self, index):
         return self.frames[index % len(self.frames)]
-
-
-Point = namedtuple("Point", ["x", "y"])
 
 
 class Platform(pygame.sprite.Sprite):
@@ -128,10 +125,10 @@ class Entity(pygame.sprite.Sprite):
         # todo: split this up into multiple functions that subclasses can edit
         # ================== image ==================
         # todo: this isn't always going to be a rectangle!
-        pygame.draw.rect(self.canvas, self.color, (
-            self.canvas_width/2-self.width/2,
-            self.canvas_height/2-self.height/2,
-            self.width, self.height))
+        pygame.draw.rect(
+            self.canvas, self.color,
+            (self.canvas_width / 2 - self.width / 2,
+             self.canvas_height / 2 - self.height / 2, self.width, self.height))
 
         # ================== debugging ==================
         canvas_rect = self.canvas.get_rect()

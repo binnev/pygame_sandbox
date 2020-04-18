@@ -1,0 +1,3 @@
+def sign(number):
+    # todo: this will not work correctly for zero...
+    return 1 if number > 0 else -1

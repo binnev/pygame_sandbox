@@ -5,7 +5,11 @@ So far it seems like pygame can only do collisions between rectangles. This will
 - [ ] Get hitboxes working using just pygame's `Rect` class.
 - [ ] Can I get pygame to detect collisions with anything other than rectangles? Perhaps masks? 
 - [ ] Can I approximate the hit/hurtboxes I want using only pygame `Rect` and `Ellipse` classes? 
-- [ ] Can I program my own hitboxes using shapely? And can I plot those arbitrary polygons to the screen? 
+- [ ] Can I program my own hitboxes using [shapely](https://shapely.readthedocs.io/en/latest/manual.html)? And can I plot those arbitrary polygons to the screen? 
+"""
+Try shapely: 
+For intersections of hitboxes, hurtboxes, etc
+"""
 
 ## drawing objects to screen
 Sprite groups have a convenient built in `.draw()` method. However, this method simply blits the sprite objects' `sprite.image` attribute to the screen using the position of `sprite.rect`. 
