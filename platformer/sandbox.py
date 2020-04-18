@@ -1,7 +1,7 @@
 import pygame
 
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-from platformer.objects import Thing, Platform, Entity, SpriteGroup
+from platformer.objects import Character, Platform, Entity, SpriteGroup
 
 pygame.init()
 pygame.font.init()
@@ -30,7 +30,7 @@ level.sprite_groups["enemies"].add(
     Entity((255, 0, 0), 400, 400, 50, 50),
     Entity((255, 0, 0), 100, 100, 20, 20),
 )
-# Thing(x=50, y=200, width=40, height=60, level=level, groups=[level.characters])
+# Character(x=50, y=200, width=40, height=60, level=level, groups=[level.characters])
 entity = Entity((0, 255, 0),
                 0,
                 0,
