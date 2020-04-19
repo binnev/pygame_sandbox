@@ -16,27 +16,25 @@ class Level:
         characters=SpriteGroup(),
         projectiles=SpriteGroup(),
         enemies=SpriteGroup(),
+        all=SpriteGroup(),
     )
-    pass
-
 
 level = Level()
-# level.platforms.add(
-#     Platform([50, 100, 200, 30], can_fall_through=True),
-#     Platform([200, 300, 150, 30], can_fall_through=False),
-#     Platform([5, 480, 480, 30], can_fall_through=False),
+sprite_groups = [level.sprite_groups["platforms"], level.sprite_groups["all"]]
+Platform(50, 100, 200, 30, can_fall_through=True, groups=sprite_groups),
+Platform(200, 300, 150, 30, can_fall_through=False, groups=sprite_groups),
+Platform(5, 480, 480, 30, can_fall_through=False, groups=sprite_groups),
+# level.sprite_groups["enemies"].add(
+#     Entity((0, 255, 255), 400, 400, 50, 50),
+#     Entity((0, 255, 255), 200, 200, 100, 100),
 # )
-level.sprite_groups["enemies"].add(
-    Entity((0, 255, 255), 400, 400, 50, 50),
-    Entity((0, 255, 255), 200, 200, 100, 100),
-)
-# Character(x=50, y=200, width=40, height=60, level=level, groups=[level.characters])
-entity = Blob((0, 255, 0),
-                0,
-                0,
-                40,
-                60,
-                groups=[level.sprite_groups["characters"]])
+# # Character(x=50, y=200, width=40, height=60, level=level, groups=[level.characters])
+# entity = Blob((0, 255, 0),
+#                 0,
+#                 0,
+#                 40,
+#                 60,
+#                 groups=[level.sprite_groups["characters"]])
 clock = pygame.time.Clock()
 
 run = True
@@ -50,19 +48,21 @@ while run:
 
     window.fill((0, 0, 0))
 
-    # check for collision
-    if pygame.sprite.spritecollide(entity,
-                                   level.sprite_groups["enemies"],
-                                   dokill=False):
-        entity.color = (0, 0, 255)
-        print("rect collision")
-    else:
-        entity.color = (0, 255, 0)
-    for group_name, sprite_group in level.sprite_groups.items():
-        if group_name == "characters":
-            sprite_group.update(keys)
-        sprite_group.draw(window)
+    # ================== action happens here =========================
+    # # check for collision
+    # if pygame.sprite.spritecollide(entity,
+    #                                level.sprite_groups["enemies"],
+    #                                dokill=False):
+    #     entity.color = (0, 0, 255)
+    #     print("rect collision")
+    # else:
+    #     entity.color = (0, 255, 0)
+    # for group_name, sprite_group in level.sprite_groups.items():
+    #     if group_name == "characters":
+    #         sprite_group.update(keys)
 
+    # ================= draw all sprites ========================
+    level.sprite_groups["all"].draw(window)
     pygame.display.flip()
 
     clock.tick(50)

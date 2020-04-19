@@ -80,14 +80,14 @@ class SpriteAnimation:
 
 class Entity(pygame.sprite.Sprite):
 
-    def __init__(self, color, x, y, width, height, groups=[]):
+    def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
 
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"),
                                      12)
         self.x = x
         self.y = y
-        self.color = color
+        self.color = color if color else (69, 69, 69)
         self.width = width  # todo: give these more specific names e.g. collision_width
         self.height = height
         self.state = None
@@ -151,7 +151,6 @@ class Blob(Entity):
     Simple class to try out movement and collision detection. This class has no states. It
     can just move up/down and left/right. It loads a sprite, and has a hurtbox for collisions.
     """
-
     # ======================= sprite animations =======================
     # yapf:disable
     sprite_folder = Path("sprites/stick_figure/")
@@ -235,21 +234,23 @@ class Blob(Entity):
             surface.blit(self.sprite, self.rect)
 
 
-# todo: subclass this from Entity
-class Platform(pygame.sprite.Sprite):
+class Platform(Entity):
 
-    def __init__(self, rect_args, can_fall_through=True, groups=[], **kwargs):
-        self.rect = pygame.Rect(*rect_args, **kwargs)
+    def __init__(self, x, y, width, height, can_fall_through=True, **kwargs):
         self.can_fall_through = can_fall_through
-        super().__init__(*groups)
+        super().__init__(x=x, y=y, width=width, height=height, **kwargs)
 
-    def draw(self, window):
-        pygame.draw.rect(window, self.color, self.rect, 1)
+    def update_rect_position(self):
+        """Subclasses can overwrite this"""
+        self._rect.topleft = self.centroid
 
     @property
     def color(self):
         return (0, 255, 0) if self.can_fall_through else (255, 0, 0)
 
+    @color.setter
+    def color(self, *args, **kwargs):
+        pass
 
 class Character(pygame.sprite.Sprite):
     # class properties (constants)
