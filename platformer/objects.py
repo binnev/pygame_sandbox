@@ -301,6 +301,7 @@ class Character(Entity):
         self.u = 0
         self.v = 0
         self.state = states.FALL
+        self.previous_state = self.state
         self.fastfall = False
         self.state_lookup = {
             states.STAND: self.state_stand,
@@ -311,8 +312,9 @@ class Character(Entity):
         }
         self.aerial_jumps_used = 0
         self.frames_elapsed = 0
-        self.jumpsquat_frames_elapsed = 0  # todo: remove this parameter. Use frames_elapsed
         self.font = pygame.font.Font("freesansbold.ttf", 10)
+
+    # ============== properties ==============
 
     @property
     def rect(self):
@@ -337,15 +339,50 @@ class Character(Entity):
         else:
             return self._fall_speed
 
+    @property
+    def centroid(self):
+        # todo: replace this with auto calculation centroid from sprite
+        return Point(self.x, self.y - self.height / 2)
+
+    @property
+    def base(self):
+        return Point(*self.rect.midbottom)
+
+    @property
+    def airborne(self):
+        # todo: optimise this logic
+        # todo: replace this with pygame built in rect collisions
+        # todo: add in clause to only land on platforms when moving downwards
+        # todo: prevent clipping through solid platforms. Should go somewhere else really.
+        for platform in self.level.platforms:
+            # is self within the horizontal bounds of the platform
+            # and is self.base.y within a few pixels of the top of the platform?
+            # then we're standing on the platform.
+            if (platform.rect.left <= self.x <= platform.rect.right and
+                    platform.rect.top - 3 <= self.base.y <=
+                    platform.rect.top + 3 and self.v >= 0  # moving downwards
+               ):
+                # if the platform is drop-through-able and the down key is pressed
+                if platform.can_fall_through and self.keys[Keys.DOWN]:
+                    return True
+                else:
+                    self.aerial_jumps_used = 0  # reset double jump counter
+                    return False
+        return True
+
+    # ============== main methods ====================
+
     def update(self, keys):
-        # todo: implement a state watcher that automatically resets frames_elapsed to zero
-        #  when object changes state.
         self.keys = keys
+        self.previous_state = self.state
         self.handle_state()  # respond to keypresses first
+        if self.state != self.previous_state:
+            self.frames_elapsed = 0
         self.handle_physics()
-        self.enforce_screen_limits()
         self.update_rect_position()
+        self.enforce_screen_limits()
         self.debug_print()
+        self.frames_elapsed += 1
 
     def handle_state(self):
         """Each state has a corresponding function that handles keypresses and events"""
@@ -389,83 +426,8 @@ class Character(Entity):
             f"v = {self.v:.2f},",
             f"friction = {self.friction:.2f},",
             f"aerial_jumps_used = {self.aerial_jumps_used}",
-            f"jumpsquat_frames_elapsed = {self.jumpsquat_frames_elapsed}",
             f"frames_elapsed = {self.frames_elapsed}",
         )
-
-    # todo: this should just use the parent class draw method.
-    # def draw(self, window, debug=False):
-    #     # sprite
-    #     sprite = self.sprites.get(self.state)
-    #     # todo: state functions could easily set self.sprite. Then we could have state_run
-    #     #  handle both the left and right running sprites, for example.
-    #     if sprite:
-    #         frame = sprite.get_frame(self.frames_elapsed //
-    #                                  self.ticks_per_frame)
-    #         window.blit(frame, (self.x - frame.get_rect().width / 2,
-    #                             self.y - frame.get_rect().height))
-    #     # bounding box
-    #     pygame.draw.rect(window, self.color, (
-    #         self.x - self.width / 2,
-    #         self.y - self.height,
-    #         self.width,
-    #         self.height,
-    #     ), 1)
-    #     # centroid
-    #     centroid_width = 5
-    #     pygame.draw.rect(window, (255, 0, 0), (
-    #         self.centroid.x - centroid_width / 2,
-    #         self.centroid.y - centroid_width / 2,
-    #         centroid_width,
-    #         centroid_width,
-    #     ), 1)
-    #     text = self.font.render("centroid", True, (255, 255, 255), None)
-    #     textRect = text.get_rect()
-    #     textRect.midleft = self.centroid
-    #     window.blit(text, textRect)
-    #     # base
-    #     pygame.draw.rect(window, (0, 255, 0), (
-    #         self.base.x - centroid_width / 2,
-    #         self.base.y - centroid_width / 2,
-    #         centroid_width,
-    #         centroid_width,
-    #     ), 1)
-    #     text = self.font.render("base", True, (255, 255, 255), None)
-    #     textRect = text.get_rect()
-    #     textRect.midleft = self.base
-    #     window.blit(text, textRect)
-
-    @property
-    def centroid(self):
-        # todo: replace this with auto calculation centroid from sprite
-        return Point(self.x, self.y - self.height / 2)
-
-    @property
-    def base(self):
-        # return Point(self.x, self.y)
-        return Point(*self.rect.midbottom)
-
-    @property
-    def airborne(self):
-        # todo: optimise this logic
-        # todo: replace this with pygame built in rect collisions
-        # todo: add in clause to only land on platforms when moving downwards
-        # todo: prevent clipping through solid platforms. Should go somewhere else really.
-        for platform in self.level.platforms:
-            # is self within the horizontal bounds of the platform
-            # and is self.base.y within a few pixels of the top of the platform?
-            # then we're standing on the platform.
-            if (platform.rect.left <= self.x <= platform.rect.right and
-                    platform.rect.top - 3 <= self.base.y <=
-                    platform.rect.top + 3 and self.v >= 0  # moving downwards
-               ):
-                # if the platform is drop-through-able and the down key is pressed
-                if platform.can_fall_through and self.keys[Keys.DOWN]:
-                    return True
-                else:
-                    self.aerial_jumps_used = 0  # reset double jump counter
-                    return False
-        return True
 
     # ========================= state functions ================================
 
@@ -477,20 +439,16 @@ class Character(Entity):
             self.state = states.SQUAT
         if self.keys[Keys.LEFT] or self.keys[Keys.RIGHT]:
             self.state = states.RUN
-            self.frames_elapsed = 0
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = states.FALL
 
     def enter_jumpsquat(self):
         self.state = states.JUMPSQUAT
-        self.jumpsquat_frames_elapsed = 0
 
     def state_jumpsquat(self):
         self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
-        self.jumpsquat_frames_elapsed += 1
         # if end of jumpsquat reached, begin jump
-        if self.jumpsquat_frames_elapsed == self.jumpsquat_frames:
-            self.jumpsquat_frames_elapsed = None
+        if self.frames_elapsed == self.jumpsquat_frames:
             self.enter_jump()
         # todo: add any other actions that are allowed in jumpsquat state... wavedash ahem.
 
@@ -498,7 +456,6 @@ class Character(Entity):
         self.v = -self.jump_power
         self.state = states.FALL
         self.fastfall = False
-        self.frames_elapsed = 0
 
     def state_fall(self):
         # sprite selection
@@ -518,7 +475,6 @@ class Character(Entity):
                 self.sprite = self.sprites["jump_right"].get_frame(f)
             else:
                 self.sprite = self.sprites["jump_left"].get_frame(f)
-
 
         # update vertical position
         # if moving downwards faster than fall speed
@@ -551,8 +507,6 @@ class Character(Entity):
             self.state = states.STAND
             self.v = 0
 
-        self.frames_elapsed += 1
-
     def state_squat(self):
         self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
         if self.keys[Keys.JUMP]:
@@ -564,9 +518,11 @@ class Character(Entity):
     def state_run(self):
         # sprite selection
         if self.u > 0:
-            self.sprite = self.sprites["run_right"].get_frame(self.frames_elapsed)
+            self.sprite = self.sprites["run_right"].get_frame(
+                self.frames_elapsed)
         else:
-            self.sprite = self.sprites["run_left"].get_frame(self.frames_elapsed)
+            self.sprite = self.sprites["run_left"].get_frame(
+                self.frames_elapsed)
 
         if not self.keys[Keys.LEFT] and not self.keys[Keys.RIGHT]:
             self.state = states.STAND
@@ -582,5 +538,3 @@ class Character(Entity):
             self.state = states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = states.FALL
-
-        self.frames_elapsed += 1  # animate sprite
