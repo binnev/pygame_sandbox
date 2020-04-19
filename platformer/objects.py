@@ -517,6 +517,8 @@ class Character(Entity):
 
     def state_squat(self):
         self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
+        if self.airborne:
+            self.state = states.FALL
         if self.keys[Keys.JUMP]:
             self.enter_jumpsquat()
         # if squat key released, exit squat state
