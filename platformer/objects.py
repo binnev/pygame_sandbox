@@ -133,7 +133,7 @@ class Entity(pygame.sprite.Sprite):
 
     def update(self, keys):
         """Intended to be overwritten by subclasses"""
-        raise NotImplementedError()
+        pass
 
     def update_rect_position(self):
         """Subclasses can overwrite this"""
@@ -252,8 +252,6 @@ class Platform(Entity):
     def color(self, *args, **kwargs):
         pass
 
-    def update(self):
-        pass
 
 class Character(pygame.sprite.Sprite):
     # class properties (constants)
@@ -302,7 +300,7 @@ class Character(pygame.sprite.Sprite):
         height,
         width,
         level,
-        groups,
+        groups=[],
         u=None,
         v=None,
     ):
@@ -479,7 +477,7 @@ class Character(pygame.sprite.Sprite):
         # todo: optimise this logic
         # todo: add in clause to only land on platforms when moving downwards
         # todo: prevent clipping through solid platforms. Should go somewhere else really.
-        for platform in self.level.sprite_groups["platforms"]:
+        for platform in self.level.platforms:
             # is self within the horizontal bounds of the platform
             # and is self.base.y within a few pixels of the top of the platform?
             # then we're standing on the platform.
