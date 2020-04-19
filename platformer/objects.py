@@ -230,10 +230,6 @@ class Blob(Entity):
         else:  # no keys pressed
             self.sprite = self.sprites["stand"].get_frame(i)
 
-    def draw_sprite(self, surface):
-        if self.sprite:
-            surface.blit(self.sprite, self.rect)
-
 
 class Platform(Entity):
 
@@ -254,7 +250,7 @@ class Platform(Entity):
         pass
 
 
-class Character(pygame.sprite.Sprite):
+class Character(Entity):
     # class properties (constants)
     width = 40
     height = 60
@@ -271,47 +267,39 @@ class Character(pygame.sprite.Sprite):
     _friction = 0.1
     air_resistance = 0.05
     ticks_per_frame = 5
+    # ======================= sprite animations =======================
+    # yapf:disable
+    sprite_folder = Path("sprites/stick_figure/")
     sprites = {
-        states.STAND:
-            SpriteAnimation(["sprites/stand.png"]),
-        states.SQUAT:
-            SpriteAnimation(["sprites/squat.png"]),
-        states.JUMPSQUAT:
-            SpriteAnimation(["sprites/squat.png"]),
-        states.FALL:
-            SpriteAnimation(["sprites/jump.png"]),
-        states.RUN:
-            SpriteAnimation([
-                "sprites/walk_right_1.png",
-                "sprites/walk_right_2.png",
-            ]),
+        "stand": SpriteAnimation([sprite_folder / "stand.png"]),
+        "squat": SpriteAnimation([sprite_folder / "squat.png"]),
+        "fall": SpriteAnimation([sprite_folder / "fall_neutral.png"]),
+        "fall_right": SpriteAnimation([sprite_folder / "fall_right.png"]),
+        "fall_left": SpriteAnimation([sprite_folder / "fall_right.png"],
+                                     flip_horizontal=True),
+        "jump": SpriteAnimation([sprite_folder / "jump_neutral.png"]),
+        "jump_right": SpriteAnimation([sprite_folder / "jump_right.png"]),
+        "jump_left": SpriteAnimation([sprite_folder / "jump_right.png"],
+                                     flip_horizontal=True),
+        "run_right": SpriteAnimation([sprite_folder / "run_right1.png",
+                                      sprite_folder / "run_right2.png",
+                                      sprite_folder / "run_right3.png",
+                                      sprite_folder / "run_right4.png",]),
+        "run_left": SpriteAnimation([sprite_folder / "run_right1.png",
+                                     sprite_folder / "run_right2.png",
+                                     sprite_folder / "run_right3.png",
+                                     sprite_folder / "run_right4.png",],
+                                    flip_horizontal=True),
     }
+    # yapf:enable
 
-    # these are really instance variables...
-    state = None
-    fastfall = None
-    frames_elapsed = None
-    jumpsquat_frames_elapsed = None
-    aerial_jumps_used = 0
+    def __init__(self, x, y, height, width, groups=[]):
 
-    def __init__(
-        self,
-        x,
-        y,
-        height,
-        width,
-        level,
-        groups=[],
-        u=None,
-        v=None,
-    ):
-        self.level = level
-        self.x = x
-        self.y = y
-        self.u = u if u else 0
-        self.v = v if v else 0
-        self._height = height
-        self._width = width
+        super().__init__(x, y, width, height, color=None, groups=groups)
+
+        self.level = None
+        self.u = 0
+        self.v = 0
         self.state = states.FALL
         self.fastfall = False
         self.state_lookup = {
@@ -321,27 +309,19 @@ class Character(pygame.sprite.Sprite):
             states.RUN: self.state_run,
             states.SQUAT: self.state_squat,
         }
+        self.aerial_jumps_used = 0
         self.frames_elapsed = 0
+        self.jumpsquat_frames_elapsed = 0  # todo: remove this parameter. Use frames_elapsed
         self.font = pygame.font.Font("freesansbold.ttf", 10)
-        # Create an image of the block, and fill it with a color.
-        # This could also be an image loaded from the disk.
-        self.image = pygame.Surface([width, height])
-        self.image.fill(self.color)
-
-        # Fetch the rectangle object that has the dimensions of the image
-        # Update the position of this object by setting the values of rect.x and rect.y
-        self.rect = self.image.get_rect()
-
-        super().__init__(*groups)
 
     @property
-    def color(self):
-        # if not actionable
-        if self.state in [states.JUMPSQUAT, states.SQUAT]:
-            _color = (255, 0, 0)
-        else:
-            _color = (255, 255, 255)
-        return _color
+    def rect(self):
+        """Automatically makes a rect the size of the current sprite"""
+        width = self.sprite.get_rect().width if self.sprite else self.width
+        height = self.sprite.get_rect().height if self.sprite else self.height
+        self._rect = pygame.Rect(0, 0, width, height)
+        self.update_rect_position()
+        return self._rect
 
     @property
     def friction(self):
@@ -357,17 +337,6 @@ class Character(pygame.sprite.Sprite):
         else:
             return self._fall_speed
 
-    @property
-    def width(self):
-        return self._width
-
-    @property
-    def height(self):
-        """this is clumsy. Have the jumpsquat state edit the property"""
-        if self.state in (states.JUMPSQUAT, states.SQUAT):
-            return self._height * 0.8
-        return self._height
-
     def update(self, keys):
         # todo: implement a state watcher that automatically resets frames_elapsed to zero
         #  when object changes state.
@@ -375,10 +344,11 @@ class Character(pygame.sprite.Sprite):
         self.handle_state()  # respond to keypresses first
         self.handle_physics()
         self.enforce_screen_limits()
+        self.update_rect_position()
         self.debug_print()
-        # self.draw(window)
 
     def handle_state(self):
+        """Each state has a corresponding function that handles keypresses and events"""
         func = self.state_lookup[self.state]
         func()
 
@@ -423,46 +393,47 @@ class Character(pygame.sprite.Sprite):
             f"frames_elapsed = {self.frames_elapsed}",
         )
 
-    def draw(self, window, debug=False):
-        # sprite
-        sprite = self.sprites.get(self.state)
-        # todo: state functions could easily set self.sprite. Then we could have state_run
-        #  handle both the left and right running sprites, for example.
-        if sprite:
-            frame = sprite.get_frame(self.frames_elapsed //
-                                     self.ticks_per_frame)
-            window.blit(frame, (self.x - frame.get_rect().width / 2,
-                                self.y - frame.get_rect().height))
-        # bounding box
-        pygame.draw.rect(window, self.color, (
-            self.x - self.width / 2,
-            self.y - self.height,
-            self.width,
-            self.height,
-        ), 1)
-        # centroid
-        centroid_width = 5
-        pygame.draw.rect(window, (255, 0, 0), (
-            self.centroid.x - centroid_width / 2,
-            self.centroid.y - centroid_width / 2,
-            centroid_width,
-            centroid_width,
-        ), 1)
-        text = self.font.render("centroid", True, (255, 255, 255), None)
-        textRect = text.get_rect()
-        textRect.midleft = self.centroid
-        window.blit(text, textRect)
-        # base
-        pygame.draw.rect(window, (0, 255, 0), (
-            self.base.x - centroid_width / 2,
-            self.base.y - centroid_width / 2,
-            centroid_width,
-            centroid_width,
-        ), 1)
-        text = self.font.render("base", True, (255, 255, 255), None)
-        textRect = text.get_rect()
-        textRect.midleft = self.base
-        window.blit(text, textRect)
+    # todo: this should just use the parent class draw method.
+    # def draw(self, window, debug=False):
+    #     # sprite
+    #     sprite = self.sprites.get(self.state)
+    #     # todo: state functions could easily set self.sprite. Then we could have state_run
+    #     #  handle both the left and right running sprites, for example.
+    #     if sprite:
+    #         frame = sprite.get_frame(self.frames_elapsed //
+    #                                  self.ticks_per_frame)
+    #         window.blit(frame, (self.x - frame.get_rect().width / 2,
+    #                             self.y - frame.get_rect().height))
+    #     # bounding box
+    #     pygame.draw.rect(window, self.color, (
+    #         self.x - self.width / 2,
+    #         self.y - self.height,
+    #         self.width,
+    #         self.height,
+    #     ), 1)
+    #     # centroid
+    #     centroid_width = 5
+    #     pygame.draw.rect(window, (255, 0, 0), (
+    #         self.centroid.x - centroid_width / 2,
+    #         self.centroid.y - centroid_width / 2,
+    #         centroid_width,
+    #         centroid_width,
+    #     ), 1)
+    #     text = self.font.render("centroid", True, (255, 255, 255), None)
+    #     textRect = text.get_rect()
+    #     textRect.midleft = self.centroid
+    #     window.blit(text, textRect)
+    #     # base
+    #     pygame.draw.rect(window, (0, 255, 0), (
+    #         self.base.x - centroid_width / 2,
+    #         self.base.y - centroid_width / 2,
+    #         centroid_width,
+    #         centroid_width,
+    #     ), 1)
+    #     text = self.font.render("base", True, (255, 255, 255), None)
+    #     textRect = text.get_rect()
+    #     textRect.midleft = self.base
+    #     window.blit(text, textRect)
 
     @property
     def centroid(self):
@@ -471,11 +442,13 @@ class Character(pygame.sprite.Sprite):
 
     @property
     def base(self):
-        return Point(self.x, self.y)
+        # return Point(self.x, self.y)
+        return Point(*self.rect.midbottom)
 
     @property
     def airborne(self):
         # todo: optimise this logic
+        # todo: replace this with pygame built in rect collisions
         # todo: add in clause to only land on platforms when moving downwards
         # todo: prevent clipping through solid platforms. Should go somewhere else really.
         for platform in self.level.platforms:
@@ -497,6 +470,7 @@ class Character(pygame.sprite.Sprite):
     # ========================= state functions ================================
 
     def state_stand(self):
+        self.sprite = self.sprites["stand"].get_frame(self.frames_elapsed)
         if self.keys[Keys.JUMP]:  # enter jumpsquat
             self.enter_jumpsquat()
         if self.keys[Keys.DOWN]:  # enter squat
@@ -512,6 +486,7 @@ class Character(pygame.sprite.Sprite):
         self.jumpsquat_frames_elapsed = 0
 
     def state_jumpsquat(self):
+        self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
         self.jumpsquat_frames_elapsed += 1
         # if end of jumpsquat reached, begin jump
         if self.jumpsquat_frames_elapsed == self.jumpsquat_frames:
@@ -526,6 +501,25 @@ class Character(pygame.sprite.Sprite):
         self.frames_elapsed = 0
 
     def state_fall(self):
+        # sprite selection
+        f = self.frames_elapsed
+        limit = 2
+        if self.v > 0:
+            if abs(self.u) < limit:  # fixme: don't hard-code this
+                self.sprite = self.sprites["fall"].get_frame(f)
+            elif self.u > 0:
+                self.sprite = self.sprites["fall_right"].get_frame(f)
+            else:
+                self.sprite = self.sprites["fall_left"].get_frame(f)
+        else:
+            if abs(self.u) < limit:
+                self.sprite = self.sprites["jump"].get_frame(f)
+            elif self.u > 0:
+                self.sprite = self.sprites["jump_right"].get_frame(f)
+            else:
+                self.sprite = self.sprites["jump_left"].get_frame(f)
+
+
         # update vertical position
         # if moving downwards faster than fall speed
         if self.v > 0 and abs(self.v) > self.fall_speed:
@@ -560,6 +554,7 @@ class Character(pygame.sprite.Sprite):
         self.frames_elapsed += 1
 
     def state_squat(self):
+        self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
         if self.keys[Keys.JUMP]:
             self.enter_jumpsquat()
         # if squat key released, exit squat state
@@ -567,6 +562,12 @@ class Character(pygame.sprite.Sprite):
             self.state = states.STAND
 
     def state_run(self):
+        # sprite selection
+        if self.u > 0:
+            self.sprite = self.sprites["run_right"].get_frame(self.frames_elapsed)
+        else:
+            self.sprite = self.sprites["run_left"].get_frame(self.frames_elapsed)
+
         if not self.keys[Keys.LEFT] and not self.keys[Keys.RIGHT]:
             self.state = states.STAND
         if self.keys[Keys.LEFT]:
