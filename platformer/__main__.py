@@ -19,23 +19,23 @@ class Level:
         all=SpriteGroup(),
     )
 
+
 level = Level()
+# Platforms
 sprite_groups = [level.sprite_groups["platforms"], level.sprite_groups["all"]]
 Platform(50, 100, 200, 30, can_fall_through=True, groups=sprite_groups),
 Platform(200, 300, 150, 30, can_fall_through=False, groups=sprite_groups),
 Platform(5, 480, 480, 30, can_fall_through=False, groups=sprite_groups),
+# Character object
 sprite_groups = [level.sprite_groups["characters"], level.sprite_groups["all"]]
 Character(x=50, y=200, width=40, height=60, level=level, groups=sprite_groups)
-# level.sprite_groups["enemies"].add(
-#     Entity((0, 255, 255), 400, 400, 50, 50),
-#     Entity((0, 255, 255), 200, 200, 100, 100),
-# )
-# entity = Blob((0, 255, 0),
-#                 0,
-#                 0,
-#                 40,
-#                 60,
-#                 groups=[level.sprite_groups["characters"]])
+# Entity objects
+sprite_groups = [level.sprite_groups["enemies"], level.sprite_groups["all"]]
+Entity(400, 400, 50, 50, color=(0, 255, 255), groups=sprite_groups),
+Entity(200, 200, 100, 100, color=(0, 255, 255), groups=sprite_groups),
+# Blob object
+sprite_groups = [level.sprite_groups["characters"], level.sprite_groups["all"]]
+Blob(0, 0, 40, 60, color=(0, 255, 0), groups=sprite_groups)
 clock = pygame.time.Clock()
 
 run = True
