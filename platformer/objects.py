@@ -261,9 +261,10 @@ class Character(Entity):
     fall_acceleration = 2
     _fall_speed = 5
     fastfall_multiplier = 2.5
-    aerial_jumps = 2
+    aerial_jumps = 3
     jump_power = 20
     jumpsquat_frames = 4
+    aerial_jumpsquat_frames = 1
     _friction = 0.1
     air_resistance = 0.05
     ticks_per_frame = 5
@@ -448,8 +449,12 @@ class Character(Entity):
     def state_jumpsquat(self):
         self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
         # if end of jumpsquat reached, begin jump
-        if self.frames_elapsed == self.jumpsquat_frames:
-            self.enter_jump()
+        if self.airborne:
+            if self.frames_elapsed == self.aerial_jumpsquat_frames:
+                self.enter_jump()
+        else:
+            if self.frames_elapsed == self.jumpsquat_frames:
+                self.enter_jump()
         # todo: add any other actions that are allowed in jumpsquat state... wavedash ahem.
 
     def enter_jump(self):
@@ -495,7 +500,7 @@ class Character(Entity):
         if (self.keys[Keys.JUMP] and
                 self.aerial_jumps_used < self.aerial_jumps and
                 self.frames_elapsed > 10):  # fixme don't hard-code this stuff
-            self.enter_jump()
+            self.enter_jumpsquat()
             self.aerial_jumps_used += 1
 
         # fastfall if moving downwards
