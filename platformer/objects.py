@@ -450,8 +450,11 @@ class Character(Entity):
         self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
         # if end of jumpsquat reached, begin jump
         if self.airborne:
-            if self.frames_elapsed == self.aerial_jumpsquat_frames:
-                self.enter_jump()
+            if self.aerial_jumps_used < self.aerial_jumps:
+                if self.frames_elapsed >= self.aerial_jumpsquat_frames:
+                    self.enter_jump()
+            else:
+                self.state = states.FALL
         else:
             if self.frames_elapsed == self.jumpsquat_frames:
                 self.enter_jump()
