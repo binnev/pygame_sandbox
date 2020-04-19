@@ -39,8 +39,8 @@ level.add_objects(Platform(50, 100, 200, 30, can_fall_through=True),
                   Platform(5, 480, 480, 30, can_fall_through=False),
                   type="platform")
 # Character object
-level.add_objects(Character(50, 200, 40, 60),
-                  type="character")
+character = Character(50, 200, 40, 60)
+level.add_objects(character, type="character")
 # # Entity objects
 # level.add_objects(Entity(400, 400, 50, 50, color=(0, 255, 255)),
 #                   Entity(200, 200, 100, 100, color=(0, 255, 255)))
@@ -53,17 +53,17 @@ run = True
 while run:
     keys = pygame.key.get_pressed()
     if keys[pygame.K_ESCAPE]:
-        pygame.quit()
+        character.x, character.y = 50, 200
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
 
-    window.fill((0, 0, 0))
+    window.fill((255, 255, 255))
 
     # ================== update and draw =========================
     level.update(keys)
     level.draw(window, debug=True)
     pygame.display.flip()
-    clock.tick(50)
+    clock.tick(60)
 
 pygame.quit()
