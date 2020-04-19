@@ -27,3 +27,11 @@ Sprite groups have a convenient built in `.draw()` method. However, this method 
     pygame.draw.ellipse(self.image, color, [0, 0, width, height])
     ```
 - [x] Can I subclass `SpriteGroup` to have `SpriteGroup.draw()` instead call all the sprite objects' `sprite.draw()` method? This was much easier.  
+
+## sprites
+- typical `Sprite` instance has attributes: 
+    - image (used for sprite group `.draw()` method)
+    - rect (used for collisions)
+    - mask (used for collisions)
+    
+Learn how to do this "the pygame way" before you start homebrewing loads of stuff. 

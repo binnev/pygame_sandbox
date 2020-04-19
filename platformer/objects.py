@@ -1,4 +1,5 @@
 from collections import namedtuple
+from pathlib import Path
 
 import pygame
 
@@ -56,30 +57,32 @@ class SpriteSheet(object):
         return self.images_at(tups, colorkey)
 
 
-# todo: rename this to Animation or something
-class Sprite:
+class SpriteAnimation:
 
-    def __init__(self, frames: list):
-        self.frames = frames
+    def __init__(self,
+                 frame_paths: list,
+                 flip_horizontal=False,
+                 flip_vertical=False):
+        # convert to pathlib path
+        frame_paths = [Path(path) for path in frame_paths]
+        # load frame image
+        self.frames = [
+            pygame.image.load(path.as_posix()) for path in frame_paths
+        ]
+        self.frames = [
+            pygame.transform.flip(f, flip_horizontal, flip_vertical)
+            for f in self.frames
+        ]
 
     def get_frame(self, index):
         return self.frames[index % len(self.frames)]
 
 
 class Entity(pygame.sprite.Sprite):
-    speed = 2
 
-    # Constructor. Pass in the color of the block,
-    # and its x and y position
-    def __init__(self,
-                 color,
-                 x,
-                 y,
-                 width,
-                 height,
-                 canvas_width=None,
-                 canvas_height=None,
-                 groups=[]):
+    def __init__(self, color, x, y, width, height, groups=[]):
+        super().__init__(*groups)
+
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"),
                                      12)
         self.x = x
@@ -88,30 +91,17 @@ class Entity(pygame.sprite.Sprite):
         self.width = width  # todo: give these more specific names e.g. collision_width
         self.height = height
         self.state = None
-        # self.canvas_width = canvas_width if canvas_width else width * 2
-        # self.canvas_height = canvas_height if canvas_height else height * 2
-        # self.canvas = pygame.Surface([self.canvas_width, self.canvas_height])
-        # self.canvas.fill((0, 0, 0, 0))
-        # fixme: don't use this rect for collisions
-        # todo: create rect based on the image size. That makes more sense. Then you can
-        #  have a circle image (or some random .png) and the rect will fit around it.
+        # rect is used for simple collision detection e.g. with platforms
+        # it is also used to draw the sprite
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = self.centroid
-
-        # create a surface for sprite, so that I can use pygame.mask.from_surface() to
-        # generate a hurtbox.
-        self.sprite = pygame.Surface([self.width, self.height])
-        self.sprite.fill((0, 255, 0))  # set color to white
-        self.sprite.set_colorkey((0, 255, 0))  # set white = transparent
-        # self.sprite.rect = self.rect  # hopefully this tracks rect...
-        pygame.draw.ellipse(self.sprite, self.color, (0, 0, self.width, self.height))
-
-        self.mask = pygame.mask.from_surface(self.sprite)
-        super().__init__(*groups)
+        self.sprite = None  # subclasses can overwrite this
 
     @property
     def centroid(self):
         return Point(self.x, self.y)
+
+    # ============= drawing functions ==============
 
     def draw_sprite(self, surface):
         # todo: the rect argument here gives the position at which to blit. The top left
@@ -119,15 +109,12 @@ class Entity(pygame.sprite.Sprite):
         #  affect the blitting. So make sure that top left corner is in the right place!
         if self.sprite:
             surface.blit(self.sprite, self.rect)
-        # else:
-        #     pygame.draw.ellipse(surface, self.color, self.rect)
 
     def draw_debug(self, surface):
         # bounding box
         pygame.draw.rect(surface, self.color, self.rect, 1)
         # centroid
         centroid_width = 10
-        # todo: maybe store the centroid instead of generating it every time?
         centroid = pygame.Rect(0, 0, centroid_width, centroid_width)
         centroid.center = self.centroid
         pygame.draw.ellipse(surface, self.color, centroid, 1)
@@ -140,57 +127,12 @@ class Entity(pygame.sprite.Sprite):
         self.draw_sprite(surface)
         self.draw_debug(surface)
 
-    @property
-    def image(self):
-        # todo: split this up into multiple functions that subclasses can edit
-        # ================== image ==================
-        # todo: this isn't always going to be a rectangle!
-        pygame.draw.rect(
-            self.canvas, self.color,
-            (self.canvas_width / 2 - self.width / 2,
-             self.canvas_height / 2 - self.height / 2, self.width, self.height))
-
-        # ================== debugging ==================
-        canvas_rect = self.canvas.get_rect()
-        # bounding box of the canvas (the canvas onto which the sprites, hurt/hitboxes,
-        # etc are drawn)
-        pygame.draw.rect(self.canvas, self.color, canvas_rect, 1)
-        # centroid
-        centroid_width = 5
-        pygame.draw.rect(self.canvas, (255, 0, 0), (
-            canvas_rect.width / 2 - centroid_width / 2,
-            canvas_rect.height / 2 - centroid_width / 2,
-            centroid_width,
-            centroid_width,
-        ), 1)
-        text = self.font.render("CENTROID", True, (255, 255, 255), None)
-        textRect = text.get_rect()
-        textRect.midbottom = canvas_rect.width / 2, canvas_rect.height / 2
-        self.canvas.blit(text, textRect)
-        # # base
-        # pygame.draw.rect(self.canvas, (0, 255, 0), (
-        #     canvas_rect.width / 2 - centroid_width / 2,
-        #     canvas_rect.height - centroid_width / 2,
-        #     centroid_width,
-        #     centroid_width,
-        # ), 1)
-        # text = self.font.render("BASE", True, (255, 255, 255), None)
-        # textRect = text.get_rect()
-        # textRect.midbottom = canvas_rect.width/2, canvas_rect.height
-        # self.canvas.blit(text, textRect)
-
-        return self.canvas
-
     def update(self, keys):
-        if keys[Keys.DOWN]:
-            self.y += self.speed
-        if keys[Keys.UP]:
-            self.y -= self.speed
-        if keys[Keys.RIGHT]:
-            self.x += self.speed
-        if keys[Keys.LEFT]:
-            self.x -= self.speed
-        self.debug_print()
+        """Intended to be overwritten by subclasses"""
+        raise NotImplementedError()
+
+    def update_rect_position(self):
+        """Subclasses can overwrite this"""
         self.rect.center = self.centroid
 
     def debug_print(self):
@@ -198,6 +140,80 @@ class Entity(pygame.sprite.Sprite):
             f"x = {self.x}",
             f"y = {self.y}",
         )
+
+
+class Blob(Entity):
+
+    # ======================= sprite animations =======================
+    sprite_folder = Path("sprites/stick_figure/")
+    sprites = {
+        "stand":
+            SpriteAnimation([sprite_folder / "stand.png"]),
+        "move_down":
+            SpriteAnimation([sprite_folder / "fall_neutral.png"]),
+        "move_down_right":
+            SpriteAnimation([sprite_folder / "fall_right.png"]),
+        "move_down_left":  # todo: flip image
+            SpriteAnimation([sprite_folder / "fall_right.png"],
+                            flip_horizontal=True),
+        "move_up":
+            SpriteAnimation([sprite_folder / "jump_neutral.png"]),
+        "move_up_right":
+            SpriteAnimation([sprite_folder / "jump_right.png"]),
+        "move_up_left":
+            SpriteAnimation([sprite_folder / "jump_right.png"],
+                            flip_horizontal=True),
+        "move_right":
+            SpriteAnimation([
+                sprite_folder / "run_right1.png",
+                sprite_folder / "run_right2.png",
+                sprite_folder / "run_right3.png",
+                sprite_folder / "run_right4.png",
+            ]),
+        "move_left":
+            SpriteAnimation([
+                sprite_folder / "run_right1.png",
+                sprite_folder / "run_right2.png",
+                sprite_folder / "run_right3.png",
+                sprite_folder / "run_right4.png",
+            ],
+                            flip_horizontal=True),
+    }
+
+    # ================ properties =====================
+    speed = 2
+    frames_elapsed = 0
+
+    def update(self, keys):
+        self.update_rect_position()
+        self.frames_elapsed += 1
+        i = self.frames_elapsed
+
+        if keys[Keys.RIGHT]:
+            self.x += self.speed
+            self.sprite = self.sprites["move_right"].get_frame(i)
+
+        if keys[Keys.LEFT]:
+            self.x -= self.speed
+            self.sprite = self.sprites["move_left"].get_frame(i)
+
+        if keys[Keys.UP]:
+            self.y -= self.speed
+            if keys[Keys.RIGHT]:
+                self.sprite = self.sprites["move_up_right"].get_frame(i)
+            elif keys[Keys.LEFT]:
+                self.sprite = self.sprites["move_up_left"].get_frame(i)
+            else:
+                self.sprite = self.sprites["move_up"].get_frame(i)
+
+        if keys[Keys.DOWN]:
+            self.y += self.speed
+            if keys[Keys.RIGHT]:
+                self.sprite = self.sprites["move_down_right"].get_frame(i)
+            elif keys[Keys.LEFT]:
+                self.sprite = self.sprites["move_down_left"].get_frame(i)
+            else:
+                self.sprite = self.sprites["move_down"].get_frame(i)
 
 
 # todo: subclass this from Entity
@@ -235,17 +251,17 @@ class Character(pygame.sprite.Sprite):
     ticks_per_frame = 5
     sprites = {
         states.STAND:
-            Sprite([pygame.image.load("sprites/stand.png")]),
+            SpriteAnimation(["sprites/stand.png"]),
         states.SQUAT:
-            Sprite([pygame.image.load("sprites/squat.png")]),
+            SpriteAnimation(["sprites/squat.png"]),
         states.JUMPSQUAT:
-            Sprite([pygame.image.load("sprites/squat.png")]),
+            SpriteAnimation(["sprites/squat.png"]),
         states.FALL:
-            Sprite([pygame.image.load("sprites/jump.png")]),
+            SpriteAnimation(["sprites/jump.png"]),
         states.RUN:
-            Sprite([
-                pygame.image.load("sprites/walk_right_1.png"),
-                pygame.image.load("sprites/walk_right_2.png"),
+            SpriteAnimation([
+                "sprites/walk_right_1.png",
+                "sprites/walk_right_2.png",
             ]),
     }
 
