@@ -1,7 +1,7 @@
 import pygame
 
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-from platformer.objects import Platform, Entity, SpriteGroup, Blob
+from platformer.objects import Platform, Entity, SpriteGroup, Blob, Character
 
 pygame.init()
 pygame.font.init()
@@ -24,11 +24,12 @@ sprite_groups = [level.sprite_groups["platforms"], level.sprite_groups["all"]]
 Platform(50, 100, 200, 30, can_fall_through=True, groups=sprite_groups),
 Platform(200, 300, 150, 30, can_fall_through=False, groups=sprite_groups),
 Platform(5, 480, 480, 30, can_fall_through=False, groups=sprite_groups),
+sprite_groups = [level.sprite_groups["characters"], level.sprite_groups["all"]]
+Character(x=50, y=200, width=40, height=60, level=level, groups=sprite_groups)
 # level.sprite_groups["enemies"].add(
 #     Entity((0, 255, 255), 400, 400, 50, 50),
 #     Entity((0, 255, 255), 200, 200, 100, 100),
 # )
-# # Character(x=50, y=200, width=40, height=60, level=level, groups=[level.characters])
 # entity = Blob((0, 255, 0),
 #                 0,
 #                 0,
@@ -49,7 +50,7 @@ while run:
     window.fill((0, 0, 0))
 
     # ================== action happens here =========================
-    # # check for collision
+    # check for collision
     # if pygame.sprite.spritecollide(entity,
     #                                level.sprite_groups["enemies"],
     #                                dokill=False):
@@ -57,9 +58,7 @@ while run:
     #     print("rect collision")
     # else:
     #     entity.color = (0, 255, 0)
-    # for group_name, sprite_group in level.sprite_groups.items():
-    #     if group_name == "characters":
-    #         sprite_group.update(keys)
+    level.sprite_groups["characters"].update(keys)
 
     # ================= draw all sprites ========================
     level.sprite_groups["all"].draw(window)

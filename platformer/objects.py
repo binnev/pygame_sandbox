@@ -252,6 +252,9 @@ class Platform(Entity):
     def color(self, *args, **kwargs):
         pass
 
+    def update(self):
+        pass
+
 class Character(pygame.sprite.Sprite):
     # class properties (constants)
     width = 40
@@ -476,7 +479,7 @@ class Character(pygame.sprite.Sprite):
         # todo: optimise this logic
         # todo: add in clause to only land on platforms when moving downwards
         # todo: prevent clipping through solid platforms. Should go somewhere else really.
-        for platform in self.level.platforms:
+        for platform in self.level.sprite_groups["platforms"]:
             # is self within the horizontal bounds of the platform
             # and is self.base.y within a few pixels of the top of the platform?
             # then we're standing on the platform.
