@@ -93,9 +93,13 @@ class Entity(pygame.sprite.Sprite):
         self.state = None
         # rect is used for simple collision detection e.g. with platforms
         # it is also used to draw the sprite
-        self.rect = pygame.Rect(0, 0, self.width, self.height)
-        self.rect.center = self.centroid
+        self._rect = pygame.Rect(0, 0, self.width, self.height)
+        self.update_rect_position()
         self.sprite = None  # subclasses can overwrite this
+
+    @property
+    def rect(self):
+        return self._rect
 
     @property
     def centroid(self):
@@ -133,7 +137,7 @@ class Entity(pygame.sprite.Sprite):
 
     def update_rect_position(self):
         """Subclasses can overwrite this"""
-        self.rect.center = self.centroid
+        self._rect.center = self.centroid
 
     def debug_print(self):
         print(
@@ -143,62 +147,65 @@ class Entity(pygame.sprite.Sprite):
 
 
 class Blob(Entity):
+    """
+    Simple class to try out movement and collision detection. This class has no states. It
+    can just move up/down and left/right. It loads a sprite, and has a hurtbox for collisions.
+    """
 
     # ======================= sprite animations =======================
+    # yapf:disable
     sprite_folder = Path("sprites/stick_figure/")
-    sprites = {
-        "stand":
-            SpriteAnimation([sprite_folder / "stand.png"]),
-        "move_down":
-            SpriteAnimation([sprite_folder / "fall_neutral.png"]),
-        "move_down_right":
-            SpriteAnimation([sprite_folder / "fall_right.png"]),
-        "move_down_left":  # todo: flip image
-            SpriteAnimation([sprite_folder / "fall_right.png"],
-                            flip_horizontal=True),
-        "move_up":
-            SpriteAnimation([sprite_folder / "jump_neutral.png"]),
-        "move_up_right":
-            SpriteAnimation([sprite_folder / "jump_right.png"]),
-        "move_up_left":
-            SpriteAnimation([sprite_folder / "jump_right.png"],
-                            flip_horizontal=True),
-        "move_right":
-            SpriteAnimation([
-                sprite_folder / "run_right1.png",
-                sprite_folder / "run_right2.png",
-                sprite_folder / "run_right3.png",
-                sprite_folder / "run_right4.png",
-            ]),
-        "move_left":
-            SpriteAnimation([
-                sprite_folder / "run_right1.png",
-                sprite_folder / "run_right2.png",
-                sprite_folder / "run_right3.png",
-                sprite_folder / "run_right4.png",
-            ],
-                            flip_horizontal=True),
+    sprites = {"stand": SpriteAnimation([sprite_folder / "stand.png"]),
+        "move_down": SpriteAnimation([sprite_folder / "fall_neutral.png"]),
+        "move_down_right": SpriteAnimation([sprite_folder / "fall_right.png"]),
+        "move_down_left": SpriteAnimation([sprite_folder / "fall_right.png"],
+                                          flip_horizontal=True),
+        "move_up": SpriteAnimation([sprite_folder / "jump_neutral.png"]),
+        "move_up_right": SpriteAnimation([sprite_folder / "jump_right.png"]),
+        "move_up_left": SpriteAnimation([sprite_folder / "jump_right.png"],
+                                        flip_horizontal=True),
+        "move_right": SpriteAnimation([sprite_folder / "run_right1.png",
+                                       sprite_folder / "run_right2.png",
+                                       sprite_folder / "run_right3.png",
+                                       sprite_folder / "run_right4.png",]),
+        "move_left": SpriteAnimation([sprite_folder / "run_right1.png",
+                                      sprite_folder / "run_right2.png",
+                                      sprite_folder / "run_right3.png",
+                                      sprite_folder / "run_right4.png",],
+                                     flip_horizontal=True),
     }
+    # yapf:enable
 
     # ================ properties =====================
-    speed = 2
+    speed = 4
     frames_elapsed = 0
+
+    @property
+    def rect(self):
+        """Automatically makes a rect the size of the current sprite"""
+        width = self.sprite.get_rect().width if self.sprite else self.width
+        height = self.sprite.get_rect().height if self.sprite else self.height
+        self._rect = pygame.Rect(0, 0, width, height)
+        self.update_rect_position()
+        return self._rect
 
     def update(self, keys):
         self.update_rect_position()
         self.frames_elapsed += 1
         i = self.frames_elapsed
 
-        if keys[Keys.RIGHT]:
-            self.x += self.speed
-            self.sprite = self.sprites["move_right"].get_frame(i)
-
-        if keys[Keys.LEFT]:
-            self.x -= self.speed
-            self.sprite = self.sprites["move_left"].get_frame(i)
-
+        # simple movement
         if keys[Keys.UP]:
             self.y -= self.speed
+        if keys[Keys.DOWN]:
+            self.y += self.speed
+        if keys[Keys.RIGHT]:
+            self.x += self.speed
+        if keys[Keys.LEFT]:
+            self.x -= self.speed
+
+        # select sprite
+        if keys[Keys.UP]:
             if keys[Keys.RIGHT]:
                 self.sprite = self.sprites["move_up_right"].get_frame(i)
             elif keys[Keys.LEFT]:
@@ -206,14 +213,26 @@ class Blob(Entity):
             else:
                 self.sprite = self.sprites["move_up"].get_frame(i)
 
-        if keys[Keys.DOWN]:
-            self.y += self.speed
+        elif keys[Keys.DOWN]:
             if keys[Keys.RIGHT]:
                 self.sprite = self.sprites["move_down_right"].get_frame(i)
             elif keys[Keys.LEFT]:
                 self.sprite = self.sprites["move_down_left"].get_frame(i)
             else:
                 self.sprite = self.sprites["move_down"].get_frame(i)
+
+        elif keys[Keys.RIGHT]:
+            self.sprite = self.sprites["move_right"].get_frame(i)
+
+        elif keys[Keys.LEFT]:
+            self.sprite = self.sprites["move_left"].get_frame(i)
+
+        else:  # no keys pressed
+            self.sprite = self.sprites["stand"].get_frame(i)
+
+    def draw_sprite(self, surface):
+        if self.sprite:
+            surface.blit(self.sprite, self.rect)
 
 
 # todo: subclass this from Entity
@@ -404,6 +423,8 @@ class Character(pygame.sprite.Sprite):
     def draw(self, window):
         # sprite
         sprite = self.sprites.get(self.state)
+        # todo: state functions could easily set self.sprite. Then we could have state_run
+        #  handle both the left and right running sprites, for example.
         if sprite:
             frame = sprite.get_frame(self.frames_elapsed //
                                      self.ticks_per_frame)
