@@ -12,14 +12,14 @@ Point = namedtuple("Point", ["x", "y"])
 
 class SpriteGroup(pygame.sprite.Group):
 
-    def draw(self, surface):
+    def draw(self, surface, debug=False):
         """draw all sprites onto the surface
         Group.draw(surface): return None
         Draws all of the member sprites onto the given surface.
         """
         sprites = self.sprites()
         for sprite in sprites:
-            sprite.draw(surface)
+            sprite.draw(surface, debug)
         self.lostsprites = []
 
 
@@ -127,9 +127,10 @@ class Entity(pygame.sprite.Sprite):
         textRect.midbottom = self.centroid
         surface.blit(text, textRect)
 
-    def draw(self, surface):
+    def draw(self, surface, debug=False):
         self.draw_sprite(surface)
-        self.draw_debug(surface)
+        if debug:
+            self.draw_debug(surface)
 
     def update(self, keys):
         """Intended to be overwritten by subclasses"""
@@ -422,7 +423,7 @@ class Character(pygame.sprite.Sprite):
             f"frames_elapsed = {self.frames_elapsed}",
         )
 
-    def draw(self, window):
+    def draw(self, window, debug=False):
         # sprite
         sprite = self.sprites.get(self.state)
         # todo: state functions could easily set self.sprite. Then we could have state_run
