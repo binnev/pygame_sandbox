@@ -23,8 +23,6 @@ class SpriteGroup(pygame.sprite.Group):
         self.lostsprites = []
 
 
-
-
 class Level(SpriteGroup):
     # sprite groups
     platforms = SpriteGroup()
@@ -50,24 +48,18 @@ class Level(SpriteGroup):
 class SpriteAnimation:
 
     def __init__(self,
-                 frame_paths: list,
+                 frames: list,
                  flip_horizontal=False,
                  flip_vertical=False):
-        # convert to pathlib path
-        frame_paths = [Path(path) for path in frame_paths]
-        # load frame image
-        self.frames = [
-            pygame.image.load(path.as_posix()) for path in frame_paths
-        ]
         self.frames = [
             pygame.transform.flip(f, flip_horizontal, flip_vertical)
-            for f in self.frames
+            for f in frames
         ]
 
     def get_frame(self, index):
         return self.frames[index % len(self.frames)]
 
-
+'''
 class Entity(pygame.sprite.Sprite):
 
     def __init__(self, x, y, width, height, color=None, groups=[]):
@@ -254,7 +246,14 @@ class Projectile(Entity):
     }
     # yapf:enable
 
-    def __init__(self, x, y, width, height, color=None, groups=[], facing="right"):
+    def __init__(self,
+                 x,
+                 y,
+                 width,
+                 height,
+                 color=None,
+                 groups=[],
+                 facing="right"):
         super().__init__(x, y, width, height, color, groups)
         self.frames_elapsed = 0  # todo: make a mixin for this
         self.facing = facing
@@ -577,4 +576,7 @@ class Character(Entity):
 
     def create_projectile(self):
         facing = "right" if self.u > 0 else "left"
-        self.level.add_objects(Projectile(*self.centroid, 20, 20, facing=facing))
+        self.level.add_objects(Projectile(*self.centroid, 20, 20,
+                                          facing=facing))
+
+#'''
