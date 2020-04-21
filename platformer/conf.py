@@ -10,3 +10,4 @@ class Keys:
     RIGHT = pygame.K_RIGHT
     UP = pygame.K_UP
     DOWN = pygame.K_DOWN
+    FIRE = pygame.K_SPACE

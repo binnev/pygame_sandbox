@@ -35,3 +35,7 @@ Sprite groups have a convenient built in `.draw()` method. However, this method 
     - mask (used for collisions)
     
 Learn how to do this "the pygame way" before you start homebrewing loads of stuff. 
+
+## To do
+- [ ] Fix clipping through solid platforms (use rect and collisions)
+- [ ] Fix automatic rect generation from sprite

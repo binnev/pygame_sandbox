@@ -57,6 +57,28 @@ class SpriteSheet(object):
         return self.images_at(tups, colorkey)
 
 
+class Level(SpriteGroup):
+    # sprite groups
+    platforms = SpriteGroup()
+    characters = SpriteGroup()
+    projectiles = SpriteGroup()
+
+    def add_objects(self, *objects, type=None):
+        # add to Level spritegroup (similar to "all" group)
+        self.add(*objects)
+
+        # todo: allow multiple types?
+        if type == "platform":
+            self.platforms.add(*objects)
+        if type == "character":
+            self.characters.add(*objects)
+            # give the character object a reference to this level
+            for character in objects:
+                character.level = self
+        if type == "projectile":
+            self.projectiles.add(*objects)
+i
+
 class SpriteAnimation:
 
     def __init__(self,
@@ -154,7 +176,7 @@ class Blob(Entity):
     """
     # ======================= sprite animations =======================
     # yapf:disable
-    sprite_folder = Path("sprites/stick_figure/")
+    sprite_folder = Path("sprites/blob/")
     sprites = {"stand": SpriteAnimation([sprite_folder / "stand.png"]),
         "move_down": SpriteAnimation([sprite_folder / "fall_neutral.png"]),
         "move_down_right": SpriteAnimation([sprite_folder / "fall_right.png"]),
@@ -250,6 +272,46 @@ class Platform(Entity):
         pass
 
 
+class Projectile(Entity):
+    speed = 5
+    # ======================= sprite animations =======================
+    # yapf:disable
+    sprite_folder = Path("sprites/stick_figure/")
+    sprites = {
+        "right": SpriteAnimation([sprite_folder / "walk_right_1.png",
+                                  sprite_folder / "walk_right_2.png",]),
+        "left": SpriteAnimation([sprite_folder / "walk_right_1.png",
+                                 sprite_folder / "walk_right_2.png",],
+                                flip_horizontal=True),
+    }
+    # yapf:enable
+
+    def __init__(self, x, y, width, height, color=None, groups=[], facing="right"):
+        super().__init__(x, y, width, height, color, groups)
+        self.frames_elapsed = 0  # todo: make a mixin for this
+        self.facing = facing
+
+    def update(self, keys):
+        if self.facing == "right":
+            self.x += self.speed
+        elif self.facing == "left":
+            self.x -= self.speed
+        else:
+            raise Exception("invalid `facing` param for Projectile!")
+        self.frames_elapsed += 1
+
+    @property
+    def sprite(self):
+        f = self.frames_elapsed
+        if self.facing == "right":
+            return self.sprites["right"].get_frame(f)
+        if self.facing == "left":
+            return self.sprites["left"].get_frame(f)
+
+    @sprite.setter
+    def sprite(self, *args, **kwargs):
+        pass
+
 class Character(Entity):
     # class properties (constants)
     width = 40
@@ -270,7 +332,7 @@ class Character(Entity):
     ticks_per_frame = 5
     # ======================= sprite animations =======================
     # yapf:disable
-    sprite_folder = Path("sprites/stick_figure/")
+    sprite_folder = Path("sprites/blob/")
     sprites = {
         "stand": SpriteAnimation([sprite_folder / "stand.png"]),
         "squat": SpriteAnimation([sprite_folder / "squat.png"]),
@@ -383,6 +445,8 @@ class Character(Entity):
         self.update_rect_position()
         self.enforce_screen_limits()
         self.debug_print()
+        if keys[Keys.FIRE]:
+            self.create_projectile()
         self.frames_elapsed += 1
 
     def handle_state(self):
@@ -548,3 +612,9 @@ class Character(Entity):
             self.state = states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = states.FALL
+
+    # ============ actions ==============
+
+    def create_projectile(self):
+        facing = "right" if self.u > 0 else "left"
+        self.level.add_objects(Projectile(*self.centroid, 20, 20, facing=facing))

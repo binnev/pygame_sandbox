@@ -1,7 +1,7 @@
 import pygame
 
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-from platformer.objects import Platform, Entity, SpriteGroup, Blob, Character
+from platformer.objects import Platform, Entity, SpriteGroup, Blob, Character, Level
 
 pygame.init()
 pygame.font.init()
@@ -10,26 +10,6 @@ window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Hello World")
 
 
-class Level(SpriteGroup):
-    # sprite groups
-    platforms = SpriteGroup()
-    characters = SpriteGroup()
-    projectiles = SpriteGroup()
-
-    def add_objects(self, *objects, type=None):
-        # add to Level spritegroup (similar to "all" group)
-        self.add(*objects)
-
-        # todo: allow multiple types?
-        if type == "platform":
-            self.platforms.add(*objects)
-        if type == "character":
-            self.characters.add(*objects)
-            # give the character object a reference to this level
-            for character in objects:
-                character.level = self
-        if type == "projectile":
-            self.projectiles.add(*objects)
 
 
 level = Level()
