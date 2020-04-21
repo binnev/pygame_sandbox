@@ -39,3 +39,5 @@ Learn how to do this "the pygame way" before you start homebrewing loads of stuf
 ## To do
 - [ ] Fix clipping through solid platforms (use rect and collisions)
 - [ ] Fix automatic rect generation from sprite
+- [ ] Look into [Tiled](https://sourceforge.net/projects/tiled/) for textures
+- [ ] Use [Piskel](www.piskelapp.com) for sprites
