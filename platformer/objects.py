@@ -354,23 +354,23 @@ class Character(Entity):
         limit = 2
         if self.v > 0:
             if abs(self.u) < limit:  # fixme: don't hard-code this
-                # self.sprite = self.sprites["fall"].get_frame(f)
+                self.sprite = self.sprites["fall"].get_frame(f)
                 pass
             elif self.u > 0:
-                # self.sprite = self.sprites["fall_right"].get_frame(f)
+                self.sprite = self.sprites["fall_right"].get_frame(f)
                 pass
             else:
-                # self.sprite = self.sprites["fall_left"].get_frame(f)
+                self.sprite = self.sprites["fall_left"].get_frame(f)
                 pass
         else:
             if abs(self.u) < limit:
                 self.sprite = self.sprites["jump"].get_frame(f)
                 pass
             elif self.u > 0:
-                # self.sprite = self.sprites["jump_right"].get_frame(f)
+                self.sprite = self.sprites["jump_right"].get_frame(f)
                 pass
             else:
-                # self.sprite = self.sprites["jump_left"].get_frame(f)
+                self.sprite = self.sprites["jump_left"].get_frame(f)
                 pass
 
         # update vertical position

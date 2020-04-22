@@ -115,6 +115,28 @@ BLOB_SPRITES = {
         SpriteAnimation(
             SpriteSheet((folder / "blob_jump.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES, num_images=3)),
+    "jump_right":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_jump_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3)),
+    "jump_left":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_jump_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3),
+                        flip_horizontal=True),
+    "fall":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_fall.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3)),
+    "fall_right":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_fall_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3)),
+    "fall_left":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_fall_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3),
+                        flip_horizontal=True),
     "crouch":
         SpriteAnimation(SpriteSheet(
             (folder / "blob_crouch.png").as_posix()).load_sheet(

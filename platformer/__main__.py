@@ -4,13 +4,10 @@ pygame.font.init()
 
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 
-
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Hello World")
 
 from platformer.objects import Platform, Character, Level
-
-
 
 level = Level()
 # Platforms
@@ -37,7 +34,10 @@ while run:
 
     # ================== update and draw =========================
     level.update(keys)
-    level.draw(window, debug=True)
+    level.draw(
+        window,
+        # debug=True,
+    )
     pygame.display.flip()
     clock.tick(60)
 
