@@ -64,6 +64,19 @@ class SpriteAnimation:
         return self.frames[index % len(self.frames)]
 
 
+class SpriteGroup(pygame.sprite.Group):
+
+    def draw(self, surface, debug=False):
+        """draw all sprites onto the surface
+        Group.draw(surface): return None
+        Draws all of the member sprites onto the given surface.
+        """
+        sprites = self.sprites()
+        for sprite in sprites:
+            sprite.draw(surface, debug)
+        self.lostsprites = []
+
+
 # sprite_folder = Path("sprites/blob/")
 # blob_spritesheets = {
 #     "stand": SpriteSheet(sprite_folder / "stand.png"),

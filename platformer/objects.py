@@ -5,23 +5,10 @@ import pygame
 
 from platformer import states
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
-from platformer.sprites import blob_sprite_animations
+from platformer.sprites import blob_sprite_animations, SpriteGroup
 from platformer.utils import sign
 
 Point = namedtuple("Point", ["x", "y"])
-
-
-class SpriteGroup(pygame.sprite.Group):
-
-    def draw(self, surface, debug=False):
-        """draw all sprites onto the surface
-        Group.draw(surface): return None
-        Draws all of the member sprites onto the given surface.
-        """
-        sprites = self.sprites()
-        for sprite in sprites:
-            sprite.draw(surface, debug)
-        self.lostsprites = []
 
 
 class Level(SpriteGroup):
@@ -46,9 +33,9 @@ class Level(SpriteGroup):
             self.projectiles.add(*objects)
 
 
-
-
 class Entity(pygame.sprite.Sprite):
+    """This is the class from which all game objects will be derived---Characters,
+    projectiles, platforms, etc. """
 
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
@@ -115,72 +102,6 @@ class Entity(pygame.sprite.Sprite):
             f"x = {self.x}",
             f"y = {self.y}",
         )
-
-
-class Blob(Entity):
-    """
-    Simple class to try out movement and collision detection. This class has no states. It
-    can just move up/down and left/right. It loads a sprite, and has a hurtbox for collisions.
-    """
-    # ======================= sprite animations =======================
-    # yapf:disable
-    sprite_folder = Path("sprites/blob/")
-    sprites = blob_sprite_animations
-    # yapf:enable
-
-    # ================ properties =====================
-    speed = 4
-    frames_elapsed = 0
-
-    @property
-    def rect(self):
-        """Automatically makes a rect the size of the current sprite"""
-        width = self.sprite.get_rect().width if self.sprite else self.width
-        height = self.sprite.get_rect().height if self.sprite else self.height
-        self._rect = pygame.Rect(0, 0, width, height)
-        self.update_rect_position()
-        return self._rect
-
-    def update(self, keys):
-        self.update_rect_position()
-        self.frames_elapsed += 1
-        i = self.frames_elapsed
-
-        # simple movement
-        if keys[Keys.UP]:
-            self.y -= self.speed
-        if keys[Keys.DOWN]:
-            self.y += self.speed
-        if keys[Keys.RIGHT]:
-            self.x += self.speed
-        if keys[Keys.LEFT]:
-            self.x -= self.speed
-
-        # select sprite
-        if keys[Keys.UP]:
-            if keys[Keys.RIGHT]:
-                self.sprite = self.sprites["move_up_right"].get_frame(i)
-            elif keys[Keys.LEFT]:
-                self.sprite = self.sprites["move_up_left"].get_frame(i)
-            else:
-                self.sprite = self.sprites["move_up"].get_frame(i)
-
-        elif keys[Keys.DOWN]:
-            if keys[Keys.RIGHT]:
-                self.sprite = self.sprites["move_down_right"].get_frame(i)
-            elif keys[Keys.LEFT]:
-                self.sprite = self.sprites["move_down_left"].get_frame(i)
-            else:
-                self.sprite = self.sprites["move_down"].get_frame(i)
-
-        elif keys[Keys.RIGHT]:
-            self.sprite = self.sprites["move_right"].get_frame(i)
-
-        elif keys[Keys.LEFT]:
-            self.sprite = self.sprites["move_left"].get_frame(i)
-
-        else:  # no keys pressed
-            self.sprite = self.sprites["stand"].get_frame(i)
 
 
 class Platform(Entity):
