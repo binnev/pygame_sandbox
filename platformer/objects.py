@@ -5,6 +5,7 @@ import pygame
 
 from platformer import states
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
+from platformer.sprites import blob_sprite_animations
 from platformer.utils import sign
 
 Point = namedtuple("Point", ["x", "y"])
@@ -45,21 +46,8 @@ class Level(SpriteGroup):
             self.projectiles.add(*objects)
 
 
-class SpriteAnimation:
 
-    def __init__(self,
-                 frames: list,
-                 flip_horizontal=False,
-                 flip_vertical=False):
-        self.frames = [
-            pygame.transform.flip(f, flip_horizontal, flip_vertical)
-            for f in frames
-        ]
 
-    def get_frame(self, index):
-        return self.frames[index % len(self.frames)]
-
-'''
 class Entity(pygame.sprite.Sprite):
 
     def __init__(self, x, y, width, height, color=None, groups=[]):
@@ -137,25 +125,7 @@ class Blob(Entity):
     # ======================= sprite animations =======================
     # yapf:disable
     sprite_folder = Path("sprites/blob/")
-    sprites = {"stand": SpriteAnimation([sprite_folder / "stand.png"]),
-        "move_down": SpriteAnimation([sprite_folder / "fall_neutral.png"]),
-        "move_down_right": SpriteAnimation([sprite_folder / "fall_right.png"]),
-        "move_down_left": SpriteAnimation([sprite_folder / "fall_right.png"],
-                                          flip_horizontal=True),
-        "move_up": SpriteAnimation([sprite_folder / "jump_neutral.png"]),
-        "move_up_right": SpriteAnimation([sprite_folder / "jump_right.png"]),
-        "move_up_left": SpriteAnimation([sprite_folder / "jump_right.png"],
-                                        flip_horizontal=True),
-        "move_right": SpriteAnimation([sprite_folder / "run_right1.png",
-                                       sprite_folder / "run_right2.png",
-                                       sprite_folder / "run_right3.png",
-                                       sprite_folder / "run_right4.png",]),
-        "move_left": SpriteAnimation([sprite_folder / "run_right1.png",
-                                      sprite_folder / "run_right2.png",
-                                      sprite_folder / "run_right3.png",
-                                      sprite_folder / "run_right4.png",],
-                                     flip_horizontal=True),
-    }
+    sprites = blob_sprite_animations
     # yapf:enable
 
     # ================ properties =====================
@@ -578,5 +548,3 @@ class Character(Entity):
         facing = "right" if self.u > 0 else "left"
         self.level.add_objects(Projectile(*self.centroid, 20, 20,
                                           facing=facing))
-
-#'''
