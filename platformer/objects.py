@@ -155,8 +155,8 @@ class Character(Entity):
     sprites = BLOB_SPRITES
 
     # class properties (constants)
-    width = 40
-    height = 40
+    width = 100
+    height = 100
     ground_acceleration = 10
     ground_speed = 7
     air_acceleration = 2
@@ -166,7 +166,7 @@ class Character(Entity):
     fastfall_multiplier = 2.5
     aerial_jumps = 3
     jump_power = 20
-    jumpsquat_frames = 4
+    jumpsquat_frames = 10
     aerial_jumpsquat_frames = 1
     _friction = 0.1
     air_resistance = 0.05
@@ -174,9 +174,9 @@ class Character(Entity):
     # put these in a subclass
     PROJECTILE_COOLDOWN = 15
 
-    def __init__(self, x, y, height, width, groups=[]):
+    def __init__(self, x, y, groups=[]):
 
-        super().__init__(x, y, width, height, color=None, groups=groups)
+        super().__init__(x, y, self.width, self.height, color=None, groups=groups)
 
         self.level = None
         self.u = 0
@@ -199,15 +199,6 @@ class Character(Entity):
         self.projectile_cooldown = 0
 
     # ============== properties ==============
-
-    @property
-    def rect(self):
-        """Automatically makes a rect the size of the current sprite"""
-        width = self.sprite.get_rect().width if self.sprite else self.width
-        height = self.sprite.get_rect().height if self.sprite else self.height
-        self._rect = pygame.Rect(0, 0, width, height)
-        self.update_rect_position()
-        return self._rect
 
     @property
     def friction(self):
@@ -339,7 +330,7 @@ class Character(Entity):
         self.state = states.JUMPSQUAT
 
     def state_jumpsquat(self):
-        # self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
+        self.sprite = self.sprites["crouch"].get_frame(self.frames_elapsed)
         # if end of jumpsquat reached, begin jump
         if self.airborne:
             if self.aerial_jumps_used < self.aerial_jumps:
@@ -373,7 +364,7 @@ class Character(Entity):
                 pass
         else:
             if abs(self.u) < limit:
-                # self.sprite = self.sprites["jump"].get_frame(f)
+                self.sprite = self.sprites["jump"].get_frame(f)
                 pass
             elif self.u > 0:
                 # self.sprite = self.sprites["jump_right"].get_frame(f)
@@ -414,7 +405,7 @@ class Character(Entity):
             self.v = 0
 
     def state_squat(self):
-        # self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
+        self.sprite = self.sprites["crouch"].get_frame(self.frames_elapsed)
         if self.airborne:
             self.state = states.FALL
         if self.keys[Keys.JUMP]:

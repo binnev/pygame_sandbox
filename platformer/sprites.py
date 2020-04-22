@@ -57,17 +57,25 @@ class SpriteAnimation:
     - allow resampling (showing frames more than once with a mapping)
     - allow non-looping sprites (play once, then repeat last frame)
     """
+
     def __init__(self,
                  frames: list,
                  flip_horizontal=False,
-                 flip_vertical=False):
+                 flip_vertical=False,
+                 looping=True):
         self.frames = [
             pygame.transform.flip(f, flip_horizontal, flip_vertical)
             for f in frames
         ]
+        self.looping = looping
 
     def get_frame(self, index):
-        return self.frames[index // TICKS_PER_SPRITE_FRAME % len(self.frames)]
+        if self.looping:
+            return self.frames[index // TICKS_PER_SPRITE_FRAME %
+                               len(self.frames)]
+        else:
+            return self.frames[min(index // TICKS_PER_SPRITE_FRAME,
+                                   len(self.frames) - 1)]
 
 
 class SpriteGroup(pygame.sprite.Group):
@@ -97,12 +105,21 @@ PROJECTILE_SPRITES = {
 }
 
 folder = Path("sprites/blob/")
+# todo; make a class for this. SpriteSet?
 BLOB_SPRITES = {
     "stand":
         SpriteAnimation(
             SpriteSheet((folder / "blob_stand.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES)
-        ),
+                32, 32, scale=SCALE_SPRITES)),
+    "jump":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_jump.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3)),
+    "crouch":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_crouch.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+                        looping=False),
     "run_right":
         SpriteAnimation(
             SpriteSheet((folder / "blob_run_right.png").as_posix()).load_sheet(
