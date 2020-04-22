@@ -1,16 +1,10 @@
-from pathlib import Path
-
 import pygame
-
-from platformer.sprites import SpriteSheet, SpriteAnimation
-
-SPRITE_WIDTH = 32
 pygame.init()
 window = pygame.display.set_mode((500, 500))
-filename = Path("sprites/pixel_art_test/blob_stand.png")
-sprite_sheet = SpriteSheet(filename.as_posix())
-frames = sprite_sheet.load_sheet(32, 32, scale=5)
-sprite_animation = SpriteAnimation(frames)
+
+from platformer.sprites import BLOB_SPRITES
+
+SPRITE_WIDTH = 32
 
 clock = pygame.time.Clock()
 run = True
@@ -22,15 +16,14 @@ while run:
             run = False
 
     window.fill((0, 255, 0))
-    sheet = sprite_sheet.sheet
-    window.blit(sheet, (0, 0))
-    subsurface = sheet.subsurface((0, 0, 32, 32))
-    window.blit(subsurface, (100, 100))
-    frame = sprite_animation.get_frame(ii)
-    window.blit(frame, (200, 200))
+    jj = 0
+    for sprite_name, sprite_animation in BLOB_SPRITES.items():
+        frame = sprite_animation.get_frame(ii)
+        window.blit(frame, (jj * 100, jj * 100))
+        jj += 1
 
     pygame.display.flip()
-    clock.tick(10)
+    clock.tick(50)
     ii += 1
 
 pygame.quit()

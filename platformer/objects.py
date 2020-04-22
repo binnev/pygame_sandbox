@@ -1,11 +1,10 @@
 from collections import namedtuple
-from pathlib import Path
 
 import pygame
 
 from platformer import states
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
-from platformer.sprites import blob_sprite_animations, SpriteGroup
+from platformer.sprites import SpriteGroup, PROJECTILE_SPRITES, BLOB_SPRITES
 from platformer.utils import sign
 
 Point = namedtuple("Point", ["x", "y"])
@@ -26,11 +25,11 @@ class Level(SpriteGroup):
             self.platforms.add(*objects)
         if type == "character":
             self.characters.add(*objects)
-            # give the character object a reference to this level
-            for character in objects:
-                character.level = self
         if type == "projectile":
             self.projectiles.add(*objects)
+        # give the object a reference to this level
+        for obj in objects:
+            obj.level = self
 
 
 class Entity(pygame.sprite.Sprite):
@@ -90,8 +89,8 @@ class Entity(pygame.sprite.Sprite):
             self.draw_debug(surface)
 
     def update(self, keys):
-        """Intended to be overwritten by subclasses"""
-        pass
+        """Subclasses should extend this function"""
+        self.update_rect_position()  # this makes sprite follow object
 
     def update_rect_position(self):
         """Subclasses can overwrite this"""
@@ -111,7 +110,6 @@ class Platform(Entity):
         super().__init__(x=x, y=y, width=width, height=height, **kwargs)
 
     def update_rect_position(self):
-        """Subclasses can overwrite this"""
         self._rect.topleft = self.centroid
 
     @property
@@ -124,18 +122,8 @@ class Platform(Entity):
 
 
 class Projectile(Entity):
-    speed = 5
-    # ======================= sprite animations =======================
-    # yapf:disable
-    sprite_folder = Path("sprites/stick_figure/")
-    sprites = {
-        "right": SpriteAnimation([sprite_folder / "walk_right_1.png",
-                                  sprite_folder / "walk_right_2.png",]),
-        "left": SpriteAnimation([sprite_folder / "walk_right_1.png",
-                                 sprite_folder / "walk_right_2.png",],
-                                flip_horizontal=True),
-    }
-    # yapf:enable
+    speed = 9
+    sprites = PROJECTILE_SPRITES
 
     def __init__(self,
                  x,
@@ -150,6 +138,8 @@ class Projectile(Entity):
         self.facing = facing
 
     def update(self, keys):
+        super().update(keys)  # always do this
+
         if self.facing == "right":
             self.x += self.speed
             self.sprite = self.sprites["right"].get_frame(self.frames_elapsed)
@@ -158,14 +148,15 @@ class Projectile(Entity):
             self.sprite = self.sprites["left"].get_frame(self.frames_elapsed)
         else:
             raise Exception("invalid `facing` param for Projectile!")
-        self.update_rect_position()
         self.frames_elapsed += 1
 
 
 class Character(Entity):
+    sprites = BLOB_SPRITES
+
     # class properties (constants)
     width = 40
-    height = 60
+    height = 40
     ground_acceleration = 10
     ground_speed = 7
     air_acceleration = 2
@@ -179,32 +170,9 @@ class Character(Entity):
     aerial_jumpsquat_frames = 1
     _friction = 0.1
     air_resistance = 0.05
-    ticks_per_frame = 5
-    # ======================= sprite animations =======================
-    # yapf:disable
-    sprite_folder = Path("sprites/blob/")
-    sprites = {
-        "stand": SpriteAnimation([sprite_folder / "stand.png"]),
-        "squat": SpriteAnimation([sprite_folder / "squat.png"]),
-        "fall": SpriteAnimation([sprite_folder / "fall_neutral.png"]),
-        "fall_right": SpriteAnimation([sprite_folder / "fall_right.png"]),
-        "fall_left": SpriteAnimation([sprite_folder / "fall_right.png"],
-                                     flip_horizontal=True),
-        "jump": SpriteAnimation([sprite_folder / "jump_neutral.png"]),
-        "jump_right": SpriteAnimation([sprite_folder / "jump_right.png"]),
-        "jump_left": SpriteAnimation([sprite_folder / "jump_right.png"],
-                                     flip_horizontal=True),
-        "run_right": SpriteAnimation([sprite_folder / "run_right1.png",
-                                      sprite_folder / "run_right2.png",
-                                      sprite_folder / "run_right3.png",
-                                      sprite_folder / "run_right4.png",]),
-        "run_left": SpriteAnimation([sprite_folder / "run_right1.png",
-                                     sprite_folder / "run_right2.png",
-                                     sprite_folder / "run_right3.png",
-                                     sprite_folder / "run_right4.png",],
-                                    flip_horizontal=True),
-    }
-    # yapf:enable
+
+    # put these in a subclass
+    PROJECTILE_COOLDOWN = 15
 
     def __init__(self, x, y, height, width, groups=[]):
 
@@ -226,6 +194,9 @@ class Character(Entity):
         self.aerial_jumps_used = 0
         self.frames_elapsed = 0
         self.font = pygame.font.Font("freesansbold.ttf", 10)
+
+        # put these in a subclass
+        self.projectile_cooldown = 0
 
     # ============== properties ==============
 
@@ -295,8 +266,11 @@ class Character(Entity):
         self.update_rect_position()
         self.enforce_screen_limits()
         self.debug_print()
-        if keys[Keys.FIRE]:
+        # todo: move to states
+        if keys[Keys.FIRE] and not self.projectile_cooldown:
             self.create_projectile()
+            self.projectile_cooldown = self.PROJECTILE_COOLDOWN
+        self.update_cooldowns()
         self.frames_elapsed += 1
 
     def handle_state(self):
@@ -344,6 +318,10 @@ class Character(Entity):
             f"frames_elapsed = {self.frames_elapsed}",
         )
 
+    def update_cooldowns(self):
+        if self.projectile_cooldown > 0:
+            self.projectile_cooldown -= 1
+
     # ========================= state functions ================================
 
     def state_stand(self):
@@ -361,7 +339,7 @@ class Character(Entity):
         self.state = states.JUMPSQUAT
 
     def state_jumpsquat(self):
-        self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
+        # self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
         # if end of jumpsquat reached, begin jump
         if self.airborne:
             if self.aerial_jumps_used < self.aerial_jumps:
@@ -385,18 +363,24 @@ class Character(Entity):
         limit = 2
         if self.v > 0:
             if abs(self.u) < limit:  # fixme: don't hard-code this
-                self.sprite = self.sprites["fall"].get_frame(f)
+                # self.sprite = self.sprites["fall"].get_frame(f)
+                pass
             elif self.u > 0:
-                self.sprite = self.sprites["fall_right"].get_frame(f)
+                # self.sprite = self.sprites["fall_right"].get_frame(f)
+                pass
             else:
-                self.sprite = self.sprites["fall_left"].get_frame(f)
+                # self.sprite = self.sprites["fall_left"].get_frame(f)
+                pass
         else:
             if abs(self.u) < limit:
-                self.sprite = self.sprites["jump"].get_frame(f)
+                # self.sprite = self.sprites["jump"].get_frame(f)
+                pass
             elif self.u > 0:
-                self.sprite = self.sprites["jump_right"].get_frame(f)
+                # self.sprite = self.sprites["jump_right"].get_frame(f)
+                pass
             else:
-                self.sprite = self.sprites["jump_left"].get_frame(f)
+                # self.sprite = self.sprites["jump_left"].get_frame(f)
+                pass
 
         # update vertical position
         # if moving downwards faster than fall speed
@@ -430,7 +414,7 @@ class Character(Entity):
             self.v = 0
 
     def state_squat(self):
-        self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
+        # self.sprite = self.sprites["squat"].get_frame(self.frames_elapsed)
         if self.airborne:
             self.state = states.FALL
         if self.keys[Keys.JUMP]:
@@ -467,5 +451,23 @@ class Character(Entity):
 
     def create_projectile(self):
         facing = "right" if self.u > 0 else "left"
-        self.level.add_objects(Projectile(*self.centroid, 20, 20,
+        self.level.add_objects(Projectile(*self.centroid, 100, 100,
                                           facing=facing))
+
+
+class Blob(Character):
+    width = 40
+    height = 60
+    ground_acceleration = 10
+    ground_speed = 7
+    air_acceleration = 2
+    air_speed = 6
+    fall_acceleration = 2
+    _fall_speed = 5
+    fastfall_multiplier = 2.5
+    aerial_jumps = 3
+    jump_power = 20
+    jumpsquat_frames = 4
+    aerial_jumpsquat_frames = 1
+    _friction = 0.1
+    air_resistance = 0.05

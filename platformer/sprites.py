@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pygame
 
+from platformer.conf import SCALE_SPRITES, TICKS_PER_SPRITE_FRAME
+
 
 class SpriteSheet(object):
 
@@ -35,11 +37,11 @@ class SpriteSheet(object):
         return result[:num_images] if num_images else result
 
     def load_sheet(self,
-                   width,
-                   height,
+                   width: int,
+                   height: int,
                    colorkey=None,
-                   scale=None,
-                   num_images=None):
+                   scale: float = None,
+                   num_images: int = None):
         num_horizontal = self.sheet.get_rect().width // width
         num_vertical = self.sheet.get_rect().height // height
         rects = [(width * i, height * j, width, height)
@@ -50,7 +52,11 @@ class SpriteSheet(object):
 
 
 class SpriteAnimation:
-
+    """
+    TODO:
+    - allow resampling (showing frames more than once with a mapping)
+    - allow non-looping sprites (play once, then repeat last frame)
+    """
     def __init__(self,
                  frames: list,
                  flip_horizontal=False,
@@ -61,7 +67,7 @@ class SpriteAnimation:
         ]
 
     def get_frame(self, index):
-        return self.frames[index % len(self.frames)]
+        return self.frames[index // TICKS_PER_SPRITE_FRAME % len(self.frames)]
 
 
 class SpriteGroup(pygame.sprite.Group):
@@ -77,12 +83,33 @@ class SpriteGroup(pygame.sprite.Group):
         self.lostsprites = []
 
 
-# sprite_folder = Path("sprites/blob/")
-# blob_spritesheets = {
-#     "stand": SpriteSheet(sprite_folder / "stand.png"),
-# }
-#
-# blob_sprite_animations = {
-#     key: SpriteAnimation(spritesheet.load_sheet())
-#     for key, spritesheet in blob_spritesheets.items()
-# }
+folder = Path("sprites/blob/")
+PROJECTILE_SPRITES = {
+    "right":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES)),
+    "left":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_projectile.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+                        flip_horizontal=True),
+}
+
+folder = Path("sprites/blob/")
+BLOB_SPRITES = {
+    "stand":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_stand.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES)
+        ),
+    "run_right":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_run_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=8)),
+    "run_left":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_run_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=8),
+                        flip_horizontal=True),
+}

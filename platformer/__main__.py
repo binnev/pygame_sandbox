@@ -1,14 +1,14 @@
 import pygame
-
-from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-from platformer.objects import Platform, Entity, SpriteGroup, Blob, Character, Level
-
 pygame.init()
 pygame.font.init()
+
+from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
+
 
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Hello World")
 
+from platformer.objects import Platform, Entity, SpriteGroup, Blob, Character, Level
 
 
 
