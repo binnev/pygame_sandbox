@@ -36,7 +36,7 @@ while run:
     level.update(keys)
     level.draw(
         window,
-        # debug=True,
+        debug=True,
     )
     pygame.display.flip()
     clock.tick(60)
