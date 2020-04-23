@@ -7,7 +7,7 @@ from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Hello World")
 
-from platformer.objects import Platform, Character, Level
+from platformer.objects import Platform, Character, Level, MovingEntity
 
 level = Level()
 # Platforms
@@ -16,7 +16,8 @@ level.add_objects(Platform(50, 100, 200, 30, can_fall_through=True),
                   Platform(-10, 480, 550, 30, can_fall_through=False),
                   type="platform")
 # Character object
-character = Character(50, 200)
+character = MovingEntity(50, 200, 40, 60)
+# character = Character(50, 200)
 level.add_objects(character, type="character")
 
 clock = pygame.time.Clock()

@@ -41,34 +41,43 @@ class Entity(pygame.sprite.Sprite):
 
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"),
                                      12)
-        self.x = x
-        self.y = y
         self.color = color if color else (69, 69, 69)
         self.width = width  # todo: give these more specific names e.g. collision_width
         self.height = height
         self.state = None
         # rect is used for simple collision detection e.g. with platforms
         # it is also used to draw the sprite
-        self._rect = pygame.Rect(0, 0, self.width, self.height)
-        self.update_rect_position()
-        self.sprite = None  # subclasses can overwrite this
+        self.rect = pygame.Rect(0, 0, self.width, self.height)
+        self.rect.center = x, y
+        self.image = None  # subclasses can overwrite this
 
     @property
-    def rect(self):
-        return self._rect
+    def x(self):
+        return self.rect.center[0]
+
+    @x.setter
+    def x(self, new_x):
+        self.rect.center = new_x, self.rect.center[1]
+
+    @property
+    def y(self):
+        return self.rect.center[1]
+
+    @y.setter
+    def y(self, new_y):
+        self.rect.center = self.rect.center[0], new_y
 
     @property
     def centroid(self):
-        return Point(self.x, self.y)
+        return Point(*self.rect.center)
 
     # ============= drawing functions ==============
 
-    def draw_sprite(self, surface):
-        # todo: the rect argument here gives the position at which to blit. The top left
-        #  corner of the rect is taken as the position to blit. The size of the rect doesn't
-        #  affect the blitting. So make sure that top left corner is in the right place!
-        if self.sprite:
-            surface.blit(self.sprite, self.rect)
+    def draw_image(self, surface):
+        if self.image:
+            # I'm assuming self.image is a pygame.Surface
+            self.image.get_rect().center = self.centroid
+            surface.blit(self.image, self.image.get_rect())
 
     def draw_debug(self, surface):
         # bounding box
@@ -84,17 +93,12 @@ class Entity(pygame.sprite.Sprite):
         surface.blit(text, textRect)
 
     def draw(self, surface, debug=False):
-        self.draw_sprite(surface)
+        self.draw_image(surface)
         if debug:
             self.draw_debug(surface)
 
     def update(self, keys):
         """Subclasses should extend this function"""
-        self.update_rect_position()  # this makes sprite follow object
-
-    def update_rect_position(self):
-        """Subclasses can overwrite this"""
-        self._rect.center = self.centroid
 
     def debug_print(self):
         print(
@@ -102,6 +106,32 @@ class Entity(pygame.sprite.Sprite):
             f"y = {self.y}",
         )
 
+
+class MovingEntity(Entity):
+    speed = 2
+
+    def update(self, keys):
+        if keys[Keys.RIGHT]:
+            self.x += self.speed
+        if keys[Keys.LEFT]:
+            self.x -= self.speed
+        if keys[Keys.DOWN]:
+            self.y += self.speed
+        if keys[Keys.UP]:
+            self.y -= self.speed
+
+    def collide_platform(self, platform):
+        if platform.can_fall_through:
+            pass
+        else:
+            if self.centroid.x >= platform.centroid.x:
+                self.rect.left = platform.rect.right
+            else:
+                self.rect.right = platform.rect.left
+            if self.centroid.y >= platform.centroid.y:
+                self.rect.top = platform.rect.bottom
+            else:
+                self.rect.bottom = platform.rect.top
 
 class Platform(Entity):
 
@@ -155,8 +185,8 @@ class Character(Entity):
     sprites = BLOB_SPRITES
 
     # class properties (constants)
-    width = 100
-    height = 100
+    width = 80
+    height = 60
     ground_acceleration = 10
     ground_speed = 7
     air_acceleration = 2
@@ -254,7 +284,6 @@ class Character(Entity):
         if self.state != self.previous_state:
             self.frames_elapsed = 0
         self.handle_physics()
-        self.update_rect_position()
         self.enforce_screen_limits()
         self.debug_print()
         # todo: move to states
