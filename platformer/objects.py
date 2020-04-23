@@ -95,6 +95,11 @@ class Entity(pygame.sprite.Sprite):
         textRect = text.get_rect()
         textRect.midbottom = self.centroid
         surface.blit(text, textRect)
+        # sprite bounding box
+        if self.image:
+            # fixme: why does this not work?
+            self.image.get_rect().center = self.rect.center
+            pygame.draw.rect(surface, self.color, self.image.get_rect(), 1)
 
     def draw(self, surface, debug=False):
         self.draw_image(surface)
@@ -112,8 +117,8 @@ class Entity(pygame.sprite.Sprite):
 
 
 class MovingEntity(Entity):
-    speed = 7
-    PLATFORM_COLLISION_TOLERANCE = 10
+    speed = 1
+    PLATFORM_COLLISION_TOLERANCE = 7
     sprites = BLOB_SPRITES
     # image = sprites["stand"].get_frame(0)
     image = None
@@ -244,7 +249,7 @@ class Character(Entity):
                          groups=groups)
 
         self.level = None
-        self.u = 0
+        self.u = 0  # todo: move to PhysicsMixin.__init__()
         self.v = 0
         self.state = states.FALL
         self.previous_state = self.state
@@ -282,7 +287,7 @@ class Character(Entity):
     @property
     def centroid(self):
         # todo: replace this with auto calculation centroid from sprite
-        return Point(self.x, self.y - self.height / 2)
+        return Point(*self.rect.center)#Point(self.x, self.y - self.height / 2)
 
     @property
     def base(self):
@@ -294,21 +299,32 @@ class Character(Entity):
         # todo: replace this with pygame built in rect collisions
         # todo: add in clause to only land on platforms when moving downwards
         # todo: prevent clipping through solid platforms. Should go somewhere else really.
-        for platform in self.level.platforms:
-            # is self within the horizontal bounds of the platform
-            # and is self.base.y within a few pixels of the top of the platform?
-            # then we're standing on the platform.
-            if (platform.rect.left <= self.x <= platform.rect.right and
-                    platform.rect.top - 3 <= self.base.y <=
-                    platform.rect.top + 3 and self.v >= 0  # moving downwards
-               ):
-                # if the platform is drop-through-able and the down key is pressed
-                if platform.can_fall_through and self.keys[Keys.DOWN]:
-                    return True
-                else:
-                    self.aerial_jumps_used = 0  # reset double jump counter
-                    return False
+        platforms = pygame.sprite.spritecollide(self,
+                                                self.level.platforms,
+                                                dokill=False)
+        for platform in platforms:
+            self.collide_platform(platform)
+            # if the platform is below self, set airborne to False
+            if platform.rect.center[1] > self.centroid.y:
+                self.aerial_jumps_used = 0  # reset double jump counter
+                return False
+
         return True
+        # for platform in self.level.platforms:
+        #     # is self within the horizontal bounds of the platform
+        #     # and is self.base.y within a few pixels of the top of the platform?
+        #     # then we're standing on the platform.
+        #     if (platform.rect.left <= self.x <= platform.rect.right and
+        #             platform.rect.top - 3 <= self.base.y <=
+        #             platform.rect.top + 3 and self.v >= 0  # moving downwards
+        #        ):
+        #         # if the platform is drop-through-able and the down key is pressed
+        #         if platform.can_fall_through and self.keys[Keys.DOWN]:
+        #             return True
+        #         else:
+        #             self.aerial_jumps_used = 0  # reset double jump counter
+        #             return False
+        # return True
 
     # ============== main methods ====================
 
@@ -319,7 +335,6 @@ class Character(Entity):
         if self.state != self.previous_state:
             self.frames_elapsed = 0
         self.handle_physics()
-        self.collide_platforms()
         self.enforce_screen_limits()
         self.debug_print()
         # todo: move to states
