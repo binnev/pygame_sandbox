@@ -49,7 +49,6 @@ class Entity(pygame.sprite.Sprite):
         # it is also used to draw the sprite
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = x, y
-        self.image = None  # subclasses can overwrite this
 
     @property
     def x(self):
@@ -77,7 +76,12 @@ class Entity(pygame.sprite.Sprite):
         if self.image:
             # I'm assuming self.image is a pygame.Surface
             self.image.get_rect().center = self.centroid
-            surface.blit(self.image, self.image.get_rect())
+            draw_rect = (
+                self.centroid.x - self.image.get_rect().width / 2,
+                self.centroid.y - self.image.get_rect().height / 2,
+            )
+            # surface.blit(self.image, self.image.get_rect())
+            surface.blit(self.image, draw_rect)
 
     def draw_debug(self, surface):
         # bounding box
@@ -108,7 +112,11 @@ class Entity(pygame.sprite.Sprite):
 
 
 class MovingEntity(Entity):
-    speed = 2
+    speed = 7
+    PLATFORM_COLLISION_TOLERANCE = 10
+    sprites = BLOB_SPRITES
+    # image = sprites["stand"].get_frame(0)
+    image = None
 
     def update(self, keys):
         if keys[Keys.RIGHT]:
@@ -120,24 +128,45 @@ class MovingEntity(Entity):
         if keys[Keys.UP]:
             self.y -= self.speed
 
+        self.collide_platforms()
+
+    def collide_platforms(self):
+        platforms = pygame.sprite.spritecollide(self,
+                                                self.level.platforms,
+                                                dokill=False)
+        for platform in platforms:
+            self.collide_platform(platform)
+
     def collide_platform(self, platform):
         if platform.can_fall_through:
             pass
         else:
-            if self.centroid.x >= platform.centroid.x:
-                self.rect.left = platform.rect.right
+            # if self is within tolerance of platform edge, allow sliding onto the bottom or
+            # top of the platform
+            if (self.rect.bottom <
+                    platform.rect.top + self.PLATFORM_COLLISION_TOLERANCE or
+                    self.rect.top >
+                    platform.rect.bottom - self.PLATFORM_COLLISION_TOLERANCE):
+                if self.centroid.y >= platform.centroid.y:
+                    self.rect.top = platform.rect.bottom
+                else:
+                    self.rect.bottom = platform.rect.top
+            # bump into platform side
             else:
-                self.rect.right = platform.rect.left
-            if self.centroid.y >= platform.centroid.y:
-                self.rect.top = platform.rect.bottom
-            else:
-                self.rect.bottom = platform.rect.top
+                # bump into side of platform
+                if self.centroid.x >= platform.centroid.x:
+                    self.rect.left = platform.rect.right
+                else:
+                    self.rect.right = platform.rect.left
+
 
 class Platform(Entity):
+    image = None
 
     def __init__(self, x, y, width, height, can_fall_through=True, **kwargs):
         self.can_fall_through = can_fall_through
         super().__init__(x=x, y=y, width=width, height=height, **kwargs)
+        self.rect = pygame.Rect(x, y, width, height)
 
     def update_rect_position(self):
         self._rect.topleft = self.centroid
@@ -203,10 +232,16 @@ class Character(Entity):
 
     # put these in a subclass
     PROJECTILE_COOLDOWN = 15
+    image = None
 
     def __init__(self, x, y, groups=[]):
 
-        super().__init__(x, y, self.width, self.height, color=None, groups=groups)
+        super().__init__(x,
+                         y,
+                         self.width,
+                         self.height,
+                         color=None,
+                         groups=groups)
 
         self.level = None
         self.u = 0
@@ -284,6 +319,7 @@ class Character(Entity):
         if self.state != self.previous_state:
             self.frames_elapsed = 0
         self.handle_physics()
+        self.collide_platforms()
         self.enforce_screen_limits()
         self.debug_print()
         # todo: move to states
@@ -341,6 +377,29 @@ class Character(Entity):
     def update_cooldowns(self):
         if self.projectile_cooldown > 0:
             self.projectile_cooldown -= 1
+
+    def collide_platforms(self):
+        platforms = pygame.sprite.spritecollide(self,
+                                                self.level.platforms,
+                                                dokill=False)
+        for platform in platforms:
+            self.collide_platform(platform)
+
+    def collide_platform(self, platform):
+        if platform.can_fall_through:
+            pass
+        else:
+            if self.rect.top < platform.rect.top and self.rect.bottom > platform.rect.bottom:
+                # bump into side of platform
+                if self.centroid.x >= platform.centroid.x:
+                    self.rect.left = platform.rect.right
+                else:
+                    self.rect.right = platform.rect.left
+            else:
+                if self.centroid.y >= platform.centroid.y:
+                    self.rect.top = platform.rect.bottom
+                else:
+                    self.rect.bottom = platform.rect.top
 
     # ========================= state functions ================================
 
@@ -471,8 +530,8 @@ class Character(Entity):
 
     def create_projectile(self):
         facing = "right" if self.u > 0 else "left"
-        self.level.add_objects(Projectile(*self.centroid, 100, 100,
-                                          facing=facing))
+        self.level.add_objects(
+            Projectile(*self.centroid, 100, 100, facing=facing))
 
 
 class Blob(Character):
