@@ -200,7 +200,7 @@ class Platform(Entity):
 
 
 class Projectile(Entity):
-    speed = 9
+    SPEED = 9
     sprites = PROJECTILE_SPRITES
 
     def __init__(self,
@@ -216,7 +216,6 @@ class Projectile(Entity):
         self.facing = facing
 
     def update(self, keys):
-        super().update(keys)  # always do this
 
         if self.facing == "right":
             self.x += self.speed
@@ -266,7 +265,7 @@ class Character(Entity):
         self.u = 0  # todo: move to PhysicsMixin.__init__()
         self.v = 0
         self.state = states.FALL
-        self.previous_state = self.state
+        self.previous_state = self.state  # todo: replace with state property
         self.fastfall = False
         self.state_lookup = {
             states.STAND: self.state_stand,
@@ -297,11 +296,6 @@ class Character(Entity):
             return self._fall_speed * self.fastfall_multiplier
         else:
             return self._fall_speed
-
-    @property
-    def centroid(self):
-        # todo: replace this with auto calculation centroid from sprite
-        return Point(*self.rect.center)
 
     @property
     def base(self):
