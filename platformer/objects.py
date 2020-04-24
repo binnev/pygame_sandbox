@@ -422,6 +422,9 @@ class Character(Entity):
                          max(self.rect.top, platform.rect.top))
             if x_overlap >= y_overlap:
                 # move vertically
+                # allow a small overlap
+                if y_overlap <= 1:
+                    return
                 if self.centroid.y >= platform.centroid.y:
                     self.rect.top = platform.rect.bottom
                 else:
@@ -432,30 +435,6 @@ class Character(Entity):
                     self.rect.left = platform.rect.right
                 else:
                     self.rect.right = platform.rect.left
-
-    # def collide_platforms(self):
-    #     platforms = pygame.sprite.spritecollide(self,
-    #                                             self.level.platforms,
-    #                                             dokill=False)
-    #     for platform in platforms:
-    #         self.collide_platform(platform)
-    #
-    # def collide_platform(self, platform):
-    #     if platform.can_fall_through:
-    #         pass
-    #     else:
-    #         if (self.rect.top < platform.rect.top and
-    #                 self.rect.bottom > platform.rect.bottom):
-    #             # bump into side of platform
-    #             if self.centroid.x >= platform.centroid.x:
-    #                 self.rect.left = platform.rect.right
-    #             else:
-    #                 self.rect.right = platform.rect.left
-    #         else:
-    #             if self.centroid.y >= platform.centroid.y:
-    #                 self.rect.top = platform.rect.bottom - 1
-    #             else:
-    #                 self.rect.bottom = platform.rect.top + 1
 
     # ========================= state functions ================================
 
