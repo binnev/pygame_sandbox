@@ -35,6 +35,8 @@ class Level(SpriteGroup):
 class Entity(pygame.sprite.Sprite):
     """This is the class from which all game objects will be derived---Characters,
     projectiles, platforms, etc. """
+    debug_color = (69, 69, 69)
+    debug_background = (255, 255, 255)
 
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
@@ -45,10 +47,12 @@ class Entity(pygame.sprite.Sprite):
         self.width = width  # todo: give these more specific names e.g. collision_width
         self.height = height
         self.state = None
-        # rect is used for simple collision detection e.g. with platforms
-        # it is also used to draw the sprite
+        # rect is used for simple collisions
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = x, y
+
+    # =============== properties ====================
+    # x and y default to the center of self.rect
 
     @property
     def x(self):
@@ -72,34 +76,38 @@ class Entity(pygame.sprite.Sprite):
 
     # ============= drawing functions ==============
 
+    def align_image_rect(self):
+        """
+        self.image_rect is used to display self.image (in much the same way the default
+        Group.draw() uses Sprite.rect) Default: center self.image on the center of
+        self.rect
+        """
+        # get rect with the same dimensions as self.image
+        self.image_rect = self.image.get_rect()
+        # center it on self.rect.center
+        self.image_rect.center = self.rect.center
+
     def draw_image(self, surface):
         if self.image:
-            # I'm assuming self.image is a pygame.Surface
-            self.image.get_rect().center = self.centroid
-            draw_rect = (
-                self.centroid.x - self.image.get_rect().width / 2,
-                self.centroid.y - self.image.get_rect().height / 2,
-            )
-            # surface.blit(self.image, self.image.get_rect())
-            surface.blit(self.image, draw_rect)
+            self.align_image_rect()
+            surface.blit(self.image, self.image_rect)
 
     def draw_debug(self, surface):
-        # bounding box
-        pygame.draw.rect(surface, self.color, self.rect, 1)
-        # centroid
+        # draw self.rect
+        pygame.draw.rect(surface, self.debug_color, self.rect, 1)
+        # draw centroid
         centroid_width = 10
         centroid = pygame.Rect(0, 0, centroid_width, centroid_width)
         centroid.center = self.centroid
-        pygame.draw.ellipse(surface, self.color, centroid, 1)
-        text = self.font.render("CENTROID", True, (255, 255, 255), None)
+        pygame.draw.ellipse(surface, self.debug_color, centroid, 1)
+        text = self.font.render("CENTROID", True, self.debug_color,
+                                self.debug_background)
         textRect = text.get_rect()
         textRect.midbottom = self.centroid
         surface.blit(text, textRect)
-        # sprite bounding box
+        # draw sprite bounding box
         if self.image:
-            # fixme: why does this not work?
-            self.image.get_rect().center = self.rect.center
-            pygame.draw.rect(surface, self.color, self.image.get_rect(), 1)
+            pygame.draw.rect(surface, self.debug_color, self.image_rect, 1)
 
     def draw(self, surface, debug=False):
         self.draw_image(surface)
@@ -108,6 +116,7 @@ class Entity(pygame.sprite.Sprite):
 
     def update(self, keys):
         """Subclasses should extend this function"""
+        pass
 
     def debug_print(self):
         print(
@@ -120,8 +129,9 @@ class MovingEntity(Entity):
     speed = 1
     PLATFORM_COLLISION_TOLERANCE = 7
     sprites = BLOB_SPRITES
-    # image = sprites["stand"].get_frame(0)
-    image = None
+    image = sprites["stand"].get_frame(0)
+
+    # image = None
 
     def update(self, keys):
         if keys[Keys.RIGHT]:
@@ -169,9 +179,12 @@ class Platform(Entity):
     image = None
 
     def __init__(self, x, y, width, height, can_fall_through=True, **kwargs):
-        self.can_fall_through = can_fall_through
         super().__init__(x=x, y=y, width=width, height=height, **kwargs)
+        self.can_fall_through = can_fall_through
+        # override default Entity rect placement
         self.rect = pygame.Rect(x, y, width, height)
+        self.image = pygame.Surface((width, height))
+        self.image.fill(self.color)
 
     def update_rect_position(self):
         self._rect.topleft = self.centroid
@@ -287,7 +300,7 @@ class Character(Entity):
     @property
     def centroid(self):
         # todo: replace this with auto calculation centroid from sprite
-        return Point(*self.rect.center)#Point(self.x, self.y - self.height / 2)
+        return Point(*self.rect.center)
 
     @property
     def base(self):
