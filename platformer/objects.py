@@ -130,20 +130,24 @@ class MovingEntity(Entity):
     PLATFORM_COLLISION_TOLERANCE = 7
     sprites = BLOB_SPRITES
     image = sprites["stand"].get_frame(0)
-
-    # image = None
+    frames_elapsed = 0
 
     def update(self, keys):
         if keys[Keys.RIGHT]:
             self.x += self.speed
+            self.image = self.sprites["run_right"].get_frame(self.frames_elapsed)
         if keys[Keys.LEFT]:
             self.x -= self.speed
+            self.image = self.sprites["run_left"].get_frame(self.frames_elapsed)
         if keys[Keys.DOWN]:
             self.y += self.speed
+            self.image = self.sprites["fall"].get_frame(self.frames_elapsed)
         if keys[Keys.UP]:
             self.y -= self.speed
+            self.image = self.sprites["jump"].get_frame(self.frames_elapsed)
 
         self.collide_platforms()
+        self.frames_elapsed += 1
 
     def collide_platforms(self):
         platforms = pygame.sprite.spritecollide(self,
