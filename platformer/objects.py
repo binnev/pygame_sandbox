@@ -190,9 +190,6 @@ class Platform(Entity):
         self.image = pygame.Surface((width, height))
         self.image.fill(self.color)
 
-    def update_rect_position(self):
-        self._rect.topleft = self.centroid
-
     @property
     def color(self):
         return (0, 255, 0) if self.can_fall_through else (255, 0, 0)
