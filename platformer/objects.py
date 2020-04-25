@@ -108,7 +108,17 @@ class Entity(pygame.sprite.Sprite):
         text = self.font.render("CENTROID", True, self.debug_color,
                                 self.debug_background)
         textRect = text.get_rect()
-        textRect.midbottom = self.centroid
+        textRect.midtop = self.centroid
+        surface.blit(text, textRect)
+        # draw XY
+        xy_width = 10
+        xy = pygame.Rect(0, 0, xy_width, xy_width)
+        xy.center = self.xy
+        pygame.draw.ellipse(surface, self.debug_color, xy, 1)
+        text = self.font.render("XY", True, self.debug_color,
+                                self.debug_background)
+        textRect = text.get_rect()
+        textRect.midbottom = self.xy
         surface.blit(text, textRect)
         # draw sprite bounding box
         if self.image:
@@ -240,6 +250,7 @@ class Character(Entity):
     # class properties (constants)
     width = 100
     height = 100
+    state = None
     ground_acceleration = 10
     ground_speed = 7
     air_acceleration = 2
@@ -254,6 +265,7 @@ class Character(Entity):
     _friction = 0.1
     air_resistance = 0.05
     PLATFORM_COLLISION_TOLERANCE = 5
+    CROUCH_HEIGHT_MULTIPLIER = .5
 
     # put these in a subclass
     PROJECTILE_COOLDOWN = 15
@@ -261,12 +273,7 @@ class Character(Entity):
 
     def __init__(self, x, y, groups=[]):
 
-        super().__init__(x,
-                         y,
-                         self.width,
-                         self.height,
-                         color=None,
-                         groups=groups)
+        super().__init__(x, y, self.width, self.height, groups=groups)
 
         self.level = None
         self.u = 0  # todo: move to PhysicsMixin.__init__()
@@ -289,6 +296,37 @@ class Character(Entity):
         self.projectile_cooldown = 0
 
     # ============== properties ==============
+
+    @property
+    def x(self):
+        return self.rect.midbottom[0]
+
+    @x.setter
+    def x(self, new_x):
+        self.rect.midbottom = new_x, self.rect.midbottom[1]
+
+    @property
+    def y(self):
+        return self.rect.midbottom[1]
+
+    @y.setter
+    def y(self, new_y):
+        self.rect.midbottom = self.rect.midbottom[0], new_y
+
+    @property
+    def rect(self):
+        # always update self.rect with height depending on state
+        midbottom = self._rect.midbottom
+        if self.state in [states.SQUAT, states.JUMPSQUAT]:
+            self._rect.height = self.height * self.CROUCH_HEIGHT_MULTIPLIER
+        else:
+            self._rect.height = self.height
+        self._rect.midbottom = midbottom
+        return self._rect
+
+    @rect.setter
+    def rect(self, new_rect):
+        self._rect = pygame.Rect(new_rect)
 
     @property
     def friction(self):
@@ -343,6 +381,11 @@ class Character(Entity):
         #             return False
         # return True
 
+    # ============== drawing functions ===============
+    def align_image_rect(self):
+        self.image_rect = self.image.get_rect()
+        self.image_rect.midbottom = self.rect.midbottom
+
     # ============== main methods ====================
 
     def update(self, keys):
@@ -380,7 +423,6 @@ class Character(Entity):
         # don't allow sub-pixel speeds
         self.u = 0 if abs(self.u) < 1 else self.u
         self.v = 0 if abs(self.v) < 1 else self.v
-
 
     def enforce_screen_limits(self):
         if self.x < 0:
