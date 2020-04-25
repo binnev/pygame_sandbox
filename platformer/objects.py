@@ -50,6 +50,7 @@ class Entity(pygame.sprite.Sprite):
         # rect is used for simple collisions
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = x, y
+        self.frames_elapsed = 0
 
     # =============== properties ====================
     # x and y default to the center of self.rect
@@ -78,6 +79,15 @@ class Entity(pygame.sprite.Sprite):
     def xy(self):
         """In case this is different from centroid in a subclass"""
         return Point(self.x, self.y)
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, new_state):
+        self._state = new_state
+        self.frames_elapsed = 0
 
     # ============= drawing functions ==============
 
@@ -250,7 +260,7 @@ class Character(Entity):
     # class properties (constants)
     width = 80
     height = 70
-    state = None
+    _state = None
     ground_acceleration = 10
     ground_speed = 7
     air_acceleration = 2
@@ -376,10 +386,7 @@ class Character(Entity):
 
     def update(self, keys):
         self.keys = keys
-        self.previous_state = self.state
         self.handle_state()
-        if self.state != self.previous_state:
-            self.frames_elapsed = 0
         self.handle_physics()
         self.enforce_screen_limits()
         self.debug_print()
