@@ -74,6 +74,11 @@ class Entity(pygame.sprite.Sprite):
     def centroid(self):
         return Point(*self.rect.center)
 
+    @property
+    def xy(self):
+        """In case this is different from centroid in a subclass"""
+        return Point(self.x, self.y)
+
     # ============= drawing functions ==============
 
     def align_image_rect(self):
