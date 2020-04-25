@@ -395,10 +395,6 @@ class Character(Entity, AnimationMixin):
 
     @property
     def airborne(self):
-        # todo: optimise this logic
-        # todo: replace this with pygame built in rect collisions
-        # todo: add in clause to only land on platforms when moving downwards
-        # todo: prevent clipping through solid platforms. Should go somewhere else really.
         platforms = pygame.sprite.spritecollide(self,
                                                 self.level.platforms,
                                                 dokill=False)
