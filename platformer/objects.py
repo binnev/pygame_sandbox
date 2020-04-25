@@ -32,17 +32,40 @@ class Level(SpriteGroup):
             obj.level = self
 
 
+class AnimationMixin(pygame.sprite.Sprite):
+    """Handles animation for a state machine class. Subclasses should have their own
+    dictionary of sprite animations. Each state function can then use `frames_elapsed`
+    as an animation counter to access the correct frame."""
+    frames_elapsed = 0
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, new_state):
+        """Reset animation counter when state changes"""
+        self._state = new_state
+        self.frames_elapsed = 0
+
+    def update_animation(self):
+        """Call this inside subclass update method"""
+        self.frames_elapsed += 1
+
+
 class Entity(pygame.sprite.Sprite):
     """This is the class from which all game objects will be derived---Characters,
-    projectiles, platforms, etc. """
+    projectiles, platforms, etc."""
     debug_color = (69, 69, 69)
     debug_background = (255, 255, 255)
 
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
 
-        self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"),
-                                     12)
+        self.font = pygame.font.Font(
+            pygame.font.match_font("ubuntucondensed"),
+            12,
+        )
         self.color = color if color else (69, 69, 69)
         self.width = width  # todo: give these more specific names e.g. collision_width
         self.height = height
@@ -50,7 +73,6 @@ class Entity(pygame.sprite.Sprite):
         # rect is used for simple collisions
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = x, y
-        self.frames_elapsed = 0
 
     # =============== properties ====================
     # x and y default to the center of self.rect
@@ -79,15 +101,6 @@ class Entity(pygame.sprite.Sprite):
     def xy(self):
         """In case this is different from centroid in a subclass"""
         return Point(self.x, self.y)
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, new_state):
-        self._state = new_state
-        self.frames_elapsed = 0
 
     # ============= drawing functions ==============
 
