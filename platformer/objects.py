@@ -303,7 +303,7 @@ class Character(Entity, AnimationMixin):
     ground_speed = 9
     air_acceleration = 2
     air_speed = 6
-    gravity = .7
+    gravity = 1.2
     _fall_speed = 5
     fastfall_multiplier = 2.5
     aerial_jumps = 3
@@ -582,7 +582,6 @@ class Character(Entity, AnimationMixin):
         # if moving downwards faster than fall speed e.g. if got hit downwards
         if self.v > 0 and abs(self.v) > self.fall_speed:
             self.v = self.fall_speed
-
 
         # fastfall if moving downwards
         if self.keys[Keys.DOWN] and self.v > 0:
