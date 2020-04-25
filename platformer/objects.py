@@ -151,6 +151,27 @@ class Entity(pygame.sprite.Sprite):
         )
 
 
+class Platform(Entity):
+    image = None
+
+    def __init__(self, x, y, width, height, can_fall_through=True, **kwargs):
+        super().__init__(x=x, y=y, width=width, height=height, **kwargs)
+        self.can_fall_through = can_fall_through
+        # override default Entity rect placement
+        self.rect = pygame.Rect(x, y, width, height)
+        self.image = pygame.Surface((width, height))
+        self.image.fill(self.color)
+
+    @property
+    def color(self):
+        return (0, 255, 0) if self.can_fall_through else (255, 0, 0)
+
+    @color.setter
+    def color(self, *args, **kwargs):
+        """Don't allow setting color"""
+        pass
+
+
 class AnimationMixin(pygame.sprite.Sprite):
     """Handles animation for a state machine class. Subclasses should have their own
     dictionary of sprite animations. Each state function can then use `frames_elapsed`
@@ -180,7 +201,8 @@ class MovingEntity(Entity, AnimationMixin):
     def update(self, keys):
         if keys[Keys.RIGHT]:
             self.x += self.SPEED
-            self.image = self.sprites["run_right"].get_frame(self.frames_elapsed)
+            self.image = self.sprites["run_right"].get_frame(
+                self.frames_elapsed)
         if keys[Keys.LEFT]:
             self.x -= self.SPEED
             self.image = self.sprites["run_left"].get_frame(self.frames_elapsed)
@@ -192,58 +214,6 @@ class MovingEntity(Entity, AnimationMixin):
             self.image = self.sprites["jump"].get_frame(self.frames_elapsed)
 
         self.update_animation()
-
-    #     self.collide_platforms()
-    #
-    # def collide_platforms(self):
-    #     platforms = pygame.sprite.spritecollide(self,
-    #                                             self.level.platforms,
-    #                                             dokill=False)
-    #     for platform in platforms:
-    #         self.collide_platform(platform)
-    #
-    # def collide_platform(self, platform):
-    #     if platform.can_fall_through:
-    #         pass
-    #     else:
-    #         # if self is within tolerance of platform edge, allow sliding onto the bottom or
-    #         # top of the platform
-    #         if (self.rect.bottom <
-    #                 platform.rect.top + self.PLATFORM_COLLISION_TOLERANCE or
-    #                 self.rect.top >
-    #                 platform.rect.bottom - self.PLATFORM_COLLISION_TOLERANCE):
-    #             if self.centroid.y >= platform.centroid.y:
-    #                 self.rect.top = platform.rect.bottom
-    #             else:
-    #                 self.rect.bottom = platform.rect.top
-    #         # bump into platform side
-    #         else:
-    #             # bump into side of platform
-    #             if self.centroid.x >= platform.centroid.x:
-    #                 self.rect.left = platform.rect.right
-    #             else:
-    #                 self.rect.right = platform.rect.left
-
-
-class Platform(Entity):
-    image = None
-
-    def __init__(self, x, y, width, height, can_fall_through=True, **kwargs):
-        super().__init__(x=x, y=y, width=width, height=height, **kwargs)
-        self.can_fall_through = can_fall_through
-        # override default Entity rect placement
-        self.rect = pygame.Rect(x, y, width, height)
-        self.image = pygame.Surface((width, height))
-        self.image.fill(self.color)
-
-    @property
-    def color(self):
-        return (0, 255, 0) if self.can_fall_through else (255, 0, 0)
-
-    @color.setter
-    def color(self, *args, **kwargs):
-        """Don't allow setting color"""
-        pass
 
 
 class Projectile(Entity):
