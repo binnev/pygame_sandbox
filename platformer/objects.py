@@ -372,6 +372,11 @@ class Character(Entity):
         else:
             self.u *= (1 - self.friction)  # "friction"
 
+        # don't allow sub-pixel speeds
+        self.u = 0 if abs(self.u) < 1 else self.u
+        self.v = 0 if abs(self.v) < 1 else self.v
+
+
     def enforce_screen_limits(self):
         if self.x < 0:
             self.x = 0
