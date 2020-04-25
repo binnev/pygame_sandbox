@@ -248,8 +248,8 @@ class Character(Entity):
     sprites = BLOB_SPRITES
 
     # class properties (constants)
-    width = 100
-    height = 100
+    width = 80
+    height = 70
     state = None
     ground_acceleration = 10
     ground_speed = 7
@@ -265,7 +265,7 @@ class Character(Entity):
     _friction = 0.1
     air_resistance = 0.05
     PLATFORM_COLLISION_TOLERANCE = 5
-    CROUCH_HEIGHT_MULTIPLIER = .5
+    CROUCH_HEIGHT_MULTIPLIER = .7
 
     # put these in a subclass
     PROJECTILE_COOLDOWN = 15
@@ -363,6 +363,7 @@ class Character(Entity):
             # if the platform is below self, set airborne to False
             if platform.centroid.y > self.centroid.y:
                 self.aerial_jumps_used = 0  # reset double jump counter
+                self.fastfall = False
                 return False
         return True
 
