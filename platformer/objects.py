@@ -303,7 +303,7 @@ class Character(Entity, AnimationMixin):
     ground_speed = 7
     air_acceleration = 2
     air_speed = 6
-    gravity = .21
+    gravity = .1
     _fall_speed = 5
     fastfall_multiplier = 2.5
     aerial_jumps = 3
@@ -451,7 +451,6 @@ class Character(Entity, AnimationMixin):
         # reduce speeds
         if self.airborne:  # air resistance
             self.u *= (1 - self.air_resistance)
-            self.v *= (1 - self.air_resistance)
         else:  # friction
             self.u *= (1 - self.friction)
             self.v = 0
