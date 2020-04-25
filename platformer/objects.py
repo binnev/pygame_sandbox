@@ -300,7 +300,7 @@ class Character(Entity, AnimationMixin):
     height = 70
     _state = None
     ground_acceleration = 10
-    ground_speed = 7
+    ground_speed = 9
     air_acceleration = 2
     air_speed = 6
     gravity = .7
@@ -377,7 +377,7 @@ class Character(Entity, AnimationMixin):
     @property
     def friction(self):
         if self.state in (states.JUMPSQUAT, states.SQUAT):
-            return self._friction / 10
+            return 0.01
         else:
             return self._friction
 
