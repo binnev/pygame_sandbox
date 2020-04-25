@@ -303,7 +303,7 @@ class Character(Entity, AnimationMixin):
     ground_speed = 7
     air_acceleration = 2
     air_speed = 6
-    GRAVITY = .21
+    gravity = .21
     _fall_speed = 5
     fastfall_multiplier = 2.5
     aerial_jumps = 3
@@ -446,7 +446,7 @@ class Character(Entity, AnimationMixin):
         if self.v > 0 and abs(self.v) > self.fall_speed:
             pass  # don't apply gravity
         else:  # if moving upwards, or if falling slower than the fall speed
-            self.v += self.GRAVITY
+            self.v += self.gravity
 
         # reduce speeds
         if self.airborne:  # air resistance
