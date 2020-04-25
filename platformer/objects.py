@@ -303,7 +303,7 @@ class Character(Entity, AnimationMixin):
     ground_speed = 7
     air_acceleration = 2
     air_speed = 6
-    fall_acceleration = 2
+    GRAVITY = .21
     _fall_speed = 5
     fastfall_multiplier = 2.5
     aerial_jumps = 3
@@ -440,20 +440,29 @@ class Character(Entity, AnimationMixin):
         func()  # execute it
 
     def handle_physics(self):
-        # update position
-        self.x += self.u
-        self.y += self.v
 
-        # reduce horizontal speeds
+        # enforce max fall speed
+        # if moving downwards faster than fall speed e.g. if got hit downwards
+        if self.v > 0 and abs(self.v) > self.fall_speed:
+            pass  # don't apply gravity
+        else:  # if moving upwards, or if falling slower than the fall speed
+            self.v += self.GRAVITY
+
+        # reduce speeds
         if self.airborne:  # air resistance
             self.u *= (1 - self.air_resistance)
             self.v *= (1 - self.air_resistance)
         else:  # friction
             self.u *= (1 - self.friction)
+            self.v = 0
 
-        # don't allow sub-pixel speeds
-        self.u = 0 if abs(self.u) < 0.5 else self.u
-        self.v = 0 if abs(self.v) < 0.5 else self.v
+        # don't allow sub-pixel horizontal speeds. This prevents infinite sliding to
+        # the left
+        self.u = 0 if abs(self.u) < 0.2 else self.u
+
+        # update position
+        self.x += self.u
+        self.y += self.v
 
     def enforce_screen_limits(self):
         if self.x < 0:
@@ -505,11 +514,14 @@ class Character(Entity, AnimationMixin):
                          max(self.rect.top, platform.rect.top))
             if x_overlap >= y_overlap:
                 # move vertically
-                # allow a small overlap
-                if y_overlap <= 1:
+                # allow a small overlap to stand on a platform and maintain contact
+                if y_overlap <= 1 and self.centroid.y < platform.centroid.y:
                     return
+                # if self is below platform
                 if self.centroid.y >= platform.centroid.y:
+                    # bump head
                     self.rect.top = platform.rect.bottom
+                    self.v = 0
                 else:
                     self.rect.bottom = platform.rect.top + 1  # keep contact w. platform
             else:
@@ -536,9 +548,8 @@ class Character(Entity, AnimationMixin):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
         # if end of jumpsquat reached, begin jump
         if self.airborne:
-            if self.aerial_jumps_used < self.aerial_jumps:
-                if self.frames_elapsed >= self.aerial_jumpsquat_frames:
-                    self.enter_jump()
+            if self.frames_elapsed >= self.aerial_jumpsquat_frames:
+                self.enter_jump()
             else:
                 self.state = states.FALL
         else:
@@ -548,6 +559,7 @@ class Character(Entity, AnimationMixin):
 
     def enter_jump(self):
         self.v = -self.jump_power
+        self.y -= 1  # need this to become airborne. Hacky?
         self.state = states.FALL
         self.fastfall = False
 
@@ -569,13 +581,6 @@ class Character(Entity, AnimationMixin):
                 self.image = self.sprites["jump_right"].get_frame(f)
             else:
                 self.image = self.sprites["jump_left"].get_frame(f)
-
-        # update vertical position
-        # if moving downwards faster than fall speed
-        if self.v > 0 and abs(self.v) > self.fall_speed:
-            pass  # don't apply gravity
-        else:  # if moving upwards, or if falling slower than the fall speed
-            self.v += self.fall_acceleration
 
         # update horizontal position
         if self.keys[Keys.LEFT]:
