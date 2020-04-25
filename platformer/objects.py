@@ -365,21 +365,6 @@ class Character(Entity):
                 self.aerial_jumps_used = 0  # reset double jump counter
                 return False
         return True
-        # for platform in self.level.platforms:
-        #     # is self within the horizontal bounds of the platform
-        #     # and is self.base.y within a few pixels of the top of the platform?
-        #     # then we're standing on the platform.
-        #     if (platform.rect.left <= self.x <= platform.rect.right and
-        #             platform.rect.top - 3 <= self.base.y <=
-        #             platform.rect.top + 3 and self.v >= 0  # moving downwards
-        #        ):
-        #         # if the platform is drop-through-able and the down key is pressed
-        #         if platform.can_fall_through and self.keys[Keys.DOWN]:
-        #             return True
-        #         else:
-        #             self.aerial_jumps_used = 0  # reset double jump counter
-        #             return False
-        # return True
 
     # ============== drawing functions ===============
     def align_image_rect(self):
