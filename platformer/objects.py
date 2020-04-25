@@ -295,7 +295,7 @@ class Projectile(Entity):
 class Character(Entity, AnimationMixin):
     sprites = BLOB_SPRITES
 
-    # class properties (constants)
+    # class properties
     width = 80
     height = 70
     _state = None
@@ -303,20 +303,22 @@ class Character(Entity, AnimationMixin):
     ground_speed = 7
     air_acceleration = 2
     air_speed = 6
-    gravity = .1
+    gravity = .7
     _fall_speed = 5
     fastfall_multiplier = 2.5
     aerial_jumps = 3
     jump_power = 20
     jumpsquat_frames = 10
-    aerial_jumpsquat_frames = 1
-    _friction = 0.1
+    _friction = 0.3
     air_resistance = 0.05
     PLATFORM_COLLISION_TOLERANCE = 5
     CROUCH_HEIGHT_MULTIPLIER = .7
 
+    # cooldowns -- todo: put this in a mixin?
+    DOUBLE_JUMP_COOLDOWN_TIME = 15
+    double_jump_cooldown = 0
+
     # put these in a subclass
-    PROJECTILE_COOLDOWN = 15
     image = sprites["stand"].get_frame(0)
 
     def __init__(self, x, y, groups=[]):
@@ -338,9 +340,6 @@ class Character(Entity, AnimationMixin):
         }
         self.aerial_jumps_used = 0
         self.font = pygame.font.Font("freesansbold.ttf", 10)
-
-        # put these in a subclass
-        self.projectile_cooldown = 0
 
     # ============== properties ==============
 
@@ -427,12 +426,12 @@ class Character(Entity, AnimationMixin):
         self.handle_physics()
         self.enforce_screen_limits()
         self.debug_print()
-        # todo: move to states
-        if keys[Keys.FIRE] and not self.projectile_cooldown:
-            self.create_projectile()
-            self.projectile_cooldown = self.PROJECTILE_COOLDOWN
         self.update_cooldowns()
         self.update_animation()
+
+    def update_cooldowns(self):
+        if self.double_jump_cooldown:
+            self.double_jump_cooldown -= 1
 
     def handle_state(self):
         """Each state has a corresponding function that handles keypresses and events"""
@@ -492,10 +491,6 @@ class Character(Entity, AnimationMixin):
             f"frames_elapsed = {self.frames_elapsed}",
         )
 
-    def update_cooldowns(self):
-        if self.projectile_cooldown > 0:
-            self.projectile_cooldown -= 1
-
     def collide_platforms(self):
         platforms = pygame.sprite.spritecollide(self,
                                                 self.level.platforms,
@@ -545,15 +540,8 @@ class Character(Entity, AnimationMixin):
 
     def state_jumpsquat(self):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
-        # if end of jumpsquat reached, begin jump
-        if self.airborne:
-            if self.frames_elapsed >= self.aerial_jumpsquat_frames:
-                self.enter_jump()
-            else:
-                self.state = states.FALL
-        else:
-            if self.frames_elapsed == self.jumpsquat_frames:
-                self.enter_jump()
+        if self.frames_elapsed == self.jumpsquat_frames:
+            self.enter_jump()
         # todo: add any other actions that are allowed in jumpsquat state... wavedash ahem.
 
     def enter_jump(self):
@@ -592,9 +580,10 @@ class Character(Entity, AnimationMixin):
         # double-jump
         if (self.keys[Keys.JUMP] and
                 self.aerial_jumps_used < self.aerial_jumps and
-                self.frames_elapsed > 10):  # fixme don't hard-code this stuff
-            self.state = states.JUMPSQUAT
+                not self.double_jump_cooldown):
+            self.double_jump_cooldown = self.DOUBLE_JUMP_COOLDOWN_TIME
             self.aerial_jumps_used += 1
+            self.enter_jump()
 
         # fastfall if moving downwards
         if self.keys[Keys.DOWN] and self.v > 0:
@@ -659,6 +648,5 @@ class Blob(Character):
     aerial_jumps = 3
     jump_power = 20
     jumpsquat_frames = 4
-    aerial_jumpsquat_frames = 1
     _friction = 0.1
     air_resistance = 0.05
