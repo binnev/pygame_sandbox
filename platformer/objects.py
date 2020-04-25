@@ -172,7 +172,7 @@ class Platform(Entity):
         pass
 
 
-class AnimationMixin(pygame.sprite.Sprite):
+class AnimationMixin:
     """Handles animation for a state machine class. Subclasses should have their own
     dictionary of sprite animations. Each state function can then use `frames_elapsed`
     counter to assign the correct sprite frame to self.image"""
@@ -193,8 +193,54 @@ class AnimationMixin(pygame.sprite.Sprite):
         self.frames_elapsed += 1
 
 
-class MovingEntity(Entity, AnimationMixin):
+class PhysicsMixin:
+    """Introduces velocity and basic physics"""
+    # You'll need to implement these parameters in subclasses
+    GRAVITY: int
+    FALL_SPEED: int
+    FRICTION: float
+    AIR_RESISTANCE: float
+    airborne: bool
+
+    u = 0  # horizontal velocity
+    v = 0  # vertical velocity
+
+    def update_physics(self):
+        # update position
+        self.x += self.u
+        self.y += self.v
+
+        # update vertical position
+        # if moving downwards faster than fall speed
+        if self.v > 0 and abs(self.v) > self.FALL_SPEED:
+            pass  # don't apply gravity
+        else:  # if moving upwards, or if falling slower than the fall speed
+            self.v += self.GRAVITY
+
+        # reduce speeds
+        if self.airborne:
+            self.u *= (1 - self.AIR_RESISTANCE)  # air resistance
+            self.v *= (1 - self.AIR_RESISTANCE)  # air resistance
+        else:
+            self.u *= (1 - self.FRICTION)  # "friction"
+            self.v = 0  # this is the correct place to set this
+
+        # don't allow sub-pixel speeds
+        self.u = 0 if abs(self.u) < .5 else self.u
+        self.v = 0 if abs(self.v) < .5 else self.v
+
+
+class MovingEntity(Entity, AnimationMixin, PhysicsMixin):
     SPEED = 2
+
+    # physics parameters
+    GRAVITY = 1
+    FRICTION = .5
+    AIR_RESISTANCE = .1
+    FALL_SPEED = 5
+    airborne = False
+
+    # drawing params
     sprites = BLOB_SPRITES
     image = sprites["stand"].get_frame(0)
 
@@ -213,6 +259,7 @@ class MovingEntity(Entity, AnimationMixin):
             self.y -= self.SPEED
             self.image = self.sprites["jump"].get_frame(self.frames_elapsed)
 
+        self.update_physics()
         self.update_animation()
 
 
@@ -398,14 +445,15 @@ class Character(Entity, AnimationMixin):
         self.y += self.v
 
         # reduce horizontal speeds
-        if self.airborne:
-            self.u *= (1 - self.air_resistance)  # air resistance
-        else:
-            self.u *= (1 - self.friction)  # "friction"
+        if self.airborne:  # air resistance
+            self.u *= (1 - self.air_resistance)
+            self.v *= (1 - self.air_resistance)
+        else:  # friction
+            self.u *= (1 - self.friction)
 
         # don't allow sub-pixel speeds
-        self.u = 0 if abs(self.u) < 1 else self.u
-        self.v = 0 if abs(self.v) < 1 else self.v
+        self.u = 0 if abs(self.u) < 0.5 else self.u
+        self.v = 0 if abs(self.v) < 0.5 else self.v
 
     def enforce_screen_limits(self):
         if self.x < 0:
@@ -537,7 +585,7 @@ class Character(Entity, AnimationMixin):
         if abs(self.u) > self.air_speed:
             self.u = sign(self.u) * self.air_speed
 
-        # double-jump todo: time limit on repeated double jumps
+        # double-jump
         if (self.keys[Keys.JUMP] and
                 self.aerial_jumps_used < self.aerial_jumps and
                 self.frames_elapsed > 10):  # fixme don't hard-code this stuff

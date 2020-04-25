@@ -41,6 +41,6 @@ while run:
         debug=True,
     )
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(20)
 
 pygame.quit()
