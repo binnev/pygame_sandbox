@@ -245,7 +245,7 @@ class Projectile(Entity):
         self.frames_elapsed += 1
 
 
-class Character(Entity):
+class Character(Entity, AnimationMixin):
     sprites = BLOB_SPRITES
 
     # class properties (constants)
@@ -290,7 +290,6 @@ class Character(Entity):
             states.SQUAT: self.state_squat,
         }
         self.aerial_jumps_used = 0
-        self.frames_elapsed = 0
         self.font = pygame.font.Font("freesansbold.ttf", 10)
 
         # put these in a subclass
@@ -316,7 +315,7 @@ class Character(Entity):
 
     @property
     def rect(self):
-        # always update self.rect with height depending on state
+        # shrink rect when crouching
         midbottom = self._rect.midbottom
         if self.state in [states.SQUAT, states.JUMPSQUAT]:
             self._rect.height = self.height * self.CROUCH_HEIGHT_MULTIPLIER
@@ -386,7 +385,7 @@ class Character(Entity):
             self.create_projectile()
             self.projectile_cooldown = self.PROJECTILE_COOLDOWN
         self.update_cooldowns()
-        self.frames_elapsed += 1
+        self.update_animation()
 
     def handle_state(self):
         """Each state has a corresponding function that handles keypresses and events"""
@@ -477,16 +476,13 @@ class Character(Entity):
     def state_stand(self):
         self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
         if self.keys[Keys.JUMP]:  # enter jumpsquat
-            self.enter_jumpsquat()
+            self.state = states.JUMPSQUAT
         if self.keys[Keys.DOWN]:  # enter squat
             self.state = states.SQUAT
         if self.keys[Keys.LEFT] or self.keys[Keys.RIGHT]:
             self.state = states.RUN
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = states.FALL
-
-    def enter_jumpsquat(self):
-        self.state = states.JUMPSQUAT
 
     def state_jumpsquat(self):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
@@ -545,7 +541,7 @@ class Character(Entity):
         if (self.keys[Keys.JUMP] and
                 self.aerial_jumps_used < self.aerial_jumps and
                 self.frames_elapsed > 10):  # fixme don't hard-code this stuff
-            self.enter_jumpsquat()
+            self.state = states.JUMPSQUAT
             self.aerial_jumps_used += 1
 
         # fastfall if moving downwards
@@ -562,7 +558,7 @@ class Character(Entity):
         if self.airborne:
             self.state = states.FALL
         if self.keys[Keys.JUMP]:
-            self.enter_jumpsquat()
+            self.state = states.JUMPSQUAT
         # if squat key released, exit squat state
         if not self.keys[Keys.DOWN]:
             self.state = states.STAND
@@ -584,7 +580,7 @@ class Character(Entity):
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed
         if self.keys[Keys.JUMP]:
-            self.enter_jumpsquat()
+            self.state = states.JUMPSQUAT
         if self.keys[Keys.DOWN]:
             self.state = states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform

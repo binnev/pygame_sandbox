@@ -17,8 +17,8 @@ level.add_objects(Platform(50, 100, 200, 30, can_fall_through=True),
                   Platform(-10, 480, 550, 30, can_fall_through=False),
                   type="platform")
 # Character object
-character = MovingEntity(50, 200, 120, 120)
-# character = Character(50, 200)
+# character = MovingEntity(50, 200, 120, 120)
+character = Character(50, 200)
 level.add_objects(character, type="character")
 
 clock = pygame.time.Clock()
