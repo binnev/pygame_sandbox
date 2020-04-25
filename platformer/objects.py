@@ -410,6 +410,7 @@ class Character(Entity, AnimationMixin):
         return True
 
     # ============== drawing functions ===============
+
     def align_image_rect(self):
         self.image_rect = self.image.get_rect()
         self.image_rect.midbottom = self.rect.midbottom
@@ -426,6 +427,7 @@ class Character(Entity, AnimationMixin):
         self.update_animation()
 
     def update_cooldowns(self):
+        # todo: make a cooldowns mixin which does this for a list of cooldowns.
         if self.double_jump_cooldown:
             self.double_jump_cooldown -= 1
 
@@ -435,13 +437,8 @@ class Character(Entity, AnimationMixin):
         func()  # execute it
 
     def handle_physics(self):
-
-        # enforce max fall speed
-        # if moving downwards faster than fall speed e.g. if got hit downwards
-        if self.v > 0 and abs(self.v) > self.fall_speed:
-            pass  # don't apply gravity
-        else:  # if moving upwards, or if falling slower than the fall speed
-            self.v += self.gravity
+        # always apply gravity. Other functions can enforce max fall speed
+        self.v += self.gravity
 
         # reduce speeds
         if self.airborne:  # air resistance
@@ -580,6 +577,12 @@ class Character(Entity, AnimationMixin):
             self.double_jump_cooldown = self.DOUBLE_JUMP_COOLDOWN_TIME
             self.aerial_jumps_used += 1
             self.enter_jump()
+
+        # enforce max fall speed
+        # if moving downwards faster than fall speed e.g. if got hit downwards
+        if self.v > 0 and abs(self.v) > self.fall_speed:
+            self.v = self.fall_speed
+
 
         # fastfall if moving downwards
         if self.keys[Keys.DOWN] and self.v > 0:
