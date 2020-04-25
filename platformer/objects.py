@@ -32,30 +32,16 @@ class Level(SpriteGroup):
             obj.level = self
 
 
-class AnimationMixin(pygame.sprite.Sprite):
-    """Handles animation for a state machine class. Subclasses should have their own
-    dictionary of sprite animations. Each state function can then use `frames_elapsed`
-    as an animation counter to access the correct frame."""
-    frames_elapsed = 0
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, new_state):
-        """Reset animation counter when state changes"""
-        self._state = new_state
-        self.frames_elapsed = 0
-
-    def update_animation(self):
-        """Call this inside subclass update method"""
-        self.frames_elapsed += 1
-
-
 class Entity(pygame.sprite.Sprite):
     """This is the class from which all game objects will be derived---Characters,
-    projectiles, platforms, etc."""
+    projectiles, platforms, etc.
+
+    This class has
+    - self.rect (centered on self.xy)
+    - self.image
+    - self.draw()
+    which are used by all subclasses.
+    """
     debug_color = (69, 69, 69)
     debug_background = (255, 255, 255)
 
@@ -116,6 +102,8 @@ class Entity(pygame.sprite.Sprite):
         self.image_rect.center = self.rect.center
 
     def draw_image(self, surface):
+        """This is pretty general, and doesn't have to be an animated image, so I am
+        leaving it attached to the Entity class, not the AnimationMixin."""
         if self.image:
             self.align_image_rect()
             surface.blit(self.image, self.image_rect)
@@ -163,59 +151,78 @@ class Entity(pygame.sprite.Sprite):
         )
 
 
-class MovingEntity(Entity):
-    speed = 1
-    PLATFORM_COLLISION_TOLERANCE = 7
+class AnimationMixin(pygame.sprite.Sprite):
+    """Handles animation for a state machine class. Subclasses should have their own
+    dictionary of sprite animations. Each state function can then use `frames_elapsed`
+    counter to assign the correct sprite frame to self.image"""
+    frames_elapsed = 0
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, new_state):
+        """Reset animation counter when state changes"""
+        self._state = new_state
+        self.frames_elapsed = 0
+
+    def update_animation(self):
+        """Call this inside subclass update method"""
+        self.frames_elapsed += 1
+
+
+class MovingEntity(Entity, AnimationMixin):
+    SPEED = 2
     sprites = BLOB_SPRITES
     image = sprites["stand"].get_frame(0)
-    frames_elapsed = 0
 
     def update(self, keys):
         if keys[Keys.RIGHT]:
-            self.x += self.speed
-            self.image = self.sprites["run_right"].get_frame(
-                self.frames_elapsed)
+            self.x += self.SPEED
+            self.image = self.sprites["run_right"].get_frame(self.frames_elapsed)
         if keys[Keys.LEFT]:
-            self.x -= self.speed
+            self.x -= self.SPEED
             self.image = self.sprites["run_left"].get_frame(self.frames_elapsed)
         if keys[Keys.DOWN]:
-            self.y += self.speed
+            self.y += self.SPEED
             self.image = self.sprites["fall"].get_frame(self.frames_elapsed)
         if keys[Keys.UP]:
-            self.y -= self.speed
+            self.y -= self.SPEED
             self.image = self.sprites["jump"].get_frame(self.frames_elapsed)
 
-        self.collide_platforms()
-        self.frames_elapsed += 1
+        self.update_animation()
 
-    def collide_platforms(self):
-        platforms = pygame.sprite.spritecollide(self,
-                                                self.level.platforms,
-                                                dokill=False)
-        for platform in platforms:
-            self.collide_platform(platform)
-
-    def collide_platform(self, platform):
-        if platform.can_fall_through:
-            pass
-        else:
-            # if self is within tolerance of platform edge, allow sliding onto the bottom or
-            # top of the platform
-            if (self.rect.bottom <
-                    platform.rect.top + self.PLATFORM_COLLISION_TOLERANCE or
-                    self.rect.top >
-                    platform.rect.bottom - self.PLATFORM_COLLISION_TOLERANCE):
-                if self.centroid.y >= platform.centroid.y:
-                    self.rect.top = platform.rect.bottom
-                else:
-                    self.rect.bottom = platform.rect.top
-            # bump into platform side
-            else:
-                # bump into side of platform
-                if self.centroid.x >= platform.centroid.x:
-                    self.rect.left = platform.rect.right
-                else:
-                    self.rect.right = platform.rect.left
+    #     self.collide_platforms()
+    #
+    # def collide_platforms(self):
+    #     platforms = pygame.sprite.spritecollide(self,
+    #                                             self.level.platforms,
+    #                                             dokill=False)
+    #     for platform in platforms:
+    #         self.collide_platform(platform)
+    #
+    # def collide_platform(self, platform):
+    #     if platform.can_fall_through:
+    #         pass
+    #     else:
+    #         # if self is within tolerance of platform edge, allow sliding onto the bottom or
+    #         # top of the platform
+    #         if (self.rect.bottom <
+    #                 platform.rect.top + self.PLATFORM_COLLISION_TOLERANCE or
+    #                 self.rect.top >
+    #                 platform.rect.bottom - self.PLATFORM_COLLISION_TOLERANCE):
+    #             if self.centroid.y >= platform.centroid.y:
+    #                 self.rect.top = platform.rect.bottom
+    #             else:
+    #                 self.rect.bottom = platform.rect.top
+    #         # bump into platform side
+    #         else:
+    #             # bump into side of platform
+    #             if self.centroid.x >= platform.centroid.x:
+    #                 self.rect.left = platform.rect.right
+    #             else:
+    #                 self.rect.right = platform.rect.left
 
 
 class Platform(Entity):
@@ -235,6 +242,7 @@ class Platform(Entity):
 
     @color.setter
     def color(self, *args, **kwargs):
+        """Don't allow setting color"""
         pass
 
 
