@@ -412,8 +412,8 @@ class Character(Entity, AnimationMixin):
 
     def update(self, keys):
         self.keys = keys
-        self.handle_state()
-        self.handle_physics()
+        self.execute_state()
+        self.update_physics()
         self.enforce_screen_limits()
         self.debug_print()
         self.update_cooldowns()
@@ -424,12 +424,12 @@ class Character(Entity, AnimationMixin):
         if self.double_jump_cooldown:
             self.double_jump_cooldown -= 1
 
-    def handle_state(self):
+    def execute_state(self):
         """Each state has a corresponding function that handles keypresses and events"""
         func = self.state_lookup[self.state]  # grab the state function
         func()  # execute it
 
-    def handle_physics(self):
+    def update_physics(self):
         # always apply gravity. Other functions can enforce max fall speed
         self.v += self.gravity
 
