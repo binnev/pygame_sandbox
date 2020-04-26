@@ -285,6 +285,7 @@ class Projectile(Entity, AnimationMixin):
 
         self.update_animation()
 
+
 class Character(Entity, AnimationMixin):
 
     # class properties
@@ -476,13 +477,6 @@ class Character(Entity, AnimationMixin):
             f"frames_elapsed = {self.frames_elapsed}",
         )
 
-    # def collide_platforms(self):
-    #     platforms = pygame.sprite.spritecollide(self,
-    #                                             self.level.platforms,
-    #                                             dokill=False)
-    #     for platform in platforms:
-    #         self.collide_platform(platform)
-
     def collide_platform(self, platform):
         if platform.can_fall_through:
             pass
@@ -570,19 +564,21 @@ class Character(Entity, AnimationMixin):
             self.aerial_jumps_used += 1
             self.enter_jump()
 
-        # enforce max fall speed
-        # if moving downwards faster than fall speed e.g. if got hit downwards
-        if self.v > 0 and abs(self.v) > self.fall_speed:
-            self.v = self.fall_speed
-
-        # fastfall if moving downwards
-        if self.keys[Keys.DOWN] and self.v > 0:
-            self.fastfall = True
-            self.v = self.fall_speed
+        self.enforce_max_fall_speed()
+        self.allow_fastfall()
 
         if not self.airborne:
             self.state = states.STAND
             self.v = 0
+
+    def enforce_max_fall_speed(self):
+        if self.v > 0 and abs(self.v) > self.fall_speed:
+            self.v = self.fall_speed
+
+    def allow_fastfall(self):
+        if self.keys[Keys.DOWN] and self.v > 0:
+            self.fastfall = True
+            self.v = self.fall_speed
 
     def state_squat(self):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
@@ -651,7 +647,8 @@ class Blob(Character):
         """Extend parent init method here e.g. by adding extra entries to the
         state_lookup dict"""
         super().__init__(x, y, groups)
-        # self.state_lookup.update({states.LASER: self.state_laser})
+        self.state_lookup.update(
+            {states.SHOOT_PROJECTILE: self.state_shoot_projectile})
 
     def update_cooldowns(self):
         if self.double_jump_cooldown:
@@ -662,9 +659,25 @@ class Blob(Character):
     # ============ state functions ================
 
     def state_fall(self):
+        """Extends parent class state_fall by allowing shooting projectiles"""
         super().state_fall()
         if self.keys[Keys.FIRE] and not self.projectile_cooldown:
+            self.state = states.SHOOT_PROJECTILE
+
+    def state_shoot_projectile(self):
+        # image
+        self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
+        old_width = self.image.get_rect().width
+        old_height = self.image.get_rect().height
+        self.image = pygame.transform.scale(self.image,
+                                            (int(old_width * 0.5), old_height))
+        self.allow_fastfall()
+        self.enforce_max_fall_speed()
+
+        if self.frames_elapsed == 10:
             self.create_projectile()
+        if self.frames_elapsed == 15:
+            self.state = states.FALL
 
     # ============ actions ==============
 
