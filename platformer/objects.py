@@ -504,6 +504,15 @@ class Character(Entity, AnimationMixin):
                 else:
                     self.rect.right = platform.rect.left
 
+    def enforce_max_fall_speed(self):
+        if self.v > 0 and abs(self.v) > self.fall_speed:
+            self.v = self.fall_speed
+
+    def allow_fastfall(self):
+        if self.keys[Keys.DOWN] and self.v > 0:
+            self.fastfall = True
+            self.v = self.fall_speed
+
     # ========================= state functions ================================
 
     def state_stand(self):
@@ -571,15 +580,6 @@ class Character(Entity, AnimationMixin):
             self.state = states.STAND
             self.v = 0
 
-    def enforce_max_fall_speed(self):
-        if self.v > 0 and abs(self.v) > self.fall_speed:
-            self.v = self.fall_speed
-
-    def allow_fastfall(self):
-        if self.keys[Keys.DOWN] and self.v > 0:
-            self.fastfall = True
-            self.v = self.fall_speed
-
     def state_squat(self):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
         if self.airborne:
@@ -634,7 +634,7 @@ class Blob(Character):
     crouch_height_multiplier = .7
 
     # cooldowns -- todo: put this in a mixin?
-    double_jump_cooldown_frames = 15
+    double_jump_cooldown_frames = 15  # should this go in the Character class?
     double_jump_cooldown = 0
     projectile_cooldown_frames = 30
     projectile_cooldown = 0
@@ -651,8 +651,7 @@ class Blob(Character):
             {states.SHOOT_PROJECTILE: self.state_shoot_projectile})
 
     def update_cooldowns(self):
-        if self.double_jump_cooldown:
-            self.double_jump_cooldown -= 1
+        super().update_cooldowns()
         if self.projectile_cooldown:
             self.projectile_cooldown -= 1
 
