@@ -6,7 +6,7 @@ import pygame
 from platformer import states
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
 from platformer.sprites import SpriteGroup, PROJECTILE_SPRITES, BLOB_SPRITES, BALL_SPRITES
-from platformer.utils import sign
+from platformer.utils import sign, recolor
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -399,7 +399,7 @@ class Character(Entity, AnimationMixin, CollisionMixin):
     @property
     def friction(self):
         if self.state in (states.JUMPSQUAT, states.SQUAT):
-            return 0.01
+            return -.05
         else:
             return self._friction
 
@@ -632,7 +632,7 @@ class Blob(Character):
     fastfall_multiplier = 2.5
     aerial_jumps = 3
     jump_power = 20
-    jumpsquat_frames = 10
+    jumpsquat_frames = 4
     _friction = 0.3
     air_resistance = 0.05
     crouch_height_multiplier = .7
@@ -701,12 +701,12 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
     height = 50
     sprites = BALL_SPRITES
     image = sprites["default"].get_frame(0)
-
+    image = recolor(image, (0, 0, 0, 255), (255, 69, 69, 255))
     BOUNCINESS = 3
     GRAVITY = .5
     AIR_RESISTANCE = 0.01
 
-    def __init__(self, x, y, groups=[]):
+    def __init__(self, x, y, groups=[], color=None):
         super().__init__(x, y, self.width, self.height, groups=groups)
 
     def update(self, keys):
@@ -761,3 +761,5 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
 
         # don't allow sub-pixel speeds
         self.u = 0 if abs(self.u) < .5 else self.u
+
+
