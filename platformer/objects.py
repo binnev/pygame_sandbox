@@ -231,6 +231,34 @@ class PhysicsMixin:
         self.v = 0 if abs(self.v) < .5 else self.v
 
 
+class CollisionMixin:
+
+    def collide_solid_platform(self, platform):
+        """Move self outside boundaries of solid platform."""
+        x_overlap = (min(self.rect.right, platform.rect.right) -
+                     max(self.rect.left, platform.rect.left))
+        y_overlap = (min(self.rect.bottom, platform.rect.bottom) -
+                     max(self.rect.top, platform.rect.top))
+        if x_overlap >= y_overlap:
+            # move vertically
+            # allow a small overlap to stand on a platform and maintain contact
+            if y_overlap <= 1 and self.centroid.y < platform.centroid.y:
+                return
+            # if self is below platform
+            if self.centroid.y >= platform.centroid.y:
+                # bump head
+                self.rect.top = platform.rect.bottom
+                self.v = 0
+            else:
+                self.rect.bottom = platform.rect.top + 1  # keep contact w. platform
+        else:
+            # move horizontally
+            if self.centroid.x >= platform.centroid.x:
+                self.rect.left = platform.rect.right
+            else:
+                self.rect.right = platform.rect.left
+
+
 class MovingEntity(Entity, AnimationMixin, PhysicsMixin):
     SPEED = 2
 
@@ -287,7 +315,7 @@ class Projectile(Entity, AnimationMixin):
         self.update_animation()
 
 
-class Character(Entity, AnimationMixin):
+class Character(Entity, AnimationMixin, CollisionMixin):
 
     # class properties
     width: int
@@ -395,7 +423,10 @@ class Character(Entity, AnimationMixin):
         for platform in platforms:
             # this function handles the physics -- not allowing self to clip through
             # platforms etc.
-            self.collide_platform(platform)
+            if platform.can_fall_through:
+                pass
+            else:
+                self.collide_solid_platform(platform)
             # if the platform is below self, set airborne to False
             if platform.centroid.y > self.centroid.y:
                 self.aerial_jumps_used = 0  # reset double jump counter
@@ -476,33 +507,6 @@ class Character(Entity, AnimationMixin):
             f"aerial_jumps_used = {self.aerial_jumps_used}",
             f"frames_elapsed = {self.frames_elapsed}",
         )
-
-    def collide_platform(self, platform):
-        if platform.can_fall_through:
-            pass
-        else:
-            x_overlap = (min(self.rect.right, platform.rect.right) -
-                         max(self.rect.left, platform.rect.left))
-            y_overlap = (min(self.rect.bottom, platform.rect.bottom) -
-                         max(self.rect.top, platform.rect.top))
-            if x_overlap >= y_overlap:
-                # move vertically
-                # allow a small overlap to stand on a platform and maintain contact
-                if y_overlap <= 1 and self.centroid.y < platform.centroid.y:
-                    return
-                # if self is below platform
-                if self.centroid.y >= platform.centroid.y:
-                    # bump head
-                    self.rect.top = platform.rect.bottom
-                    self.v = 0
-                else:
-                    self.rect.bottom = platform.rect.top + 1  # keep contact w. platform
-            else:
-                # move horizontally
-                if self.centroid.x >= platform.centroid.x:
-                    self.rect.left = platform.rect.right
-                else:
-                    self.rect.right = platform.rect.left
 
     def enforce_max_fall_speed(self):
         if self.v > 0 and abs(self.v) > self.fall_speed:
@@ -692,12 +696,13 @@ class Blob(Character):
         self.projectile_cooldown = self.projectile_cooldown_frames
 
 
-class Ball(Entity, AnimationMixin, PhysicsMixin):
+class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
     width = 50
     height = 50
     sprites = BALL_SPRITES
     image = sprites["default"].get_frame(0)
 
+    BOUNCINESS = 3
     GRAVITY = .5
     AIR_RESISTANCE = 0.01
 
@@ -713,21 +718,22 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
     def handle_collisions(self):
         collision_object_lists = (
             # self.level.platforms,
-            self.level.characters,
-        )
+            self.level.characters,)
         for collision_object_list in collision_object_lists:
             collided_objects = pygame.sprite.spritecollide(
                 self, collision_object_list, dokill=False)
             for collided_object in collided_objects:
-                # handle collision here
+                # bounce self away from collided object
                 print(f"collided with {collided_object}")
                 delta_x = self.centroid.x - collided_object.centroid.x
                 delta_y = self.centroid.y - collided_object.centroid.y
                 vector = np.array([delta_x, delta_y])
                 magnitude = np.sqrt(delta_x**2 + delta_y**2)
                 unit_vector = vector / magnitude
-                self.u += unit_vector[0]
-                self.v += unit_vector[1]
+                self.u += unit_vector[0] * self.BOUNCINESS
+                self.v += unit_vector[1] * self.BOUNCINESS
+                # prevent overlapping
+                self.collide_solid_platform(collided_object)
 
     def enforce_screen_limits(self):
         if self.rect.left < 0:
