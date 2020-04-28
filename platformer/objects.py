@@ -673,15 +673,20 @@ class Blob(Character):
         self.allow_fastfall()
         self.enforce_max_fall_speed()
 
-        if self.frames_elapsed == 10:
+        if self.frames_elapsed == 10:  # todo: don't hard-code this
             self.create_projectile()
-        if self.frames_elapsed == 15:
-            self.state = states.FALL
+        if self.frames_elapsed == 12:
+            self.state = states.FALL if self.airborne else states.STAND
 
     # ============ actions ==============
 
     def create_projectile(self):
-        facing = "right" if self.u > 0 else "left"
+        if self.keys[Keys.RIGHT]:
+            facing = "right"
+        elif self.keys[Keys.LEFT]:
+            facing = "left"
+        else:
+            facing = "right" if self.u > 0 else "left"
         self.level.add_objects(
             Projectile(*self.centroid, 100, 100, facing=facing))
         self.projectile_cooldown = self.projectile_cooldown_frames
