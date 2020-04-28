@@ -1,10 +1,11 @@
 from collections import namedtuple
 
+import numpy as np
 import pygame
 
 from platformer import states
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
-from platformer.sprites import SpriteGroup, PROJECTILE_SPRITES, BLOB_SPRITES
+from platformer.sprites import SpriteGroup, PROJECTILE_SPRITES, BLOB_SPRITES, BALL_SPRITES
 from platformer.utils import sign
 
 Point = namedtuple("Point", ["x", "y"])
@@ -415,7 +416,7 @@ class Character(Entity, AnimationMixin):
         self.execute_state()
         self.update_physics()
         self.enforce_screen_limits()
-        self.debug_print()
+        # self.debug_print()
         self.update_cooldowns()
         self.update_animation()
 
@@ -461,7 +462,6 @@ class Character(Entity, AnimationMixin):
         if self.y > SCREEN_HEIGHT:
             self.y = SCREEN_HEIGHT
             self.v = 0
-            self.state = states.STAND
 
     def debug_print(self):
         print(
@@ -690,3 +690,68 @@ class Blob(Character):
         self.level.add_objects(
             Projectile(*self.centroid, 100, 100, facing=facing))
         self.projectile_cooldown = self.projectile_cooldown_frames
+
+
+class Ball(Entity, AnimationMixin, PhysicsMixin):
+    width = 50
+    height = 50
+    sprites = BALL_SPRITES
+    image = sprites["default"].get_frame(0)
+
+    GRAVITY = .5
+    AIR_RESISTANCE = 0.01
+
+    def __init__(self, x, y, groups=[]):
+        super().__init__(x, y, self.width, self.height, groups=groups)
+
+    def update(self, keys):
+        self.handle_collisions()
+        self.update_physics()
+        self.update_animation()
+        self.enforce_screen_limits()
+
+    def handle_collisions(self):
+        collision_object_lists = (
+            # self.level.platforms,
+            self.level.characters,
+        )
+        for collision_object_list in collision_object_lists:
+            collided_objects = pygame.sprite.spritecollide(
+                self, collision_object_list, dokill=False)
+            for collided_object in collided_objects:
+                # handle collision here
+                print(f"collided with {collided_object}")
+                delta_x = self.centroid.x - collided_object.centroid.x
+                delta_y = self.centroid.y - collided_object.centroid.y
+                vector = np.array([delta_x, delta_y])
+                magnitude = np.sqrt(delta_x**2 + delta_y**2)
+                unit_vector = vector / magnitude
+                self.u += unit_vector[0]
+                self.v += unit_vector[1]
+
+    def enforce_screen_limits(self):
+        if self.rect.left < 0:
+            self.rect.left = 0
+            self.u *= -1
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+            self.u *= -1
+        if self.rect.top < 0:
+            self.rect.top = 0
+            self.v *= -1
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
+            self.v *= -1
+
+    def update_physics(self):
+        # update position
+        self.x += self.u
+        self.y += self.v
+
+        self.v += self.GRAVITY
+
+        self.u *= (1 - self.AIR_RESISTANCE)  # air resistance
+        self.v *= (1 - self.AIR_RESISTANCE)  # air resistance
+
+        # don't allow sub-pixel speeds
+        self.u = 0 if abs(self.u) < .5 else self.u

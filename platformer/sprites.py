@@ -54,8 +54,9 @@ class SpriteSheet(object):
 class SpriteAnimation:
     """
     TODO:
-    - allow resampling (showing frames more than once with a mapping)
-    - allow non-looping sprites (play once, then repeat last frame)
+      - allow resampling (showing frames more than once with a mapping)
+      - allow non-looping sprites (play once, then repeat last frame)
+      - maybe even create functions for ease-in and ease-out sampling?
     """
 
     def __init__(self,
@@ -151,4 +152,12 @@ BLOB_SPRITES = {
             (folder / "blob_run_right.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES, num_images=8),
                         flip_horizontal=True),
+}
+
+folder = Path("sprites/volleyball/")
+BALL_SPRITES = {
+    "default":
+        SpriteAnimation(
+            SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES)),
 }
