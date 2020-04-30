@@ -10,26 +10,6 @@ from platformer.utils import sign
 Point = namedtuple("Point", ["x", "y"])
 
 
-class Level(SpriteGroup):
-    # sprite groups
-    platforms = SpriteGroup()
-    characters = SpriteGroup()
-    projectiles = SpriteGroup()
-
-    def add_objects(self, *objects, type=None):
-        # add to Level spritegroup (similar to "all" group)
-        self.add(*objects)
-
-        # todo: allow multiple types?
-        if type == "platform":
-            self.platforms.add(*objects)
-        if type == "character":
-            self.characters.add(*objects)
-        if type == "projectile":
-            self.projectiles.add(*objects)
-        # give the object a reference to this level
-        for obj in objects:
-            obj.level = self
 
 
 class Entity(pygame.sprite.Sprite):

@@ -1,9 +1,10 @@
-# remember past keypresses to detect keys that are newly pressed/released
 from collections import deque
 
 
 class Empty(tuple):
-    """Mock tuple of 0/1s that always returns a 0 no matter the index"""
+    """Mock tuple of 0/1s that always returns a 0 no matter the index. This is used to
+    spoof an empty pygame.key.get_pressed() tuple, which has 1s for every key that is
+    currently down. """
 
     def __getitem__(self, *args, **kwargs):
         return 0

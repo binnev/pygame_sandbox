@@ -1,39 +1,28 @@
+# ======= this block has to come first to preserve the pygame loading order ==============
 import pygame
+from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 pygame.init()
 pygame.font.init()
-from collections import deque
-
-from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Hello World")
+pygame.display.set_caption("")
+# ========================================================================================
 
-from platformer.objects import Platform, Character, Level, MovingEntity
+from platformer.keyhandler import KeyHandler
+from platformer.levels import TestLevel
+from platformer.objects import Character
 
-level = Level()
-# Platforms
-level.add_objects(Platform(50, 100, 200, 30, can_fall_through=True),
-                  Platform(300, 200, 50, 30, can_fall_through=False),
-                  Platform(200, 400, 150, 30, can_fall_through=False),
-                  Platform(-10, 480, 550, 30, can_fall_through=False),
-                  type="platform")
-# Character object
-# character = MovingEntity(50, 200, 40, 60)
+level = TestLevel()
 character = Character(50, 200)
 level.add_objects(character, type="character")
 
 clock = pygame.time.Clock()
 
-
-
-
-keypress_queue = []
-keypress_queue_length = 5
+key_handler = KeyHandler(queue_length=5)
 
 run = True
 while run:
     keys = pygame.key.get_pressed()
-    keypress_queue.append(keys)
+    key_handler.update(keys)
 
     if keys[pygame.K_ESCAPE]:
         character.x, character.y = 50, 200
