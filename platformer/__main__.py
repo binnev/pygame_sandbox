@@ -1,6 +1,7 @@
 import pygame
 pygame.init()
 pygame.font.init()
+from collections import deque
 
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 
@@ -23,9 +24,17 @@ level.add_objects(character, type="character")
 
 clock = pygame.time.Clock()
 
+
+
+
+keypress_queue = []
+keypress_queue_length = 5
+
 run = True
 while run:
     keys = pygame.key.get_pressed()
+    keypress_queue.append(keys)
+
     if keys[pygame.K_ESCAPE]:
         character.x, character.y = 50, 200
     for event in pygame.event.get():
