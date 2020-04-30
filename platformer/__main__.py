@@ -1,6 +1,8 @@
 # ======= this block has to come first to preserve the pygame loading order ==============
 import pygame
+
 from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
+
 pygame.init()
 pygame.font.init()
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -9,10 +11,10 @@ pygame.display.set_caption("")
 
 from platformer.keyhandler import KeyHandler
 from platformer.levels import TestLevel
-from platformer.objects import Character
+from platformer.objects import Blob
 
 level = TestLevel()
-character = Character(50, 200)
+character = Blob(50, 200)
 level.add(character, type="character")
 
 clock = pygame.time.Clock()
