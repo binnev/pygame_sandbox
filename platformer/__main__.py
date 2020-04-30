@@ -11,7 +11,7 @@ pygame.display.set_caption("")
 
 from platformer.keyhandler import KeyHandler
 from platformer.levels import TestLevel, FinalDestination
-from platformer.objects import Blob
+from platformer.objects import Blob, Ball
 
 
 class Game:
@@ -28,13 +28,15 @@ class Game:
         level = level_class()
         character = Blob(50, 200)
         level.add(character, type="character")
+        debug = False
 
         run = True
         while run:
             keys = pygame.key.get_pressed()
             self.key_handler.update(keys)
+            pressed = self.key_handler.get_pressed()
 
-            if keys[pygame.K_ESCAPE]:
+            if pressed[pygame.K_ESCAPE]:
                 run = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -43,10 +45,14 @@ class Game:
             window.fill((255, 255, 255))
 
             # ================== update and draw =========================
+            if pressed[pygame.K_a]:
+                level.add(Ball(200, 200), type="projectile")
+            if pressed[pygame.K_d]:
+                debug = not debug
             level.update(keys)
             level.draw(
                 window,
-                debug=True,
+                debug=debug,
             )
             pygame.display.flip()
             self.clock.tick(60)
