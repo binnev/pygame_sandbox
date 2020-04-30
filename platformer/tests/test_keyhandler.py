@@ -61,3 +61,13 @@ def test_populated_keyhandler():
     assert down == keys
     assert pressed == expected_pressed
     assert released == expected_released
+
+
+def test_keyhandler_length():
+    """Make sure the keyhandler maintains the correct length queue of key tuples"""
+    queue_length = 6
+    kh = KeyHandler(queue_length)
+    for ii in range(10):
+        kh.update((1,0,1))
+        assert len(kh) <= queue_length
+    assert len(kh) == queue_length
