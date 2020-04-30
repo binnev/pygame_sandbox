@@ -576,7 +576,7 @@ class Character(Entity):
 
     def create_projectile(self):
         facing = "right" if self.u > 0 else "left"
-        self.level.add_objects(
+        self.level.add(
             Projectile(*self.centroid, 100, 100, facing=facing))
 
 

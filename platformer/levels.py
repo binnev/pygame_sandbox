@@ -11,9 +11,9 @@ class Level(SpriteGroup):
     characters = SpriteGroup()
     projectiles = SpriteGroup()
 
-    def add_objects(self, *objects, type=None):
+    def add(self, *objects, type=None):
         # add to Level spritegroup (similar to "all" group)
-        self.add(*objects)
+        super().add(*objects)
 
         # todo: allow multiple types?
         if type == "platform":
@@ -32,7 +32,7 @@ class TestLevel(Level):
     def __init__(self):
         super().__init__()
         # Platforms
-        self.add_objects(Platform(50, 100, 200, 30, can_fall_through=True),
+        self.add(Platform(50, 100, 200, 30, can_fall_through=True),
                          Platform(300, 200, 50, 30, can_fall_through=False),
                          Platform(200, 400, 150, 30, can_fall_through=False),
                          Platform(-10, 480, 550, 30, can_fall_through=False),

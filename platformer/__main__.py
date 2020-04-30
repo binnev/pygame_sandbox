@@ -13,7 +13,7 @@ from platformer.objects import Character
 
 level = TestLevel()
 character = Character(50, 200)
-level.add_objects(character, type="character")
+level.add(character, type="character")
 
 clock = pygame.time.Clock()
 
