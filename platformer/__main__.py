@@ -10,37 +10,84 @@ pygame.display.set_caption("")
 # ========================================================================================
 
 from platformer.keyhandler import KeyHandler
-from platformer.levels import TestLevel
+from platformer.levels import TestLevel, FinalDestination
 from platformer.objects import Blob
 
-level = TestLevel()
-character = Blob(50, 200)
-level.add(character, type="character")
 
-clock = pygame.time.Clock()
+class Game:
 
-key_handler = KeyHandler(queue_length=5)
+    def __init__(self):
+        self.levels = {
+            "test_level": TestLevel,
+            "battlefield": FinalDestination,
+        }
+        self.clock = pygame.time.Clock()
+        self.key_handler = KeyHandler(queue_length=5)
 
-run = True
-while run:
-    keys = pygame.key.get_pressed()
-    key_handler.update(keys)
+    def run_level(self, level_class):
+        level = level_class()
+        character = Blob(50, 200)
+        level.add(character, type="character")
 
-    if keys[pygame.K_ESCAPE]:
-        character.x, character.y = 50, 200
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
+        run = True
+        while run:
+            keys = pygame.key.get_pressed()
+            self.key_handler.update(keys)
 
-    window.fill((255, 255, 255))
+            if keys[pygame.K_ESCAPE]:
+                run = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
 
-    # ================== update and draw =========================
-    level.update(keys)
-    level.draw(
-        window,
-        debug=True,
-    )
-    pygame.display.flip()
-    clock.tick(60)
+            window.fill((255, 255, 255))
 
-pygame.quit()
+            # ================== update and draw =========================
+            level.update(keys)
+            level.draw(
+                window,
+                debug=True,
+            )
+            pygame.display.flip()
+            self.clock.tick(60)
+
+    def main(self):
+        run = True
+        while run:
+            keys = pygame.key.get_pressed()
+            self.key_handler.update(keys)
+
+            if keys[pygame.K_q]:
+                run = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+
+            if keys[pygame.K_a]:
+                self.run_level(self.levels["test_level"])
+            # # self.key_handler.update(keys)
+            # # pressed = self.key_handler.get_pressed()
+            # # print(keys[pygame.K_ESCAPE])
+            # print("in main")
+            # if keys[pygame.K_ESCAPE]:
+            #     run = False
+            #
+            # if keys[pygame.K_0]:
+            #     self.run_level(self.levels["test_level"])
+            # if keys[pygame.K_1]:
+            #     self.run_level(self.levels["battlefield"])
+            #
+            window.fill((255, 255, 255))
+            pygame.display.flip()
+            self.clock.tick(60)
+
+
+
+def main():
+    game = Game()
+    game.main()
+    pygame.quit()
+
+
+if __name__ == "__main__":
+    main()
