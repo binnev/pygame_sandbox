@@ -12,9 +12,9 @@ from platformer.objects import Platform, Character, Level, MovingEntity, Blob, B
 level = Level()
 # Platforms
 level.add_objects(
-    # Platform(50, 100, 200, 30, can_fall_through=True),
-    # Platform(300, 200, 50, 30, can_fall_through=False),
-    # Platform(200, 400, 150, 30, can_fall_through=False),
+    Platform(50, 100, 200, 30, can_fall_through=True),
+    Platform(300, 200, 50, 90, can_fall_through=False),
+    Platform(200, 400, 150, 30, can_fall_through=False),
     Platform(-10, 490, 1100, 30, can_fall_through=False),
     type="platform",
 )
