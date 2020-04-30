@@ -56,31 +56,22 @@ class Game:
         while run:
             keys = pygame.key.get_pressed()
             self.key_handler.update(keys)
+            pressed = self.key_handler.get_pressed()
 
-            if keys[pygame.K_q]:
+            if pressed[pygame.K_ESCAPE]:
                 run = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
-            if keys[pygame.K_a]:
+            if pressed[pygame.K_0]:
                 self.run_level(self.levels["test_level"])
-            # # self.key_handler.update(keys)
-            # # pressed = self.key_handler.get_pressed()
-            # # print(keys[pygame.K_ESCAPE])
-            # print("in main")
-            # if keys[pygame.K_ESCAPE]:
-            #     run = False
-            #
-            # if keys[pygame.K_0]:
-            #     self.run_level(self.levels["test_level"])
-            # if keys[pygame.K_1]:
-            #     self.run_level(self.levels["battlefield"])
-            #
+            if pressed[pygame.K_1]:
+                self.run_level(self.levels["battlefield"])
+
             window.fill((255, 255, 255))
             pygame.display.flip()
             self.clock.tick(60)
-
 
 
 def main():
