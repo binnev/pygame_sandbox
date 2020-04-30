@@ -64,9 +64,9 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
-            if pressed[pygame.K_0]:
-                self.run_level(self.levels["test_level"])
             if pressed[pygame.K_1]:
+                self.run_level(self.levels["test_level"])
+            if pressed[pygame.K_2]:
                 self.run_level(self.levels["battlefield"])
 
             window.fill((255, 255, 255))

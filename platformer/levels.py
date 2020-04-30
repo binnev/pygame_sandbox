@@ -7,9 +7,11 @@ class Level(SpriteGroup):
     the game objects that are currently "in play". Create a subclass to create a
     specific level e.g. one with platforms in certain positions. """
 
-    platforms = SpriteGroup()
-    characters = SpriteGroup()
-    projectiles = SpriteGroup()
+    def __init__(self):
+        super().__init__()
+        self.platforms = SpriteGroup()
+        self.characters = SpriteGroup()
+        self.projectiles = SpriteGroup()
 
     def add(self, *objects, type=None):
         # add to Level spritegroup (similar to "all" group)
