@@ -12,11 +12,15 @@ from ...conf import SCALE_SPRITES, TICKS_PER_SPRITE_FRAME
 sprites_folder = Path("example_game/sprites/")
 folder = sprites_folder / "blob"
 # todo; make a class for this. SpriteSet?
+
+colormap = {
+    (120, 62, 151): (255, 163, 0),  # convert purple to orange
+}
 BLOB_SPRITES = {
     "stand":
         SpriteAnimation(SpriteSheet(
-            (folder / "blob_stand.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES),
+            (folder / "blob_stand.png").as_posix(),
+            colormap=colormap).load_sheet(32, 32, scale=SCALE_SPRITES),
                         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "jump":
         SpriteAnimation(SpriteSheet(

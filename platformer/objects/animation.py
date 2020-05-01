@@ -17,12 +17,10 @@ def recolor_sprite(surface, color_mapping: dict):
     color_mapping = {
         pad_alpha(k): pad_alpha(v) for k, v in color_mapping.items()
     }
-    # create new blank surface with same dimensions as input surface
     width, height = surface.get_size()
     # surface.copy() inherits surface's colorkey; preserving transparency
     new_surface = surface.copy()
 
-    # todo: if no alpha number passed, assume it's a full opacity colour
     # iterate over all the pixels in the old surface, and write a pixel to the new
     # surface in the corresponding position. If the colour of the present pixel has an
     # entry in the color_mapping dict, then write the new colour instead of the old one.
@@ -41,9 +39,11 @@ def recolor_sprite(surface, color_mapping: dict):
 class SpriteSheet:
     """Handles importing spritesheets and dividing into individual frame images."""
 
-    def __init__(self, filename):
+    def __init__(self, filename, colormap=None):
         try:
             self.sheet = pygame.image.load(filename).convert_alpha()
+            if colormap:
+                self.sheet = recolor_sprite(self.sheet, colormap)
         except pygame.error as message:
             print('Unable to load spritesheet image:', filename)
             raise Exception(message)
