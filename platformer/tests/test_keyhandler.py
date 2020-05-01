@@ -2,7 +2,7 @@ import pygame
 from pygame import constants
 import pytest
 
-from platformer.keyhandler import KeyHandler
+from platformer.objects.keyhandlers import KeyHandler
 
 key_numbers = {
     value for key, value in constants.__dict__.items() if key.startswith("K")
