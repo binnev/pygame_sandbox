@@ -1,11 +1,28 @@
 import pygame
 
 
+def pad_alpha(colour_tuple):
+    if len(colour_tuple) == 3:
+        # if no alpha channel supplied, assume it's full opacity
+        return (*colour_tuple, 255)
+    elif len(colour_tuple) == 4:
+        return colour_tuple
+    else:
+        raise Exception("bogus colour, man")
+
+
 def recolor_sprite(surface, color_mapping: dict):
+
+    # make sure the colourmap has alpha channel on all colours
+    color_mapping = {
+        pad_alpha(k): pad_alpha(v) for k, v in color_mapping.items()
+    }
     # create new blank surface with same dimensions as input surface
     width, height = surface.get_size()
-    new_surface = pygame.Surface([width, height])
+    # surface.copy() inherits surface's colorkey; preserving transparency
+    new_surface = surface.copy()
 
+    # todo: if no alpha number passed, assume it's a full opacity colour
     # iterate over all the pixels in the old surface, and write a pixel to the new
     # surface in the corresponding position. If the colour of the present pixel has an
     # entry in the color_mapping dict, then write the new colour instead of the old one.
