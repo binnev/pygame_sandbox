@@ -274,8 +274,8 @@ class MovingEntity(Entity, AnimationMixin):
 
 class Projectile(Entity, AnimationMixin):
     sprites: "spritedict"  # todo: make proper class for this.
-    speed = 9
-    image = None
+    speed: int
+    image: pygame.Surface
 
     def __init__(self, x, y, width, height, groups=[], facing="right"):
         super().__init__(x, y, width, height, groups=groups)

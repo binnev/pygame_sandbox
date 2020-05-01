@@ -1,5 +1,82 @@
+from pathlib import Path
 import numpy
 import pygame
+
+from platformer.objects.entities import Character, Keys, Entity, AnimationMixin, \
+    PhysicsMixin, CollisionMixin, Projectile
+
+from platformer.objects.animation import SpriteAnimation, SpriteSheet
+from ...conf import SCALE_SPRITES
+
+folder = Path("sprites/blob/")
+# todo; make a class for this. SpriteSet?
+BLOB_SPRITES = {
+    "stand":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_stand.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES)),
+    "jump":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_jump.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3)),
+    "jump_right":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_jump_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3)),
+    "jump_left":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_jump_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3),
+                        flip_horizontal=True),
+    "fall":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_fall.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3)),
+    "fall_right":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_fall_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3)),
+    "fall_left":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_fall_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3),
+                        flip_horizontal=True),
+    "crouch":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_crouch.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+                        looping=False),
+    "run_right":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_run_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=8)),
+    "run_left":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_run_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=8),
+                        flip_horizontal=True),
+}
+
+folder = Path("sprites/blob/")
+PROJECTILE_SPRITES = {
+    "right":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES)),
+    "left":
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_projectile.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+                        flip_horizontal=True),
+}
+
+folder = Path("sprites/volleyball/")
+BALL_SPRITES = {
+    "default":
+        SpriteAnimation(
+            SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES)),
+}
 
 
 class Blob(Character):
@@ -35,6 +112,7 @@ class Blob(Character):
         """Extend parent init method here e.g. by adding extra entries to the
         state_lookup dict"""
         super().__init__(x, y, groups)
+        self.states.SHOOT_PROJECTILE = "SHOOT_PROJECTILE"
         self.state_lookup.update(
             {self.states.SHOOT_PROJECTILE: self.state_shoot_projectile})
 
@@ -76,8 +154,13 @@ class Blob(Character):
         else:
             facing = "right" if self.u > 0 else "left"
         self.level.add_objects(
-            Projectile(*self.centroid, 100, 100, facing=facing))
+            BlobProjectile(*self.centroid, 100, 100, facing=facing))
         self.projectile_cooldown = self.projectile_cooldown_frames
+
+
+class BlobProjectile(Projectile):
+    sprites = PROJECTILE_SPRITES
+    speed = 7
 
 
 class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
@@ -85,7 +168,6 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
     height = 50
     sprites = BALL_SPRITES
     image = sprites["default"].get_frame(0)
-    image = recolor(image, (0, 0, 0, 255), (255, 69, 69, 255))
     BOUNCINESS = 3
     GRAVITY = .5
     AIR_RESISTANCE = 0.01
