@@ -3,15 +3,19 @@ from collections import namedtuple
 import numpy as np
 import pygame
 
-from platformer import states
-from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT, Keys
-from platformer.sprites import SpriteGroup, PROJECTILE_SPRITES, BLOB_SPRITES, BALL_SPRITES
-from platformer.utils import sign, recolor
+from numpy import sign
 
 Point = namedtuple("Point", ["x", "y"])
 
-
-
+# key mapping -- todo: make a better class for this and make Entity (or a mixin)
+#  receive a keymap parameter.
+class Keys:
+    JUMP = pygame.K_UP
+    LEFT = pygame.K_LEFT
+    RIGHT = pygame.K_RIGHT
+    UP = pygame.K_UP
+    DOWN = pygame.K_DOWN
+    FIRE = pygame.K_SPACE
 
 class Entity(pygame.sprite.Sprite):
     """This is the class from which all game objects will be derived---Characters,
@@ -23,8 +27,8 @@ class Entity(pygame.sprite.Sprite):
     - self.draw()
     which are used by all subclasses.
     """
-    debug_color = (69, 69, 69)
-    debug_background = (255, 255, 255)
+    debug_color = pygame.Color(69, 69, 69)
+    debug_background = pygame.Color(255, 255, 255)
 
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
@@ -33,7 +37,7 @@ class Entity(pygame.sprite.Sprite):
             pygame.font.match_font("ubuntucondensed"),
             12,
         )
-        self.color = color if color else (69, 69, 69)
+        self.color = color if color else self.debug_color
         self.width = width  # todo: give these more specific names e.g. collision_width
         self.height = height
         self.state = None
@@ -212,6 +216,8 @@ class PhysicsMixin:
 
 
 class CollisionMixin:
+    rect: pygame.Rect
+    centroid: property
 
     def collide_solid_platform(self, platform):
         """Move self outside boundaries of solid platform."""
@@ -239,7 +245,7 @@ class CollisionMixin:
                 self.rect.right = platform.rect.left
 
 
-class MovingEntity(Entity, AnimationMixin, PhysicsMixin):
+class MovingEntity(Entity, AnimationMixin):
     SPEED = 2
 
     # physics parameters
@@ -250,31 +256,25 @@ class MovingEntity(Entity, AnimationMixin, PhysicsMixin):
     airborne = False
 
     # drawing params
-    sprites = BLOB_SPRITES
-    image = sprites["stand"].get_frame(0)
+    image = pygame.Surface((50, 50))
+    image.fill(pygame.color.THECOLORS["goldenrod"])
 
     def update(self, keys):
         if keys[Keys.RIGHT]:
             self.x += self.SPEED
-            self.image = self.sprites["run_right"].get_frame(
-                self.frames_elapsed)
         if keys[Keys.LEFT]:
             self.x -= self.SPEED
-            self.image = self.sprites["run_left"].get_frame(self.frames_elapsed)
         if keys[Keys.DOWN]:
             self.y += self.SPEED
-            self.image = self.sprites["fall"].get_frame(self.frames_elapsed)
         if keys[Keys.UP]:
             self.y -= self.SPEED
-            self.image = self.sprites["jump"].get_frame(self.frames_elapsed)
 
-        self.update_physics()
         self.update_animation()
 
 
 class Projectile(Entity, AnimationMixin):
+    sprites: "spritedict"  # todo: make proper class for this.
     speed = 9
-    sprites = PROJECTILE_SPRITES
     image = None
 
     def __init__(self, x, y, width, height, groups=[], facing="right"):
@@ -323,6 +323,17 @@ class Character(Entity, AnimationMixin, CollisionMixin):
     double_jump_cooldown_frames = 15
     double_jump_cooldown = 0
 
+    class states:
+        DEFAULT = "DEFAULT"
+        JUMPSQUAT = "JUMPSQUAT"
+        JUMP = "JUMP"
+        STAND = "STAND"
+        RUN = "RUN"
+        RUN_LEFT = "RUN_LEFT"
+        RUN_RIGHT = "RUN_RIGHT"
+        SQUAT = "SQUAT"
+        FALL = "FALL"
+
     # references to other objects
     level = None
 
@@ -332,14 +343,14 @@ class Character(Entity, AnimationMixin, CollisionMixin):
 
         self.u = 0  # todo: move to PhysicsMixin.__init__()
         self.v = 0
-        self.state = states.FALL
+        self.state = self.states.FALL
         self.fastfall = False
         self.state_lookup = {
-            states.STAND: self.state_stand,
-            states.JUMPSQUAT: self.state_jumpsquat,
-            states.FALL: self.state_fall,
-            states.RUN: self.state_run,
-            states.SQUAT: self.state_squat,
+            self.states.STAND: self.state_stand,
+            self.states.JUMPSQUAT: self.state_jumpsquat,
+            self.states.FALL: self.state_fall,
+            self.states.RUN: self.state_run,
+            self.states.SQUAT: self.state_squat,
         }
         self.aerial_jumps_used = 0
 
@@ -365,7 +376,7 @@ class Character(Entity, AnimationMixin, CollisionMixin):
     def rect(self):
         # shrink rect when crouching
         midbottom = self._rect.midbottom
-        if self.state in [states.SQUAT, states.JUMPSQUAT]:
+        if self.state in [self.states.SQUAT, self.states.JUMPSQUAT]:
             self._rect.height = self.height * self.crouch_height_multiplier
         else:
             self._rect.height = self.height
@@ -378,7 +389,7 @@ class Character(Entity, AnimationMixin, CollisionMixin):
 
     @property
     def friction(self):
-        if self.state in (states.JUMPSQUAT, states.SQUAT):
+        if self.state in (self.states.JUMPSQUAT, self.states.SQUAT):
             return -.05
         else:
             return self._friction
@@ -460,18 +471,18 @@ class Character(Entity, AnimationMixin, CollisionMixin):
         self.x += self.u
         self.y += self.v
 
-    def enforce_screen_limits(self):
+    def enforce_screen_limits(self, screen_width, screen_height):
         if self.x < 0:
             self.x = 0
             self.u = 0
-        if self.x > SCREEN_WIDTH:
-            self.x = SCREEN_WIDTH
+        if self.x > screen_width:
+            self.x = screen_width
             self.u = 0
         if self.y < 0:
             self.y = 0
             self.v = 0
-        if self.y > SCREEN_HEIGHT:
-            self.y = SCREEN_HEIGHT
+        if self.y > screen_height:
+            self.y = screen_height
             self.v = 0
 
     def debug_print(self):
@@ -502,13 +513,13 @@ class Character(Entity, AnimationMixin, CollisionMixin):
     def state_stand(self):
         self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
         if self.keys[Keys.JUMP]:  # enter jumpsquat
-            self.state = states.JUMPSQUAT
+            self.state = self.states.JUMPSQUAT
         if self.keys[Keys.DOWN]:  # enter squat
-            self.state = states.SQUAT
+            self.state = self.states.SQUAT
         if self.keys[Keys.LEFT] or self.keys[Keys.RIGHT]:
-            self.state = states.RUN
+            self.state = self.states.RUN
         if self.airborne:  # e.g. by walking off the edge of a platform
-            self.state = states.FALL
+            self.state = self.states.FALL
 
     def state_jumpsquat(self):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
@@ -519,7 +530,7 @@ class Character(Entity, AnimationMixin, CollisionMixin):
     def enter_jump(self):
         self.v = -self.jump_power
         self.y -= 1  # need this to become airborne. Hacky?
-        self.state = states.FALL
+        self.state = self.states.FALL
         self.fastfall = False
 
     def state_fall(self):
@@ -561,18 +572,18 @@ class Character(Entity, AnimationMixin, CollisionMixin):
         self.allow_fastfall()
 
         if not self.airborne:
-            self.state = states.STAND
+            self.state = self.states.STAND
             self.v = 0
 
     def state_squat(self):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
         if self.airborne:
-            self.state = states.FALL
+            self.state = self.states.FALL
         if self.keys[Keys.JUMP]:
-            self.state = states.JUMPSQUAT
+            self.state = self.states.JUMPSQUAT
         # if squat key released, exit squat state
         if not self.keys[Keys.DOWN]:
-            self.state = states.STAND
+            self.state = self.states.STAND
 
     def state_run(self):
         # sprite selection
@@ -583,7 +594,7 @@ class Character(Entity, AnimationMixin, CollisionMixin):
             self.image = self.sprites["run_left"].get_frame(self.frames_elapsed)
 
         if not self.keys[Keys.LEFT] and not self.keys[Keys.RIGHT]:
-            self.state = states.STAND
+            self.state = self.states.STAND
         if self.keys[Keys.LEFT]:
             self.u -= self.ground_acceleration
         if self.keys[Keys.RIGHT]:
@@ -591,155 +602,10 @@ class Character(Entity, AnimationMixin, CollisionMixin):
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed
         if self.keys[Keys.JUMP]:
-            self.state = states.JUMPSQUAT
+            self.state = self.states.JUMPSQUAT
         if self.keys[Keys.DOWN]:
-            self.state = states.SQUAT
+            self.state = self.states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
-            self.state = states.FALL
-
-
-class Blob(Character):
-
-    width = 80
-    height = 70
-    _state = None
-    ground_acceleration = 10
-    ground_speed = 9
-    air_acceleration = 2
-    air_speed = 6
-    gravity = 1.2
-    _fall_speed = 5
-    fastfall_multiplier = 2.5
-    aerial_jumps = 3
-    jump_power = 20
-    jumpsquat_frames = 4
-    _friction = 0.3
-    air_resistance = 0.05
-    crouch_height_multiplier = .7
-
-    # cooldowns -- todo: put this in a mixin?
-    double_jump_cooldown_frames = 15  # should this go in the Character class?
-    double_jump_cooldown = 0
-    projectile_cooldown_frames = 30
-    projectile_cooldown = 0
-
-    # put these in a subclass
-    sprites = BLOB_SPRITES
-    image = sprites["stand"].get_frame(0)
-
-    def __init__(self, x, y, groups=[]):
-        """Extend parent init method here e.g. by adding extra entries to the
-        state_lookup dict"""
-        super().__init__(x, y, groups)
-        self.state_lookup.update(
-            {states.SHOOT_PROJECTILE: self.state_shoot_projectile})
-
-    def update_cooldowns(self):
-        super().update_cooldowns()
-        if self.projectile_cooldown:
-            self.projectile_cooldown -= 1
-
-    # ============ state functions ================
-
-    def state_fall(self):
-        """Extends parent class state_fall by allowing shooting projectiles"""
-        super().state_fall()
-        if self.keys[Keys.FIRE] and not self.projectile_cooldown:
-            self.state = states.SHOOT_PROJECTILE
-
-    def state_shoot_projectile(self):
-        # image
-        self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
-        old_width = self.image.get_rect().width
-        old_height = self.image.get_rect().height
-        self.image = pygame.transform.scale(self.image,
-                                            (int(old_width * 0.5), old_height))
-        self.allow_fastfall()
-        self.enforce_max_fall_speed()
-
-        if self.frames_elapsed == 10:  # todo: don't hard-code this
-            self.create_projectile()
-        if self.frames_elapsed == 12:
-            self.state = states.FALL if self.airborne else states.STAND
-
-    # ============ actions ==============
-
-    def create_projectile(self):
-        if self.keys[Keys.RIGHT]:
-            facing = "right"
-        elif self.keys[Keys.LEFT]:
-            facing = "left"
-        else:
-            facing = "right" if self.u > 0 else "left"
-        self.level.add_objects(
-            Projectile(*self.centroid, 100, 100, facing=facing))
-        self.projectile_cooldown = self.projectile_cooldown_frames
-
-
-class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
-    width = 50
-    height = 50
-    sprites = BALL_SPRITES
-    image = sprites["default"].get_frame(0)
-    image = recolor(image, (0, 0, 0, 255), (255, 69, 69, 255))
-    BOUNCINESS = 3
-    GRAVITY = .5
-    AIR_RESISTANCE = 0.01
-
-    def __init__(self, x, y, groups=[], color=None):
-        super().__init__(x, y, self.width, self.height, groups=groups)
-
-    def update(self, keys):
-        self.handle_collisions()
-        self.update_physics()
-        self.update_animation()
-        self.enforce_screen_limits()
-
-    def handle_collisions(self):
-        collision_object_lists = (
-            # self.level.platforms,
-            self.level.characters,)
-        for collision_object_list in collision_object_lists:
-            collided_objects = pygame.sprite.spritecollide(
-                self, collision_object_list, dokill=False)
-            for collided_object in collided_objects:
-                # bounce self away from collided object
-                print(f"collided with {collided_object}")
-                delta_x = self.centroid.x - collided_object.centroid.x
-                delta_y = self.centroid.y - collided_object.centroid.y
-                vector = np.array([delta_x, delta_y])
-                magnitude = np.sqrt(delta_x**2 + delta_y**2)
-                unit_vector = vector / magnitude
-                self.u += unit_vector[0] * self.BOUNCINESS
-                self.v += unit_vector[1] * self.BOUNCINESS
-                # prevent overlapping
-                self.collide_solid_platform(collided_object)
-
-    def enforce_screen_limits(self):
-        if self.rect.left < 0:
-            self.rect.left = 0
-            self.u *= -1
-        if self.rect.right > SCREEN_WIDTH:
-            self.rect.right = SCREEN_WIDTH
-            self.u *= -1
-        if self.rect.top < 0:
-            self.rect.top = 0
-            self.v *= -1
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
-            self.v *= -1
-
-    def update_physics(self):
-        # update position
-        self.x += self.u
-        self.y += self.v
-
-        self.v += self.GRAVITY
-
-        self.u *= (1 - self.AIR_RESISTANCE)  # air resistance
-        self.v *= (1 - self.AIR_RESISTANCE)  # air resistance
-
-        # don't allow sub-pixel speeds
-        self.u = 0 if abs(self.u) < .5 else self.u
+            self.state = self.states.FALL
 
 

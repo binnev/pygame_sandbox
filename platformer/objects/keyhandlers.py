@@ -3,14 +3,18 @@ from collections import deque
 
 class Empty(tuple):
     """Mock tuple of 0/1s that always returns a 0 no matter the index. This is used to
-    spoof an empty pygame.key.get_pressed() tuple, which has 1s for every key that is
-    currently down. """
+    spoof an empty pygame.key.get_pressed() tuple."""
 
     def __getitem__(self, *args, **kwargs):
         return 0
 
 
 class KeyHandler(deque):
+    """
+    Provides additional functionality beyond pygame.key.get_pressed().
+    - Maintains a buffer of the last few keypresses
+    - Calculates which keys have been pressed and released this tick
+    """
 
     def __init__(self, queue_length=5):
         super().__init__()
@@ -33,6 +37,7 @@ class KeyHandler(deque):
         self.discard_old()
 
     # ========== getting key information ==========
+
     def get_down(self):
         """Return the current state of keys---which are currently down"""
         return self[-1] if len(self) > 0 else Empty()
