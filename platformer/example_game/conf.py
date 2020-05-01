@@ -1,5 +1,3 @@
-import pygame
-
 SIZE = 500
 SCREEN_WIDTH = SIZE
 SCREEN_HEIGHT = SIZE

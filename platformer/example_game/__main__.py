@@ -1,7 +1,8 @@
 # ======= this block has to come first to preserve the pygame loading order ==============
 import pygame
 
-from platformer.conf import SCREEN_WIDTH, SCREEN_HEIGHT
+from platformer.example_game.entities.characters.blob import Blob, Ball
+from .conf import SCREEN_HEIGHT, SCREEN_WIDTH
 
 pygame.init()
 pygame.font.init()
@@ -9,11 +10,11 @@ window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("")
 # ========================================================================================
 
-from platformer.keyhandler import KeyHandler
-from platformer.levels import TestLevel, FinalDestination
-from platformer.objects import Blob, Ball
+from platformer.objects.keyhandlers import KeyHandler
+from .levels import TestLevel, FinalDestination
 
 
+# todo: ok this definitely needs to at least have a superclass in platformer.
 class Game:
 
     def __init__(self):
