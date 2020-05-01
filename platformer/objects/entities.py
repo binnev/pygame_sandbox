@@ -437,7 +437,7 @@ class Character(Entity, AnimationMixin, CollisionMixin):
         self.keys = keys
         self.execute_state()
         self.update_physics()
-        self.enforce_screen_limits()
+        self.enforce_screen_limits(*self.level.game.screen_size)
         # self.debug_print()
         self.update_cooldowns()
         self.update_animation()

@@ -2,80 +2,95 @@ from pathlib import Path
 import numpy
 import pygame
 
-from platformer.objects.entities import Character, Keys, Entity, AnimationMixin, \
-    PhysicsMixin, CollisionMixin, Projectile
+from platformer.objects.entities import (Character, Keys, Entity,
+                                         AnimationMixin, PhysicsMixin,
+                                         CollisionMixin, Projectile)
 
 from platformer.objects.animation import SpriteAnimation, SpriteSheet
-from ...conf import SCALE_SPRITES
+from ...conf import SCALE_SPRITES, TICKS_PER_SPRITE_FRAME
 
-folder = Path("sprites/blob/")
+sprites_folder = Path("example_game/sprites/")
+folder = sprites_folder / "blob"
 # todo; make a class for this. SpriteSet?
 BLOB_SPRITES = {
     "stand":
-        SpriteAnimation(
-            SpriteSheet((folder / "blob_stand.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES)),
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_stand.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "jump":
-        SpriteAnimation(
-            SpriteSheet((folder / "blob_jump.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3)),
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_jump.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3),
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "jump_right":
-        SpriteAnimation(
-            SpriteSheet((folder / "blob_jump_right.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3)),
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_jump_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3),
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "jump_left":
         SpriteAnimation(SpriteSheet(
             (folder / "blob_jump_right.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES, num_images=3),
-                        flip_horizontal=True),
+                        flip_horizontal=True,
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "fall":
-        SpriteAnimation(
-            SpriteSheet((folder / "blob_fall.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3)),
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_fall.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3),
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "fall_right":
-        SpriteAnimation(
-            SpriteSheet((folder / "blob_fall_right.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3)),
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_fall_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=3),
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "fall_left":
         SpriteAnimation(SpriteSheet(
             (folder / "blob_fall_right.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES, num_images=3),
-                        flip_horizontal=True),
+                        flip_horizontal=True,
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "crouch":
         SpriteAnimation(SpriteSheet(
             (folder / "blob_crouch.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES),
-                        looping=False),
+                        looping=False,
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "run_right":
-        SpriteAnimation(
-            SpriteSheet((folder / "blob_run_right.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=8)),
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_run_right.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES, num_images=8),
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "run_left":
         SpriteAnimation(SpriteSheet(
             (folder / "blob_run_right.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES, num_images=8),
-                        flip_horizontal=True),
+                        flip_horizontal=True,
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
 }
 
-folder = Path("sprites/blob/")
+folder = sprites_folder / "blob"
 PROJECTILE_SPRITES = {
     "right":
-        SpriteAnimation(
-            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES)),
+        SpriteAnimation(SpriteSheet(
+            (folder / "blob_projectile.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
     "left":
         SpriteAnimation(SpriteSheet(
             (folder / "blob_projectile.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES),
-                        flip_horizontal=True),
+                        flip_horizontal=True,
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
 }
 
-folder = Path("sprites/volleyball/")
+folder = sprites_folder / "volleyball"
 BALL_SPRITES = {
     "default":
-        SpriteAnimation(
-            SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES)),
+        SpriteAnimation(SpriteSheet(
+            (folder / "volleyball.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
 }
 
 
@@ -179,7 +194,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
         self.handle_collisions()
         self.update_physics()
         self.update_animation()
-        self.enforce_screen_limits()
+        self.enforce_screen_limits(*self.level.game.screen_size)
 
     def handle_collisions(self):
         collision_object_lists = (

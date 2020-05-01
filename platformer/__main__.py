@@ -1,18 +1,16 @@
 # ======= this block has to come first to preserve the pygame loading order ==============
 import pygame
 
-from platformer.example_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-
 pygame.init()
-pygame.font.init()
-window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+window = pygame.display.set_mode((500, 500))
 pygame.display.set_caption("")
 # ========================================================================================
-from platformer.example_game.game import ExampleGame
+
+from platformer.objects.game import Game
 
 
 def main():
-    game = ExampleGame(window)
+    game = Game(window)
     game.main()
     pygame.quit()
 
