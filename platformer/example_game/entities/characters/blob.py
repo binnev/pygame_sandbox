@@ -16,7 +16,6 @@ from platformer.objects.animation import SpriteAnimation, SpriteSheet
 from ...conf import SCALE_SPRITES, TICKS_PER_SPRITE_FRAME
 
 sprites_folder = Path("example_game/sprites/")
-# todo; make a class for this. SpriteSet?
 
 
 class SpriteDict(dict):
@@ -28,9 +27,10 @@ class SpriteDict(dict):
     def __init__(
         self,
         size: (int, int),
-        scale: int,
-        game_ticks_per_sprite_frame: int,
         file_mapping: dict,
+        scale: int = 1,
+        game_ticks_per_sprite_frame: int = 1,
+        colormap: dict = None,
     ):
         """
         Default parameters (size, scale, etc) will be used for all sprites, unless the
@@ -44,10 +44,8 @@ class SpriteDict(dict):
             # individual sprite parameters override default params
             _size = sprite_info.get("size") or size
             _scale = sprite_info.get("scale") or scale
-            _ticks_per_frame = (
-                sprite_info.get("game_ticks_per_sprite_frame")
-                or game_ticks_per_sprite_frame
-            )
+            _ticks_per_frame = (sprite_info.get("game_ticks_per_sprite_frame")
+                                or game_ticks_per_sprite_frame)
 
             # specific to individual sprites
             filename = sprite_info.get("filename")
@@ -55,10 +53,10 @@ class SpriteDict(dict):
             flip_horizontal = sprite_info.get("flip_horizontal")
             flip_vertical = sprite_info.get("flip_vertical")
 
-            sprite_sheet = SpriteSheet(filename)
-            frames_list = sprite_sheet.load_sheet(
-                *_size, scale=_scale, num_images=num_images
-            )
+            sprite_sheet = SpriteSheet(filename, colormap)
+            frames_list = sprite_sheet.load_sheet(*_size,
+                                                  scale=_scale,
+                                                  num_images=num_images)
             sprite_animation = SpriteAnimation(
                 frames_list,
                 game_ticks_per_sprite_frame=_ticks_per_frame,
@@ -78,25 +76,46 @@ class SpriteDict(dict):
 folder = sprites_folder / "blob"
 colormap = {
     (120, 62, 151): (255, 163, 0),  # convert purple to orange
+    (77, 40, 97): (125, 80, 0),  # convert shadows to dark orange
 }
 file_mapping = {
-    "stand": {"filename": folder / "blob_stand.png"},
-    "jump": {"filename": folder / "blob_jump.png", "num_images": 3},
-    "jump_right": {"filename": folder / "blob_jump_right.png", "num_images": 3},
+    "stand": {
+        "filename": folder / "blob_stand.png"
+    },
+    "jump": {
+        "filename": folder / "blob_jump.png",
+        "num_images": 3
+    },
+    "jump_right": {
+        "filename": folder / "blob_jump_right.png",
+        "num_images": 3
+    },
     "jump_left": {
         "filename": folder / "blob_jump_right.png",
         "num_images": 3,
         "flip_horizontal": True,
     },
-    "fall": {"filename": folder / "blob_fall.png", "num_images": 3},
-    "fall_right": {"filename": folder / "blob_fall_right.png", "num_images": 3},
+    "fall": {
+        "filename": folder / "blob_fall.png",
+        "num_images": 3
+    },
+    "fall_right": {
+        "filename": folder / "blob_fall_right.png",
+        "num_images": 3
+    },
     "fall_left": {
         "filename": folder / "blob_fall_right.png",
         "num_images": 3,
         "flip_horizontal": True,
     },
-    "crouch": {"filename": folder / "blob_crouch.png", "looping": False,},
-    "run_right": {"filename": folder / "blob_run_right.png", "num_images": 8},
+    "crouch": {
+        "filename": folder / "blob_crouch.png",
+        "looping": False,
+    },
+    "run_right": {
+        "filename": folder / "blob_run_right.png",
+        "num_images": 8
+    },
     "run_left": {
         "filename": folder / "blob_run_right.png",
         "num_images": 8,
@@ -111,98 +130,39 @@ BLOB_SPRITES = SpriteDict(
     file_mapping=file_mapping,
 )
 
-# BLOB_SPRITES = {
-#     "stand": SpriteAnimation(
-#         SpriteSheet(
-#             (folder / "blob_stand.png").as_posix(), colormap=colormap
-#         ).load_sheet(32, 32, scale=SCALE_SPRITES),
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-#     "jump": SpriteAnimation(
-#         SpriteSheet((folder / "blob_jump.png").as_posix()).load_sheet(
-#             32, 32, scale=SCALE_SPRITES, num_images=3
-#         ),
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-#     "jump_right": SpriteAnimation(
-#         SpriteSheet((folder / "blob_jump_right.png").as_posix()).load_sheet(
-#             32, 32, scale=SCALE_SPRITES, num_images=3
-#         ),
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-#     "jump_left": SpriteAnimation(
-#         SpriteSheet((folder / "blob_jump_right.png").as_posix()).load_sheet(
-#             32, 32, scale=SCALE_SPRITES, num_images=3
-#         ),
-#         flip_horizontal=True,
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-#     "fall": SpriteAnimation(
-#         SpriteSheet((folder / "blob_fall.png").as_posix()).load_sheet(
-#             32, 32, scale=SCALE_SPRITES, num_images=3
-#         ),
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-#     "fall_right": SpriteAnimation(
-#         SpriteSheet((folder / "blob_fall_right.png").as_posix()).load_sheet(
-#             32, 32, scale=SCALE_SPRITES, num_images=3
-#         ),
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-#     "fall_left": SpriteAnimation(
-#         SpriteSheet((folder / "blob_fall_right.png").as_posix()).load_sheet(
-#             32, 32, scale=SCALE_SPRITES, num_images=3
-#         ),
-#         flip_horizontal=True,
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-#     "crouch": SpriteAnimation(
-#         SpriteSheet((folder / "blob_crouch.png").as_posix()).load_sheet(
-#             32, 32, scale=SCALE_SPRITES
-#         ),
-#         looping=False,
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-#     "run_right": SpriteAnimation(
-#         SpriteSheet((folder / "blob_run_right.png").as_posix()).load_sheet(
-#             32, 32, scale=SCALE_SPRITES, num_images=8
-#         ),
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-#     "run_left": SpriteAnimation(
-#         SpriteSheet((folder / "blob_run_right.png").as_posix()).load_sheet(
-#             32, 32, scale=SCALE_SPRITES, num_images=8
-#         ),
-#         flip_horizontal=True,
-#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-#     ),
-# }
+ORANGE_BLOB_SPRITES = SpriteDict(
+    size=(32, 32),
+    scale=SCALE_SPRITES,
+    game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+    file_mapping=file_mapping,
+    colormap=colormap,
+)
 
 folder = sprites_folder / "blob"
 PROJECTILE_SPRITES = {
-    "right": SpriteAnimation(
-        SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
-            32, 32, scale=SCALE_SPRITES
+    "right":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
         ),
-        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    ),
-    "left": SpriteAnimation(
-        SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
-            32, 32, scale=SCALE_SPRITES
+    "left":
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+            flip_horizontal=True,
+            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
         ),
-        flip_horizontal=True,
-        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    ),
 }
 
 folder = sprites_folder / "volleyball"
 BALL_SPRITES = {
-    "default": SpriteAnimation(
-        SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
-            32, 32, scale=SCALE_SPRITES
+    "default":
+        SpriteAnimation(
+            SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
+                32, 32, scale=SCALE_SPRITES),
+            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
         ),
-        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    ),
 }
 
 
@@ -231,18 +191,20 @@ class Blob(Character):
     projectile_cooldown_frames = 30
     projectile_cooldown = 0
 
-    # put these in a subclass
-    sprites = BLOB_SPRITES
-    image = sprites["stand"].get_frame(0)
+    skins = {
+        1: BLOB_SPRITES,
+        2: ORANGE_BLOB_SPRITES,
+    }
 
-    def __init__(self, x, y, groups=[]):
+    def __init__(self, x, y, skin=1, groups=[]):
         """Extend parent init method here e.g. by adding extra entries to the
         state_lookup dict"""
         super().__init__(x, y, groups)
+        # add custom states
         self.states.SHOOT_PROJECTILE = "SHOOT_PROJECTILE"
         self.state_lookup.update(
-            {self.states.SHOOT_PROJECTILE: self.state_shoot_projectile}
-        )
+            {self.states.SHOOT_PROJECTILE: self.state_shoot_projectile})
+        self.sprites = self.skins[skin]
 
     def update_cooldowns(self):
         super().update_cooldowns()
@@ -262,9 +224,8 @@ class Blob(Character):
         self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
         old_width = self.image.get_rect().width
         old_height = self.image.get_rect().height
-        self.image = pygame.transform.scale(
-            self.image, (int(old_width * 0.5), old_height)
-        )
+        self.image = pygame.transform.scale(self.image,
+                                            (int(old_width * 0.5), old_height))
         self.allow_fastfall()
         self.enforce_max_fall_speed()
 
@@ -282,7 +243,8 @@ class Blob(Character):
             facing = "left"
         else:
             facing = "right" if self.u > 0 else "left"
-        self.level.add_objects(BlobProjectile(*self.centroid, 100, 100, facing=facing))
+        self.level.add_objects(
+            BlobProjectile(*self.centroid, 100, 100, facing=facing))
         self.projectile_cooldown = self.projectile_cooldown_frames
 
 
@@ -312,19 +274,17 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
     def handle_collisions(self):
         collision_object_lists = (
             # self.level.platforms,
-            self.level.characters,
-        )
+            self.level.characters,)
         for collision_object_list in collision_object_lists:
             collided_objects = pygame.sprite.spritecollide(
-                self, collision_object_list, dokill=False
-            )
+                self, collision_object_list, dokill=False)
             for collided_object in collided_objects:
                 # bounce self away from collided object
                 print(f"collided with {collided_object}")
                 delta_x = self.centroid.x - collided_object.centroid.x
                 delta_y = self.centroid.y - collided_object.centroid.y
                 vector = numpy.array([delta_x, delta_y])
-                magnitude = numpy.sqrt(delta_x ** 2 + delta_y ** 2)
+                magnitude = numpy.sqrt(delta_x**2 + delta_y**2)
                 unit_vector = vector / magnitude
                 self.u += unit_vector[0] * self.BOUNCINESS
                 self.v += unit_vector[1] * self.BOUNCINESS
@@ -357,3 +317,4 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
 
         # don't allow sub-pixel speeds
         self.u = 0 if abs(self.u) < 0.5 else self.u
+

@@ -109,7 +109,7 @@ class SpriteAnimation:
     """
 
     def __init__(self,
-                 frames: list,
+                 frames: [pygame.Surface],
                  flip_horizontal=False,
                  flip_vertical=False,
                  looping=True,

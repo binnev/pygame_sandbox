@@ -16,8 +16,8 @@ class ExampleGame(Game):
 
     def run_level(self, level_class):
         level = level_class(self)
-        character = Blob(50, 200)
-        level.add(character, type="character")
+        level.add(Blob(50, 200), type="character")
+        level.add(Blob(150, 200, skin=2), type="character")
         debug = False
 
         run = True
