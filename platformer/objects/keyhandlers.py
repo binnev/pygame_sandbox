@@ -16,6 +16,7 @@ class KeyHandler(deque):
     - Calculates which keys have been pressed and released this tick
     """
 
+    # todo: just use maxlen arg for deque class
     def __init__(self, queue_length=5):
         super().__init__()
         self.queue_length = queue_length

@@ -1,4 +1,5 @@
-from collections import namedtuple
+from collections import namedtuple, deque
+from copy import deepcopy
 
 import numpy as np
 import pygame
@@ -6,6 +7,7 @@ import pygame
 from numpy import sign
 
 Point = namedtuple("Point", ["x", "y"])
+
 
 # key mapping -- todo: make a better class for this and make Entity (or a mixin)
 #  receive a keymap parameter.
@@ -16,6 +18,7 @@ class Keys:
     UP = pygame.K_UP
     DOWN = pygame.K_DOWN
     FIRE = pygame.K_SPACE
+
 
 class Entity(pygame.sprite.Sprite):
     """This is the class from which all game objects will be derived---Characters,
@@ -41,7 +44,6 @@ class Entity(pygame.sprite.Sprite):
         self.width = width  # todo: give these more specific names e.g. collision_width
         self.height = height
         self.state = None
-        # rect is used for simple collisions
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = x, y
 
@@ -215,16 +217,34 @@ class PhysicsMixin:
         self.v = 0 if abs(self.v) < .5 else self.v
 
 
+class HistoryMixin:
+    attributes_to_remember: [str]  # names of the attributes to store in history
+
+    def __init__(self):
+        self.history = deque(maxlen=5)
+
+    def update_history(self):
+        self.history.append({
+            attr: deepcopy(getattr(self, attr))
+            for attr in self.attributes_to_remember
+        })
+
+
 class CollisionMixin:
     rect: pygame.Rect
     centroid: property
 
+    def get_overlap_with_object(self, obj):
+        """Get the x and y overlap between self and obj.rect"""
+        x_overlap = (min(self.rect.right, obj.rect.right) -
+                     max(self.rect.left, obj.rect.left))
+        y_overlap = (min(self.rect.bottom, obj.rect.bottom) -
+                     max(self.rect.top, obj.rect.top))
+        return x_overlap, y_overlap
+
     def collide_solid_platform(self, platform):
         """Move self outside boundaries of solid platform."""
-        x_overlap = (min(self.rect.right, platform.rect.right) -
-                     max(self.rect.left, platform.rect.left))
-        y_overlap = (min(self.rect.bottom, platform.rect.bottom) -
-                     max(self.rect.top, platform.rect.top))
+        x_overlap, y_overlap = self.get_overlap_with_object(platform)
         if x_overlap >= y_overlap:
             # move vertically
             # allow a small overlap to stand on a platform and maintain contact
@@ -243,6 +263,16 @@ class CollisionMixin:
                 self.rect.left = platform.rect.right
             else:
                 self.rect.right = platform.rect.left
+
+    # def collide_droppable_platform(self, platform):
+    #     # if self was already below the platform's top edge last tick, do nothing.
+    #     if self.previous_frame.rect.bottom below platform.previous_frame.rect.top:
+    #         return
+    #     # if self was above the platform's top edge last tick; do collision
+    #     else:
+    #         # move vertically
+    #         # allow a small overlap to stand on a platform and maintain contact
+    #         self.rect.bottom = platform.rect.top + 1
 
 
 class MovingEntity(Entity, AnimationMixin):
@@ -295,7 +325,7 @@ class Projectile(Entity, AnimationMixin):
         self.update_animation()
 
 
-class Character(Entity, AnimationMixin, CollisionMixin):
+class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     # class properties
     width: int
@@ -337,9 +367,13 @@ class Character(Entity, AnimationMixin, CollisionMixin):
     # references to other objects
     level = None
 
+    # historymixin
+    attributes_to_remember = ["rect", "x", "y"]
+
     def __init__(self, x, y, groups=[]):
 
         super().__init__(x, y, self.width, self.height, groups=groups)
+        HistoryMixin.__init__(self)
 
         self.u = 0  # todo: move to PhysicsMixin.__init__()
         self.v = 0
@@ -441,6 +475,7 @@ class Character(Entity, AnimationMixin, CollisionMixin):
         # self.debug_print()
         self.update_cooldowns()
         self.update_animation()
+        self.update_history()
 
     def update_cooldowns(self):
         # todo: make a cooldowns mixin which does this for a list of cooldowns.
@@ -607,5 +642,3 @@ class Character(Entity, AnimationMixin, CollisionMixin):
             self.state = self.states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
-
-
