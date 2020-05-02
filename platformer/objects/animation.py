@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pygame
 
 
@@ -40,6 +42,7 @@ class SpriteSheet:
     """Handles importing spritesheets and dividing into individual frame images."""
 
     def __init__(self, filename, colormap=None):
+        filename = Path(filename).as_posix()
         try:
             self.sheet = pygame.image.load(filename).convert_alpha()
             if colormap:
@@ -101,7 +104,7 @@ class SpriteAnimation:
                  looping=True,
                  game_ticks_per_sprite_frame=1):
         self.frames = [
-            pygame.transform.flip(f, flip_horizontal, flip_vertical)
+            pygame.transform.flip(f, bool(flip_horizontal), bool(flip_vertical))
             for f in frames
         ]
         self.looping = looping

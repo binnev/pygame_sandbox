@@ -2,99 +2,225 @@ from pathlib import Path
 import numpy
 import pygame
 
-from platformer.objects.entities import (Character, Keys, Entity,
-                                         AnimationMixin, PhysicsMixin,
-                                         CollisionMixin, Projectile)
+from platformer.objects.entities import (
+    Character,
+    Keys,
+    Entity,
+    AnimationMixin,
+    PhysicsMixin,
+    CollisionMixin,
+    Projectile,
+)
 
 from platformer.objects.animation import SpriteAnimation, SpriteSheet
 from ...conf import SCALE_SPRITES, TICKS_PER_SPRITE_FRAME
 
 sprites_folder = Path("example_game/sprites/")
-folder = sprites_folder / "blob"
 # todo; make a class for this. SpriteSet?
 
+
+class SpriteDict(dict):
+    """
+    Manages all the sprites for an entity---e.g. "stand", "run", etc.
+    Should offer a method for easy recoloring of all sprites.
+    """
+
+    def __init__(
+        self,
+        size: (int, int),
+        scale: int,
+        game_ticks_per_sprite_frame: int,
+        file_mapping: dict,
+    ):
+        """
+        Default parameters (size, scale, etc) will be used for all sprites, unless the
+        individual entry in file_mapping contains alternate values for the same
+        parameters; in that case, the specific params override the general ones.
+        """
+        super().__init__()
+
+        for sprite_name, sprite_info in file_mapping.items():
+
+            # individual sprite parameters override default params
+            _size = sprite_info.get("size") or size
+            _scale = sprite_info.get("scale") or scale
+            _ticks_per_frame = (sprite_info.get("game_ticks_per_sprite_frame")
+                                or game_ticks_per_sprite_frame)
+
+            # specific to individual sprites
+            filename = sprite_info.get("filename")
+            num_images = sprite_info.get("num_images")
+            flip_horizontal = sprite_info.get("flip_horizontal")
+            flip_vertical = sprite_info.get("flip_vertical")
+
+            sprite_sheet = SpriteSheet(filename)
+            frames_list = sprite_sheet.load_sheet(*_size,
+                                                  scale=_scale,
+                                                  num_images=num_images)
+            sprite_animation = SpriteAnimation(
+                frames_list,
+                game_ticks_per_sprite_frame=_ticks_per_frame,
+                flip_horizontal=flip_horizontal,
+                flip_vertical=flip_vertical,
+            )
+
+            self[sprite_name] = sprite_animation
+
+    def recolor_sprite(self):
+        pass
+
+    def recolor_all_sprites(self):
+        pass
+
+
+folder = sprites_folder / "blob"
 colormap = {
     (120, 62, 151): (255, 163, 0),  # convert purple to orange
 }
-BLOB_SPRITES = {
-    "stand":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_stand.png").as_posix(),
-            colormap=colormap).load_sheet(32, 32, scale=SCALE_SPRITES),
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
-    "jump":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_jump.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3),
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
-    "jump_right":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_jump_right.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3),
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
-    "jump_left":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_jump_right.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3),
-                        flip_horizontal=True,
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
-    "fall":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_fall.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3),
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
-    "fall_right":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_fall_right.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3),
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
-    "fall_left":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_fall_right.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=3),
-                        flip_horizontal=True,
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
-    "crouch":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_crouch.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES),
-                        looping=False,
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
-    "run_right":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_run_right.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=8),
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
-    "run_left":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_run_right.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES, num_images=8),
-                        flip_horizontal=True,
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
+args = {
+    "size": (32, 32),
+    "scale": SCALE_SPRITES,
+    "game_ticks_per_sprite_frame": TICKS_PER_SPRITE_FRAME,
 }
+file_mapping = {
+    "stand": {
+        "filename": folder / "blob_stand.png"
+    },
+    "jump": {
+        "filename": folder / "blob_jump.png",
+        "num_images": 3
+    },
+    "jump_right": {
+        "filename": folder / "blob_jump_right.png",
+        "num_images": 3
+    },
+    "jump_left": {
+        "filename": folder / "blob_jump_right.png",
+        "num_images": 3,
+        "flip_horizontal": True,
+    },
+    "fall": {
+        "filename": folder / "blob_fall.png",
+        "num_images": 3
+    },
+    "fall_right": {
+        "filename": folder / "blob_fall_right.png",
+        "num_images": 3
+    },
+    "fall_left": {
+        "filename": folder / "blob_fall_right.png",
+        "num_images": 3,
+        "flip_horizontal": True,
+    },
+    "crouch": {
+        "filename": folder / "blob_crouch.png",
+        "looping": False,
+    },
+    "run_right": {
+        "filename": folder / "blob_run_right.png",
+        "num_images": 8
+    },
+    "run_left": {
+        "filename": folder / "blob_run_right.png",
+        "num_images": 8,
+        "flip_horizontal": True,
+    },
+}
+
+BLOB_SPRITES = SpriteDict(**args, file_mapping=file_mapping)
+
+# BLOB_SPRITES = {
+#     "stand": SpriteAnimation(
+#         SpriteSheet(
+#             (folder / "blob_stand.png").as_posix(), colormap=colormap
+#         ).load_sheet(32, 32, scale=SCALE_SPRITES),
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+#     "jump": SpriteAnimation(
+#         SpriteSheet((folder / "blob_jump.png").as_posix()).load_sheet(
+#             32, 32, scale=SCALE_SPRITES, num_images=3
+#         ),
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+#     "jump_right": SpriteAnimation(
+#         SpriteSheet((folder / "blob_jump_right.png").as_posix()).load_sheet(
+#             32, 32, scale=SCALE_SPRITES, num_images=3
+#         ),
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+#     "jump_left": SpriteAnimation(
+#         SpriteSheet((folder / "blob_jump_right.png").as_posix()).load_sheet(
+#             32, 32, scale=SCALE_SPRITES, num_images=3
+#         ),
+#         flip_horizontal=True,
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+#     "fall": SpriteAnimation(
+#         SpriteSheet((folder / "blob_fall.png").as_posix()).load_sheet(
+#             32, 32, scale=SCALE_SPRITES, num_images=3
+#         ),
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+#     "fall_right": SpriteAnimation(
+#         SpriteSheet((folder / "blob_fall_right.png").as_posix()).load_sheet(
+#             32, 32, scale=SCALE_SPRITES, num_images=3
+#         ),
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+#     "fall_left": SpriteAnimation(
+#         SpriteSheet((folder / "blob_fall_right.png").as_posix()).load_sheet(
+#             32, 32, scale=SCALE_SPRITES, num_images=3
+#         ),
+#         flip_horizontal=True,
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+#     "crouch": SpriteAnimation(
+#         SpriteSheet((folder / "blob_crouch.png").as_posix()).load_sheet(
+#             32, 32, scale=SCALE_SPRITES
+#         ),
+#         looping=False,
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+#     "run_right": SpriteAnimation(
+#         SpriteSheet((folder / "blob_run_right.png").as_posix()).load_sheet(
+#             32, 32, scale=SCALE_SPRITES, num_images=8
+#         ),
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+#     "run_left": SpriteAnimation(
+#         SpriteSheet((folder / "blob_run_right.png").as_posix()).load_sheet(
+#             32, 32, scale=SCALE_SPRITES, num_images=8
+#         ),
+#         flip_horizontal=True,
+#         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+#     ),
+# }
 
 folder = sprites_folder / "blob"
 PROJECTILE_SPRITES = {
     "right":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_projectile.png").as_posix()).load_sheet(
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES),
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
+            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+        ),
     "left":
-        SpriteAnimation(SpriteSheet(
-            (folder / "blob_projectile.png").as_posix()).load_sheet(
+        SpriteAnimation(
+            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES),
-                        flip_horizontal=True,
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
+            flip_horizontal=True,
+            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+        ),
 }
 
 folder = sprites_folder / "volleyball"
 BALL_SPRITES = {
     "default":
-        SpriteAnimation(SpriteSheet(
-            (folder / "volleyball.png").as_posix()).load_sheet(
+        SpriteAnimation(
+            SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
                 32, 32, scale=SCALE_SPRITES),
-                        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME),
+            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+        ),
 }
 
 
@@ -115,7 +241,7 @@ class Blob(Character):
     jumpsquat_frames = 4
     _friction = 0.3
     air_resistance = 0.05
-    crouch_height_multiplier = .7
+    crouch_height_multiplier = 0.7
 
     # cooldowns -- todo: put this in a mixin?
     double_jump_cooldown_frames = 15  # should this go in the Character class?
@@ -188,7 +314,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
     sprites = BALL_SPRITES
     image = sprites["default"].get_frame(0)
     BOUNCINESS = 3
-    GRAVITY = .5
+    GRAVITY = 0.5
     AIR_RESISTANCE = 0.01
 
     def __init__(self, x, y, groups=[], color=None):
@@ -241,8 +367,8 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
 
         self.v += self.GRAVITY
 
-        self.u *= (1 - self.AIR_RESISTANCE)  # air resistance
-        self.v *= (1 - self.AIR_RESISTANCE)  # air resistance
+        self.u *= 1 - self.AIR_RESISTANCE  # air resistance
+        self.v *= 1 - self.AIR_RESISTANCE  # air resistance
 
         # don't allow sub-pixel speeds
-        self.u = 0 if abs(self.u) < .5 else self.u
+        self.u = 0 if abs(self.u) < 0.5 else self.u
