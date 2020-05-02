@@ -15,7 +15,7 @@ from platformer.objects.entities import (
 from platformer.objects.animation import SpriteAnimation, SpriteSheet, SpriteDict
 from ...conf import SCALE_SPRITES, TICKS_PER_SPRITE_FRAME
 
-sprites_folder = Path("example_game/sprites/")
+sprites_folder = Path("sprites/")
 
 folder = sprites_folder / "blob"
 colormap = {
