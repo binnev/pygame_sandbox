@@ -1,3 +1,4 @@
+from copy import deepcopy
 from pathlib import Path
 
 import pygame
@@ -40,19 +41,20 @@ def recolor_sprite(surface, color_mapping: dict):
 
 class SpriteSheet:
     """Handles importing spritesheets and dividing into individual frame images."""
+    sheet: pygame.Surface
 
     def __init__(self, filename, colormap=None):
         filename = Path(filename).as_posix()
         try:
             self.sheet = pygame.image.load(filename).convert_alpha()
             if colormap:
-                self.sheet = recolor_sprite(self.sheet, colormap)
+                self.recolor(colormap)
         except pygame.error as message:
             print('Unable to load spritesheet image:', filename)
             raise Exception(message)
 
-    # Load a specific image from a specific rectangle
     def image_at(self, rectangle, colorkey=None, scale=None):
+        """Load a specific image from a specific rectangle"""
 
         rect = pygame.Rect(rectangle)
         image = self.sheet.subsurface(rect)
@@ -67,9 +69,8 @@ class SpriteSheet:
                                             image.get_rect().height * scale))
         return image
 
-    # Load a whole bunch of images and return them as a list
     def images_at(self, rects, colorkey=None, scale=None, num_images=None):
-        "Loads multiple images, supply a list of coordinates"
+        """Load a whole bunch of images and return them as a list"""
         result = [self.image_at(rect, colorkey, scale) for rect in rects]
         return result[:num_images] if num_images else result
 
@@ -79,6 +80,7 @@ class SpriteSheet:
                    colorkey: int = None,
                    scale: float = None,
                    num_images: int = None) -> [pygame.Surface]:
+        """Load a whole spritesheet and return frames as a list of images."""
         num_horizontal = self.sheet.get_rect().width // width
         num_vertical = self.sheet.get_rect().height // height
         rects = [(width * i, height * j, width, height)
@@ -87,13 +89,22 @@ class SpriteSheet:
         result = [self.image_at(rect, colorkey, scale) for rect in rects]
         return result[:num_images] if num_images else result
 
+    def recolor(self, colormap: dict) -> None:
+        """Recolor spritesheet in place"""
+        self.sheet = recolor_sprite(self.sheet, colormap)
+
+    def copy_and_recolor(self, colormap: dict):
+        """Return a recolored copy of the spritesheet (saves reloading the image)"""
+        new_spritesheet = deepcopy(self)
+        new_spritesheet.recolor(colormap)
+        return new_spritesheet
+
 
 class SpriteAnimation:
     """
     Handles the animating of a collection of frames.
     TODO:
       - allow resampling (showing frames more than once with a mapping)
-      - allow non-looping sprites (play once, then repeat last frame)
       - maybe even create functions for ease-in and ease-out sampling?
     """
 

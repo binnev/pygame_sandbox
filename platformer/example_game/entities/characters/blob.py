@@ -44,8 +44,10 @@ class SpriteDict(dict):
             # individual sprite parameters override default params
             _size = sprite_info.get("size") or size
             _scale = sprite_info.get("scale") or scale
-            _ticks_per_frame = (sprite_info.get("game_ticks_per_sprite_frame")
-                                or game_ticks_per_sprite_frame)
+            _ticks_per_frame = (
+                sprite_info.get("game_ticks_per_sprite_frame")
+                or game_ticks_per_sprite_frame
+            )
 
             # specific to individual sprites
             filename = sprite_info.get("filename")
@@ -54,9 +56,9 @@ class SpriteDict(dict):
             flip_vertical = sprite_info.get("flip_vertical")
 
             sprite_sheet = SpriteSheet(filename)
-            frames_list = sprite_sheet.load_sheet(*_size,
-                                                  scale=_scale,
-                                                  num_images=num_images)
+            frames_list = sprite_sheet.load_sheet(
+                *_size, scale=_scale, num_images=num_images
+            )
             sprite_animation = SpriteAnimation(
                 frames_list,
                 game_ticks_per_sprite_frame=_ticks_per_frame,
@@ -77,49 +79,24 @@ folder = sprites_folder / "blob"
 colormap = {
     (120, 62, 151): (255, 163, 0),  # convert purple to orange
 }
-args = {
-    "size": (32, 32),
-    "scale": SCALE_SPRITES,
-    "game_ticks_per_sprite_frame": TICKS_PER_SPRITE_FRAME,
-}
 file_mapping = {
-    "stand": {
-        "filename": folder / "blob_stand.png"
-    },
-    "jump": {
-        "filename": folder / "blob_jump.png",
-        "num_images": 3
-    },
-    "jump_right": {
-        "filename": folder / "blob_jump_right.png",
-        "num_images": 3
-    },
+    "stand": {"filename": folder / "blob_stand.png"},
+    "jump": {"filename": folder / "blob_jump.png", "num_images": 3},
+    "jump_right": {"filename": folder / "blob_jump_right.png", "num_images": 3},
     "jump_left": {
         "filename": folder / "blob_jump_right.png",
         "num_images": 3,
         "flip_horizontal": True,
     },
-    "fall": {
-        "filename": folder / "blob_fall.png",
-        "num_images": 3
-    },
-    "fall_right": {
-        "filename": folder / "blob_fall_right.png",
-        "num_images": 3
-    },
+    "fall": {"filename": folder / "blob_fall.png", "num_images": 3},
+    "fall_right": {"filename": folder / "blob_fall_right.png", "num_images": 3},
     "fall_left": {
         "filename": folder / "blob_fall_right.png",
         "num_images": 3,
         "flip_horizontal": True,
     },
-    "crouch": {
-        "filename": folder / "blob_crouch.png",
-        "looping": False,
-    },
-    "run_right": {
-        "filename": folder / "blob_run_right.png",
-        "num_images": 8
-    },
+    "crouch": {"filename": folder / "blob_crouch.png", "looping": False,},
+    "run_right": {"filename": folder / "blob_run_right.png", "num_images": 8},
     "run_left": {
         "filename": folder / "blob_run_right.png",
         "num_images": 8,
@@ -127,7 +104,12 @@ file_mapping = {
     },
 }
 
-BLOB_SPRITES = SpriteDict(**args, file_mapping=file_mapping)
+BLOB_SPRITES = SpriteDict(
+    size=(32, 32),
+    scale=SCALE_SPRITES,
+    game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+    file_mapping=file_mapping,
+)
 
 # BLOB_SPRITES = {
 #     "stand": SpriteAnimation(
@@ -198,29 +180,29 @@ BLOB_SPRITES = SpriteDict(**args, file_mapping=file_mapping)
 
 folder = sprites_folder / "blob"
 PROJECTILE_SPRITES = {
-    "right":
-        SpriteAnimation(
-            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES),
-            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+    "right": SpriteAnimation(
+        SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
+            32, 32, scale=SCALE_SPRITES
         ),
-    "left":
-        SpriteAnimation(
-            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES),
-            flip_horizontal=True,
-            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+    ),
+    "left": SpriteAnimation(
+        SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
+            32, 32, scale=SCALE_SPRITES
         ),
+        flip_horizontal=True,
+        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+    ),
 }
 
 folder = sprites_folder / "volleyball"
 BALL_SPRITES = {
-    "default":
-        SpriteAnimation(
-            SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
-                32, 32, scale=SCALE_SPRITES),
-            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+    "default": SpriteAnimation(
+        SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
+            32, 32, scale=SCALE_SPRITES
         ),
+        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+    ),
 }
 
 
@@ -259,7 +241,8 @@ class Blob(Character):
         super().__init__(x, y, groups)
         self.states.SHOOT_PROJECTILE = "SHOOT_PROJECTILE"
         self.state_lookup.update(
-            {self.states.SHOOT_PROJECTILE: self.state_shoot_projectile})
+            {self.states.SHOOT_PROJECTILE: self.state_shoot_projectile}
+        )
 
     def update_cooldowns(self):
         super().update_cooldowns()
@@ -279,8 +262,9 @@ class Blob(Character):
         self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
         old_width = self.image.get_rect().width
         old_height = self.image.get_rect().height
-        self.image = pygame.transform.scale(self.image,
-                                            (int(old_width * 0.5), old_height))
+        self.image = pygame.transform.scale(
+            self.image, (int(old_width * 0.5), old_height)
+        )
         self.allow_fastfall()
         self.enforce_max_fall_speed()
 
@@ -298,8 +282,7 @@ class Blob(Character):
             facing = "left"
         else:
             facing = "right" if self.u > 0 else "left"
-        self.level.add_objects(
-            BlobProjectile(*self.centroid, 100, 100, facing=facing))
+        self.level.add_objects(BlobProjectile(*self.centroid, 100, 100, facing=facing))
         self.projectile_cooldown = self.projectile_cooldown_frames
 
 
@@ -329,17 +312,19 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
     def handle_collisions(self):
         collision_object_lists = (
             # self.level.platforms,
-            self.level.characters,)
+            self.level.characters,
+        )
         for collision_object_list in collision_object_lists:
             collided_objects = pygame.sprite.spritecollide(
-                self, collision_object_list, dokill=False)
+                self, collision_object_list, dokill=False
+            )
             for collided_object in collided_objects:
                 # bounce self away from collided object
                 print(f"collided with {collided_object}")
                 delta_x = self.centroid.x - collided_object.centroid.x
                 delta_y = self.centroid.y - collided_object.centroid.y
                 vector = numpy.array([delta_x, delta_y])
-                magnitude = numpy.sqrt(delta_x**2 + delta_y**2)
+                magnitude = numpy.sqrt(delta_x ** 2 + delta_y ** 2)
                 unit_vector = vector / magnitude
                 self.u += unit_vector[0] * self.BOUNCINESS
                 self.v += unit_vector[1] * self.BOUNCINESS
