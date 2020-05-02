@@ -136,3 +136,52 @@ class SpriteAnimation:
             return self.frames[min(
                 game_tick // self.game_ticks_per_sprite_frame,
                 len(self.frames) - 1)]
+
+
+class SpriteDict(dict):
+    """
+    Manages all the sprites for an entity---e.g. "stand", "run", etc.
+    Should offer a method for easy recoloring of all sprites.
+    """
+
+    def __init__(
+        self,
+        size: (int, int),
+        file_mapping: dict,
+        scale: int = 1,
+        game_ticks_per_sprite_frame: int = 1,
+        colormap: dict = None,
+    ):
+        """
+        Default parameters (size, scale, etc) will be used for all sprites, unless the
+        individual entry in file_mapping contains alternate values for the same
+        parameters; in that case, the specific params override the general ones.
+        """
+        super().__init__()
+
+        for sprite_name, sprite_info in file_mapping.items():
+
+            # individual sprite parameters override default params
+            _size = sprite_info.get("size") or size
+            _scale = sprite_info.get("scale") or scale
+            _ticks_per_frame = (sprite_info.get("game_ticks_per_sprite_frame")
+                                or game_ticks_per_sprite_frame)
+
+            # specific to individual sprites
+            filename = sprite_info.get("filename")
+            num_images = sprite_info.get("num_images")
+            flip_horizontal = sprite_info.get("flip_horizontal")
+            flip_vertical = sprite_info.get("flip_vertical")
+
+            sprite_sheet = SpriteSheet(filename, colormap)
+            frames_list = sprite_sheet.load_sheet(*_size,
+                                                  scale=_scale,
+                                                  num_images=num_images)
+            sprite_animation = SpriteAnimation(
+                frames_list,
+                game_ticks_per_sprite_frame=_ticks_per_frame,
+                flip_horizontal=flip_horizontal,
+                flip_vertical=flip_vertical,
+            )
+
+            self[sprite_name] = sprite_animation
