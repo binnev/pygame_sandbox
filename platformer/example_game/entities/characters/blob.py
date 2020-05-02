@@ -66,19 +66,13 @@ class SpriteDict(dict):
 
             self[sprite_name] = sprite_animation
 
-    def recolor_sprite(self):
-        pass
-
-    def recolor_all_sprites(self):
-        pass
-
 
 folder = sprites_folder / "blob"
 colormap = {
     (120, 62, 151): (255, 163, 0),  # convert purple to orange
     (77, 40, 97): (125, 80, 0),  # convert shadows to dark orange
 }
-file_mapping = {
+blob_file_mapping = {
     "stand": {
         "filename": folder / "blob_stand.png"
     },
@@ -127,14 +121,14 @@ BLOB_SPRITES = SpriteDict(
     size=(32, 32),
     scale=SCALE_SPRITES,
     game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    file_mapping=file_mapping,
+    file_mapping=blob_file_mapping,
 )
 
 ORANGE_BLOB_SPRITES = SpriteDict(
     size=(32, 32),
     scale=SCALE_SPRITES,
     game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    file_mapping=file_mapping,
+    file_mapping=blob_file_mapping,
     colormap=colormap,
 )
 
