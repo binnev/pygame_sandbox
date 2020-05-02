@@ -264,18 +264,31 @@ class CollisionMixin:
             else:
                 self.rect.right = platform.rect.left
 
-    # def collide_droppable_platform(self, platform):
-    #     # if self was already below the platform's top edge last tick, do nothing.
-    #     if self.previous_frame.rect.bottom below platform.previous_frame.rect.top:
-    #         return
-    #     # if self was above the platform's top edge last tick; do collision
-    #     else:
-    #         # move vertically
-    #         # allow a small overlap to stand on a platform and maintain contact
-    #         self.rect.bottom = platform.rect.top + 1
+    def collide_droppable_platform(self, platform):
+        # if self was above the platform's top edge last tick; do collision
+        if (self.history[-1]["rect"].bottom < platform.rect.top
+            and not self.keys[Keys.DOWN]
+            and self.v > 0):
+            # allow a small overlap to stand on a platform and maintain contact
+            self.rect.bottom = platform.rect.top + 1
+
+    def handle_platform_collisions(self):
+        platforms = pygame.sprite.spritecollide(self,
+                                                self.level.platforms,
+                                                dokill=False)
+        for platform in platforms:
+            # this function handles the physics -- not allowing self to clip through
+            # platforms etc.
+            if platform.can_fall_through:
+                print("colliding with droppable platform")
+                self.collide_droppable_platform(platform)
+            else:
+                print("colliding with platform")
+                self.collide_solid_platform(platform)
 
 
-class MovingEntity(Entity, AnimationMixin):
+
+class MovingEntity(Entity, CollisionMixin, HistoryMixin):
     SPEED = 2
 
     # physics parameters
@@ -289,6 +302,12 @@ class MovingEntity(Entity, AnimationMixin):
     image = pygame.Surface((50, 50))
     image.fill(pygame.color.THECOLORS["goldenrod"])
 
+    attributes_to_remember = ["rect", "x", "y"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        HistoryMixin.__init__(self)
+
     def update(self, keys):
         if keys[Keys.RIGHT]:
             self.x += self.SPEED
@@ -299,7 +318,10 @@ class MovingEntity(Entity, AnimationMixin):
         if keys[Keys.UP]:
             self.y -= self.SPEED
 
-        self.update_animation()
+        self.handle_platform_collisions()
+        self.update_history()
+
+
 
 
 class Projectile(Entity, AnimationMixin):
@@ -442,20 +464,12 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     @property
     def airborne(self):
+        # fixme: airborne triggers functions! It should just be a simple boolean return
         platforms = pygame.sprite.spritecollide(self,
                                                 self.level.platforms,
                                                 dokill=False)
         for platform in platforms:
-            # this function handles the physics -- not allowing self to clip through
-            # platforms etc.
-            if platform.can_fall_through:
-                pass
-            else:
-                self.collide_solid_platform(platform)
-            # if the platform is below self, set airborne to False
-            if platform.centroid.y > self.centroid.y:
-                self.aerial_jumps_used = 0  # reset double jump counter
-                self.fastfall = False
+            if self.rect.bottom == platform.rect.top + 1:
                 return False
         return True
 
@@ -469,12 +483,14 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def update(self, keys):
         self.keys = keys
-        self.execute_state()
         self.update_physics()
+        self.execute_state()
         self.enforce_screen_limits(*self.level.game.screen_size)
-        # self.debug_print()
+        self.debug_print()
         self.update_cooldowns()
         self.update_animation()
+        # fixme: I think this needs to be handled by the game class to prevent the
+        #  order of object updates from fucking it up.
         self.update_history()
 
     def update_cooldowns(self):
@@ -488,8 +504,19 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         func()  # execute it
 
     def update_physics(self):
+        # update position
+        self.x += self.u
+        self.y += self.v
+
+        self.handle_platform_collisions()
+
         # always apply gravity. Other functions can enforce max fall speed
-        self.v += self.gravity
+        if self.airborne:
+            self.v += self.gravity
+        else:
+            self.v = 0
+            self.aerial_jumps_used = 0  # reset double jump counter
+            self.fastfall = False
 
         # reduce speeds
         if self.airborne:  # air resistance
@@ -502,9 +529,6 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         # the left
         self.u = 0 if abs(self.u) < 0.2 else self.u
 
-        # update position
-        self.x += self.u
-        self.y += self.v
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.x < 0:

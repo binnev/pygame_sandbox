@@ -2,13 +2,14 @@ import pygame
 
 from platformer.example_game.entities.characters.blob import Blob, Ball
 from platformer.example_game.levels import TestLevel, FinalDestination
+from platformer.objects.entities import MovingEntity
 from platformer.objects.game import Game
 
 
 class ExampleGame(Game):
 
-    def __init__(self, window):
-        super().__init__(window)
+    def __init__(self, window, fps=None):
+        super().__init__(window, fps)
         self.levels = {
             "test_level": TestLevel,
             "battlefield": FinalDestination,
@@ -16,8 +17,9 @@ class ExampleGame(Game):
 
     def run_level(self, level_class):
         level = level_class(self)
+        # level.add(MovingEntity(50, 200, 50, 50), type="character")
         level.add(Blob(50, 200), type="character")
-        level.add(Blob(150, 200, skin=2), type="character")
+        # level.add(Blob(150, 200, skin=2), type="character")
         debug = False
 
         run = True
@@ -45,7 +47,7 @@ class ExampleGame(Game):
                 debug=debug,
             )
             pygame.display.flip()
-            self.clock.tick(60)
+            self.clock.tick(self.fps)
 
     def main(self):
         run = True
@@ -67,4 +69,4 @@ class ExampleGame(Game):
 
             self.window.fill((255, 255, 255))
             pygame.display.flip()
-            self.clock.tick(60)
+            self.clock.tick(self.fps)

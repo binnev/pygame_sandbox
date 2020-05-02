@@ -5,12 +5,14 @@ from platformer.objects.keyhandlers import KeyHandler
 
 class Game:
     """This class runs the game"""
+    fps = 60
 
-    def __init__(self, window, fps=60):
+    def __init__(self, window, fps=None):
         self.window = window
         self.clock = pygame.time.Clock()
         self.key_handler = KeyHandler(queue_length=5)
-        self.fps = fps
+        if fps:
+            self.fps = fps
 
     @property
     def screen_size(self):
