@@ -11,8 +11,8 @@ class TestLevel(Level):
             Platform(50, 300, 50, 30, can_fall_through=True),
             Platform(150, 310, 50, 30, can_fall_through=True),
             Platform(250, 290, 50, 30, can_fall_through=True),
-            # Platform(300, 200, 50, 30, can_fall_through=False),
-            # Platform(200, 400, 150, 30, can_fall_through=False),
+            Platform(300, 200, 50, 30, can_fall_through=False),
+            Platform(200, 400, 150, 30, can_fall_through=False),
             Platform(-10, 480, 550, 30, can_fall_through=False),
             type="platform",
         )
