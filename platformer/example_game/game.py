@@ -12,7 +12,7 @@ class ExampleGame(Game):
         super().__init__(window, fps)
         self.levels = {
             "test_level": TestLevel,
-            "battlefield": FinalDestination,
+            "final_destination": FinalDestination,
         }
 
     def run_level(self, level_class):
@@ -20,7 +20,7 @@ class ExampleGame(Game):
         # level.add(MovingEntity(50, 200, 50, 50), type="character")
         level.add(Blob(50, 200), type="character")
         # level.add(Blob(150, 200, skin=2), type="character")
-        debug = False
+        debug = True
 
         run = True
         while run:
@@ -65,7 +65,7 @@ class ExampleGame(Game):
             if pressed[pygame.K_1]:
                 self.run_level(self.levels["test_level"])
             if pressed[pygame.K_2]:
-                self.run_level(self.levels["battlefield"])
+                self.run_level(self.levels["final_destination"])
 
             self.window.fill((255, 255, 255))
             pygame.display.flip()

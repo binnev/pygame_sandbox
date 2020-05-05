@@ -231,8 +231,11 @@ class HistoryMixin:
 
 
 class CollisionMixin:
+    """This mixin requires the subclass to have the following attributes to function"""
     rect: pygame.Rect
     centroid: property
+    history: deque
+    keys: tuple
 
     def get_overlap_with_object(self, obj):
         """Get the x and y overlap between self and obj.rect"""
@@ -242,18 +245,38 @@ class CollisionMixin:
                      max(self.rect.top, obj.rect.top))
         return x_overlap, y_overlap
 
+    def can_stand_on_droppable_platform(self, platform):
+        """This function assumes self is currently colliding with platform"""
+        # requirements for landing on top of platform
+        # self.rect.bottom was above platform.rect.top last tick
+        # not holding "DOWN" key
+        was_above_platform = self.history[-1]["rect"].bottom <= platform.rect.top + 1
+        not_holding_down = not self.keys[Keys.DOWN]
+        return was_above_platform and not_holding_down
+
+    def can_stand_on_solid_platform(self, platform):
+        """This function assumes self is currently colliding with platform"""
+        x_overlap, y_overlap = self.get_overlap_with_object(platform)
+        return x_overlap >= y_overlap and self.centroid.y < platform.centroid.y
+
+    def can_stand_on(self, platform):
+        """This function assumes self is currently colliding with platform"""
+        if platform.can_fall_through:
+            return self.can_stand_on_droppable_platform(platform)
+        else:
+            return self.can_stand_on_solid_platform(platform)
+
     def collide_solid_platform(self, platform):
         """Move self outside boundaries of solid platform."""
         x_overlap, y_overlap = self.get_overlap_with_object(platform)
         if x_overlap >= y_overlap:
             # move vertically
-            # allow a small overlap to stand on a platform and maintain contact
-            if y_overlap <= 1 and self.centroid.y < platform.centroid.y:
-                return
             # if self is below platform
             if self.centroid.y >= platform.centroid.y:
                 # bump head
                 self.rect.top = platform.rect.bottom
+                # fixme: this should be up to the subclass. All this function should do
+                #  is untangle the two objects
                 self.v = 0
             else:
                 self.rect.bottom = platform.rect.top + 1  # keep contact w. platform
@@ -265,14 +288,13 @@ class CollisionMixin:
                 self.rect.right = platform.rect.left
 
     def collide_droppable_platform(self, platform):
-        # if self was above the platform's top edge last tick; do collision
-        if (self.history[-1]["rect"].bottom < platform.rect.top
-            and not self.keys[Keys.DOWN]
-            and self.v > 0):
+        if self.can_stand_on_droppable_platform(platform):
             # allow a small overlap to stand on a platform and maintain contact
             self.rect.bottom = platform.rect.top + 1
 
     def handle_platform_collisions(self):
+        # todo: have objects store this info in an attribute that is calculated once
+        #  per tick
         platforms = pygame.sprite.spritecollide(self,
                                                 self.level.platforms,
                                                 dokill=False)
@@ -285,7 +307,6 @@ class CollisionMixin:
             else:
                 print("colliding with platform")
                 self.collide_solid_platform(platform)
-
 
 
 class MovingEntity(Entity, CollisionMixin, HistoryMixin):
@@ -320,8 +341,6 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
 
         self.handle_platform_collisions()
         self.update_history()
-
-
 
 
 class Projectile(Entity, AnimationMixin):
@@ -464,12 +483,11 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     @property
     def airborne(self):
-        # fixme: airborne triggers functions! It should just be a simple boolean return
         platforms = pygame.sprite.spritecollide(self,
                                                 self.level.platforms,
                                                 dokill=False)
         for platform in platforms:
-            if self.rect.bottom == platform.rect.top + 1:
+            if self.can_stand_on(platform):
                 return False
         return True
 
@@ -514,7 +532,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if self.airborne:
             self.v += self.gravity
         else:
-            self.v = 0
+            self.v = 0  # todo: I'm doing this multiple times
             self.aerial_jumps_used = 0  # reset double jump counter
             self.fastfall = False
 
@@ -529,20 +547,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         # the left
         self.u = 0 if abs(self.u) < 0.2 else self.u
 
-
-    def enforce_screen_limits(self, screen_width, screen_height):
-        if self.x < 0:
-            self.x = 0
-            self.u = 0
-        if self.x > screen_width:
-            self.x = screen_width
-            self.u = 0
-        if self.y < 0:
-            self.y = 0
-            self.v = 0
-        if self.y > screen_height:
-            self.y = screen_height
-            self.v = 0
+    # =========== utility methods ==================
 
     def debug_print(self):
         print(
@@ -566,6 +571,20 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if self.keys[Keys.DOWN] and self.v > 0:
             self.fastfall = True
             self.v = self.fall_speed
+
+    def enforce_screen_limits(self, screen_width, screen_height):
+        if self.x < 0:
+            self.x = 0
+            self.u = 0
+        if self.x > screen_width:
+            self.x = screen_width
+            self.u = 0
+        if self.y < 0:
+            self.y = 0
+            self.v = 0
+        if self.y > screen_height:
+            self.y = screen_height
+            self.v = 0
 
     # ========================= state functions ================================
 

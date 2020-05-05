@@ -12,7 +12,7 @@ from platformer.example_game.game import ExampleGame
 
 
 def main():
-    game = ExampleGame(window, fps=10)
+    game = ExampleGame(window, fps=60)
     game.main()
     pygame.quit()
 
