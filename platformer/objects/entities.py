@@ -6,7 +6,11 @@ import pygame
 
 from numpy import sign
 
+from platformer.utils import touching
+
 Point = namedtuple("Point", ["x", "y"])
+
+
 
 
 # key mapping -- todo: make a better class for this and make Entity (or a mixin)
@@ -32,7 +36,7 @@ class Entity(pygame.sprite.Sprite):
     """
     debug_color = pygame.Color(69, 69, 69)
     debug_background = pygame.Color(255, 255, 255)
-    touchbox_margin = 5
+    touchbox_margin = 10
 
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
@@ -342,6 +346,7 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
         HistoryMixin.__init__(self)
 
     def update(self, keys):
+        self.keys = keys
         if keys[Keys.RIGHT]:
             self.x += self.SPEED
         if keys[Keys.LEFT]:
@@ -352,7 +357,22 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
             self.y -= self.SPEED
 
         self.handle_platform_collisions()
+        self.handle_touching()
         self.update_history()
+
+    def handle_touching(self):
+        platforms = pygame.sprite.spritecollide(self,
+                                                self.level.platforms,
+                                                dokill=False,
+                                                collided=touching)
+        for platform in platforms:
+            # this function handles the physics -- not allowing self to clip through
+            # platforms etc.
+            if platform.can_fall_through:
+                print("TOUCHING droppable platform")
+            else:
+                print("TOUCHING platform")
+
 
 
 class Projectile(Entity, AnimationMixin):
