@@ -53,7 +53,6 @@ class Entity(pygame.sprite.Sprite):
         self.rect.center = x, y
 
     # =============== properties ====================
-    # x and y default to the center of self.rect
 
     @property
     def x(self):
@@ -132,16 +131,24 @@ class Entity(pygame.sprite.Sprite):
         surface.blit(text, textRect)
         # draw sprite bounding box
         if self.image:
-            pygame.draw.rect(surface, self.debug_color, self.image_rect, 1)
+            pygame.draw.rect(surface, pygame.color.THECOLORS["lightgray"],
+                             self.image_rect, 1)
 
     def draw(self, surface, debug=False):
         self.draw_image(surface)
         if debug:
             self.draw_debug(surface)
 
+    # ========== other functions =============
+
     def update(self, keys):
         """Subclasses should extend this function"""
         pass
+
+    def is_touching(self, entity) -> bool:
+        return touching(self, entity)
+
+    # ============ utility functions ===========
 
     def debug_print(self):
         print(
@@ -248,6 +255,7 @@ class CollisionMixin:
     centroid: property
     history: deque
     keys: tuple
+    is_touching: "method"
 
     def get_overlap_with_object(self, obj):
         """Get the x and y overlap between self and obj.rect"""
@@ -269,8 +277,11 @@ class CollisionMixin:
 
     def can_stand_on_solid_platform(self, platform):
         """This function assumes self is currently colliding with platform"""
-        x_overlap, y_overlap = self.get_overlap_with_object(platform)
-        return x_overlap >= y_overlap and self.centroid.y < platform.centroid.y
+        if self.is_touching(platform) and self.centroid.y < platform.centroid.y:
+            return True
+
+        # x_overlap, y_overlap = self.get_overlap_with_object(platform)
+        # return x_overlap >= y_overlap and self.centroid.y < platform.centroid.y
 
     def can_stand_on(self, platform):
         """This function assumes self is currently colliding with platform"""
@@ -280,6 +291,8 @@ class CollisionMixin:
             return self.can_stand_on_solid_platform(platform)
 
     def collide_solid_platform(self, platform):
+        # todo: rename this. "separate_platform" ? "handle_collision_solid_platform"?
+        #  also, this function assumes that platform can't move but self can.
         """Move self outside boundaries of solid platform."""
         x_overlap, y_overlap = self.get_overlap_with_object(platform)
         pygame.rect
