@@ -82,8 +82,7 @@ class Entity(pygame.sprite.Sprite):
 
     @property
     def touchbox(self):
-        touchbox = self.rect.inflate(self.touchbox_margin, self.touchbox_margin)
-        return touchbox
+        return self.rect.inflate(self.touchbox_margin, self.touchbox_margin)
 
     # ============= drawing functions ==============
 
