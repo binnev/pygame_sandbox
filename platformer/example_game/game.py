@@ -1,7 +1,7 @@
 import pygame
 
 from platformer.example_game.entities.characters.blob import Blob, Ball
-from platformer.example_game.levels import TestLevel, FinalDestination
+from platformer.example_game.levels import TestLevel, FinalDestination, VolleyballCourt
 from platformer.objects.entities import MovingEntity
 from platformer.objects.game import Game
 
@@ -13,6 +13,7 @@ class ExampleGame(Game):
         self.levels = {
             "test_level": TestLevel,
             "final_destination": FinalDestination,
+            "volleyball_court": VolleyballCourt,
         }
 
     def run_level(self, level_class):
@@ -66,6 +67,8 @@ class ExampleGame(Game):
                 self.run_level(self.levels["test_level"])
             if pressed[pygame.K_2]:
                 self.run_level(self.levels["final_destination"])
+            if pressed[pygame.K_3]:
+                self.run_level(self.levels["volleyball_court"])
 
             self.window.fill((255, 255, 255))
             pygame.display.flip()

@@ -26,3 +26,13 @@ class FinalDestination(Level):
             Platform(-10, 480, 550, 30, can_fall_through=False),
             type="platform",
         )
+
+class VolleyballCourt(Level):
+
+    def __init__(self, game):
+        super().__init__(game)
+        self.add(
+            Platform(-10, 480, 550, 30, can_fall_through=False),
+            Platform(250, 250, 10, 200, can_fall_through=False),
+            type="platform",
+        )
