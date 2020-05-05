@@ -17,10 +17,10 @@ class ExampleGame(Game):
         }
 
     def run_level(self, level_class):
-        level = level_class()
-        level.add(MovingEntity(50, 200, 50, 50), type="character")
+        level = level_class(game=self)
+        # level.add(MovingEntity(50, 200, 50, 50), type="character")
+        level.add(Blob(150, 200, skin=2), type="character")
         # level.add(Blob(50, 200), type="character")
-        # level.add(Blob(150, 200, skin=2), type="character")
         debug = True
 
         run = True

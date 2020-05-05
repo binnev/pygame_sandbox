@@ -1,5 +1,6 @@
 from collections import namedtuple, deque
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import pygame
@@ -7,7 +8,7 @@ import pygame
 from numpy import sign
 
 from platformer.objects.groups import EntityGroup
-from platformer.utils import touching
+from platformer.utils import touching, mask_to_surface
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -33,6 +34,8 @@ class Entity(pygame.sprite.Sprite):
     - self.draw()
     which are used by all subclasses.
     """
+    image: pygame.Surface
+
     debug_color = pygame.Color(69, 69, 69)
     debug_background = pygame.Color(255, 255, 255)
     touchbox_margin = 1
@@ -82,6 +85,10 @@ class Entity(pygame.sprite.Sprite):
     def touchbox(self):
         return self.rect.inflate(self.touchbox_margin, self.touchbox_margin)
 
+    @property
+    def mask(self):
+        return pygame.mask.from_surface(self.image)
+
     # ============= drawing functions ==============
 
     def align_image_rect(self):
@@ -108,6 +115,16 @@ class Entity(pygame.sprite.Sprite):
         # draw self.touchbox
         pygame.draw.rect(surface, pygame.color.THECOLORS["goldenrod"],
                          self.touchbox, 1)
+        # draw self.mask
+        if self.mask.count():  # if mask not empty
+            color = pygame.color.THECOLORS["magenta"]
+            translucent_color = color[:3] + (50,)
+            mask_surface = mask_to_surface(self.mask, translucent_color)
+            mask_outline = self.mask.outline()
+            # add the outline to the mask surface
+            pygame.draw.polygon(mask_surface, color,
+                                mask_outline, 2)
+            surface.blit(mask_surface, self.image_rect)
         # draw centroid
         centroid_width = 10
         centroid = pygame.Rect(0, 0, centroid_width, centroid_width)
@@ -269,15 +286,13 @@ class CollisionMixin:
     def can_stand_on_droppable_platform(self, platform):
         was_above_platform = self.history[-1]["rect"].bottom <= platform.rect.top
         not_holding_down = not self.keys[Keys.DOWN]
-        return (self.is_touching(platform)
-                and was_above_platform
-                and not_holding_down)
+        return (self.is_touching(platform) and was_above_platform and
+                not_holding_down)
 
     def can_stand_on_solid_platform(self, platform):
         x_overlap, y_overlap = self.get_overlap_with_object(platform)
-        return (self.is_touching(platform)
-                and x_overlap > 0
-                and self.centroid.y < platform.centroid.y)
+        return (self.is_touching(platform) and x_overlap > 0 and
+                self.centroid.y < platform.centroid.y)
 
     def can_stand_on_platform(self, platform):
         if platform.can_fall_through:
@@ -334,6 +349,13 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
     # drawing params
     image = pygame.Surface((50, 50))
     image.fill(pygame.color.THECOLORS["goldenrod"])
+
+    scale = 5
+    image = pygame.image.load(
+        Path("sprites/volleyball/volleyball.png").as_posix())
+    image = pygame.transform.scale(
+        image,
+        (image.get_rect().width * scale, image.get_rect().height * scale))
 
     # historymixin
     attributes_to_remember = ["rect", "x", "y"]

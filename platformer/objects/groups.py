@@ -23,11 +23,13 @@ class Level(EntityGroup):
     the game objects that are currently "in play". Create a subclass to create a
     specific level e.g. one with platforms in certain positions. """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, game=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.game = game
         self.platforms = EntityGroup()
         self.characters = EntityGroup()
         self.projectiles = EntityGroup()
+
 
     def add(self, *objects, type=None):
         # add to Level spritegroup (similar to "all" group)
