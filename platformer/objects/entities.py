@@ -6,6 +6,7 @@ import pygame
 
 from numpy import sign
 
+from platformer.objects.groups import EntityGroup
 from platformer.utils import touching
 
 Point = namedtuple("Point", ["x", "y"])
@@ -340,6 +341,7 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         HistoryMixin.__init__(self)
+        self.active_hitboxes = EntityGroup()
 
     def update(self, keys):
         self.keys = keys

@@ -4,10 +4,9 @@ import pygame
 class EntityGroup(pygame.sprite.Group):
     """Extends pygame's sprite.Group class. Overrides the .draw() method."""
 
-    def __init__(self, game):
+    def __init__(self):
         """Keep a reference to the game class"""
         super().__init__()
-        self.game = game
 
     def draw(self, surface, debug=False):
         """
@@ -24,11 +23,11 @@ class Level(EntityGroup):
     the game objects that are currently "in play". Create a subclass to create a
     specific level e.g. one with platforms in certain positions. """
 
-    def __init__(self, game):
-        super().__init__(game)
-        self.platforms = EntityGroup(game)
-        self.characters = EntityGroup(game)
-        self.projectiles = EntityGroup(game)
+    def __init__(self):
+        super().__init__()
+        self.platforms = EntityGroup()
+        self.characters = EntityGroup()
+        self.projectiles = EntityGroup()
 
     def add(self, *objects, type=None):
         # add to Level spritegroup (similar to "all" group)
