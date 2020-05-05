@@ -32,6 +32,7 @@ class Entity(pygame.sprite.Sprite):
     """
     debug_color = pygame.Color(69, 69, 69)
     debug_background = pygame.Color(255, 255, 255)
+    touchbox_margin = 5
 
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
@@ -75,6 +76,13 @@ class Entity(pygame.sprite.Sprite):
         """In case this is different from centroid in a subclass"""
         return Point(self.x, self.y)
 
+    @property
+    def touchbox(self):
+        touchbox = pygame.Rect(0, 0, self.rect.width + self.touchbox_margin * 2,
+                               self.rect.height + self.touchbox_margin * 2)
+        touchbox.center = self.rect.center
+        return touchbox
+
     # ============= drawing functions ==============
 
     def align_image_rect(self):
@@ -98,6 +106,9 @@ class Entity(pygame.sprite.Sprite):
     def draw_debug(self, surface):
         # draw self.rect
         pygame.draw.rect(surface, self.debug_color, self.rect, 1)
+        # draw self.touchbox
+        pygame.draw.rect(surface, pygame.color.THECOLORS["goldenrod"],
+                         self.touchbox, 1)
         # draw centroid
         centroid_width = 10
         centroid = pygame.Rect(0, 0, centroid_width, centroid_width)
@@ -250,7 +261,8 @@ class CollisionMixin:
         # requirements for landing on top of platform
         # self.rect.bottom was above platform.rect.top last tick
         # not holding "DOWN" key
-        was_above_platform = self.history[-1]["rect"].bottom <= platform.rect.top + 1
+        was_above_platform = self.history[-1][
+            "rect"].bottom <= platform.rect.top + 1
         not_holding_down = not self.keys[Keys.DOWN]
         return was_above_platform and not_holding_down
 
