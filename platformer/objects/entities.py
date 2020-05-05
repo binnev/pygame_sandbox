@@ -82,9 +82,7 @@ class Entity(pygame.sprite.Sprite):
 
     @property
     def touchbox(self):
-        touchbox = pygame.Rect(0, 0, self.rect.width + self.touchbox_margin * 2,
-                               self.rect.height + self.touchbox_margin * 2)
-        touchbox.center = self.rect.center
+        touchbox = self.rect.inflate(self.touchbox_margin, self.touchbox_margin)
         return touchbox
 
     # ============= drawing functions ==============
@@ -285,6 +283,7 @@ class CollisionMixin:
     def collide_solid_platform(self, platform):
         """Move self outside boundaries of solid platform."""
         x_overlap, y_overlap = self.get_overlap_with_object(platform)
+        pygame.rect
         if x_overlap >= y_overlap:
             # move vertically
             # if self is below platform
@@ -339,6 +338,7 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
     image = pygame.Surface((50, 50))
     image.fill(pygame.color.THECOLORS["goldenrod"])
 
+    # historymixin
     attributes_to_remember = ["rect", "x", "y"]
 
     def __init__(self, *args, **kwargs):
