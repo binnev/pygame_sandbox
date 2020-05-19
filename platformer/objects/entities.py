@@ -34,6 +34,7 @@ class Entity(pygame.sprite.Sprite):
     - self.draw()
     which are used by all subclasses.
     """
+
     image: pygame.Surface
 
     debug_color = pygame.Color(69, 69, 69)
@@ -122,8 +123,7 @@ class Entity(pygame.sprite.Sprite):
             mask_surface = mask_to_surface(self.mask, translucent_color)
             mask_outline = self.mask.outline()
             # add the outline to the mask surface
-            pygame.draw.polygon(mask_surface, color,
-                                mask_outline, 2)
+            pygame.draw.polygon(mask_surface, color, mask_outline, 2)
             surface.blit(mask_surface, self.image_rect)
         # draw centroid
         centroid_width = 10
@@ -199,6 +199,7 @@ class AnimationMixin:
     """Handles animation for a state machine class. Subclasses should have their own
     dictionary of sprite animations. Each state function can then use `frames_elapsed`
     counter to assign the correct sprite frame to self.image"""
+
     frames_elapsed = 0
 
     @property
@@ -218,6 +219,7 @@ class AnimationMixin:
 
 class PhysicsMixin:
     """Introduces velocity and basic physics"""
+
     # You'll need to implement these parameters in subclasses
     GRAVITY: int
     FALL_SPEED: int
@@ -242,15 +244,15 @@ class PhysicsMixin:
 
         # reduce speeds
         if self.airborne:
-            self.u *= (1 - self.AIR_RESISTANCE)  # air resistance
-            self.v *= (1 - self.AIR_RESISTANCE)  # air resistance
+            self.u *= 1 - self.AIR_RESISTANCE  # air resistance
+            self.v *= 1 - self.AIR_RESISTANCE  # air resistance
         else:
-            self.u *= (1 - self.FRICTION)  # "friction"
+            self.u *= 1 - self.FRICTION  # "friction"
             self.v = 0  # this is the correct place to set this
 
         # don't allow sub-pixel speeds
-        self.u = 0 if abs(self.u) < .5 else self.u
-        self.v = 0 if abs(self.v) < .5 else self.v
+        self.u = 0 if abs(self.u) < 0.5 else self.u
+        self.v = 0 if abs(self.v) < 0.5 else self.v
 
 
 class HistoryMixin:
@@ -269,6 +271,7 @@ class HistoryMixin:
 
 class CollisionMixin:
     """This mixin requires the subclass to have the following attributes to function"""
+
     rect: pygame.Rect
     centroid: property
     history: deque
@@ -277,17 +280,17 @@ class CollisionMixin:
 
     def get_overlap_with_object(self, obj):
         """Get the x and y overlap between self and obj.rect"""
-        x_overlap = (min(self.rect.right, obj.rect.right) -
-                     max(self.rect.left, obj.rect.left))
-        y_overlap = (min(self.rect.bottom, obj.rect.bottom) -
-                     max(self.rect.top, obj.rect.top))
+        x_overlap = min(self.rect.right, obj.rect.right) - max(
+            self.rect.left, obj.rect.left)
+        y_overlap = min(self.rect.bottom, obj.rect.bottom) - max(
+            self.rect.top, obj.rect.top)
         return x_overlap, y_overlap
 
     def can_stand_on_droppable_platform(self, platform):
         was_above_platform = self.history[-1]["rect"].bottom <= platform.rect.top
         not_holding_down = not self.keys[Keys.DOWN]
-        return (self.is_touching(platform) and was_above_platform and
-                not_holding_down)
+        return self.is_touching(
+            platform) and was_above_platform and not_holding_down
 
     def can_stand_on_solid_platform(self, platform):
         x_overlap, y_overlap = self.get_overlap_with_object(platform)
@@ -341,21 +344,33 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
 
     # physics parameters
     GRAVITY = 1
-    FRICTION = .5
-    AIR_RESISTANCE = .1
+    FRICTION = 0.5
+    AIR_RESISTANCE = 0.1
     FALL_SPEED = 5
     airborne = False
 
     # drawing params
-    image = pygame.Surface((50, 50))
-    image.fill(pygame.color.THECOLORS["goldenrod"])
+    image = pygame.Surface((100, 50))
+    pygame.draw.ellipse(image, pygame.color.THECOLORS["lightblue"],
+                        (0, 0, 100, 50))
+    colorkey = image.get_at((0, 0))
+    image.set_colorkey(colorkey)#, pygame.RLEACCEL)
+    image = pygame.transform.rotate(image, 30)
 
-    scale = 5
-    image = pygame.image.load(
-        Path("sprites/volleyball/volleyball.png").as_posix())
-    image = pygame.transform.scale(
-        image,
-        (image.get_rect().width * scale, image.get_rect().height * scale))
+    # todo:
+    #  - in order to do mask collision, all the Hitbox needs is an image. That image
+    #  can just be a surface with an ellipse drawn on it. That's easy to generate. Then
+    #  I can do masks and collision. Just don't *draw* the hitboxes, and they won't
+    #  appear in game!
+    #  - make hitboxes follow their parent object around, and position correctly
+    #  relative to them (including left and right facing versions)
+
+    # scale = 5
+    # image = pygame.image.load(
+    #     Path("sprites/volleyball/volleyball.png").as_posix())
+    # image = pygame.transform.scale(
+    #     image,
+    #     (image.get_rect().width * scale, image.get_rect().height * scale))
 
     # historymixin
     attributes_to_remember = ["rect", "x", "y"]
@@ -516,7 +531,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     @property
     def friction(self):
         if self.state in (self.states.JUMPSQUAT, self.states.SQUAT):
-            return -.05
+            return -0.05
         else:
             return self._friction
 
@@ -586,9 +601,9 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         # reduce speeds
         if self.airborne:  # air resistance
-            self.u *= (1 - self.air_resistance)
+            self.u *= 1 - self.air_resistance
         else:  # friction
-            self.u *= (1 - self.friction)
+            self.u *= 1 - self.friction
             self.v = 0
 
         # don't allow sub-pixel horizontal speeds. This prevents infinite sliding to
@@ -733,3 +748,53 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
+
+
+class Hitbox(Entity):
+
+    debug_color = pygame.color.THECOLORS["red"]
+
+    def __init__(self,
+                 damage,
+                 knockback,
+                 owner=None,
+                 angle=0,
+                 x_offset=0,
+                 y_offset=0,
+                 *args,
+                 **kwargs):
+        super().__init__(*args, **kwargs)
+        self.owner = owner
+        self.damage = damage
+        self.knockback = knockback
+        self.angle = angle
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+
+        self.surface = pygame.Surface(self.rect)
+        pygame.draw.ellipse(self.surface, self.debug_color,
+                            (0, 0, self.width, self.height))
+        self.surface = pygame.transform.rotate(self.surface, self.angle)
+
+    @property
+    def x(self):
+        if self.owner:
+            return self.owner.x + self.x_offset
+
+    @x.setter
+    def x(self, new_x):
+        pass
+
+    @property
+    def y(self):
+        if self.owner:
+            return self.owner.y + self.y_offset
+
+    @y.setter
+    def y(self, new_y):
+        pass
+
+    def draw_debug(self, surface):
+        super().draw_debug()
+        # pygame.draw.ellipse(surface, self.debug_color, self.rect)
+        surface.blit(self.surface, (0, 0))
