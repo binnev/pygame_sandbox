@@ -841,6 +841,3 @@ class Hitbox(Entity):
     def draw_image(self, surface):
         """Hitboxes should be invisible by default. """
         pass
-
-    def update(self, keys):
-        self.debug_print()
