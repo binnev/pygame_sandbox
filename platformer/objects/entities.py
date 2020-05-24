@@ -427,7 +427,7 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
         if keys[Keys.UP]:
             self.y -= self.SPEED
 
-        if keys[Keys.FIRE]:
+        if self.keys_pressed[Keys.FIRE]:
             if not hasattr(self, "hitbox"):
                 self.hitbox = Hitbox(
                     damage=20,
