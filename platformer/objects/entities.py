@@ -44,16 +44,14 @@ class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
 
-        self.font = pygame.font.Font(
-            pygame.font.match_font("ubuntucondensed"),
-            12,
-        )
+        self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
         self.color = color if color else self.debug_color
         self.width = width  # todo: give these more specific names e.g. collision_width
         self.height = height
         self.state = None
         self.rect = pygame.Rect(0, 0, self.width, self.height)
-        self.rect.center = x, y
+        self.x = x
+        self.y = y
 
     # =============== properties ====================
 
@@ -88,7 +86,13 @@ class Entity(pygame.sprite.Sprite):
 
     @property
     def mask(self):
-        return pygame.mask.from_surface(self.image)
+        return pygame.mask.from_surface(self.image) if self.image else None
+
+    @property
+    def image_rect(self):
+        if not hasattr(self, "_image_rect"):
+            self._image_rect = self.image.get_rect()
+        return self._image_rect
 
     # ============= drawing functions ==============
 
@@ -98,8 +102,6 @@ class Entity(pygame.sprite.Sprite):
         Group.draw() uses Sprite.rect) Default: center self.image on the center of
         self.rect
         """
-        # get rect with the same dimensions as self.image
-        self.image_rect = self.image.get_rect()
         # center it on self.rect.center
         self.image_rect.center = self.rect.center
 
@@ -111,27 +113,29 @@ class Entity(pygame.sprite.Sprite):
             surface.blit(self.image, self.image_rect)
 
     def draw_debug(self, surface):
+        if self.image:
+            self.align_image_rect()
         # draw self.rect
         pygame.draw.rect(surface, self.debug_color, self.rect, 1)
         # draw self.touchbox
-        pygame.draw.rect(surface, pygame.color.THECOLORS["goldenrod"],
-                         self.touchbox, 1)
+        pygame.draw.rect(surface, pygame.color.THECOLORS["goldenrod"], self.touchbox, 1)
         # draw self.mask
-        if self.mask.count():  # if mask not empty
-            color = pygame.color.THECOLORS["magenta"]
+        if self.mask and self.mask.count():  # if mask not empty
+            color = self.debug_color#pygame.color.THECOLORS["magenta"]
             translucent_color = color[:3] + (50,)
             mask_surface = mask_to_surface(self.mask, translucent_color)
             mask_outline = self.mask.outline()
             # add the outline to the mask surface
-            pygame.draw.polygon(mask_surface, color, mask_outline, 2)
+            pygame.draw.polygon(mask_surface, color, mask_outline, 1)
             surface.blit(mask_surface, self.image_rect)
         # draw centroid
         centroid_width = 10
         centroid = pygame.Rect(0, 0, centroid_width, centroid_width)
         centroid.center = self.centroid
         pygame.draw.ellipse(surface, self.debug_color, centroid, 1)
-        text = self.font.render("CENTROID", True, self.debug_color,
-                                self.debug_background)
+        text = self.font.render(
+            "CENTROID", True, self.debug_color, self.debug_background
+        )
         textRect = text.get_rect()
         textRect.midtop = self.centroid
         surface.blit(text, textRect)
@@ -140,15 +144,15 @@ class Entity(pygame.sprite.Sprite):
         xy = pygame.Rect(0, 0, xy_width, xy_width)
         xy.center = self.xy
         pygame.draw.ellipse(surface, self.debug_color, xy, 1)
-        text = self.font.render("XY", True, self.debug_color,
-                                self.debug_background)
+        text = self.font.render("XY", True, self.debug_color, self.debug_background)
         textRect = text.get_rect()
         textRect.midbottom = self.xy
         surface.blit(text, textRect)
         # draw sprite bounding box
         if self.image:
-            pygame.draw.rect(surface, pygame.color.THECOLORS["lightgray"],
-                             self.image_rect, 1)
+            pygame.draw.rect(
+                surface, pygame.color.THECOLORS["lightgray"], self.image_rect, 1
+            )
 
     def draw(self, surface, debug=False):
         self.draw_image(surface)
@@ -169,8 +173,7 @@ class Entity(pygame.sprite.Sprite):
 
     def debug_print(self):
         print(
-            f"x = {self.x}",
-            f"y = {self.y}",
+            f"x = {self.x}", f"y = {self.y}",
         )
 
 
@@ -263,10 +266,12 @@ class HistoryMixin:
         self.update_history()  # prevents empty queue erroring on startup
 
     def update_history(self):
-        self.history.append({
-            attr: deepcopy(getattr(self, attr))
-            for attr in self.attributes_to_remember
-        })
+        self.history.append(
+            {
+                attr: deepcopy(getattr(self, attr))
+                for attr in self.attributes_to_remember
+            }
+        )
 
 
 class CollisionMixin:
@@ -281,21 +286,25 @@ class CollisionMixin:
     def get_overlap_with_object(self, obj):
         """Get the x and y overlap between self and obj.rect"""
         x_overlap = min(self.rect.right, obj.rect.right) - max(
-            self.rect.left, obj.rect.left)
+            self.rect.left, obj.rect.left
+        )
         y_overlap = min(self.rect.bottom, obj.rect.bottom) - max(
-            self.rect.top, obj.rect.top)
+            self.rect.top, obj.rect.top
+        )
         return x_overlap, y_overlap
 
     def can_stand_on_droppable_platform(self, platform):
         was_above_platform = self.history[-1]["rect"].bottom <= platform.rect.top
         not_holding_down = not self.keys[Keys.DOWN]
-        return self.is_touching(
-            platform) and was_above_platform and not_holding_down
+        return self.is_touching(platform) and was_above_platform and not_holding_down
 
     def can_stand_on_solid_platform(self, platform):
         x_overlap, y_overlap = self.get_overlap_with_object(platform)
-        return (self.is_touching(platform) and x_overlap > 0 and
-                self.centroid.y < platform.centroid.y)
+        return (
+            self.is_touching(platform)
+            and x_overlap > 0
+            and self.centroid.y < platform.centroid.y
+        )
 
     def can_stand_on_platform(self, platform):
         if platform.can_fall_through:
@@ -327,9 +336,9 @@ class CollisionMixin:
     def handle_platform_collisions(self):
         # todo: have objects store this info in an attribute that is calculated once
         #  per tick
-        platforms = pygame.sprite.spritecollide(self,
-                                                self.level.platforms,
-                                                dokill=False)
+        platforms = pygame.sprite.spritecollide(
+            self, self.level.platforms, dokill=False
+        )
         for platform in platforms:
             if platform.can_fall_through:
                 print("colliding with droppable platform")
@@ -351,10 +360,9 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
 
     # drawing params
     image = pygame.Surface((100, 50))
-    pygame.draw.ellipse(image, pygame.color.THECOLORS["lightblue"],
-                        (0, 0, 100, 50))
+    pygame.draw.ellipse(image, pygame.color.THECOLORS["lightblue"], (0, 0, 100, 50))
     colorkey = image.get_at((0, 0))
-    image.set_colorkey(colorkey)#, pygame.RLEACCEL)
+    image.set_colorkey(colorkey)
     image = pygame.transform.rotate(image, 30)
 
     # todo:
@@ -391,15 +399,31 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
         if keys[Keys.UP]:
             self.y -= self.SPEED
 
+        if keys[Keys.FIRE]:
+            if not hasattr(self, "hitbox"):
+                self.hitbox = Hitbox(
+                    damage=20,
+                    knockback=20,
+                    owner=self,
+                    angle=45,
+                    x_offset=20,
+                    y_offset=40,
+                    width=30,
+                    height=40,
+                )
+                self.level.add(self.hitbox, type="projectile")
+            else:
+                self.hitbox.kill()
+                del self.hitbox
+
         self.handle_platform_collisions()
         self.handle_touching()
         self.update_history()
 
     def handle_touching(self):
-        platforms = pygame.sprite.spritecollide(self,
-                                                self.level.platforms,
-                                                dokill=False,
-                                                collided=touching)
+        platforms = pygame.sprite.spritecollide(
+            self, self.level.platforms, dokill=False, collided=touching
+        )
         for platform in platforms:
             # this function handles the physics -- not allowing self to clip through
             # platforms etc.
@@ -557,7 +581,6 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     # ============== drawing functions ===============
 
     def align_image_rect(self):
-        self.image_rect = self.image.get_rect()
         self.image_rect.midbottom = self.rect.midbottom
 
     # ============== main methods ====================
@@ -702,9 +725,11 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.u = sign(self.u) * self.air_speed
 
         # double-jump
-        if (self.keys[Keys.JUMP] and
-                self.aerial_jumps_used < self.aerial_jumps and
-                not self.double_jump_cooldown):
+        if (
+            self.keys[Keys.JUMP]
+            and self.aerial_jumps_used < self.aerial_jumps
+            and not self.double_jump_cooldown
+        ):
             self.double_jump_cooldown = self.double_jump_cooldown_frames
             self.aerial_jumps_used += 1
             self.enter_jump()
@@ -729,8 +754,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def state_run(self):
         # sprite selection
         if self.u > 0:
-            self.image = self.sprites["run_right"].get_frame(
-                self.frames_elapsed)
+            self.image = self.sprites["run_right"].get_frame(self.frames_elapsed)
         else:
             self.image = self.sprites["run_left"].get_frame(self.frames_elapsed)
 
@@ -752,49 +776,57 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
 class Hitbox(Entity):
 
-    debug_color = pygame.color.THECOLORS["red"]
+    debug_color = (*pygame.color.THECOLORS["red"][:3], 50)
+    owner = None
 
-    def __init__(self,
-                 damage,
-                 knockback,
-                 owner=None,
-                 angle=0,
-                 x_offset=0,
-                 y_offset=0,
-                 *args,
-                 **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        damage,
+        knockback,
+        width,
+        height,
+        owner=None,
+        angle=0,
+        x_offset=0,
+        y_offset=0,
+        **kwargs,
+    ):
         self.owner = owner
         self.damage = damage
         self.knockback = knockback
         self.angle = angle
         self.x_offset = x_offset
         self.y_offset = y_offset
+        super().__init__(x=10, y=20, width=width, height=height, **kwargs)
 
-        self.surface = pygame.Surface(self.rect)
-        pygame.draw.ellipse(self.surface, self.debug_color,
-                            (0, 0, self.width, self.height))
-        self.surface = pygame.transform.rotate(self.surface, self.angle)
-
-    @property
-    def x(self):
-        if self.owner:
-            return self.owner.x + self.x_offset
-
-    @x.setter
-    def x(self, new_x):
-        pass
+        self.image = pygame.Surface((self.width, self.height))
+        pygame.draw.ellipse(
+            self.image, self.debug_color, (0, 0, self.width, self.height)
+        )
+        colorkey = self.image.get_at((0, 0))
+        self.image.set_colorkey(colorkey)
+        self.image = pygame.transform.rotate(self.image, self.angle)
 
     @property
-    def y(self):
-        if self.owner:
-            return self.owner.y + self.y_offset
+    def rect(self):
+        self.align_to_owner()
+        return self._rect
 
-    @y.setter
-    def y(self, new_y):
+    @rect.setter
+    def rect(self, new_rect):
+        self._rect = new_rect
+        self.align_to_owner()
+
+    def align_to_owner(self):
+        if self.owner:
+            self._rect.center = (
+                self.owner.x + self.x_offset,
+                self.owner.y + self.y_offset,
+            )
+
+    def draw_image(self, surface):
+        """Hitboxes should be invisible by default. """
         pass
 
-    def draw_debug(self, surface):
-        super().draw_debug()
-        # pygame.draw.ellipse(surface, self.debug_color, self.rect)
-        surface.blit(self.surface, (0, 0))
+    def update(self, keys):
+        self.debug_print()
