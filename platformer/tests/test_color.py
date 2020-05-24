@@ -35,13 +35,7 @@ def simple_game_loop(func):
 
 
 @pytest.mark.parametrize(
-    "bogus_colour",
-    (
-        (),
-        (0,),
-        (0, 0),
-        (0, 0, 0, 0, 0),
-    ),
+    "bogus_colour", ((), (0,), (0, 0), (0, 0, 0, 0, 0),),
 )
 def test_pad_alpha(bogus_colour):
     with pytest.raises(Exception):
@@ -54,8 +48,8 @@ def test_recolor():
     assert filename.is_file()
     image = pygame.image.load(filename.as_posix()).convert_alpha()
     image = pygame.transform.scale(
-        image,
-        (image.get_rect().width * SCALE, image.get_rect().height * SCALE))
+        image, (image.get_rect().width * SCALE, image.get_rect().height * SCALE)
+    )
     assert image
 
     color_mapping = {
@@ -80,12 +74,11 @@ def test_transparent_recolor():
     assert filename.is_file()
     image = pygame.image.load(filename.as_posix()).convert_alpha()
     image = pygame.transform.scale(
-        image,
-        (image.get_rect().width * SCALE, image.get_rect().height * SCALE))
+        image, (image.get_rect().width * SCALE, image.get_rect().height * SCALE)
+    )
     assert image
     color_mapping = {
-        (0, 0, 0, 0):
-            (120, 62, 151, 150),  # convert transparent to translucent purple
+        (0, 0, 0, 0): (120, 62, 151, 150),  # convert transparent to translucent purple
     }
 
     result = recolor_sprite(image, color_mapping)

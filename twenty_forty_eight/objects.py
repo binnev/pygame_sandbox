@@ -2,6 +2,7 @@ import random
 
 import numpy as np
 import pygame
+
 """
 TODO: 
 [ ] make object oriented version. The current functions just deal with lists of numbers. 
@@ -45,7 +46,6 @@ def slide_left(grid):
 
 
 class Board:
-
     def __init__(self, size):
         self.size = size
         self.grid = np.zeros((size, size), dtype=int)
@@ -106,7 +106,7 @@ class Board:
     def is_full(self):
         return 0 not in self.grid
 
-class Block:
 
+class Block:
     def __init__(self, value):
         self.value = value

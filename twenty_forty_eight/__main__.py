@@ -2,12 +2,13 @@ import pygame
 import matplotlib.pyplot as plt
 
 from twenty_forty_eight.objects import Board
+
 cm = plt.cm.viridis
 
 
 def colormap(value, max_):
     offset = 70
-    return [offset + i * (255-offset) for i in cm(value / max_)[:-1]]
+    return [offset + i * (255 - offset) for i in cm(value / max_)[:-1]]
 
 
 pygame.init()

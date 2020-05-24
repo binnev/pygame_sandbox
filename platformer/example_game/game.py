@@ -7,7 +7,6 @@ from platformer.objects.game import Game
 
 
 class ExampleGame(Game):
-
     def __init__(self, window, fps=None):
         super().__init__(window, fps)
         self.levels = {
@@ -44,8 +43,7 @@ class ExampleGame(Game):
                 debug = not debug
             level.update(keys)
             level.draw(
-                self.window,
-                debug=debug,
+                self.window, debug=debug,
             )
             pygame.display.flip()
             self.clock.tick(self.fps)

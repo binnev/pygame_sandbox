@@ -17,9 +17,7 @@ def pad_alpha(colour_tuple):
 def recolor_sprite(surface, color_mapping: dict):
 
     # make sure the colourmap has alpha channel on all colours
-    color_mapping = {
-        pad_alpha(k): pad_alpha(v) for k, v in color_mapping.items()
-    }
+    color_mapping = {pad_alpha(k): pad_alpha(v) for k, v in color_mapping.items()}
     width, height = surface.get_size()
     # surface.copy() inherits surface's colorkey; preserving transparency
     new_surface = surface.copy()
@@ -41,6 +39,7 @@ def recolor_sprite(surface, color_mapping: dict):
 
 class SpriteSheet:
     """Handles importing spritesheets and dividing into individual frame images."""
+
     sheet: pygame.Surface
 
     def __init__(self, filename, colormap=None):
@@ -50,7 +49,7 @@ class SpriteSheet:
             if colormap:
                 self.recolor(colormap)
         except pygame.error as message:
-            print('Unable to load spritesheet image:', filename)
+            print("Unable to load spritesheet image:", filename)
             raise Exception(message)
 
     def image_at(self, rectangle, colorkey=None, scale=None):
@@ -64,9 +63,9 @@ class SpriteSheet:
                 colorkey = image.get_at((0, 0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         if scale:
-            image = pygame.transform.scale(image,
-                                           (image.get_rect().width * scale,
-                                            image.get_rect().height * scale))
+            image = pygame.transform.scale(
+                image, (image.get_rect().width * scale, image.get_rect().height * scale)
+            )
         return image
 
     def images_at(self, rects, colorkey=None, scale=None, num_images=None):
@@ -74,18 +73,22 @@ class SpriteSheet:
         result = [self.image_at(rect, colorkey, scale) for rect in rects]
         return result[:num_images] if num_images else result
 
-    def load_sheet(self,
-                   width: int,
-                   height: int,
-                   colorkey: int = None,
-                   scale: float = None,
-                   num_images: int = None) -> [pygame.Surface]:
+    def load_sheet(
+        self,
+        width: int,
+        height: int,
+        colorkey: int = None,
+        scale: float = None,
+        num_images: int = None,
+    ) -> [pygame.Surface]:
         """Load a whole spritesheet and return frames as a list of images."""
         num_horizontal = self.sheet.get_rect().width // width
         num_vertical = self.sheet.get_rect().height // height
-        rects = [(width * i, height * j, width, height)
-                 for j in range(num_vertical)
-                 for i in range(num_horizontal)]
+        rects = [
+            (width * i, height * j, width, height)
+            for j in range(num_vertical)
+            for i in range(num_horizontal)
+        ]
         result = [self.image_at(rect, colorkey, scale) for rect in rects]
         return result[:num_images] if num_images else result
 
@@ -108,12 +111,14 @@ class SpriteAnimation:
       - maybe even create functions for ease-in and ease-out sampling?
     """
 
-    def __init__(self,
-                 frames: [pygame.Surface],
-                 flip_horizontal=False,
-                 flip_vertical=False,
-                 looping=True,
-                 game_ticks_per_sprite_frame=1):
+    def __init__(
+        self,
+        frames: [pygame.Surface],
+        flip_horizontal=False,
+        flip_vertical=False,
+        looping=True,
+        game_ticks_per_sprite_frame=1,
+    ):
         self.frames = [
             pygame.transform.flip(f, bool(flip_horizontal), bool(flip_vertical))
             for f in frames
@@ -130,12 +135,13 @@ class SpriteAnimation:
         ticks).
         """
         if self.looping:
-            return self.frames[game_tick // self.game_ticks_per_sprite_frame %
-                               len(self.frames)]
+            return self.frames[
+                game_tick // self.game_ticks_per_sprite_frame % len(self.frames)
+            ]
         else:
-            return self.frames[min(
-                game_tick // self.game_ticks_per_sprite_frame,
-                len(self.frames) - 1)]
+            return self.frames[
+                min(game_tick // self.game_ticks_per_sprite_frame, len(self.frames) - 1)
+            ]
 
 
 class SpriteDict(dict):
@@ -164,8 +170,10 @@ class SpriteDict(dict):
             # individual sprite parameters override default params
             _size = sprite_info.get("size") or size
             _scale = sprite_info.get("scale") or scale
-            _ticks_per_frame = (sprite_info.get("game_ticks_per_sprite_frame")
-                                or game_ticks_per_sprite_frame)
+            _ticks_per_frame = (
+                sprite_info.get("game_ticks_per_sprite_frame")
+                or game_ticks_per_sprite_frame
+            )
 
             # specific to individual sprites
             filename = sprite_info.get("filename")
@@ -174,9 +182,9 @@ class SpriteDict(dict):
             flip_vertical = sprite_info.get("flip_vertical")
 
             sprite_sheet = SpriteSheet(filename, colormap)
-            frames_list = sprite_sheet.load_sheet(*_size,
-                                                  scale=_scale,
-                                                  num_images=num_images)
+            frames_list = sprite_sheet.load_sheet(
+                *_size, scale=_scale, num_images=num_images
+            )
             sprite_animation = SpriteAnimation(
                 frames_list,
                 game_ticks_per_sprite_frame=_ticks_per_frame,

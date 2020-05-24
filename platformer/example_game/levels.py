@@ -3,7 +3,6 @@ from platformer.objects.groups import Level
 
 
 class TestLevel(Level):
-
     def __init__(self, game):
         super().__init__(game)
         self.add(
@@ -19,16 +18,14 @@ class TestLevel(Level):
 
 
 class FinalDestination(Level):
-
     def __init__(self, game):
         super().__init__(game)
         self.add(
-            Platform(-10, 480, 550, 30, can_fall_through=False),
-            type="platform",
+            Platform(-10, 480, 550, 30, can_fall_through=False), type="platform",
         )
 
-class VolleyballCourt(Level):
 
+class VolleyballCourt(Level):
     def __init__(self, game):
         super().__init__(game)
         self.add(
