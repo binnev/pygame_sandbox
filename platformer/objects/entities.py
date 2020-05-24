@@ -120,9 +120,7 @@ class Entity(pygame.sprite.Sprite):
         pygame.draw.rect(surface, self.debug_color, self.rect, 1)
 
         # draw object type
-        text = self.font.render(
-            self.__class__.__name__, True, self.debug_color, #self.debug_background
-        )
+        text = self.font.render(self.__class__.__name__, True, self.debug_color)
         textRect = text.get_rect()
         textRect.midbottom = self.rect.midtop
         surface.blit(text, textRect)
@@ -132,7 +130,7 @@ class Entity(pygame.sprite.Sprite):
 
         # draw self.mask
         if self.mask and self.mask.count():  # if mask not empty
-            color = self.debug_color#pygame.color.THECOLORS["magenta"]
+            color = self.debug_color  # pygame.color.THECOLORS["magenta"]
             translucent_color = color[:3] + (50,)
             mask_surface = mask_to_surface(self.mask, translucent_color)
             mask_outline = self.mask.outline()
