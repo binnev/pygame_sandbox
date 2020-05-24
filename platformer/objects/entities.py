@@ -115,10 +115,21 @@ class Entity(pygame.sprite.Sprite):
     def draw_debug(self, surface):
         if self.image:
             self.align_image_rect()
+
         # draw self.rect
         pygame.draw.rect(surface, self.debug_color, self.rect, 1)
+
+        # draw object type
+        text = self.font.render(
+            self.__class__.__name__, True, self.debug_color, #self.debug_background
+        )
+        textRect = text.get_rect()
+        textRect.midbottom = self.rect.midtop
+        surface.blit(text, textRect)
+
         # draw self.touchbox
         pygame.draw.rect(surface, pygame.color.THECOLORS["goldenrod"], self.touchbox, 1)
+
         # draw self.mask
         if self.mask and self.mask.count():  # if mask not empty
             color = self.debug_color#pygame.color.THECOLORS["magenta"]
@@ -128,6 +139,7 @@ class Entity(pygame.sprite.Sprite):
             # add the outline to the mask surface
             pygame.draw.polygon(mask_surface, color, mask_outline, 1)
             surface.blit(mask_surface, self.image_rect)
+
         # draw centroid
         centroid_width = 10
         centroid = pygame.Rect(0, 0, centroid_width, centroid_width)
@@ -139,6 +151,7 @@ class Entity(pygame.sprite.Sprite):
         textRect = text.get_rect()
         textRect.midtop = self.centroid
         surface.blit(text, textRect)
+
         # draw XY
         xy_width = 10
         xy = pygame.Rect(0, 0, xy_width, xy_width)
@@ -148,6 +161,7 @@ class Entity(pygame.sprite.Sprite):
         textRect = text.get_rect()
         textRect.midbottom = self.xy
         surface.blit(text, textRect)
+
         # draw sprite bounding box
         if self.image:
             pygame.draw.rect(
@@ -406,8 +420,8 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
                     knockback=20,
                     owner=self,
                     angle=45,
-                    x_offset=20,
-                    y_offset=40,
+                    x_offset=30,
+                    y_offset=-40,
                     width=30,
                     height=40,
                 )
