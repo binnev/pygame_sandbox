@@ -141,7 +141,7 @@ class Blob(Character):
     def state_fall(self):
         """Extends parent class state_fall by allowing shooting projectiles"""
         super().state_fall()
-        if self.keys[Keys.FIRE] and not self.projectile_cooldown:
+        if self.keys_pressed[Keys.FIRE] and not self.projectile_cooldown:
             self.state = self.states.SHOOT_PROJECTILE
 
     def state_shoot_projectile(self):
@@ -169,11 +169,12 @@ class Blob(Character):
             facing = "left"
         else:
             facing = "right" if self.u > 0 else "left"
-        self.level.add_objects(BlobProjectile(*self.centroid, 100, 100, facing=facing))
+        self.level.add(BlobProjectile(*self.centroid, 100, 100, facing=facing))
         self.projectile_cooldown = self.projectile_cooldown_frames
 
 
 class BlobProjectile(Projectile):
+    image = None
     sprites = PROJECTILE_SPRITES
     speed = 7
 
@@ -192,9 +193,20 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
 
     def update(self, keys):
         self.handle_collisions()
+        self.handle_hits()
         self.update_physics()
         self.update_animation()
         self.enforce_screen_limits(*self.level.game.screen_size)
+
+    def handle_hits(self):
+        hitboxes = pygame.sprite.spritecollide(self, self.level.hitboxes,
+                                             collided=pygame.sprite.collide_mask,
+                                             dokill=False)
+        for hitbox in hitboxes:
+            print(f"Ball hit by {hitbox.owner}'s hitbox")
+            # self.kill()
+            self.u = 10
+            self.v = -100
 
     def handle_collisions(self):
         collision_object_lists = (

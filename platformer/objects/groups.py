@@ -29,6 +29,7 @@ class Level(EntityGroup):
         self.platforms = EntityGroup()
         self.characters = EntityGroup()
         self.projectiles = EntityGroup()
+        self.hitboxes = EntityGroup()
 
 
     def add(self, *objects, type=None):
@@ -42,6 +43,8 @@ class Level(EntityGroup):
             self.characters.add(*objects)
         if type == "projectile":
             self.projectiles.add(*objects)
+        if type == "hitbox":
+            self.hitboxes.add(*objects)
         # give the object a reference to this level
         for obj in objects:
             obj.level = self

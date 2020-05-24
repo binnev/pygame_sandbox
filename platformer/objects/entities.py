@@ -427,6 +427,7 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
         if keys[Keys.UP]:
             self.y -= self.SPEED
 
+
         if self.keys_pressed[Keys.FIRE]:
             if not hasattr(self, "hitbox"):
                 self.hitbox = Hitbox(
@@ -434,12 +435,12 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
                     knockback=20,
                     owner=self,
                     angle=45,
-                    x_offset=30,
+                    x_offset=5,
                     y_offset=-40,
                     width=30,
                     height=40,
                 )
-                self.level.add(self.hitbox, type="projectile")
+                self.level.add(self.hitbox, type="hitbox")
             else:
                 self.hitbox.kill()
                 del self.hitbox
@@ -852,6 +853,6 @@ class Hitbox(Entity):
                 self.owner.y + self.y_offset,
             )
 
-    def draw_image(self, surface):
-        """Hitboxes should be invisible by default. """
-        pass
+    # def draw_image(self, surface):
+    #     """Hitboxes should be invisible by default. """
+    #     pass
