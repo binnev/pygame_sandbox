@@ -23,9 +23,9 @@ class FinalDestination(Level):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.add(
-            Platform(-10, 480, 550, 30, can_fall_through=False),
-            type="platform",
+            Platform(-10, 480, 550, 30, can_fall_through=False), type="platform",
         )
+
 
 class VolleyballCourt(Level):
 

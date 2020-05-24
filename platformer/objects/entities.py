@@ -56,6 +56,22 @@ class Entity(pygame.sprite.Sprite):
     # =============== properties ====================
 
     @property
+    def game(self):
+        return self.level.game
+
+    @property
+    def keys_down(self):
+        return self.game.key_handler.get_down()
+
+    @property
+    def keys_pressed(self):
+        return self.game.key_handler.get_pressed()
+
+    @property
+    def keys_released(self):
+        return self.game.key_handler.get_released()
+
+    @property
     def x(self):
         return self.rect.center[0]
 
@@ -688,7 +704,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_stand(self):
         self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
-        if self.keys[Keys.JUMP]:  # enter jumpsquat
+        if self.keys_pressed[Keys.JUMP]:  # enter jumpsquat
             self.state = self.states.JUMPSQUAT
         if self.keys[Keys.DOWN]:  # enter squat
             self.state = self.states.SQUAT
@@ -738,7 +754,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         # double-jump
         if (
-            self.keys[Keys.JUMP]
+            self.keys_pressed[Keys.JUMP]
             and self.aerial_jumps_used < self.aerial_jumps
             and not self.double_jump_cooldown
         ):
@@ -757,7 +773,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
         if self.airborne:
             self.state = self.states.FALL
-        if self.keys[Keys.JUMP]:
+        if self.keys_pressed[Keys.JUMP]:
             self.state = self.states.JUMPSQUAT
         # if squat key released, exit squat state
         if not self.keys[Keys.DOWN]:
@@ -778,7 +794,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.u += self.ground_acceleration
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed
-        if self.keys[Keys.JUMP]:
+        if self.keys_pressed[Keys.JUMP]:
             self.state = self.states.JUMPSQUAT
         if self.keys[Keys.DOWN]:
             self.state = self.states.SQUAT

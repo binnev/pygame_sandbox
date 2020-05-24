@@ -5,6 +5,7 @@ from platformer.objects.keyhandlers import KeyHandler
 
 class Game:
     """This class runs the game"""
+
     fps = 60
 
     def __init__(self, window, fps=None):

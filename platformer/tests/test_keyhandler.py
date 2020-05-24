@@ -68,6 +68,6 @@ def test_keyhandler_length():
     queue_length = 6
     kh = KeyHandler(queue_length)
     for ii in range(10):
-        kh.update((1,0,1))
+        kh.update((1, 0, 1))
         assert len(kh) <= queue_length
     assert len(kh) == queue_length
