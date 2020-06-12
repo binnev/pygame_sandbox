@@ -7,6 +7,7 @@ import pygame
 
 from numpy import sign
 
+from platformer.objects.entities.mixins import HistoryMixin
 from platformer.objects.groups import EntityGroup
 from platformer.utils import touching, mask_to_surface
 
@@ -159,9 +160,7 @@ class Entity(pygame.sprite.Sprite):
         centroid = pygame.Rect(0, 0, centroid_width, centroid_width)
         centroid.center = self.centroid
         pygame.draw.ellipse(surface, self.debug_color, centroid, 1)
-        text = self.font.render(
-            "CENTROID", True, self.debug_color, self.debug_background
-        )
+        text = self.font.render("CENTROID", True, self.debug_color, self.debug_background)
         textRect = text.get_rect()
         textRect.midtop = self.centroid
         surface.blit(text, textRect)
@@ -178,9 +177,7 @@ class Entity(pygame.sprite.Sprite):
 
         # draw sprite bounding box
         if self.image:
-            pygame.draw.rect(
-                surface, pygame.color.THECOLORS["lightgray"], self.image_rect, 1
-            )
+            pygame.draw.rect(surface, pygame.color.THECOLORS["lightgray"], self.image_rect, 1)
 
     def draw(self, surface, debug=False):
         self.draw_image(surface)
@@ -226,84 +223,10 @@ class Platform(Entity):
         pass
 
 
-class AnimationMixin:
-    """Handles animation for a state machine class. Subclasses should have their own
-    dictionary of sprite animations. Each state function can then use `frames_elapsed`
-    counter to assign the correct sprite frame to self.image"""
-
-    frames_elapsed = 0
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, new_state):
-        """Reset animation counter when state changes"""
-        self._state = new_state
-        self.frames_elapsed = 0
-
-    def update_animation(self):
-        """Call this inside subclass update method"""
-        self.frames_elapsed += 1
-
-
-class PhysicsMixin:
-    """Introduces velocity and basic physics"""
-
-    # You'll need to implement these parameters in subclasses
-    GRAVITY: int
-    FALL_SPEED: int
-    FRICTION: float
-    AIR_RESISTANCE: float
-    airborne: bool
-
-    u = 0  # horizontal velocity
-    v = 0  # vertical velocity
-
-    def update_physics(self):
-        # update position
-        self.x += self.u
-        self.y += self.v
-
-        # update vertical position
-        # if moving downwards faster than fall speed
-        if self.v > 0 and abs(self.v) > self.FALL_SPEED:
-            pass  # don't apply gravity
-        else:  # if moving upwards, or if falling slower than the fall speed
-            self.v += self.GRAVITY
-
-        # reduce speeds
-        if self.airborne:
-            self.u *= 1 - self.AIR_RESISTANCE  # air resistance
-            self.v *= 1 - self.AIR_RESISTANCE  # air resistance
-        else:
-            self.u *= 1 - self.FRICTION  # "friction"
-            self.v = 0  # this is the correct place to set this
-
-        # don't allow sub-pixel speeds
-        self.u = 0 if abs(self.u) < 0.5 else self.u
-        self.v = 0 if abs(self.v) < 0.5 else self.v
-
-
-class HistoryMixin:
-    attributes_to_remember: [str]  # names of the attributes to store in history
-
-    def __init__(self):
-        self.history = deque(maxlen=5)
-        self.update_history()  # prevents empty queue erroring on startup
-
-    def update_history(self):
-        self.history.append(
-            {
-                attr: deepcopy(getattr(self, attr))
-                for attr in self.attributes_to_remember
-            }
-        )
-
-
 class CollisionMixin:
     """This mixin requires the subclass to have the following attributes to function"""
+
+    # todo: make this more general. It's too specific to Character that inherits from it.
 
     rect: pygame.Rect
     centroid: property
@@ -313,12 +236,8 @@ class CollisionMixin:
 
     def get_overlap_with_object(self, obj):
         """Get the x and y overlap between self and obj.rect"""
-        x_overlap = min(self.rect.right, obj.rect.right) - max(
-            self.rect.left, obj.rect.left
-        )
-        y_overlap = min(self.rect.bottom, obj.rect.bottom) - max(
-            self.rect.top, obj.rect.top
-        )
+        x_overlap = min(self.rect.right, obj.rect.right) - max(self.rect.left, obj.rect.left)
+        y_overlap = min(self.rect.bottom, obj.rect.bottom) - max(self.rect.top, obj.rect.top)
         return x_overlap, y_overlap
 
     def can_stand_on_droppable_platform(self, platform):
@@ -329,9 +248,7 @@ class CollisionMixin:
     def can_stand_on_solid_platform(self, platform):
         x_overlap, y_overlap = self.get_overlap_with_object(platform)
         return (
-            self.is_touching(platform)
-            and x_overlap > 0
-            and self.centroid.y < platform.centroid.y
+            self.is_touching(platform) and x_overlap > 0 and self.centroid.y < platform.centroid.y
         )
 
     def can_stand_on_platform(self, platform):
@@ -364,9 +281,7 @@ class CollisionMixin:
     def handle_platform_collisions(self):
         # todo: have objects store this info in an attribute that is calculated once
         #  per tick
-        platforms = pygame.sprite.spritecollide(
-            self, self.level.platforms, dokill=False
-        )
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
         for platform in platforms:
             if platform.can_fall_through:
                 print("colliding with droppable platform")
@@ -426,7 +341,6 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
             self.y += self.SPEED
         if keys[Keys.UP]:
             self.y -= self.SPEED
-
 
         if self.keys_pressed[Keys.FIRE]:
             if not hasattr(self, "hitbox"):
@@ -829,9 +743,7 @@ class Hitbox(Entity):
         super().__init__(x=10, y=20, width=width, height=height, **kwargs)
 
         self.image = pygame.Surface((self.width, self.height))
-        pygame.draw.ellipse(
-            self.image, self.debug_color, (0, 0, self.width, self.height)
-        )
+        pygame.draw.ellipse(self.image, self.debug_color, (0, 0, self.width, self.height))
         colorkey = self.image.get_at((0, 0))
         self.image.set_colorkey(colorkey)
         self.image = pygame.transform.rotate(self.image, self.angle)
