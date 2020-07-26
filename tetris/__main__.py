@@ -3,6 +3,9 @@ import sys
 import numpy as np
 import pygame
 
+from platformer.objects.keyhandlers import KeyHandler
+from tetris import shapes
+
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 700
 SQUARE_SIZE = 30  # px
@@ -47,6 +50,28 @@ class Screen:
         return Screen._instance
 
 
+class Shape:
+    def __init__(self, type, x, y):
+        self.type = type
+        self.array = getattr(shapes, type)
+        self.x = x
+        self.y = y
+
+    def draw(self, board):
+        # assume shapes are always stored in 5x5 arrays
+        for y, row in enumerate(self.array):
+            for x, item in enumerate(row):
+                if item:  # only do something for full squares
+                    # if square already occupied, raise exception
+                    if board[self.y + y - 2][self.x + x - 2]:
+                        raise Exception("square is already occupied")
+
+                    board[self.y + y - 2][self.x + x - 2] = item
+
+    def rotate(self):
+        self.array = np.rot90(self.array)
+
+
 def create_board():
     return np.zeros([ROW_COUNT, COLUMN_COUNT], dtype=int)
 
@@ -69,27 +94,28 @@ def draw_board(board):
                 screen,
                 COLOURS.get(content, pygame.color.THECOLORS["red"]),
                 (
-                    BOARD_TOP_LEFT_X + c * SQUARE_SIZE +1,
-                    BOARD_TOP_LEFT_Y + r * SQUARE_SIZE +1,
-                    SQUARE_SIZE-2,
-                    SQUARE_SIZE-2,
+                    BOARD_TOP_LEFT_X + c * SQUARE_SIZE + 1,
+                    BOARD_TOP_LEFT_Y + r * SQUARE_SIZE + 1,
+                    SQUARE_SIZE - 2,
+                    SQUARE_SIZE - 2,
                 ),
             )
 
 
-def main():
+def draw_shape(board, shape):
+    board = board.copy()
+    shape.draw(board)
+    return board
 
+
+def main():
+    key_handler = KeyHandler(queue_length=5)
     screen = Screen.get()
 
     board = create_board()
-    board[1][1] = 1
-    board[2][2] = 2
-    board[3][3] = 3
-    board[4][4] = 4
-    board[5][5] = 5
-    board[6][6] = 6
-    print(board)
-    draw_board(board)
+    shape = Shape(type="T", x=0, y=0)
+
+    print(shape.array)
 
     game_over = False
     while not game_over:
@@ -97,10 +123,32 @@ def main():
             if event.type == pygame.QUIT:
                 sys.exit()
 
-        screen.fill(pygame.color.THECOLORS["black"])
+            keys = pygame.key.get_pressed()
+            key_handler.update(keys)
+            pressed = key_handler.get_pressed()
 
+            if pressed[pygame.K_LEFT]:
+                print("key")
+                shape.x -= 1
+            if pressed[pygame.K_RIGHT]:
+                print("key")
+                shape.x += 1
+            if pressed[pygame.K_UP]:
+                print("key")
+                shape.y -= 1
+            if pressed[pygame.K_DOWN]:
+                print("key")
+                shape.y += 1
+            if pressed[pygame.K_SPACE]:
+                print("rotate!")
+                shape.rotate()
+
+
+        # draw stuff
+        screen.fill(pygame.color.THECOLORS["black"])
         draw_environment()
-        draw_board(board)
+        board_to_draw = draw_shape(board, shape)
+        draw_board(board_to_draw)
         pygame.display.update()
 
 
