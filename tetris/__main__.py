@@ -1,5 +1,6 @@
 import random
 import sys
+from collections import deque
 
 import numpy as np
 import pygame
@@ -20,21 +21,53 @@ COLUMN_COUNT = 10  # squares
 ROW_COUNT = 20  # squares
 BOARD_WIDTH = COLUMN_COUNT * SQUARE_SIZE
 BOARD_HEIGHT = ROW_COUNT * SQUARE_SIZE
-BOARD_TOP_LEFT_X = SCREEN_WIDTH / 2 - BOARD_WIDTH / 2
-BOARD_TOP_LEFT_Y = SCREEN_HEIGHT / 2 - BOARD_HEIGHT / 2
-
+BOARD_TOP_LEFT_X = SCREEN_WIDTH // 2 - BOARD_WIDTH // 2
+BOARD_TOP_LEFT_Y = SCREEN_HEIGHT // 2 - BOARD_HEIGHT // 2
+NEXT_SHAPE_TOP_LEFT_X = BOARD_TOP_LEFT_X + BOARD_WIDTH + 10
+NEXT_SHAPE_TOP_LEFT_Y = SCREEN_HEIGHT // 2
 MOVEMENT_TIMER = 15
 
-COLOURS = {
-    0: pygame.color.THECOLORS["lightgray"],
-    1: pygame.color.THECOLORS["cyan"],
-    2: pygame.color.THECOLORS["blue"],
-    3: pygame.color.THECOLORS["green"],
-    4: pygame.color.THECOLORS["yellow"],
-    5: pygame.color.THECOLORS["purple"],
-}
 
 pygame.font.init()
+
+
+class Colours:
+    _colours = {}
+
+    def __init__(self, colours_dict=None):
+        if not Colours._colours:
+            if not colours_dict:
+                colours_dict = {ii: random_colour() for ii in range(1, 10)}
+            Colours._colours = colours_dict
+        else:
+            raise Exception("You can't create a second Colours instance")
+
+    @staticmethod
+    def get(key):
+        if not Colours._colours:
+            Colours()
+        return Colours._colours[key]
+
+    @staticmethod
+    def random_key():
+        if not Colours._colours:
+            Colours()
+        return random.choice(list(Colours._colours.keys()))
+
+    @staticmethod
+    def random_colour():
+        if not Colours._colours:
+            Colours()
+        key = Colours.random_key()
+        return Colours.get(key)
+
+    @staticmethod
+    def random():
+        if not Colours._colours:
+            Colours()
+        key = Colours.random_key()
+        colour = Colours.get(key)
+        return key, colour
 
 
 class Screen:
@@ -59,18 +92,54 @@ class Screen:
         return Screen._instance
 
 
+class ShapeQueue:
+    _instance = None
+
+    def __init__(self):
+        if ShapeQueue._instance is None:
+            ShapeQueue._instance = deque()
+        else:
+            raise Exception("You can't create a second ShapeQueue")
+
+    @classmethod
+    def append(cls, value):
+        cls._instance.append(value)
+
+    @staticmethod
+    def get():
+        if not ShapeQueue._instance:
+            ShapeQueue()
+        return ShapeQueue._instance
+
+    @classmethod
+    def next(cls):
+        return cls._instance[0]
+
+    @classmethod
+    def popleft(cls):
+        return cls._instance.popleft()
+
+
 class Shape:
-    def __init__(self, type, x, y):
-        self.type = type
-        self.array = getattr(shapes, type)
+    def __init__(self, x, y, type=None, colour=None):
         self.x = x
         self.y = y
+        self.type = type
+        if type:
+            self.array = getattr(shapes, type)
+        else:
+            self.array = self.generate_random()
+        if not colour:
+            colour = Colours.random_key()
+        self.array = self.array * colour
+        print(f"created new Shape: {self.array}")
 
-    def pad(self, board):
-        """Return an empty board with self on it"""
-        board = np.zeros(board.shape)
-        self.draw(board)
-        return board
+    def generate_random(self):
+        array = np.zeros((5, 5))
+        while not np.any(array):
+            array = np.array(np.random.uniform(0, 0.8, [3, 3]).round(), dtype=int)
+            array = np.pad(array, 1)
+        return array
 
     def check(self, board):
         # assume shapes are always stored in 5x5 arrays
@@ -109,8 +178,9 @@ class Shape:
                 if board_y >= 0:
                     board.array[board_y][board_x] = item
 
-    def rotate(self):
-        self.array = np.rot90(self.array)
+    def rotate(self, times=1):
+        for __ in range(times):
+            self.array = np.rot90(self.array)
 
 
 class Board:
@@ -134,30 +204,42 @@ class Board:
         return self.array.shape[0]
 
 
-def draw_environment():
+def random_colour():
+    colour = [255, 255, 255]
+    while sum(colour) > 400:
+        colour = [random.randint(0, 255) for __ in range(3)]
+    return colour
+
+
+def draw_board(board, top_left_x, top_left_y):
     screen = Screen.get()
+    height, width = board.array.shape
     pygame.draw.rect(
         screen,
         pygame.color.THECOLORS["darkgray"],
-        (BOARD_TOP_LEFT_X, BOARD_TOP_LEFT_Y, BOARD_WIDTH, BOARD_HEIGHT),
+        (top_left_x, top_left_y, width * SQUARE_SIZE, height * SQUARE_SIZE),
     )
 
-
-def draw_board(board):
-    screen = Screen.get()
-    for c in range(COLUMN_COUNT):
-        for r in range(ROW_COUNT):
+    for c in range(width):
+        for r in range(height):
             content = board.array[r][c]
+            colour = Colours.get(content) if content else pygame.color.THECOLORS["lightgray"]
             pygame.draw.rect(
                 screen,
-                COLOURS.get(content, pygame.color.THECOLORS["red"]),
+                colour,
                 (
-                    BOARD_TOP_LEFT_X + c * SQUARE_SIZE + 1,
-                    BOARD_TOP_LEFT_Y + r * SQUARE_SIZE + 1,
+                    top_left_x + c * SQUARE_SIZE + 1,
+                    top_left_y + r * SQUARE_SIZE + 1,
                     SQUARE_SIZE - 2,
                     SQUARE_SIZE - 2,
                 ),
             )
+
+
+def draw_next_shape_board(array):
+    temp_board = Board(0, 0)
+    temp_board.array = array
+    draw_board(temp_board, NEXT_SHAPE_TOP_LEFT_X, NEXT_SHAPE_TOP_LEFT_Y)
 
 
 def draw_shape(board, shape):
@@ -172,6 +254,10 @@ def new_shape():
     return Shape(type=shape_type, x=5, y=0)
 
 
+def new_random_shape():
+    return Shape(x=5, y=0)
+
+
 def main():
     movement_timer = MOVEMENT_TIMER
     key_handler = KeyHandler(queue_length=5)
@@ -179,7 +265,9 @@ def main():
     myfont = pygame.font.SysFont("monospace", 40)
 
     board = Board(ROW_COUNT, COLUMN_COUNT)
+    shape_queue = ShapeQueue.get()
     shape = new_shape()
+    ShapeQueue.append(new_shape())
     clock = pygame.time.Clock()
     score = 0
 
@@ -219,14 +307,17 @@ def main():
         except (CollisionError, ReachedBottomError):
             shape.y -= 1
             shape.draw(board)  # fix shape to board
-            shape = new_shape()
+            shape = ShapeQueue.popleft()
+            if score < 10:
+                ShapeQueue.append(new_shape())
+            else:
+                ShapeQueue.append(new_random_shape())
 
         # clear full rows
         for row_number in board.complete_lines:
             board.clear_row(row_number)
             score += 1
 
-        # todo: show next shape
         # todo: random shaped blocks...
 
         # endgame
@@ -249,9 +340,9 @@ def main():
 
         # draw stuff
         screen.fill(pygame.color.THECOLORS["black"])
-        draw_environment()
         board_to_draw = draw_shape(board, shape)
-        draw_board(board_to_draw)
+        draw_board(board_to_draw, BOARD_TOP_LEFT_X, BOARD_TOP_LEFT_Y)
+        draw_next_shape_board(ShapeQueue.next().array)
         label = myfont.render(f"SCORE = {score}", 1, pygame.color.THECOLORS["white"])
         screen.blit(label, (40, 10))
 
