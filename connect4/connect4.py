@@ -1,7 +1,17 @@
+import sys
+
 import numpy as np
+import pygame
 
 ROW_COUNT = 8
 COLUMN_COUNT = 12
+SQUARESIZE = 100
+RADIUS = int(SQUARESIZE / 2 - 5)
+COLOURS = {
+    0: pygame.color.THECOLORS["black"],
+    1: pygame.color.THECOLORS["red"],
+    2: pygame.color.THECOLORS["yellow"],
+}
 
 
 def create_board():
@@ -14,7 +24,7 @@ def drop_piece(board, row, col, piece):
 
 
 def is_valid_location(board, col):
-    return board[ROW_COUNT-1][col] == 0
+    return board[ROW_COUNT - 1][col] == 0
 
 
 def get_next_open_row(board, col):
@@ -77,23 +87,81 @@ def main():
     game_over = False
     turn = 0
 
+    def draw_board(board):
+        board = board[::-1]
+        for c in range(COLUMN_COUNT):
+            for r in range(ROW_COUNT):
+                player = int(board[r][c])
+                pygame.draw.rect(
+                    screen,
+                    pygame.color.THECOLORS["blue"],
+                    (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE),
+                )
+                color = COLOURS[player]
+                pygame.draw.circle(
+                    screen,
+                    color,
+                    (
+                        int(c * SQUARESIZE + SQUARESIZE / 2),
+                        int(r * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2),
+                    ),
+                    RADIUS,
+                )
+
+    pygame.init()
+    width = COLUMN_COUNT * SQUARESIZE
+    height = (ROW_COUNT + 1) * SQUARESIZE
+    size = (width, height)
+    screen = pygame.display.set_mode(size)
+    draw_board(board)
+    pygame.display.update()
+
+    myfont = pygame.font.SysFont("monospace", 75)
+
     print_board(board)
     while not game_over:
+        screen.fill(pygame.color.THECOLORS["black"])
         player = 1 if turn == 0 else 2
-        col = int(input(f"Player {player}, make your selection (0-6):"))
-        print(f"Player {player} selected column {col}")
 
-        if is_valid_location(board, col):
-            row = get_next_open_row(board, col)
-            drop_piece(board, row, col, player)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            if event.type == pygame.MOUSEMOTION:
+                mouse_x, mouse_y = event.pos
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print(event.pos)
+                posx, posy = event.pos
+                col = posx // SQUARESIZE
+                # col = int(input(f"Player {player}, make your selection (0-6):"))
+                print(f"Player {player} selected column {col}")
+
+                if is_valid_location(board, col):
+                    row = get_next_open_row(board, col)
+                    drop_piece(board, row, col, player)
+                    turn += 1
+                    turn = turn % 2
+
+            # draw current colour above board
+            color = COLOURS[player]
+            pygame.draw.circle(
+                screen, color, (int(mouse_x), int(SQUARESIZE / 2)), RADIUS,
+            )
+
             print_board(board)
+            draw_board(board)
+            pygame.display.update()
 
             if winner(board) == player:
-                print(f"PLAYER {player} WINS!!! CONGRATULATIONS!")
-                game_over = True
+                message = f"PLAYER {player} WINS!!!"
+                print(message)
+                label = myfont.render(message, 1, COLOURS[player])
+                screen.blit(label, (40, 10))
+                pygame.display.update()
+                pygame.time.wait(3000)
 
-        turn += 1
-        turn = turn % 2
+                game_over = True
 
 
 if __name__ == "__main__":
