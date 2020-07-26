@@ -5,6 +5,12 @@ import pygame
 
 from platformer.objects.keyhandlers import KeyHandler
 from tetris import shapes
+from tetris.exceptions import (
+    CollisionError,
+    ReachedBottomError,
+    MaxXError,
+    MinXError,
+)
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 700
@@ -57,16 +63,47 @@ class Shape:
         self.x = x
         self.y = y
 
-    def draw(self, board):
+    def pad(self, board):
+        """Return an empty board with self on it"""
+        board = np.zeros(board.shape)
+        self.draw(board)
+        return board
+
+    def check(self, board):
         # assume shapes are always stored in 5x5 arrays
         for y, row in enumerate(self.array):
             for x, item in enumerate(row):
-                if item:  # only do something for full squares
-                    # if square already occupied, raise exception
-                    if board[self.y + y - 2][self.x + x - 2]:
-                        raise Exception("square is already occupied")
+                if not item:  # only do something for full squares
+                    continue
 
-                    board[self.y + y - 2][self.x + x - 2] = item
+                # translate the self.array position to the board position
+                board_x = self.x + x - 2
+                board_y = self.y + y - 2
+
+                # if shape is outside x bounds
+                if 0 > board_x:
+                    raise MinXError
+
+                if board_x > COLUMN_COUNT - 1:
+                    raise MaxXError
+
+                if board_y > ROW_COUNT - 1:
+                    raise ReachedBottomError
+
+                # if square already occupied on board
+                if board[board_y][board_x]:
+                    raise CollisionError("square is already occupied")
+
+    def draw(self, board):
+        for y, row in enumerate(self.array):
+            for x, item in enumerate(row):
+                if not item:  # only do something for full squares
+                    continue
+
+                board_x = self.x + x - 2
+                board_y = self.y + y - 2
+
+                board[board_y][board_x] = item
 
     def rotate(self):
         self.array = np.rot90(self.array)
@@ -113,43 +150,62 @@ def main():
     screen = Screen.get()
 
     board = create_board()
-    shape = Shape(type="T", x=0, y=0)
-
-    print(shape.array)
+    shape = Shape(type="T", x=5, y=0)
 
     game_over = False
     while not game_over:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
 
-            keys = pygame.key.get_pressed()
-            key_handler.update(keys)
-            pressed = key_handler.get_pressed()
+        keys = pygame.key.get_pressed()
+        key_handler.update(keys)
+        pressed = key_handler.get_pressed()
 
+        try:
             if pressed[pygame.K_LEFT]:
-                print("key")
-                shape.x -= 1
+                try:
+                    shape.x -= 1
+                    shape.check(board)
+                except CollisionError:
+                    shape.x += 1
             if pressed[pygame.K_RIGHT]:
-                print("key")
-                shape.x += 1
-            if pressed[pygame.K_UP]:
-                print("key")
-                shape.y -= 1
+                try:
+                    shape.x += 1
+                    shape.check(board)
+                except CollisionError:
+                    shape.x -= 1
             if pressed[pygame.K_DOWN]:
-                print("key")
                 shape.y += 1
+                shape.check(board)
             if pressed[pygame.K_SPACE]:
-                print("rotate!")
                 shape.rotate()
+        except MinXError:
+            shape.x += 1
+        except MaxXError:
+            shape.x -= 1
+        except (CollisionError, ReachedBottomError):
+            shape.y -= 1
+            shape.draw(board)  # fix shape to board
+            shape = Shape(type="T", x=5, y=0)
 
+        # todo: automatically move down with speed
+        # todo: clear full rows
 
         # draw stuff
         screen.fill(pygame.color.THECOLORS["black"])
         draw_environment()
-        board_to_draw = draw_shape(board, shape)
-        draw_board(board_to_draw)
+        try:
+            board_to_draw = draw_shape(board, shape)
+            draw_board(board_to_draw)
+        except (CollisionError, ReachedBottomError):
+            shape.y -= 1
+            shape.draw(board)  # fix shape to board
+            shape = Shape(type="T", x=5, y=0)
+
         pygame.display.update()
+
 
 
 if __name__ == "__main__":
