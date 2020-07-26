@@ -83,9 +83,6 @@ def winner(board):
 
 
 def main():
-    board = create_board()
-    game_over = False
-    turn = 0
 
     def draw_board(board):
         board = board[::-1]
@@ -108,6 +105,10 @@ def main():
                     RADIUS,
                 )
 
+    board = create_board()
+    game_over = False
+    turn = 0
+    mouse_x, mouse_y = 0, 0
     pygame.init()
     width = COLUMN_COUNT * SQUARESIZE
     height = (ROW_COUNT + 1) * SQUARESIZE
