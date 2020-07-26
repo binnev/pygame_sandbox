@@ -1,3 +1,4 @@
+import random
 import sys
 
 import numpy as np
@@ -21,6 +22,8 @@ BOARD_WIDTH = COLUMN_COUNT * SQUARE_SIZE
 BOARD_HEIGHT = ROW_COUNT * SQUARE_SIZE
 BOARD_TOP_LEFT_X = SCREEN_WIDTH / 2 - BOARD_WIDTH / 2
 BOARD_TOP_LEFT_Y = SCREEN_HEIGHT / 2 - BOARD_HEIGHT / 2
+
+MOVEMENT_TIMER = 15
 
 COLOURS = {
     0: pygame.color.THECOLORS["lightgray"],
@@ -91,7 +94,7 @@ class Shape:
                     raise ReachedBottomError
 
                 # if square already occupied on board
-                if board[board_y][board_x]:
+                if board.array[board_y][board_x]:
                     raise CollisionError("square is already occupied")
 
     def draw(self, board):
@@ -103,14 +106,32 @@ class Shape:
                 board_x = self.x + x - 2
                 board_y = self.y + y - 2
 
-                board[board_y][board_x] = item
+                if board_y >= 0:
+                    board.array[board_y][board_x] = item
 
     def rotate(self):
         self.array = np.rot90(self.array)
 
 
-def create_board():
-    return np.zeros([ROW_COUNT, COLUMN_COUNT], dtype=int)
+class Board:
+    def __init__(self, rows, columns):
+        self.array = np.zeros([ROW_COUNT, COLUMN_COUNT], dtype=int)
+
+    @property
+    def complete_lines(self):
+        return [ii for ii, row in enumerate(self.array) if all(row)]
+
+    def clear_row(self, row):
+        new_row = np.zeros((1, self.width))
+        self.array = np.concatenate([new_row, np.delete(self.array, obj=row, axis=0)])
+
+    @property
+    def width(self):
+        return self.array.shape[1]
+
+    @property
+    def height(self):
+        return self.array.shape[0]
 
 
 def draw_environment():
@@ -126,7 +147,7 @@ def draw_board(board):
     screen = Screen.get()
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
-            content = board[r][c]
+            content = board.array[r][c]
             pygame.draw.rect(
                 screen,
                 COLOURS.get(content, pygame.color.THECOLORS["red"]),
@@ -140,72 +161,102 @@ def draw_board(board):
 
 
 def draw_shape(board, shape):
-    board = board.copy()
-    shape.draw(board)
-    return board
+    new_board = Board(0, 0)
+    new_board.array = board.array.copy()
+    shape.draw(new_board)
+    return new_board
+
+
+def new_shape():
+    shape_type = random.choice(shapes.types)
+    return Shape(type=shape_type, x=5, y=0)
 
 
 def main():
+    movement_timer = MOVEMENT_TIMER
     key_handler = KeyHandler(queue_length=5)
     screen = Screen.get()
+    myfont = pygame.font.SysFont("monospace", 40)
 
-    board = create_board()
-    shape = Shape(type="T", x=5, y=0)
+    board = Board(ROW_COUNT, COLUMN_COUNT)
+    shape = new_shape()
+    clock = pygame.time.Clock()
+    score = 0
 
+    iteration = 0
     game_over = False
     while not game_over:
+        clock.tick(15)  # sets the FPS. Lower = slower
 
+        # get events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+        key_handler.update(pygame.key.get_pressed())
 
-        keys = pygame.key.get_pressed()
-        key_handler.update(keys)
-        pressed = key_handler.get_pressed()
-
+        # move shape
         try:
-            if pressed[pygame.K_LEFT]:
+            if key_handler.get_pressed()[pygame.K_LEFT]:
                 try:
                     shape.x -= 1
                     shape.check(board)
-                except CollisionError:
+                except (CollisionError, MinXError):
                     shape.x += 1
-            if pressed[pygame.K_RIGHT]:
+            if key_handler.get_pressed()[pygame.K_RIGHT]:
                 try:
                     shape.x += 1
                     shape.check(board)
-                except CollisionError:
+                except (CollisionError, MaxXError):
                     shape.x -= 1
-            if pressed[pygame.K_DOWN]:
+            if key_handler.get_down()[pygame.K_DOWN]:
                 shape.y += 1
                 shape.check(board)
-            if pressed[pygame.K_SPACE]:
+            if key_handler.get_pressed()[pygame.K_SPACE]:
                 shape.rotate()
-        except MinXError:
-            shape.x += 1
-        except MaxXError:
-            shape.x -= 1
+            if iteration % movement_timer == 0:
+                shape.y += 1
+                shape.check(board)
         except (CollisionError, ReachedBottomError):
             shape.y -= 1
             shape.draw(board)  # fix shape to board
-            shape = Shape(type="T", x=5, y=0)
+            shape = new_shape()
 
-        # todo: automatically move down with speed
-        # todo: clear full rows
+        # clear full rows
+        for row_number in board.complete_lines:
+            board.clear_row(row_number)
+            score += 1
+
+        # todo: show next shape
+        # todo: random shaped blocks...
+
+        # endgame
+        if any(board.array[0]):
+            screen.fill([0, 0, 0, 150])
+            label = myfont.render("GAME OVER", 1, pygame.color.THECOLORS["white"])
+            label_rect = label.get_rect()
+            label_rect.center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+            screen.blit(label, label_rect)
+            label = myfont.render(f"SCORE = {score}", 1, pygame.color.THECOLORS["white"])
+            label_rect = label.get_rect()
+            label_rect.center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50)
+            screen.blit(label, label_rect)
+            pygame.display.update()
+            pygame.time.wait(3000)
+            game_over = True
+
+        # slowly increase the speed with score
+        movement_timer = MOVEMENT_TIMER - score // 1
 
         # draw stuff
         screen.fill(pygame.color.THECOLORS["black"])
         draw_environment()
-        try:
-            board_to_draw = draw_shape(board, shape)
-            draw_board(board_to_draw)
-        except (CollisionError, ReachedBottomError):
-            shape.y -= 1
-            shape.draw(board)  # fix shape to board
-            shape = Shape(type="T", x=5, y=0)
+        board_to_draw = draw_shape(board, shape)
+        draw_board(board_to_draw)
+        label = myfont.render(f"SCORE = {score}", 1, pygame.color.THECOLORS["white"])
+        screen.blit(label, (40, 10))
 
         pygame.display.update()
-
+        iteration += 1
 
 
 if __name__ == "__main__":
