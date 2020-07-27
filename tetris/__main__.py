@@ -1,3 +1,4 @@
+import copy
 import random
 import sys
 from collections import deque
@@ -152,6 +153,10 @@ class Shape:
                 board_x = self.x + x - 2
                 board_y = self.y + y - 2
 
+                # ignore stuff off the top of the board
+                if board_y < 0:
+                    continue
+
                 # if shape is outside x bounds
                 if 0 > board_x:
                     raise MinXError
@@ -286,21 +291,41 @@ def main():
         try:
             if key_handler.get_pressed()[pygame.K_LEFT]:
                 try:
-                    shape.x -= 1
-                    shape.check(board)
-                except (CollisionError, MinXError):
-                    shape.x += 1
+                    trial_shape = copy.deepcopy(shape)
+                    trial_board = copy.deepcopy(board)
+                    trial_shape.x -= 1
+                    trial_shape.check(trial_board)
+                except (CollisionError, MinXError, IndexError):
+                    pass
+                else:
+                     shape.x -= 1
+
             if key_handler.get_pressed()[pygame.K_RIGHT]:
                 try:
+                    trial_shape = copy.deepcopy(shape)
+                    trial_board = copy.deepcopy(board)
+                    trial_shape.x += 1
+                    trial_shape.check(trial_board)
+                except (CollisionError, MaxXError, IndexError):
+                    pass
+                else:
                     shape.x += 1
-                    shape.check(board)
-                except (CollisionError, MaxXError):
-                    shape.x -= 1
+
             if key_handler.get_down()[pygame.K_DOWN]:
                 shape.y += 1
                 shape.check(board)
+
             if key_handler.get_pressed()[pygame.K_SPACE]:
-                shape.rotate()
+                try:
+                    trial_shape = copy.deepcopy(shape)
+                    trial_board = copy.deepcopy(board)
+                    trial_shape.rotate()
+                    trial_shape.check(trial_board)
+                except (CollisionError, MinXError, MaxXError, IndexError):
+                    pass
+                else:
+                    shape.rotate()
+
             if iteration % movement_timer == 0:
                 shape.y += 1
                 shape.check(board)
@@ -318,8 +343,6 @@ def main():
             board.clear_row(row_number)
             score += 1
 
-        # todo: random shaped blocks...
-
         # endgame
         if any(board.array[0]):
             screen.fill([0, 0, 0, 150])
@@ -336,7 +359,7 @@ def main():
             game_over = True
 
         # slowly increase the speed with score
-        movement_timer = MOVEMENT_TIMER - score // 1
+        movement_timer = MOVEMENT_TIMER - score // 2
 
         # draw stuff
         screen.fill(pygame.color.THECOLORS["black"])
