@@ -83,7 +83,6 @@ def winner(board):
 
 
 def main():
-
     def draw_board(board):
         board = board[::-1]
         for c in range(COLUMN_COUNT):

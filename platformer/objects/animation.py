@@ -120,8 +120,7 @@ class SpriteAnimation:
         game_ticks_per_sprite_frame=1,
     ):
         self.frames = [
-            pygame.transform.flip(f, bool(flip_horizontal), bool(flip_vertical))
-            for f in frames
+            pygame.transform.flip(f, bool(flip_horizontal), bool(flip_vertical)) for f in frames
         ]
         self.looping = looping
         self.game_ticks_per_sprite_frame = game_ticks_per_sprite_frame
@@ -135,9 +134,7 @@ class SpriteAnimation:
         ticks).
         """
         if self.looping:
-            return self.frames[
-                game_tick // self.game_ticks_per_sprite_frame % len(self.frames)
-            ]
+            return self.frames[game_tick // self.game_ticks_per_sprite_frame % len(self.frames)]
         else:
             return self.frames[
                 min(game_tick // self.game_ticks_per_sprite_frame, len(self.frames) - 1)
@@ -171,8 +168,7 @@ class SpriteDict(dict):
             _size = sprite_info.get("size") or size
             _scale = sprite_info.get("scale") or scale
             _ticks_per_frame = (
-                sprite_info.get("game_ticks_per_sprite_frame")
-                or game_ticks_per_sprite_frame
+                sprite_info.get("game_ticks_per_sprite_frame") or game_ticks_per_sprite_frame
             )
 
             # specific to individual sprites
@@ -182,9 +178,7 @@ class SpriteDict(dict):
             flip_vertical = sprite_info.get("flip_vertical")
 
             sprite_sheet = SpriteSheet(filename, colormap)
-            frames_list = sprite_sheet.load_sheet(
-                *_size, scale=_scale, num_images=num_images
-            )
+            frames_list = sprite_sheet.load_sheet(*_size, scale=_scale, num_images=num_images)
             sprite_animation = SpriteAnimation(
                 frames_list,
                 game_ticks_per_sprite_frame=_ticks_per_frame,

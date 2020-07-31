@@ -4,9 +4,7 @@ import pytest
 
 from platformer.objects.keyhandlers import KeyHandler
 
-key_numbers = {
-    value for key, value in constants.__dict__.items() if key.startswith("K")
-}
+key_numbers = {value for key, value in constants.__dict__.items() if key.startswith("K")}
 
 
 @pytest.mark.parametrize("key_number", key_numbers)

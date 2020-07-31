@@ -82,9 +82,7 @@ PROJECTILE_SPRITES = {
 folder = sprites_folder / "volleyball"
 BALL_SPRITES = {
     "default": SpriteAnimation(
-        SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
-            32, 32, scale=SCALE_SPRITES
-        ),
+        SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(32, 32, scale=SCALE_SPRITES),
         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
     ),
 }
@@ -126,9 +124,7 @@ class Blob(Character):
         super().__init__(x, y, groups)
         # add custom states
         self.states.SHOOT_PROJECTILE = "SHOOT_PROJECTILE"
-        self.state_lookup.update(
-            {self.states.SHOOT_PROJECTILE: self.state_shoot_projectile}
-        )
+        self.state_lookup.update({self.states.SHOOT_PROJECTILE: self.state_shoot_projectile})
         self.sprites = self.skins[skin]
 
     def update_cooldowns(self):
@@ -149,9 +145,7 @@ class Blob(Character):
         self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
         old_width = self.image.get_rect().width
         old_height = self.image.get_rect().height
-        self.image = pygame.transform.scale(
-            self.image, (int(old_width * 0.5), old_height)
-        )
+        self.image = pygame.transform.scale(self.image, (int(old_width * 0.5), old_height))
         self.allow_fastfall()
         self.enforce_max_fall_speed()
 
@@ -199,9 +193,9 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
         self.enforce_screen_limits(*self.level.game.screen_size)
 
     def handle_hits(self):
-        hitboxes = pygame.sprite.spritecollide(self, self.level.hitboxes,
-                                             collided=pygame.sprite.collide_mask,
-                                             dokill=False)
+        hitboxes = pygame.sprite.spritecollide(
+            self, self.level.hitboxes, collided=pygame.sprite.collide_mask, dokill=False
+        )
         for hitbox in hitboxes:
             print(f"Ball hit by {hitbox.owner}'s hitbox")
             # self.kill()

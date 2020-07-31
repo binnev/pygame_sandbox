@@ -31,7 +31,6 @@ class Level(EntityGroup):
         self.projectiles = EntityGroup()
         self.hitboxes = EntityGroup()
 
-
     def add(self, *objects, type=None):
         # add to Level spritegroup (similar to "all" group)
         super().add(*objects)

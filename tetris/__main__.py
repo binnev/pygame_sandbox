@@ -298,7 +298,7 @@ def main():
                 except (CollisionError, MinXError, IndexError):
                     pass
                 else:
-                     shape.x -= 1
+                    shape.x -= 1
 
             if key_handler.get_pressed()[pygame.K_RIGHT]:
                 try:

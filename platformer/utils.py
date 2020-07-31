@@ -21,7 +21,7 @@ def touching(entity1: "Entity", entity2: "Entity") -> bool:
 # need these helper functions because pygame.mask.Mask methods aren't actually
 # implemented as they are described in the docs...
 def maskFromSurface(surface, threshold=127):
-    #return pygame.mask.from_surface(surface, threshold)
+    # return pygame.mask.from_surface(surface, threshold)
 
     mask = pygame.mask.Mask(surface.get_size())
     key = surface.get_colorkey()
