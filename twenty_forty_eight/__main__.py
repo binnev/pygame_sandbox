@@ -1,5 +1,5 @@
-import pygame
 import matplotlib.pyplot as plt
+import pygame
 
 from twenty_forty_eight.objects import Board
 
