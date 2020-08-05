@@ -122,12 +122,12 @@ class ShapeQueue:
 
 
 class Shape:
-    def __init__(self, x, y, type=None, colour=None):
+    def __init__(self, x, y, random_shape=False, colour=None):
         self.x = x
         self.y = y
         self.type = type
-        if type:
-            self.array = getattr(shapes, type)
+        if not random_shape:
+            self.array = random.choice(shapes.shapes)
         else:
             self.array = self.generate_random()
         if not colour:
@@ -255,12 +255,11 @@ def draw_shape(board, shape):
 
 
 def new_shape():
-    shape_type = random.choice(shapes.types)
-    return Shape(type=shape_type, x=5, y=0)
+    return Shape(x=5, y=0)
 
 
 def new_random_shape():
-    return Shape(x=5, y=0)
+    return Shape(x=5, y=0, random_shape=True)
 
 
 def main():
