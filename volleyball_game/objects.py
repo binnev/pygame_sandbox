@@ -12,6 +12,7 @@ from volleyball_game.sprites.stickman import stickman_sprites
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     # class properties
+    facing_right: bool
     width: int
     height: int
     _state: str
@@ -54,7 +55,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     # historymixin
     attributes_to_remember = ["rect", "x", "y"]
 
-    def __init__(self, x, y, groups=[]):
+    def __init__(self, x, y, facing_right=True, groups=[]):
 
         super().__init__(x, y, self.width, self.height, groups=groups)
         HistoryMixin.__init__(self)
@@ -63,6 +64,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.v = 0
         self.state = self.states.FALL
         self.fastfall = False
+        self.facing_right = facing_right
         self.state_lookup = {
             self.states.STAND: self.state_stand,
             self.states.JUMPSQUAT: self.state_jumpsquat,
@@ -131,6 +133,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 return False
         return True
 
+    @property
+    def facing(self):
+        return "right" if self.facing_right else "left"
     # ============== drawing functions ===============
 
     def align_image_rect(self):
@@ -225,10 +230,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.y = screen_height
             self.v = 0
 
+
+
     # ========================= state functions ================================
 
     def state_stand(self):
-        self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
+        self.image = self.sprites["stand_"+self.facing].get_frame(self.frames_elapsed)
         if self.keys_pressed[Keys.JUMP]:  # enter jumpsquat
             self.state = self.states.JUMPSQUAT
         if self.keys[Keys.DOWN]:  # enter squat
@@ -239,7 +246,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.FALL
 
     def state_jumpsquat(self):
-        self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_"+self.facing].get_frame(self.frames_elapsed)
         if self.frames_elapsed == self.jumpsquat_frames:
             self.enter_jump()
 
@@ -251,22 +258,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_fall(self):
         # sprite selection
-        f = self.frames_elapsed
-        limit = 2  # fixme: don't hard-code this here
-        if self.v > 0:
-            if abs(self.u) < limit:
-                self.image = self.sprites["fall"].get_frame(f)
-            elif self.u > 0:
-                self.image = self.sprites["fall_right"].get_frame(f)
-            else:
-                self.image = self.sprites["fall_left"].get_frame(f)
-        else:
-            if abs(self.u) < limit:
-                self.image = self.sprites["jump"].get_frame(f)
-            elif self.u > 0:
-                self.image = self.sprites["jump_right"].get_frame(f)
-            else:
-                self.image = self.sprites["jump_left"].get_frame(f)
+        self.image = self.sprites["jump_"+self.facing].get_frame(self.frames_elapsed)
 
         # update horizontal position
         if self.keys[Keys.LEFT]:
@@ -294,7 +286,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = 0
 
     def state_squat(self):
-        self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_"+self.facing].get_frame(self.frames_elapsed)
         if self.airborne:
             self.state = self.states.FALL
         if self.keys_pressed[Keys.JUMP]:
@@ -313,8 +305,10 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if not self.keys[Keys.LEFT] and not self.keys[Keys.RIGHT]:
             self.state = self.states.STAND
         if self.keys[Keys.LEFT]:
+            self.facing_right = False
             self.u -= self.ground_acceleration
         if self.keys[Keys.RIGHT]:
+            self.facing_right = True
             self.u += self.ground_acceleration
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed

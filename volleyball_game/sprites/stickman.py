@@ -8,8 +8,6 @@ folder = sprites_folder / "stickman"
 
 # todo: make something to automatically create left-facing versions?
 file_mapping = {
-    "stand": {"filename": folder / "stick_stand.png"},
-    "crouch": {"filename": folder / "stick_crouch.png"},
     "crouch_right": {"filename": folder / "stick_crouch.png"},
     "crouch_left": {"filename": folder / "stick_crouch.png", "flip_horizontal": True,},
     "stand_right": {"filename": folder / "stick_stand.png"},
@@ -17,12 +15,12 @@ file_mapping = {
     "run_right": {"filename": folder / "stick_run.png"},
     "run_left": {"filename": folder / "stick_run.png", "flip_horizontal": True,},
     # dummy stuff:
-    "fall": {"filename": folder / "stick_run.png", "flip_horizontal": True,},
-    "fall_right": {"filename": folder / "stick_run.png", "flip_horizontal": True,},
-    "fall_left": {"filename": folder / "stick_run.png", "flip_horizontal": True,},
-    "jump": {"filename": folder / "stick_run.png", "flip_horizontal": True,},
-    "jump_left": {"filename": folder / "stick_run.png", "flip_horizontal": True,},
-    "jump_right": {"filename": folder / "stick_run.png", "flip_horizontal": True,},
+    "fall": {"filename": folder / "stick_jump.png"},
+    "fall_right": {"filename": folder / "stick_jump.png"},
+    "fall_left": {"filename": folder / "stick_jump.png", "flip_horizontal": True,},
+    "jump": {"filename": folder / "stick_jump.png"},
+    "jump_right": {"filename": folder / "stick_jump.png"},
+    "jump_left": {"filename": folder / "stick_jump.png", "flip_horizontal": True,},
 }
 
 

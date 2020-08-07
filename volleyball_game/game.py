@@ -14,7 +14,8 @@ class VolleyballGame(Game):
     def run(self):
         self.window.fill((255, 255, 255))
         level = VolleyballCourt(game=self)
-        level.add(Stickman(100, 100), type="character")
+        level.add(Stickman(100, 100, facing_right=True), type="character")
+        level.add(Stickman(300, 100, facing_right=False), type="character")
 
         run = True
         debug = False
