@@ -1,4 +1,8 @@
+from collections import namedtuple
+
 import pygame
+
+Point = namedtuple("Point", ["x", "y"])
 
 
 def touching(entity1: "Entity", entity2: "Entity") -> bool:

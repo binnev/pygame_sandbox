@@ -1,6 +1,8 @@
 from collections import deque
 from copy import deepcopy
 
+import pygame
+
 
 class AnimationMixin:
     """Handles animation for a state machine class. Subclasses should have their own
@@ -73,3 +75,27 @@ class HistoryMixin:
         self.history.append(
             {attr: deepcopy(getattr(self, attr)) for attr in self.attributes_to_remember}
         )
+
+
+
+class SimpleMovementMixin:
+    class Keys:
+        LEFT = pygame.K_LEFT
+        RIGHT = pygame.K_RIGHT
+        UP = pygame.K_UP
+        DOWN = pygame.K_DOWN
+
+    SPEED = 2
+
+    def update_position(self, keys):
+        self.keys = keys
+        if keys[self.Keys.RIGHT]:
+            self.x += self.SPEED
+        if keys[self.Keys.LEFT]:
+            self.x -= self.SPEED
+        if keys[self.Keys.DOWN]:
+            self.y += self.SPEED
+        if keys[self.Keys.UP]:
+            self.y -= self.SPEED
+
+

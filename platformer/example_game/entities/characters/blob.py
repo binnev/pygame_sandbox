@@ -1,18 +1,21 @@
 from pathlib import Path
+
 import numpy
 import pygame
+from base.animation import SpriteAnimation, SpriteSheet, SpriteDict
 
-from platformer.objects.entities import (
-    Character,
-    Keys,
-    Entity,
+from base.objects.mixins import (
     AnimationMixin,
     PhysicsMixin,
     CollisionMixin,
-    Projectile,
 )
 
-from platformer.objects.animation import SpriteAnimation, SpriteSheet, SpriteDict
+from base.objects.entities import (
+    Character,
+    Keys,
+    Entity,
+    Projectile,
+)
 from ...conf import SCALE_SPRITES, TICKS_PER_SPRITE_FRAME
 
 sprites_folder = Path("sprites/")

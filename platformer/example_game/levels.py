@@ -1,5 +1,5 @@
-from platformer.objects.entities import Platform
-from platformer.objects.groups import Level
+from base.groups import Level
+from base.objects.entities import Platform
 
 
 class TestLevel(Level):

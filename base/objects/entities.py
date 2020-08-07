@@ -1,15 +1,11 @@
 from collections import namedtuple, deque
-from copy import deepcopy
-from pathlib import Path
 
-import numpy as np
 import pygame
-
 from numpy import sign
 
-from platformer.objects.entities.mixins import HistoryMixin
-from platformer.objects.groups import EntityGroup
-from platformer.utils import touching, mask_to_surface
+from base.groups import EntityGroup
+from base.objects.mixins import HistoryMixin, AnimationMixin
+from base.utils import touching, mask_to_surface
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -294,34 +290,12 @@ class CollisionMixin:
 class MovingEntity(Entity, CollisionMixin, HistoryMixin):
     SPEED = 2
 
-    # physics parameters
-    GRAVITY = 1
-    FRICTION = 0.5
-    AIR_RESISTANCE = 0.1
-    FALL_SPEED = 5
-    airborne = False
-
-    # drawing params
+    # default image
     image = pygame.Surface((100, 50))
     pygame.draw.ellipse(image, pygame.color.THECOLORS["lightblue"], (0, 0, 100, 50))
     colorkey = image.get_at((0, 0))
     image.set_colorkey(colorkey)
     image = pygame.transform.rotate(image, 30)
-
-    # todo:
-    #  - in order to do mask collision, all the Hitbox needs is an image. That image
-    #  can just be a surface with an ellipse drawn on it. That's easy to generate. Then
-    #  I can do masks and collision. Just don't *draw* the hitboxes, and they won't
-    #  appear in game!
-    #  - make hitboxes follow their parent object around, and position correctly
-    #  relative to them (including left and right facing versions)
-
-    # scale = 5
-    # image = pygame.image.load(
-    #     Path("sprites/volleyball/volleyball.png").as_posix())
-    # image = pygame.transform.scale(
-    #     image,
-    #     (image.get_rect().width * scale, image.get_rect().height * scale))
 
     # historymixin
     attributes_to_remember = ["rect", "x", "y"]

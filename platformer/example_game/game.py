@@ -1,8 +1,8 @@
 import pygame
 
+from base.objects.entities import MovingEntity
 from platformer.example_game.entities.characters.blob import Blob, Ball
 from platformer.example_game.levels import TestLevel, FinalDestination, VolleyballCourt
-from platformer.objects.entities import MovingEntity
 from platformer.objects.game import Game
 
 
