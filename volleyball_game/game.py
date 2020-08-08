@@ -1,13 +1,14 @@
 import pygame
 
 from base.game import Game
+from volleyball_game import conf
 from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt
 from volleyball_game.objects import Stickman
 
 
 class VolleyballGame(Game):
-    fps = 60
+    fps = conf.FPS
     window_height = 500
     window_width = 1000
     window_caption = "LAG SPIKE"

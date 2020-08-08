@@ -75,13 +75,14 @@ class SpriteSheet:
 
     def load_sheet(
         self,
-        width: int,
-        height: int,
+        size: (int, int),
         colorkey: int = None,
         scale: float = None,
         num_images: int = None,
+        **kwargs,
     ) -> [pygame.Surface]:
         """Load a whole spritesheet and return frames as a list of images."""
+        width, height = size
         num_horizontal = self.sheet.get_rect().width // width
         num_vertical = self.sheet.get_rect().height // height
         rects = [
@@ -118,6 +119,7 @@ class SpriteAnimation:
         flip_vertical=False,
         looping=True,
         game_ticks_per_sprite_frame=1,
+        **kwargs,
     ):
         self.frames = [
             pygame.transform.flip(f, bool(flip_horizontal), bool(flip_vertical)) for f in frames
@@ -136,9 +138,14 @@ class SpriteAnimation:
         if self.looping:
             return self.frames[game_tick // self.game_ticks_per_sprite_frame % len(self.frames)]
         else:
-            return self.frames[
-                min(game_tick // self.game_ticks_per_sprite_frame, len(self.frames) - 1)
-            ]
+            # return False when we've run out of frames.
+            try:
+                return self.frames[game_tick // self.game_ticks_per_sprite_frame]
+            except IndexError:
+                return False
+
+    def __len__(self):
+        return len(self.frames)
 
 
 class SpriteDict(dict):
@@ -164,26 +171,15 @@ class SpriteDict(dict):
 
         for sprite_name, sprite_info in file_mapping.items():
 
-            # individual sprite parameters override default params
-            _size = sprite_info.get("size") or size
-            _scale = sprite_info.get("scale") or scale
-            _ticks_per_frame = (
-                sprite_info.get("game_ticks_per_sprite_frame") or game_ticks_per_sprite_frame
-            )
+            defaults = {
+                "size": size,
+                "scale": scale,
+                "game_ticks_per_sprite_frame": game_ticks_per_sprite_frame,
+            }
+            defaults.update(sprite_info)
 
-            # specific to individual sprites
-            filename = sprite_info.get("filename")
-            num_images = sprite_info.get("num_images")
-            flip_horizontal = sprite_info.get("flip_horizontal")
-            flip_vertical = sprite_info.get("flip_vertical")
-
-            sprite_sheet = SpriteSheet(filename, colormap)
-            frames_list = sprite_sheet.load_sheet(*_size, scale=_scale, num_images=num_images)
-            sprite_animation = SpriteAnimation(
-                frames_list,
-                game_ticks_per_sprite_frame=_ticks_per_frame,
-                flip_horizontal=flip_horizontal,
-                flip_vertical=flip_vertical,
-            )
+            sprite_sheet = SpriteSheet(sprite_info["filename"], colormap)
+            frames_list = sprite_sheet.load_sheet(**defaults)
+            sprite_animation = SpriteAnimation(frames_list, **defaults)
 
             self[sprite_name] = sprite_animation

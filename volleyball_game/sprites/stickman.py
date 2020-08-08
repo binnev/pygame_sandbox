@@ -14,13 +14,23 @@ file_mapping = {
     "stand_left": {"filename": folder / "stick_stand.png", "flip_horizontal": True,},
     "run_right": {"filename": folder / "stick_run.png"},
     "run_left": {"filename": folder / "stick_run.png", "flip_horizontal": True,},
-    # dummy stuff:
-    "fall": {"filename": folder / "stick_jump.png"},
     "fall_right": {"filename": folder / "stick_jump.png"},
     "fall_left": {"filename": folder / "stick_jump.png", "flip_horizontal": True,},
-    "jump": {"filename": folder / "stick_jump.png"},
     "jump_right": {"filename": folder / "stick_jump.png"},
     "jump_left": {"filename": folder / "stick_jump.png", "flip_horizontal": True,},
+    "dive_right": {"filename": folder / "stick_dive.png"},
+    "dive_left": {"filename": folder / "stick_dive.png", "flip_horizontal": True,},
+    "dive_getup_right": {
+        "filename": folder / "stick_dive_getup.png",
+        "num_images": 11,
+        "looping": False,
+    },
+    "dive_getup_left": {
+        "filename": folder / "stick_dive_getup.png",
+        "flip_horizontal": True,
+        "num_images": 11,
+        "looping": False,
+    },
 }
 
 

@@ -46,6 +46,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         RUN = "RUN"
         SQUAT = "SQUAT"
         FALL = "FALL"
+        DIVE = "DIVE"
+        DIVESQUAT = "DIVESQUAT"
+        DIVE_GETUP = "DIVE_GETUP"
 
     # references to other objects
     level = None
@@ -70,6 +73,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.states.FALL: self.state_fall,
             self.states.RUN: self.state_run,
             self.states.SQUAT: self.state_squat,
+            self.states.DIVE: self.state_dive,
+            self.states.DIVESQUAT: self.state_divesquat,
+            self.states.DIVE_GETUP: self.state_dive_getup,
         }
         self.aerial_jumps_used = 0
 
@@ -242,6 +248,19 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if self.frames_elapsed == self.jumpsquat_frames:
             self.enter_jump()
 
+    def state_divesquat(self):
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
+
+        if self.frames_elapsed == self.jumpsquat_frames:
+            self.enter_dive()
+
+    def enter_dive(self):
+        self.u = 20 if self.facing_right else -20
+        self.v = -self.jump_power / 3
+        self.y -= 1
+        self.state = self.states.DIVE
+        self.fastfall = False
+
     def enter_jump(self):
         self.v = -self.jump_power
         self.y -= 1  # need this to become airborne. Hacky?
@@ -276,6 +295,30 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.STAND
             self.v = 0
 
+    def state_dive(self):
+        self.image = self.sprites["dive_" + self.facing].get_frame(self.frames_elapsed)
+
+        # update horizontal position
+        if self.keys[self.keymap.LEFT]:
+            self.u -= self.air_acceleration
+        if self.keys[self.keymap.RIGHT]:
+            self.u += self.air_acceleration
+        if abs(self.u) > self.air_speed:
+            self.u = sign(self.u) * self.air_speed
+
+        self.enforce_max_fall_speed()
+        self.allow_fastfall()
+
+        if not self.airborne:
+            self.state = self.states.DIVE_GETUP
+            self.v = 0
+
+    def state_dive_getup(self):
+        animation = self.sprites["dive_getup_" + self.facing]
+        self.image = animation.get_frame(self.frames_elapsed)
+        if not self.image:
+            self.state = self.states.STAND
+
     def state_squat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
 
@@ -306,6 +349,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
+        if self.keys[self.keymap.A]:
+            self.state = self.states.DIVESQUAT
 
 
 class Stickman(Player):
