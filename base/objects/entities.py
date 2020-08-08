@@ -4,6 +4,7 @@ import pygame
 from numpy import sign
 
 from base.groups import EntityGroup
+from base.keyhandler import KeyHandler
 from base.objects.mixins import HistoryMixin, AnimationMixin, CollisionMixin
 from base.utils import touching, mask_to_surface
 
@@ -55,18 +56,6 @@ class Entity(pygame.sprite.Sprite):
     @property
     def game(self):
         return self.level.game
-
-    @property
-    def keys_down(self):
-        return self.game.key_handler.get_down()
-
-    @property
-    def keys_pressed(self):
-        return self.game.key_handler.get_pressed()
-
-    @property
-    def keys_released(self):
-        return self.game.key_handler.get_released()
 
     @property
     def x(self):
@@ -182,7 +171,7 @@ class Entity(pygame.sprite.Sprite):
 
     # ========== other functions =============
 
-    def update(self, keys):
+    def update(self):
         """Subclasses should extend this function"""
         pass
 
@@ -239,18 +228,17 @@ class MovingEntity(Entity, CollisionMixin, HistoryMixin):
         HistoryMixin.__init__(self)
         self.active_hitboxes = EntityGroup()
 
-    def update(self, keys):
-        self.keys = keys
-        if keys[Keys.RIGHT]:
+    def update(self):
+        if KeyHandler.is_down(Keys.RIGHT):
             self.x += self.SPEED
-        if keys[Keys.LEFT]:
+        if KeyHandler.is_down(Keys.LEFT):
             self.x -= self.SPEED
-        if keys[Keys.DOWN]:
+        if KeyHandler.is_down(Keys.DOWN):
             self.y += self.SPEED
-        if keys[Keys.UP]:
+        if KeyHandler.is_down(Keys.UP):
             self.y -= self.SPEED
 
-        if self.keys_pressed[Keys.FIRE]:
+        if KeyHandler.is_pressed(Keys.FIRE):
             if not hasattr(self, "hitbox"):
                 self.hitbox = Hitbox(
                     damage=20,

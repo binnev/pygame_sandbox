@@ -18,49 +18,56 @@ class KeyHandler(deque, Singleton):
     - Calculates which keys have been pressed and released this tick
     """
 
-    # todo: just use maxlen arg for deque class
     def __init__(self, queue_length=5):
-        super().__init__()
-        self.queue_length = queue_length
+        super().__init__(maxlen=queue_length)
 
-    # ========== adding / removing items ==========
+    @classmethod
+    def append(cls, value):
+        instance = cls.get_instance()
+        return super().append(instance, value)
 
-    def enqueue(self, new_keys):
-        self.append(new_keys)
-
-    def dequeue(self):
-        self.popleft()
-
-    def discard_old(self):
-        if len(self) > self.queue_length:
-            self.dequeue()
-
-    def update(self, new_keys):
-        self.enqueue(new_keys)
-        self.discard_old()
-
-    # ========== getting key information ==========
-
-    def get_down(self):
+    @classmethod
+    def get_down(cls):
         """Return the current state of keys---which are currently down"""
-        return self[-1] if len(self) > 0 else Empty()
+        instance = cls.get_instance()
+        return instance[-1] if len(instance) > 0 else Empty()
 
-    def get_pressed(self):
+    @classmethod
+    def get_pressed(cls):
         """Return the keys that have just been pressed---i.e. those that are down this
         tick but not the previous tick"""
+        instance = cls.get_instance()
         try:
-            current = self[-1]
-            previous = self[-2]
+            current = instance[-1]
+            previous = instance[-2]
             return tuple(int(c and not p) for c, p in zip(current, previous))
         except IndexError:
             return Empty()
 
-    def get_released(self):
+    @classmethod
+    def get_released(cls):
         """Return the keys that have just been released---i.e. those that are not down
         this tick, but were down the previous tick"""
+        instance = cls.get_instance()
         try:
-            current = self[-1]
-            previous = self[-2]
+            current = instance[-1]
+            previous = instance[-2]
             return tuple(int(p and not c) for c, p in zip(current, previous))
         except IndexError:
             return Empty()
+
+    @classmethod
+    def is_pressed(cls, key):
+        keys = cls.get_pressed()
+        return keys[key]
+
+    @classmethod
+    def is_down(cls, key):
+        keys = cls.get_down()
+        return keys[key]
+
+    @classmethod
+    def is_released(cls, key):
+        keys = cls.get_released()
+        return keys[key]
+

@@ -3,6 +3,8 @@ from copy import deepcopy
 
 import pygame
 
+from base.keyhandler import KeyHandler
+
 
 class AnimationMixin:
     """Handles animation for a state machine class. Subclasses should have their own
@@ -79,7 +81,10 @@ class HistoryMixin:
 
 
 class SimpleMovementMixin:
-    class Keys:
+    x: int
+    y: int
+
+    class keymap:
         LEFT = pygame.K_LEFT
         RIGHT = pygame.K_RIGHT
         UP = pygame.K_UP
@@ -87,15 +92,14 @@ class SimpleMovementMixin:
 
     SPEED = 2
 
-    def update_position(self, keys):
-        self.keys = keys
-        if keys[self.Keys.RIGHT]:
+    def update_position(self):
+        if KeyHandler.is_down(self.keymap.RIGHT):
             self.x += self.SPEED
-        if keys[self.Keys.LEFT]:
+        if KeyHandler.is_down(self.keymap.LEFT):
             self.x -= self.SPEED
-        if keys[self.Keys.DOWN]:
+        if KeyHandler.is_down(self.keymap.DOWN):
             self.y += self.SPEED
-        if keys[self.Keys.UP]:
+        if KeyHandler.is_down(self.keymap.UP):
             self.y -= self.SPEED
 
 

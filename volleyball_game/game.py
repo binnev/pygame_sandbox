@@ -1,6 +1,7 @@
 import pygame
 
 from base.game import Game
+from base.keyhandler import KeyHandler
 from volleyball_game import conf
 from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt
@@ -39,8 +40,8 @@ class VolleyballGame(Game):
         while run:
             ii += 1
             keys = pygame.key.get_pressed()
-            self.key_handler.update(keys)
-            pressed = self.key_handler.get_pressed()
+            KeyHandler.append(keys)
+            pressed = KeyHandler.get_pressed()
 
             if pressed[pygame.K_ESCAPE]:
                 run = False
@@ -51,7 +52,7 @@ class VolleyballGame(Game):
             if pressed[pygame.K_F1]:
                 debug = not debug
 
-            level.update(keys)
+            level.update()
             print(player1.u)
 
             # draw stuff
