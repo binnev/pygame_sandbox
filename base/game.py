@@ -1,6 +1,6 @@
 import pygame
 
-from base.keyhandler import KeyHandler
+from base.keyhandler import KeyHandler, get_keyhandler
 
 
 class Game:
@@ -20,7 +20,8 @@ class Game:
 
         self.window = window
         self.clock = pygame.time.Clock()
-        self.key_handler = KeyHandler(queue_length=5)
+        # self.key_handler = KeyHandler(queue_length=5)
+        self.key_handler = get_keyhandler(queue_length=5)
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
 
     def main(self):

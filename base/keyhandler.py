@@ -9,12 +9,36 @@ class Empty(tuple):
         return 0
 
 
-class KeyHandler(deque):
+class Singleton:
+    instance = None
+    metaclass = None
+
+    def __init__(self, *args, **kwargs):
+        raise Exception("use `.initialise()` method instead")
+
+    @classmethod
+    def initialise(cls, *args, **kwargs):
+        if cls.instance is None:
+            cls.instance = cls.metaclass(*args, **kwargs)
+            return cls.instance
+        else:
+            raise Exception(f"You can't create a second {cls.metaclass.__name__}")
+
+    @classmethod
+    def get_instance(cls):
+        if cls.instance is not None:
+            return cls.instance
+        else:
+            raise Exception(f"You need to instantiate {cls.metaclass.__name__} first")
+
+
+class _KeyHandler(deque):
     """
     Provides additional functionality beyond pygame.key.get_pressed().
     - Maintains a buffer of the last few keypresses
     - Calculates which keys have been pressed and released this tick
     """
+    instance = None
 
     # todo: just use maxlen arg for deque class
     def __init__(self, queue_length=5):
@@ -62,3 +86,10 @@ class KeyHandler(deque):
             return tuple(int(p and not c) for c, p in zip(current, previous))
         except IndexError:
             return Empty()
+
+
+class KeyHandler(Singleton):
+    metaclass = _KeyHandler
+
+class MyList(Singleton):
+    metaclass = list

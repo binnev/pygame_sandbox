@@ -11,6 +11,10 @@ from volleyball_game.sprites.stickman import stickman_sprites
 from volleyball_game.sprites.volleyball import volleyball_sprites
 
 
+# todo: allow states to describe the rect dimensions when the entity is in that state. E.g.
+#  during a dive the player's rect should be longer and thinner.
+
+
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     # class properties

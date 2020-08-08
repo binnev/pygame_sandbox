@@ -43,7 +43,7 @@ class Entity(pygame.sprite.Sprite):
 
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
         self.color = color if color else self.debug_color
-        self.width = width  # todo: give these more specific names e.g. collision_width
+        self.width = width
         self.height = height
         self.state = None
         self.rect = pygame.Rect(0, 0, self.width, self.height)
