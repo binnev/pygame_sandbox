@@ -1,6 +1,6 @@
 import pygame
 
-from platformer.objects.keyhandlers import KeyHandler
+from base.keyhandler import KeyHandler
 
 
 class Game:

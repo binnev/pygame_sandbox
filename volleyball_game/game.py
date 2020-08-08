@@ -4,7 +4,7 @@ from base.game import Game
 from volleyball_game import conf
 from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt
-from volleyball_game.objects import Stickman
+from volleyball_game.objects import Stickman, Ball
 
 
 class VolleyballGame(Game):
@@ -17,14 +17,10 @@ class VolleyballGame(Game):
         self.window.fill((255, 255, 255))
         level = VolleyballCourt(game=self)
         player1 = Stickman(
-                conf.SCREEN_WIDTH // 4,
-                3 * conf.SCREEN_HEIGHT // 4,
-                keymap=Player1,
-                facing_right=True,
-            )
+            conf.SCREEN_WIDTH // 4, 3 * conf.SCREEN_HEIGHT // 4, keymap=Player1, facing_right=True,
+        )
         level.add(
-            player1,
-            type="character",
+            player1, type="character",
         )
         level.add(
             Stickman(
@@ -35,6 +31,7 @@ class VolleyballGame(Game):
             ),
             type="character",
         )
+        level.add(Ball(conf.SCREEN_WIDTH // 2, conf.SCREEN_HEIGHT // 2), type="projectile")
 
         run = True
         debug = False

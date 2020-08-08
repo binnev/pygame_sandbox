@@ -69,13 +69,13 @@ folder = sprites_folder / "blob"
 PROJECTILE_SPRITES = {
     "right": SpriteAnimation(
         SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
-            32, 32, scale=SCALE_SPRITES
+            (32, 32), scale=SCALE_SPRITES
         ),
         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
     ),
     "left": SpriteAnimation(
         SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
-            32, 32, scale=SCALE_SPRITES
+            (32, 32), scale=SCALE_SPRITES
         ),
         flip_horizontal=True,
         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
@@ -85,7 +85,7 @@ PROJECTILE_SPRITES = {
 folder = sprites_folder / "volleyball"
 BALL_SPRITES = {
     "default": SpriteAnimation(
-        SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(32, 32, scale=SCALE_SPRITES),
+        SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet((32, 32), scale=SCALE_SPRITES),
         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
     ),
 }

@@ -1,12 +1,14 @@
 from pathlib import Path
 
+import numpy
 import pygame as pygame
 from numpy.core._multiarray_umath import sign
 
 from base.animation import SpriteDict
 from base.objects.entities import Entity, CollisionMixin, Point
-from base.objects.mixins import HistoryMixin, AnimationMixin
+from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from volleyball_game.sprites.stickman import stickman_sprites
+from volleyball_game.sprites.volleyball import volleyball_sprites
 
 
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
@@ -390,3 +392,82 @@ class Stickman(Player):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.sprites = stickman_sprites()
+
+
+class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
+    width = 50
+    height = 50
+    BOUNCINESS = 3
+    GRAVITY = 0.5
+    AIR_RESISTANCE = 0.01
+
+    def __init__(self, x, y, groups=[], color=None):
+        super().__init__(x, y, self.width, self.height, groups=groups)
+        self.sprites = volleyball_sprites()
+        self.image = self.sprites["default"].get_frame(0)
+
+    def update(self, keys):
+        self.handle_collisions()
+        self.handle_hits()
+        self.update_physics()
+        self.update_animation()
+        self.enforce_screen_limits(*self.level.game.screen_size)
+
+    def handle_hits(self):
+        hitboxes = pygame.sprite.spritecollide(
+            self, self.level.hitboxes, collided=pygame.sprite.collide_mask, dokill=False
+        )
+        for hitbox in hitboxes:
+            print(f"Ball hit by {hitbox.owner}'s hitbox")
+            # self.kill()
+            self.u = 10
+            self.v = -100
+
+    def handle_collisions(self):
+        collision_object_lists = (
+            self.level.platforms,
+            self.level.characters,
+        )
+        for collision_object_list in collision_object_lists:
+            collided_objects = pygame.sprite.spritecollide(
+                self, collision_object_list, dokill=False
+            )
+            for collided_object in collided_objects:
+                # bounce self away from collided object
+                print(f"collided with {collided_object}")
+                delta_x = self.centroid.x - collided_object.centroid.x
+                delta_y = self.centroid.y - collided_object.centroid.y
+                vector = numpy.array([delta_x, delta_y])
+                magnitude = numpy.sqrt(delta_x ** 2 + delta_y ** 2)
+                unit_vector = vector / magnitude
+                self.u += unit_vector[0] * self.BOUNCINESS
+                self.v += unit_vector[1] * self.BOUNCINESS
+                # prevent overlapping
+                self.collide_solid_platform(collided_object)
+
+    def enforce_screen_limits(self, screen_width, screen_height):
+        if self.rect.left < 0:
+            self.rect.left = 0
+            self.u *= -1
+        if self.rect.right > screen_width:
+            self.rect.right = screen_width
+            self.u *= -1
+        if self.rect.top < 0:
+            self.rect.top = 0
+            self.v *= -1
+        if self.rect.bottom > screen_width:
+            self.rect.bottom = screen_width
+            self.v *= -1
+
+    def update_physics(self):
+        # update position
+        self.x += self.u
+        self.y += self.v
+
+        self.v += self.GRAVITY
+
+        self.u *= 1 - self.AIR_RESISTANCE  # air resistance
+        self.v *= 1 - self.AIR_RESISTANCE  # air resistance
+
+        # don't allow sub-pixel speeds
+        self.u = 0 if abs(self.u) < 0.5 else self.u

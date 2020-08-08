@@ -99,3 +99,69 @@ class SimpleMovementMixin:
             self.y -= self.SPEED
 
 
+class CollisionMixin:
+    """This mixin requires the subclass to have the following attributes to function"""
+
+    # todo: make this more general. It's too specific to Character that inherits from it.
+
+    rect: pygame.Rect
+    centroid: property
+    history: deque
+    keys: tuple
+    is_touching: "method"
+
+    def get_overlap_with_object(self, obj):
+        """Get the x and y overlap between self and obj.rect"""
+        x_overlap = min(self.rect.right, obj.rect.right) - max(self.rect.left, obj.rect.left)
+        y_overlap = min(self.rect.bottom, obj.rect.bottom) - max(self.rect.top, obj.rect.top)
+        return x_overlap, y_overlap
+
+    def can_stand_on_droppable_platform(self, platform):
+        was_above_platform = self.history[-1]["rect"].bottom <= platform.rect.top
+        not_holding_down = not self.keys[Keys.DOWN]
+        return self.is_touching(platform) and was_above_platform and not_holding_down
+
+    def can_stand_on_solid_platform(self, platform):
+        x_overlap, y_overlap = self.get_overlap_with_object(platform)
+        return (
+            self.is_touching(platform) and x_overlap > 0 and self.centroid.y < platform.centroid.y
+        )
+
+    def can_stand_on_platform(self, platform):
+        if platform.can_fall_through:
+            return self.can_stand_on_droppable_platform(platform)
+        else:
+            return self.can_stand_on_solid_platform(platform)
+
+    def collide_solid_platform(self, platform):
+        # todo: rename this. "separate_platform" ? "handle_collision_solid_platform"?
+        #  also, this function assumes that platform can't move but self can.
+        """Move self outside boundaries of solid platform."""
+        x_overlap, y_overlap = self.get_overlap_with_object(platform)
+        if x_overlap > y_overlap:
+            if self.centroid.y >= platform.centroid.y:
+                self.rect.top = platform.rect.bottom
+            else:
+                self.rect.bottom = platform.rect.top
+        else:
+            if self.centroid.x >= platform.centroid.x:
+                self.rect.left = platform.rect.right
+            else:
+                self.rect.right = platform.rect.left
+
+    def collide_droppable_platform(self, platform):
+        if self.can_stand_on_droppable_platform(platform):
+            # allow a small overlap to stand on a platform and maintain contact
+            self.rect.bottom = platform.rect.top
+
+    def handle_platform_collisions(self):
+        # todo: have objects store this info in an attribute that is calculated once
+        #  per tick
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        for platform in platforms:
+            if platform.can_fall_through:
+                print("colliding with droppable platform")
+                self.collide_droppable_platform(platform)
+            else:
+                print("colliding with platform")
+                self.collide_solid_platform(platform)
