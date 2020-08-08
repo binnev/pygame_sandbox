@@ -128,6 +128,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     @property
     def facing(self):
         return "right" if self.facing_right else "left"
+
     # ============== drawing functions ===============
 
     def align_image_rect(self):
@@ -158,7 +159,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         func()  # execute it
 
     def update_physics(self):
-        # update position
         self.x += self.u
         self.y += self.v
 
@@ -222,12 +222,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.y = screen_height
             self.v = 0
 
-
-
     # ========================= state functions ================================
 
     def state_stand(self):
-        self.image = self.sprites["stand_"+self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["stand_" + self.facing].get_frame(self.frames_elapsed)
+
         if self.keys_pressed[self.keymap.UP]:  # enter jumpsquat
             self.state = self.states.JUMPSQUAT
         if self.keys[self.keymap.DOWN]:  # enter squat
@@ -238,7 +237,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.FALL
 
     def state_jumpsquat(self):
-        self.image = self.sprites["crouch_"+self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
+
         if self.frames_elapsed == self.jumpsquat_frames:
             self.enter_jump()
 
@@ -249,8 +249,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.fastfall = False
 
     def state_fall(self):
-        # sprite selection
-        self.image = self.sprites["jump_"+self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["jump_" + self.facing].get_frame(self.frames_elapsed)
 
         # update horizontal position
         if self.keys[self.keymap.LEFT]:
@@ -278,7 +277,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = 0
 
     def state_squat(self):
-        self.image = self.sprites["crouch_"+self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
+
         if self.airborne:
             self.state = self.states.FALL
         if self.keys_pressed[self.keymap.UP]:
@@ -288,11 +288,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.STAND
 
     def state_run(self):
-        # sprite selection
-        if self.u > 0:
-            self.image = self.sprites["run_right"].get_frame(self.frames_elapsed)
-        else:
-            self.image = self.sprites["run_left"].get_frame(self.frames_elapsed)
+        self.image = self.sprites["run_" + self.facing].get_frame(self.frames_elapsed)
 
         if not self.keys[self.keymap.LEFT] and not self.keys[self.keymap.RIGHT]:
             self.state = self.states.STAND
