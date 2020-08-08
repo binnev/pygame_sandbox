@@ -1,6 +1,7 @@
 import pygame
 
 from base.game import Game
+from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt
 from volleyball_game.objects import Stickman
 
@@ -14,8 +15,8 @@ class VolleyballGame(Game):
     def run(self):
         self.window.fill((255, 255, 255))
         level = VolleyballCourt(game=self)
-        level.add(Stickman(100, 100, facing_right=True), type="character")
-        level.add(Stickman(300, 100, facing_right=False), type="character")
+        level.add(Stickman(100, 100, keymap=Player1, facing_right=True), type="character")
+        level.add(Stickman(300, 100, keymap=Player2, facing_right=False), type="character")
 
         run = True
         debug = False
@@ -33,7 +34,7 @@ class VolleyballGame(Game):
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
-            if pressed[pygame.K_d]:
+            if pressed[pygame.K_F1]:
                 debug = not debug
 
             level.update(keys)

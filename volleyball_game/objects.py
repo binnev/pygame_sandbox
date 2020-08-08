@@ -4,8 +4,8 @@ import pygame as pygame
 from numpy.core._multiarray_umath import sign
 
 from base.animation import SpriteDict
-from base.objects.entities import Entity, CollisionMixin, Point, Keys
-from base.objects.mixins import SimpleMovementMixin, HistoryMixin, AnimationMixin
+from base.objects.entities import Entity, CollisionMixin, Point
+from base.objects.mixins import HistoryMixin, AnimationMixin
 from volleyball_game.sprites.stickman import stickman_sprites
 
 
@@ -26,12 +26,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     aerial_jumps: int
     jump_power: float
     jumpsquat_frames: int
-    _friction: float
+    friction: float
     air_resistance: float
     crouch_height_multiplier: float
 
     # drawing
-    sprites: dict  # of SpriteAnimations
+    sprites: SpriteDict
     image: pygame.Surface
 
     # cooldowns -- todo: put this in a mixin?
@@ -44,8 +44,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         JUMP = "JUMP"
         STAND = "STAND"
         RUN = "RUN"
-        RUN_LEFT = "RUN_LEFT"
-        RUN_RIGHT = "RUN_RIGHT"
         SQUAT = "SQUAT"
         FALL = "FALL"
 
@@ -55,16 +53,17 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     # historymixin
     attributes_to_remember = ["rect", "x", "y"]
 
-    def __init__(self, x, y, facing_right=True, groups=[]):
+    def __init__(self, x, y, facing_right=True, keymap=None, groups=[]):
 
         super().__init__(x, y, self.width, self.height, groups=groups)
         HistoryMixin.__init__(self)
 
-        self.u = 0  # todo: move to PhysicsMixin.__init__()
+        self.u = 0
         self.v = 0
         self.state = self.states.FALL
         self.fastfall = False
         self.facing_right = facing_right
+        self.keymap = keymap
         self.state_lookup = {
             self.states.STAND: self.state_stand,
             self.states.JUMPSQUAT: self.state_jumpsquat,
@@ -106,13 +105,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     @rect.setter
     def rect(self, new_rect):
         self._rect = pygame.Rect(new_rect)
-
-    @property
-    def friction(self):
-        if self.state in (self.states.JUMPSQUAT, self.states.SQUAT):
-            return -0.05
-        else:
-            return self._friction
 
     @property
     def fall_speed(self):
@@ -212,7 +204,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = self.fall_speed
 
     def allow_fastfall(self):
-        if self.keys[Keys.DOWN] and self.v > 0:
+        if self.keys[self.keymap.DOWN] and self.v > 0:
             self.fastfall = True
             self.v = self.fall_speed
 
@@ -236,11 +228,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_stand(self):
         self.image = self.sprites["stand_"+self.facing].get_frame(self.frames_elapsed)
-        if self.keys_pressed[Keys.JUMP]:  # enter jumpsquat
+        if self.keys_pressed[self.keymap.UP]:  # enter jumpsquat
             self.state = self.states.JUMPSQUAT
-        if self.keys[Keys.DOWN]:  # enter squat
+        if self.keys[self.keymap.DOWN]:  # enter squat
             self.state = self.states.SQUAT
-        if self.keys[Keys.LEFT] or self.keys[Keys.RIGHT]:
+        if self.keys[self.keymap.LEFT] or self.keys[self.keymap.RIGHT]:
             self.state = self.states.RUN
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
@@ -261,16 +253,16 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.image = self.sprites["jump_"+self.facing].get_frame(self.frames_elapsed)
 
         # update horizontal position
-        if self.keys[Keys.LEFT]:
+        if self.keys[self.keymap.LEFT]:
             self.u -= self.air_acceleration
-        if self.keys[Keys.RIGHT]:
+        if self.keys[self.keymap.RIGHT]:
             self.u += self.air_acceleration
         if abs(self.u) > self.air_speed:
             self.u = sign(self.u) * self.air_speed
 
         # double-jump
         if (
-            self.keys_pressed[Keys.JUMP]
+            self.keys_pressed[self.keymap.UP]
             and self.aerial_jumps_used < self.aerial_jumps
             and not self.double_jump_cooldown
         ):
@@ -289,10 +281,10 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.image = self.sprites["crouch_"+self.facing].get_frame(self.frames_elapsed)
         if self.airborne:
             self.state = self.states.FALL
-        if self.keys_pressed[Keys.JUMP]:
+        if self.keys_pressed[self.keymap.UP]:
             self.state = self.states.JUMPSQUAT
         # if squat key released, exit squat state
-        if not self.keys[Keys.DOWN]:
+        if not self.keys[self.keymap.DOWN]:
             self.state = self.states.STAND
 
     def state_run(self):
@@ -302,19 +294,19 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         else:
             self.image = self.sprites["run_left"].get_frame(self.frames_elapsed)
 
-        if not self.keys[Keys.LEFT] and not self.keys[Keys.RIGHT]:
+        if not self.keys[self.keymap.LEFT] and not self.keys[self.keymap.RIGHT]:
             self.state = self.states.STAND
-        if self.keys[Keys.LEFT]:
+        if self.keys[self.keymap.LEFT]:
             self.facing_right = False
             self.u -= self.ground_acceleration
-        if self.keys[Keys.RIGHT]:
+        if self.keys[self.keymap.RIGHT]:
             self.facing_right = True
             self.u += self.ground_acceleration
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed
-        if self.keys_pressed[Keys.JUMP]:
+        if self.keys_pressed[self.keymap.UP]:
             self.state = self.states.JUMPSQUAT
-        if self.keys[Keys.DOWN]:
+        if self.keys[self.keymap.DOWN]:
             self.state = self.states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
@@ -334,7 +326,7 @@ class Stickman(Player):
     aerial_jumps = 3
     jump_power = 20
     jumpsquat_frames = 4
-    _friction = 0.3
+    friction = 0.3
     air_resistance = 0.05
     crouch_height_multiplier = 0.7
 
