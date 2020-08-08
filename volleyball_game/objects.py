@@ -147,7 +147,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.update_physics()
         self.execute_state()
         self.enforce_screen_limits(*self.level.game.screen_size)
-        self.debug_print()
+        # self.debug_print()
         self.update_cooldowns()
         self.update_animation()
         # fixme: I think this needs to be handled by the game class to prevent the
@@ -165,8 +165,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         func()  # execute it
 
     def update_physics(self):
-        self.x += self.u
-        self.y += self.v
 
         self.handle_platform_collisions()
 
@@ -180,10 +178,13 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         # reduce speeds
         if self.airborne:  # air resistance
-            self.u *= 1 - self.air_resistance
+            self.u = self.u - sign(self.u) * self.air_resistance
         else:  # friction
-            self.u *= 1 - self.friction
+            self.u = self.u - sign(self.u) * self.friction
             self.v = 0
+
+        self.x += self.u
+        self.y += self.v
 
         # don't allow sub-pixel horizontal speeds. This prevents infinite sliding to
         # the left
@@ -255,7 +256,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.enter_dive()
 
     def enter_dive(self):
-        self.u = 20 if self.facing_right else -20
+        self.u = 40 if self.facing_right else -40
         self.v = -self.jump_power / 3
         self.y -= 1
         self.state = self.states.DIVE
@@ -275,6 +276,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.u -= self.air_acceleration
         if self.keys[self.keymap.RIGHT]:
             self.u += self.air_acceleration
+        # limit horizontal speed
         if abs(self.u) > self.air_speed:
             self.u = sign(self.u) * self.air_speed
 
@@ -303,8 +305,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.u -= self.air_acceleration
         if self.keys[self.keymap.RIGHT]:
             self.u += self.air_acceleration
-        if abs(self.u) > self.air_speed:
-            self.u = sign(self.u) * self.air_speed
+        # limit dive speed
+        if abs(self.u) > self.dive_speed:
+            self.u = sign(self.u) * self.dive_speed
 
         self.enforce_max_fall_speed()
         self.allow_fastfall()
@@ -314,9 +317,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = 0
 
     def state_dive_getup(self):
+        self.rect
         animation = self.sprites["dive_getup_" + self.facing]
-        self.image = animation.get_frame(self.frames_elapsed)
-        if not self.image:
+        image = animation.get_frame(self.frames_elapsed)
+        if image:
+            self.image = image
+        else:
             self.state = self.states.STAND
 
     def state_squat(self):
@@ -349,7 +355,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
-        if self.keys[self.keymap.A]:
+        if self.keys[self.keymap.A] and abs(self.u) == self.ground_speed:
             self.state = self.states.DIVESQUAT
 
 
@@ -357,18 +363,19 @@ class Stickman(Player):
     width = 80
     height = 70
     _state = None
-    ground_acceleration = 10
-    ground_speed = 9
-    air_acceleration = 2
-    air_speed = 6
+    ground_acceleration = 1
+    ground_speed = 7
+    air_acceleration = 0.5
+    air_speed = ground_speed
+    dive_speed = 10
     gravity = 1.2
     _fall_speed = 5
     fastfall_multiplier = 2.5
-    aerial_jumps = 3
-    jump_power = 20
-    jumpsquat_frames = 4
+    aerial_jumps = 1
+    jump_power = 15
+    jumpsquat_frames = 6
     friction = 0.3
-    air_resistance = 0.05
+    air_resistance = 0.03
     crouch_height_multiplier = 0.7
 
     # cooldowns -- todo: put this in a mixin?

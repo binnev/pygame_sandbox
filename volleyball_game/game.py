@@ -9,21 +9,37 @@ from volleyball_game.objects import Stickman
 
 class VolleyballGame(Game):
     fps = conf.FPS
-    window_height = 500
-    window_width = 1000
+    window_width = conf.SCREEN_WIDTH
+    window_height = conf.SCREEN_HEIGHT
     window_caption = "LAG SPIKE"
 
     def run(self):
         self.window.fill((255, 255, 255))
         level = VolleyballCourt(game=self)
-        level.add(Stickman(100, 100, keymap=Player1, facing_right=True), type="character")
-        level.add(Stickman(300, 100, keymap=Player2, facing_right=False), type="character")
+        player1 = Stickman(
+                conf.SCREEN_WIDTH // 4,
+                3 * conf.SCREEN_HEIGHT // 4,
+                keymap=Player1,
+                facing_right=True,
+            )
+        level.add(
+            player1,
+            type="character",
+        )
+        level.add(
+            Stickman(
+                3 * conf.SCREEN_WIDTH // 4,
+                3 * conf.SCREEN_HEIGHT // 4,
+                keymap=Player2,
+                facing_right=False,
+            ),
+            type="character",
+        )
 
         run = True
         debug = False
         ii = 0
         while run:
-            print(f"inside VolleyballGame.run. ii={ii}")
             ii += 1
             keys = pygame.key.get_pressed()
             self.key_handler.update(keys)
@@ -39,6 +55,7 @@ class VolleyballGame(Game):
                 debug = not debug
 
             level.update(keys)
+            print(player1.u)
 
             # draw stuff
             self.window.fill((255, 255, 255))
