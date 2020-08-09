@@ -5,7 +5,7 @@ from base.keyhandler import KeyHandler
 from volleyball_game import conf
 from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt
-from volleyball_game.objects import Stickman, Ball
+from volleyball_game.objects import Stickman, Volleyball
 
 
 class VolleyballGame(Game):
@@ -32,7 +32,6 @@ class VolleyballGame(Game):
             ),
             type="character",
         )
-        level.add(Ball(conf.SCREEN_WIDTH // 2, conf.SCREEN_HEIGHT // 2), type="projectile")
 
         run = True
         debug = False
@@ -51,6 +50,10 @@ class VolleyballGame(Game):
 
             if pressed[pygame.K_F1]:
                 debug = not debug
+            if pressed[pygame.K_b]:
+                level.add(
+                    Volleyball(conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT // 2), type="projectile"
+                )
 
             level.update()
             print(player1.u)

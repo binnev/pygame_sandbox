@@ -345,8 +345,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def state_run(self):
         self.image = self.sprites["run_" + self.facing].get_frame(self.frames_elapsed)
 
-        if not KeyHandler.is_down(self.keymap.LEFT) and not KeyHandler.is_down(
-            self.keymap.RIGHT):
+        if not KeyHandler.is_down(self.keymap.LEFT) and not KeyHandler.is_down(self.keymap.RIGHT):
             self.state = self.states.STAND
         if KeyHandler.is_down(self.keymap.LEFT):
             self.facing_right = False
@@ -400,55 +399,94 @@ class Stickman(Player):
 
 
 class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
-    width = 50
-    height = 50
-    BOUNCINESS = 3
-    GRAVITY = 0.5
-    AIR_RESISTANCE = 0.01
+    width: int
+    height: int
+    mass: int
+    bounciness: float  # max 1: 100% efficient bounce
+    gravity: float
+    air_resistance: float
 
-    def __init__(self, x, y, groups=[], color=None):
+    def __init__(self, x, y, groups=[]):
         super().__init__(x, y, self.width, self.height, groups=groups)
         self.sprites = volleyball_sprites()
         self.image = self.sprites["default"].get_frame(0)
 
     def update(self):
+        # todo: idea: what if I put update_physics etc in states. That way each state could
+        #  decide how to do physics. This would make the state machine pattern a lot more
+        #  general, and would allow "non-physical" states like "handheld" (following a player;
+        #  physics off) and "airborne" (physics on).
+        #  The same goes for handling hits. States could allow or not allow self to be hit.
         self.handle_collisions()
-        self.handle_hits()
+        # self.handle_hits()
         self.update_physics()
         self.update_animation()
         self.enforce_screen_limits(*self.level.game.screen_size)
 
-    def handle_hits(self):
-        hitboxes = pygame.sprite.spritecollide(
-            self, self.level.hitboxes, collided=pygame.sprite.collide_mask, dokill=False
-        )
-        for hitbox in hitboxes:
-            print(f"Ball hit by {hitbox.owner}'s hitbox")
-            # self.kill()
-            self.u = 10
-            self.v = -100
+    def update_physics(self):
+        # update vertical position
+        self.v += self.gravity
+
+        # todo: really i should subtract the air resistance from the resultant vector, but whatever
+        self.u *= 1 - self.air_resistance
+        self.v *= 1 - self.air_resistance
+
+        # update position
+        self.x += self.u
+        self.y += self.v
+
+        # don't allow sub-pixel speeds
+        self.u = 0 if abs(self.u) < 0.5 else self.u
+
+    # def handle_hits(self):
+    #     hitboxes = pygame.sprite.spritecollide(
+    #         self, self.level.hitboxes, collided=pygame.sprite.collide_mask, dokill=False
+    #     )
+    #     for hitbox in hitboxes:
+    #         print(f"Ball hit by {hitbox.owner}'s hitbox")
+    #         # self.kill()
+    #         self.u = 10
+    #         self.v = -100
 
     def handle_collisions(self):
-        collision_object_lists = (
-            self.level.platforms,
-            self.level.characters,
-        )
-        for collision_object_list in collision_object_lists:
-            collided_objects = pygame.sprite.spritecollide(
-                self, collision_object_list, dokill=False
+        # collide with characters
+        collided_objects = pygame.sprite.spritecollide(self, self.level.characters, dokill=False)
+        for collided_object in collided_objects:
+            # bounce self away from collided object
+            print(f"collided with {collided_object}")
+            # calculate the normal vector of the collision "plane" and normalize it
+            delta_x = self.centroid.x - collided_object.centroid.x
+            delta_y = self.centroid.y - collided_object.centroid.y
+            normal_vector = numpy.array([delta_x, delta_y])
+            normal_vector_magnitude = numpy.linalg.norm(normal_vector)
+            normal_vector_normalized = normal_vector / normal_vector_magnitude
+            # calculate the ball's incident velocity vector
+            incident = numpy.array([self.u, self.v])
+            # calculate the resultant velocity vector
+            resultant = (
+                incident
+                - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
             )
-            for collided_object in collided_objects:
-                # bounce self away from collided object
-                print(f"collided with {collided_object}")
-                delta_x = self.centroid.x - collided_object.centroid.x
-                delta_y = self.centroid.y - collided_object.centroid.y
-                vector = numpy.array([delta_x, delta_y])
-                magnitude = numpy.sqrt(delta_x ** 2 + delta_y ** 2)
-                unit_vector = vector / magnitude
-                self.u += unit_vector[0] * self.BOUNCINESS
-                self.v += unit_vector[1] * self.BOUNCINESS
-                # prevent overlapping
-                self.collide_solid_platform(collided_object)
+            self.u, self.v = resultant + collided_object.velocity
+            # prevent overlapping
+            self.collide_solid_platform(collided_object)
+
+        # # collide with platforms
+        # collided_objects = pygame.sprite.spritecollide(
+        #     self, self.level.platforms, dokill=False
+        # )
+        # for collided_object in collided_objects:
+        #     # bounce self away from collided object
+        #     print(f"collided with {collided_object}")
+        #     delta_x = self.centroid.x - collided_object.centroid.x
+        #     delta_y = self.centroid.y - collided_object.centroid.y
+        #     vector = numpy.array([delta_x, delta_y])
+        #     magnitude = numpy.sqrt(delta_x ** 2 + delta_y ** 2)
+        #     unit_vector = vector / magnitude
+        #     self.u += unit_vector[0] * self.bounciness
+        #     self.v += unit_vector[1] * self.bounciness
+        #     # prevent overlapping
+        #     self.collide_solid_platform(collided_object)
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:
@@ -464,15 +502,10 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
             self.rect.bottom = screen_width
             self.v *= -1
 
-    def update_physics(self):
-        # update position
-        self.x += self.u
-        self.y += self.v
 
-        self.v += self.GRAVITY
-
-        self.u *= 1 - self.AIR_RESISTANCE  # air resistance
-        self.v *= 1 - self.AIR_RESISTANCE  # air resistance
-
-        # don't allow sub-pixel speeds
-        self.u = 0 if abs(self.u) < 0.5 else self.u
+class Volleyball(Ball):
+    width = 50
+    height = 50
+    bounciness = 1
+    gravity = 0.5
+    air_resistance = 0.01

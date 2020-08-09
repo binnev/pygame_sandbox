@@ -83,6 +83,10 @@ class Entity(pygame.sprite.Sprite):
         return Point(self.x, self.y)
 
     @property
+    def velocity(self):
+        return [self.u, self.v]
+
+    @property
     def touchbox(self):
         return self.rect.inflate(self.touchbox_margin, self.touchbox_margin)
 
@@ -206,8 +210,6 @@ class Platform(Entity):
     def color(self, *args, **kwargs):
         """Don't allow setting color"""
         pass
-
-
 
 
 class MovingEntity(Entity, CollisionMixin, HistoryMixin):
