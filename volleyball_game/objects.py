@@ -480,15 +480,19 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
             # calculate the normal vector of the collision plane and normalize it
             ## get the overlapping pixels
             x_overlap, y_overlap = get_overlap_between_objects(self, collided_object)
-            if x_overlap > 2 * y_overlap:
+            if x_overlap > y_overlap:
                 # bounce vertically
-                normal_vector = numpy.array([0, 1])
-            elif y_overlap > 2 * x_overlap:
+                if self.centroid.y <= collided_object.centroid.y:
+                    normal_vector = numpy.array([0, 1])
+                else:
+                    normal_vector = numpy.array([0, -1])
+
+            else:# y_overlap > 2 * x_overlap:
                 # bounce horizontally
-                normal_vector = numpy.array([1, 0])
-            else:
-                # bounce off corner
-                normal_vector = numpy.array([1, 1])
+                if self.centroid.x <= collided_object.centroid.x:
+                    normal_vector = numpy.array([-1, 0])
+                else:
+                    normal_vector = numpy.array([1, 0])
 
             normal_vector_magnitude = numpy.linalg.norm(normal_vector)
             normal_vector_normalized = normal_vector / normal_vector_magnitude
