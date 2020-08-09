@@ -8,7 +8,7 @@ from base.animation import SpriteDict
 from base.keyhandler import KeyHandler
 from base.objects.entities import Entity, CollisionMixin, Point
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
-from base.utils import get_overlap_between_objects
+from base.utils import get_overlap_between_objects, un_overlap
 from volleyball_game.sprites.stickman import stickman_sprites
 from volleyball_game.sprites.volleyball import volleyball_sprites
 
@@ -399,7 +399,7 @@ class Stickman(Player):
         self.sprites = stickman_sprites()
 
 
-class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
+class Ball(Entity, AnimationMixin, PhysicsMixin):
     width: int
     height: int
     mass: int
@@ -469,8 +469,9 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
                 - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
             )
             self.u, self.v = resultant + collided_object.velocity
+
             # prevent overlapping
-            self.collide_solid_platform(collided_object)
+            un_overlap(movable_object=self, immovable_object=collided_object)
 
         # collide with platforms
         collided_objects = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
@@ -487,7 +488,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
                 else:
                     normal_vector = numpy.array([0, -1])
 
-            else:# y_overlap > 2 * x_overlap:
+            else:  # y_overlap > 2 * x_overlap:
                 # bounce horizontally
                 if self.centroid.x <= collided_object.centroid.x:
                     normal_vector = numpy.array([-1, 0])
@@ -504,8 +505,9 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
                 - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
             )
             self.u, self.v = resultant
+
             # prevent overlapping
-            self.collide_solid_platform(collided_object)
+            un_overlap(movable_object=self, immovable_object=collided_object)
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:

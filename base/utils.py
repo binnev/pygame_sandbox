@@ -29,6 +29,21 @@ def get_overlap_between_objects(obj1, obj2):
     return x_overlap, y_overlap
 
 
+def un_overlap(movable_object, immovable_object):
+    """Move movable_object outside boundaries of immovable_object."""
+    x_overlap, y_overlap = get_overlap_between_objects(movable_object, immovable_object)
+    if x_overlap > y_overlap:
+        if movable_object.centroid.y >= immovable_object.centroid.y:
+            movable_object.rect.top = immovable_object.rect.bottom
+        else:
+            movable_object.rect.bottom = immovable_object.rect.top
+    else:
+        if movable_object.centroid.x >= immovable_object.centroid.x:
+            movable_object.rect.left = immovable_object.rect.right
+        else:
+            movable_object.rect.right = immovable_object.rect.left
+
+
 # need these helper functions because pygame.mask.Mask methods aren't actually
 # implemented as they are described in the docs...
 def maskFromSurface(surface, threshold=127):
