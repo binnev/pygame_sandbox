@@ -9,6 +9,7 @@ from base.keyhandler import KeyHandler
 from base.objects.entities import Entity, CollisionMixin, Point, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
+from volleyball_game.conf import TICKS_PER_SPRITE_FRAME
 from volleyball_game.sprites.stickman import stickman_sprites
 from volleyball_game.sprites.volleyball import volleyball_sprites
 
@@ -352,41 +353,27 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_weird_hit(self):
         image = self.sprites["weird_hit_" + self.facing].get_frame(self.frames_elapsed)
+        first_hitbox = Hitbox(
+            knockback=20, owner=self, angle=45, x_offset=5, y_offset=-40, width=30, height=40
+        )
+        second_hitbox = Hitbox(
+            knockback=20, owner=self, angle=-10, x_offset=5, y_offset=-80, width=60, height=20
+        )
+        third_hitbox = Hitbox(
+            knockback=20, owner=self, angle=10, x_offset=-35, y_offset=-80, width=60, height=20
+        )
+        # todo: make sure this works when facing left!
+        # todo: give hitbox a knockback_angle, and make sure THAT works facing left
         hitboxes = {
-            1: Hitbox(
-                knockback=20,
-                owner=self,
-                angle=45,
-                x_offset=5,
-                y_offset=-40,
-                width=30,
-                height=40,
-            ),
-            2: Hitbox(
-                knockback=20,
-                owner=self,
-                angle=45,
-                x_offset=5,
-                y_offset=-40,
-                width=30,
-                height=40,
-            )
+            **{ii: first_hitbox for ii in range(1, 2)},
+            **{ii: second_hitbox for ii in range(2, 3)},
+            **{ii: third_hitbox for ii in range(3, 6)},
         }
         # create hitbox
-        for frame, hitbox in hitboxes.items():
-            if self.frames_elapsed == frame:
-                self.level.add_hitbox(hitbox)
-        # self.hitbox = Hitbox(
-        #     damage=20,
-        #     knockback=20,
-        #     owner=self,
-        #     angle=45,
-        #     x_offset=5,
-        #     y_offset=-40,
-        #     width=30,
-        #     height=40,
-        # )
-        # self.level.add(self.hitbox, type="hitbox")
+        frame_number = self.frames_elapsed // self.game.ticks_per_frame
+        hitbox = hitboxes.get(frame_number)
+        if hitbox is not None:
+            self.level.add_hitbox(hitbox)
 
         if image:
             self.image = image

@@ -13,6 +13,7 @@ class VolleyballGame(Game):
     window_width = conf.SCREEN_WIDTH
     window_height = conf.SCREEN_HEIGHT
     window_caption = "LAG SPIKE"
+    ticks_per_frame = conf.TICKS_PER_SPRITE_FRAME
 
     def run(self):
         self.window.fill((255, 255, 255))

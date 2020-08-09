@@ -10,6 +10,7 @@ class Game:
     window_width: int
     window_height: int
     window_caption: str
+    ticks_per_frame: int
 
     def __init__(self):
         pygame.init()
