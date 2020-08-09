@@ -449,65 +449,69 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
     #         self.u = 10
     #         self.v = -100
 
+    def handle_collision_with_player(self, player):
+        # bounce self away from collided object
+        print(f"collided with {player}")
+        # calculate the normal vector of the collision "plane" and normalize it
+        delta_x = self.centroid.x - player.centroid.x
+        delta_y = self.centroid.y - player.centroid.y
+        normal_vector = numpy.array([delta_x, delta_y])
+        normal_vector_magnitude = numpy.linalg.norm(normal_vector)
+        normal_vector_normalized = normal_vector / normal_vector_magnitude
+        # calculate the ball's incident velocity vector
+        incident = numpy.array([self.u, self.v])
+        # calculate the resultant velocity vector
+        resultant = (
+            incident
+            - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
+        )
+        self.u, self.v = resultant + player.velocity
+
+        # prevent overlapping
+        un_overlap(movable_object=self, immovable_object=player)
+
+    def handle_collision_with_platform(self, platform):
+        # bounce self away from collided object
+        print(f"collided with {platform}")
+        # calculate the normal vector of the collision plane and normalize it
+        ## get the overlapping pixels
+        x_overlap, y_overlap = get_overlap_between_objects(self, platform)
+        if x_overlap > y_overlap:
+            # bounce vertically
+            if self.centroid.y <= platform.centroid.y:
+                normal_vector = numpy.array([0, 1])
+            else:
+                normal_vector = numpy.array([0, -1])
+
+        else:  # y_overlap > 2 * x_overlap:
+            # bounce horizontally
+            if self.centroid.x <= platform.centroid.x:
+                normal_vector = numpy.array([-1, 0])
+            else:
+                normal_vector = numpy.array([1, 0])
+
+        normal_vector_magnitude = numpy.linalg.norm(normal_vector)
+        normal_vector_normalized = normal_vector / normal_vector_magnitude
+        # calculate the ball's incident velocity vector
+        incident = numpy.array([self.u, self.v])
+        # calculate the resultant velocity vector
+        resultant = (
+            incident
+            - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
+        )
+        self.u, self.v = resultant
+
+        # prevent overlapping
+        un_overlap(movable_object=self, immovable_object=platform)
+
     def handle_collisions(self):
-        # collide with characters
-        collided_objects = pygame.sprite.spritecollide(self, self.level.characters, dokill=False)
-        for collided_object in collided_objects:
-            # bounce self away from collided object
-            print(f"collided with {collided_object}")
-            # calculate the normal vector of the collision "plane" and normalize it
-            delta_x = self.centroid.x - collided_object.centroid.x
-            delta_y = self.centroid.y - collided_object.centroid.y
-            normal_vector = numpy.array([delta_x, delta_y])
-            normal_vector_magnitude = numpy.linalg.norm(normal_vector)
-            normal_vector_normalized = normal_vector / normal_vector_magnitude
-            # calculate the ball's incident velocity vector
-            incident = numpy.array([self.u, self.v])
-            # calculate the resultant velocity vector
-            resultant = (
-                incident
-                - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
-            )
-            self.u, self.v = resultant + collided_object.velocity
+        players = pygame.sprite.spritecollide(self, self.level.characters, dokill=False)
+        for player in players:
+            self.handle_collision_with_player(player)
 
-            # prevent overlapping
-            un_overlap(movable_object=self, immovable_object=collided_object)
-
-        # collide with platforms
-        collided_objects = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
-        for collided_object in collided_objects:
-            # bounce self away from collided object
-            print(f"collided with {collided_object}")
-            # calculate the normal vector of the collision plane and normalize it
-            ## get the overlapping pixels
-            x_overlap, y_overlap = get_overlap_between_objects(self, collided_object)
-            if x_overlap > y_overlap:
-                # bounce vertically
-                if self.centroid.y <= collided_object.centroid.y:
-                    normal_vector = numpy.array([0, 1])
-                else:
-                    normal_vector = numpy.array([0, -1])
-
-            else:  # y_overlap > 2 * x_overlap:
-                # bounce horizontally
-                if self.centroid.x <= collided_object.centroid.x:
-                    normal_vector = numpy.array([-1, 0])
-                else:
-                    normal_vector = numpy.array([1, 0])
-
-            normal_vector_magnitude = numpy.linalg.norm(normal_vector)
-            normal_vector_normalized = normal_vector / normal_vector_magnitude
-            # calculate the ball's incident velocity vector
-            incident = numpy.array([self.u, self.v])
-            # calculate the resultant velocity vector
-            resultant = (
-                incident
-                - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
-            )
-            self.u, self.v = resultant
-
-            # prevent overlapping
-            un_overlap(movable_object=self, immovable_object=collided_object)
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        for platform in platforms:
+            self.handle_collision_with_platform(platform)
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:
