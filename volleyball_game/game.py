@@ -52,7 +52,7 @@ class VolleyballGame(Game):
                 debug = not debug
             if pressed[pygame.K_b]:
                 level.add(
-                    Volleyball(conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT // 2), type="projectile"
+                    Volleyball(conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT // 4), type="projectile"
                 )
 
             level.update()

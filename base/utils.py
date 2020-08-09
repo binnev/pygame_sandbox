@@ -22,6 +22,13 @@ def touching(entity1: "Entity", entity2: "Entity") -> bool:
     return entity1.touchbox.colliderect(entity2.rect)
 
 
+def get_overlap_between_objects(obj1, obj2):
+    """Get the x and y overlap between obj1 and obj2.rect"""
+    x_overlap = min(obj1.rect.right, obj2.rect.right) - max(obj1.rect.left, obj2.rect.left)
+    y_overlap = min(obj1.rect.bottom, obj2.rect.bottom) - max(obj1.rect.top, obj2.rect.top)
+    return x_overlap, y_overlap
+
+
 # need these helper functions because pygame.mask.Mask methods aren't actually
 # implemented as they are described in the docs...
 def maskFromSurface(surface, threshold=127):

@@ -8,6 +8,7 @@ from base.animation import SpriteDict
 from base.keyhandler import KeyHandler
 from base.objects.entities import Entity, CollisionMixin, Point
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
+from base.utils import get_overlap_between_objects
 from volleyball_game.sprites.stickman import stickman_sprites
 from volleyball_game.sprites.volleyball import volleyball_sprites
 
@@ -471,22 +472,36 @@ class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
             # prevent overlapping
             self.collide_solid_platform(collided_object)
 
-        # # collide with platforms
-        # collided_objects = pygame.sprite.spritecollide(
-        #     self, self.level.platforms, dokill=False
-        # )
-        # for collided_object in collided_objects:
-        #     # bounce self away from collided object
-        #     print(f"collided with {collided_object}")
-        #     delta_x = self.centroid.x - collided_object.centroid.x
-        #     delta_y = self.centroid.y - collided_object.centroid.y
-        #     vector = numpy.array([delta_x, delta_y])
-        #     magnitude = numpy.sqrt(delta_x ** 2 + delta_y ** 2)
-        #     unit_vector = vector / magnitude
-        #     self.u += unit_vector[0] * self.bounciness
-        #     self.v += unit_vector[1] * self.bounciness
-        #     # prevent overlapping
-        #     self.collide_solid_platform(collided_object)
+        # collide with platforms
+        collided_objects = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        for collided_object in collided_objects:
+            # bounce self away from collided object
+            print(f"collided with {collided_object}")
+            # calculate the normal vector of the collision plane and normalize it
+            ## get the overlapping pixels
+            x_overlap, y_overlap = get_overlap_between_objects(self, collided_object)
+            if x_overlap > 2 * y_overlap:
+                # bounce vertically
+                normal_vector = numpy.array([0, 1])
+            elif y_overlap > 2 * x_overlap:
+                # bounce horizontally
+                normal_vector = numpy.array([1, 0])
+            else:
+                # bounce off corner
+                normal_vector = numpy.array([1, 1])
+
+            normal_vector_magnitude = numpy.linalg.norm(normal_vector)
+            normal_vector_normalized = normal_vector / normal_vector_magnitude
+            # calculate the ball's incident velocity vector
+            incident = numpy.array([self.u, self.v])
+            # calculate the resultant velocity vector
+            resultant = (
+                incident
+                - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
+            )
+            self.u, self.v = resultant
+            # prevent overlapping
+            self.collide_solid_platform(collided_object)
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:
