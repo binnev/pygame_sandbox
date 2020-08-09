@@ -86,6 +86,10 @@ class Entity(pygame.sprite.Sprite):
     def velocity(self):
         return [self.u, self.v]
 
+    @velocity.setter
+    def velocity(self, new_velocity):
+        self.u, self.v = new_velocity
+
     @property
     def touchbox(self):
         return self.rect.inflate(self.touchbox_margin, self.touchbox_margin)

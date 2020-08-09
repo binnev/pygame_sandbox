@@ -450,7 +450,6 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
     #         self.v = -100
 
     def handle_collision_with_player(self, player):
-        # bounce self away from collided object
         print(f"collided with {player}")
         # calculate the normal vector of the collision "plane" and normalize it
         delta_x = self.centroid.x - player.centroid.x
@@ -465,16 +464,14 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
             incident
             - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
         )
-        self.u, self.v = resultant + player.velocity
+        self.velocity = resultant + player.velocity
 
         # prevent overlapping
         un_overlap(movable_object=self, immovable_object=player)
 
     def handle_collision_with_platform(self, platform):
-        # bounce self away from collided object
         print(f"collided with {platform}")
         # calculate the normal vector of the collision plane and normalize it
-        ## get the overlapping pixels
         x_overlap, y_overlap = get_overlap_between_objects(self, platform)
         if x_overlap > y_overlap:
             # bounce vertically
@@ -499,7 +496,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
             incident
             - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
         )
-        self.u, self.v = resultant
+        self.velocity = resultant
 
         # prevent overlapping
         un_overlap(movable_object=self, immovable_object=platform)
