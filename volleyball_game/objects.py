@@ -6,7 +6,7 @@ from numpy.core._multiarray_umath import sign
 
 from base.animation import SpriteDict
 from base.keyhandler import KeyHandler
-from base.objects.entities import Entity, CollisionMixin, Point
+from base.objects.entities import Entity, CollisionMixin, Point, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
 from volleyball_game.sprites.stickman import stickman_sprites
@@ -59,6 +59,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         DIVE_GETUP = "DIVE_GETUP"
         STANDING_DEFENSE = "STANDING_DEFENSE"
         AERIAL_DEFENSE = "AERIAL_DEFENSE"
+        WEIRD_HIT = "WEIRD_HIT"
 
     # references to other objects
     level = None
@@ -88,6 +89,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.states.DIVE_GETUP: self.state_dive_getup,
             self.states.STANDING_DEFENSE: self.state_standing_defense,
             self.states.AERIAL_DEFENSE: self.state_aerial_defense,
+            self.states.WEIRD_HIT: self.state_weird_hit,
         }
         self.aerial_jumps_used = 0
 
@@ -249,6 +251,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.RUN
         if KeyHandler.is_down(self.keymap.DEFEND):
             self.state = self.states.STANDING_DEFENSE
+        if KeyHandler.is_down(self.keymap.ATTACK):
+            self.state = self.states.WEIRD_HIT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
 
@@ -289,7 +293,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if abs(self.u) > self.air_speed:
             self.u = sign(self.u) * self.air_speed
 
-        if KeyHandler.is_pressed(self.keymap.DEFEND):
+        if KeyHandler.is_down(self.keymap.DEFEND):
             self.state = self.states.AERIAL_DEFENSE
 
         # double-jump
@@ -342,6 +346,53 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if KeyHandler.is_released(self.keymap.DEFEND):
             self.state = self.states.STAND
 
+    def hitbox(self, *args, **kwargs):
+        hitbox = Hitbox(*args, owner=self, **kwargs)
+        self.level.add_hitbox(hitbox)
+
+    def state_weird_hit(self):
+        image = self.sprites["weird_hit_" + self.facing].get_frame(self.frames_elapsed)
+        hitboxes = {
+            1: Hitbox(
+                knockback=20,
+                owner=self,
+                angle=45,
+                x_offset=5,
+                y_offset=-40,
+                width=30,
+                height=40,
+            ),
+            2: Hitbox(
+                knockback=20,
+                owner=self,
+                angle=45,
+                x_offset=5,
+                y_offset=-40,
+                width=30,
+                height=40,
+            )
+        }
+        # create hitbox
+        for frame, hitbox in hitboxes.items():
+            if self.frames_elapsed == frame:
+                self.level.add_hitbox(hitbox)
+        # self.hitbox = Hitbox(
+        #     damage=20,
+        #     knockback=20,
+        #     owner=self,
+        #     angle=45,
+        #     x_offset=5,
+        #     y_offset=-40,
+        #     width=30,
+        #     height=40,
+        # )
+        # self.level.add(self.hitbox, type="hitbox")
+
+        if image:
+            self.image = image
+        else:
+            self.state = self.states.STAND
+
     def state_aerial_defense(self):
         # fixme: air resistance etc isn't applied in here. Need to take that out of state_fall
         #  and generalise it
@@ -357,7 +408,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.FALL
         if KeyHandler.is_pressed(self.keymap.UP):
             self.state = self.states.JUMPSQUAT
-        if KeyHandler.is_released(self.keymap.DOWN):
+        if not KeyHandler.is_down(self.keymap.DOWN):
             self.state = self.states.STAND
 
     def state_run(self):
@@ -481,8 +532,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         incident = numpy.array([self.u, self.v])
         # calculate the resultant velocity vector
         resultant = (
-            incident
-            - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
+            incident - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
         )
         self.velocity = resultant + player.velocity
 
@@ -513,8 +563,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         incident = numpy.array([self.u, self.v])
         # calculate the resultant velocity vector
         resultant = (
-            incident
-            - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
+            incident - 2 * numpy.dot(incident, normal_vector_normalized) * normal_vector_normalized
         )
         self.velocity = resultant
 

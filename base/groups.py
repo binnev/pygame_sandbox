@@ -9,13 +9,16 @@ class EntityGroup(pygame.sprite.Group):
         super().__init__()
 
     def draw(self, surface, debug=False):
-        """
-        Draws all of the member sprites onto the given surface.
-        """
+        """ Draws all of the member sprites onto the given surface. """
         sprites = self.sprites()
         for sprite in sprites:
             sprite.draw(surface, debug)
         self.lostsprites = []
+
+    def kill(self):
+        """ Kill all the sprites in this group. """
+        for sprite in self:
+            sprite.kill()
 
 
 class Level(EntityGroup):
@@ -35,7 +38,6 @@ class Level(EntityGroup):
         # add to Level spritegroup (similar to "all" group)
         super().add(*objects)
 
-        # todo: allow multiple types?
         if type == "platform":
             self.platforms.add(*objects)
         if type == "character":
@@ -47,3 +49,15 @@ class Level(EntityGroup):
         # give the object a reference to this level
         for obj in objects:
             obj.level = self
+
+    def add_platform(self, *objects):
+        self.add(*objects, type="platform")
+
+    def add_character(self, *objects):
+        self.add(*objects, type="character")
+
+    def add_projectile(self, *objects):
+        self.add(*objects, type="projectile")
+
+    def add_hitbox(self, *objects):
+        self.add(*objects, type="hitbox")

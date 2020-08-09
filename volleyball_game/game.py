@@ -35,25 +35,35 @@ class VolleyballGame(Game):
 
         run = True
         debug = False
+        frame_by_frame = False
         ii = 0
         while run:
             ii += 1
             keys = pygame.key.get_pressed()
             KeyHandler.append(keys)
-            pressed = KeyHandler.get_pressed()
 
-            if pressed[pygame.K_ESCAPE]:
+            if KeyHandler.is_pressed(pygame.K_ESCAPE):
                 run = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
-            if pressed[pygame.K_F1]:
+            if KeyHandler.is_pressed(pygame.K_F1):
                 debug = not debug
-            if pressed[pygame.K_b]:
+            if KeyHandler.is_pressed(pygame.K_F2):
+                frame_by_frame = not frame_by_frame
+            if KeyHandler.is_pressed(pygame.K_b):
                 level.add(
                     Volleyball(conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT // 4), type="projectile"
                 )
+
+            # wait for button press before advancing
+            if frame_by_frame:
+                if not KeyHandler.is_pressed(pygame.K_F3):
+                    print(f"waiting on frame {ii}")
+                    continue  # skip the rest of the actions
+                else:
+                    print("advanced 1 frame")
 
             level.update()
             print(player1.u)
@@ -64,4 +74,8 @@ class VolleyballGame(Game):
                 self.window, debug=debug,
             )
             pygame.display.flip()
+
+            # destroy hitboxes
+            level.hitboxes.kill()
+
             self.clock.tick(self.fps)

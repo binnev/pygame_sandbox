@@ -7,6 +7,8 @@ sprites_folder = Path("sprites/")
 folder = sprites_folder / "stickman"
 
 # todo: make something to automatically create left-facing versions?
+# todo: make this a dict of SpriteAnimations so that they can autocomplete arguments. Use a
+#  defaults dict to supply shared params.
 file_mapping = {
     "crouch_right": {"filename": folder / "stick_crouch.png"},
     "crouch_left": {"filename": folder / "stick_crouch.png", "flip_horizontal": True,},
@@ -33,6 +35,17 @@ file_mapping = {
     },
     "standing_hit_right": {"filename": folder / "stick_standing_hit.png"},
     "standing_hit_left": {"filename": folder / "stick_standing_hit.png", "flip_horizontal": True},
+    "weird_hit_right": {
+        "filename": folder / "stick_weird_hit.png",
+        "looping": False,
+        "num_images": 5,
+    },
+    "weird_hit_left": {
+        "filename": folder / "stick_weird_hit.png",
+        "looping": False,
+        "num_images": 5,
+        "flip_horizontal": True,
+    },
 }
 
 

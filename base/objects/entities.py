@@ -626,10 +626,10 @@ class Hitbox(Entity):
 
     def __init__(
         self,
-        damage,
         knockback,
         width,
         height,
+        damage=None,
         owner=None,
         angle=0,
         x_offset=0,
