@@ -2,11 +2,12 @@ import pygame
 
 
 class Player1:
-    LEFT = pygame.K_a
-    RIGHT = pygame.K_d
-    UP = pygame.K_w
-    DOWN = pygame.K_s
-    A = pygame.K_BACKSLASH
+    LEFT = pygame.K_s
+    RIGHT = pygame.K_f
+    UP = pygame.K_e
+    DOWN = pygame.K_d
+    DEFEND = pygame.K_z
+    ATTACK = pygame.K_a
 
 
 class Player2:
@@ -14,4 +15,5 @@ class Player2:
     RIGHT = pygame.K_QUOTE
     UP = pygame.K_p
     DOWN = pygame.K_SEMICOLON
-    A = pygame.K_COMMA
+    DEFEND = pygame.K_COMMA
+    ATTACK = pygame.K_k

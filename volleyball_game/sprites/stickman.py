@@ -31,6 +31,8 @@ file_mapping = {
         "num_images": 11,
         "looping": False,
     },
+    "standing_hit_right": {"filename": folder / "stick_standing_hit.png"},
+    "standing_hit_left": {"filename": folder / "stick_standing_hit.png", "flip_horizontal": True},
 }
 
 

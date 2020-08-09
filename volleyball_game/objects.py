@@ -28,6 +28,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     ground_speed: float
     air_acceleration: float
     air_speed: float
+    dive_speed: float
     gravity: float
     _fall_speed: float
     fastfall_multiplier: float
@@ -42,7 +43,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     sprites: SpriteDict
     image: pygame.Surface
 
-    # cooldowns -- todo: put this in a mixin?
     double_jump_cooldown_frames = 15
     double_jump_cooldown = 0
 
@@ -57,6 +57,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         DIVE = "DIVE"
         DIVESQUAT = "DIVESQUAT"
         DIVE_GETUP = "DIVE_GETUP"
+        STANDING_DEFENSE = "STANDING_DEFENSE"
+        AERIAL_DEFENSE = "AERIAL_DEFENSE"
 
     # references to other objects
     level = None
@@ -84,6 +86,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.states.DIVE: self.state_dive,
             self.states.DIVESQUAT: self.state_divesquat,
             self.states.DIVE_GETUP: self.state_dive_getup,
+            self.states.STANDING_DEFENSE: self.state_standing_defense,
+            self.states.AERIAL_DEFENSE: self.state_aerial_defense,
         }
         self.aerial_jumps_used = 0
 
@@ -107,6 +111,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     @property
     def rect(self):
+        # todo: states should be responsible for this kind of thing
         # shrink rect when crouching
         midbottom = self._rect.midbottom
         if self.state in [self.states.SQUAT, self.states.JUMPSQUAT]:
@@ -126,11 +131,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             return self._fall_speed * self.fastfall_multiplier
         else:
             return self._fall_speed
-
-    @property
-    def base(self):
-        # todo: do we even need this anymore?
-        return Point(*self.rect.midbottom)
 
     @property
     def airborne(self):
@@ -241,12 +241,14 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.frames_elapsed)
 
-        if KeyHandler.is_pressed(self.keymap.UP):  # enter jumpsquat
+        if KeyHandler.is_pressed(self.keymap.UP):
             self.state = self.states.JUMPSQUAT
-        if KeyHandler.is_down(self.keymap.DOWN):  # enter squat
+        if KeyHandler.is_down(self.keymap.DOWN):
             self.state = self.states.SQUAT
         if KeyHandler.is_down(self.keymap.LEFT) or KeyHandler.is_down(self.keymap.RIGHT):
             self.state = self.states.RUN
+        if KeyHandler.is_down(self.keymap.DEFEND):
+            self.state = self.states.STANDING_DEFENSE
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
 
@@ -287,6 +289,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if abs(self.u) > self.air_speed:
             self.u = sign(self.u) * self.air_speed
 
+        if KeyHandler.is_pressed(self.keymap.DEFEND):
+            self.state = self.states.AERIAL_DEFENSE
+
         # double-jump
         if (
             KeyHandler.is_pressed(self.keymap.UP)
@@ -324,13 +329,26 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = 0
 
     def state_dive_getup(self):
-        self.rect
         animation = self.sprites["dive_getup_" + self.facing]
         image = animation.get_frame(self.frames_elapsed)
         if image:
             self.image = image
         else:
             self.state = self.states.STAND
+
+    def state_standing_defense(self):
+        self.image = self.sprites["standing_hit_" + self.facing].get_frame(self.frames_elapsed)
+        # create hitbox
+        if KeyHandler.is_released(self.keymap.DEFEND):
+            self.state = self.states.STAND
+
+    def state_aerial_defense(self):
+        # fixme: air resistance etc isn't applied in here. Need to take that out of state_fall
+        #  and generalise it
+        self.image = self.sprites["standing_hit_" + self.facing].get_frame(self.frames_elapsed)
+        # create hitbox
+        if KeyHandler.is_released(self.keymap.DEFEND):
+            self.state = self.states.FALL
 
     def state_squat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
@@ -339,8 +357,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.FALL
         if KeyHandler.is_pressed(self.keymap.UP):
             self.state = self.states.JUMPSQUAT
-        # if squat key released, exit squat state
-        if not KeyHandler.is_down(self.keymap.DOWN):
+        if KeyHandler.is_released(self.keymap.DOWN):
             self.state = self.states.STAND
 
     def state_run(self):
@@ -362,8 +379,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
-        if KeyHandler.is_down(self.keymap.A) and abs(self.u) == self.ground_speed:
-            self.state = self.states.DIVESQUAT
+        if KeyHandler.is_pressed(self.keymap.DEFEND):
+            if abs(self.u) == self.ground_speed:
+                self.state = self.states.DIVESQUAT
+            else:
+                self.state = self.states.STANDING_DEFENSE
 
 
 class Stickman(Player):
