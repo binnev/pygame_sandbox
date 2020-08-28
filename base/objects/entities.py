@@ -3,10 +3,11 @@ from collections import namedtuple
 import pygame
 from numpy import sign
 
+from base.animation import SpriteAnimation
 from base.groups import EntityGroup
 from base.keyhandler import KeyHandler
 from base.objects.mixins import HistoryMixin, AnimationMixin, CollisionMixin
-from base.utils import touching, mask_to_surface
+from base.utils import touching, mask_to_surface, ticks_to_frames
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -42,6 +43,7 @@ class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
 
+        # fixme: it's stupid to load the font here. Attach this to game or something?
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
         self.color = color if color else self.debug_color
         self.width = width
@@ -670,3 +672,35 @@ class Hitbox(Entity):
     # def draw_image(self, surface):
     #     """Hitboxes should be invisible by default. """
     #     pass
+
+
+class Move:
+    sprite_animation: SpriteAnimation
+    hitbox_mapping: dict  # mapping of frame keys to hitbox values
+    # fixme: Hitboxes can't be defined without an owner yet. I need this, because I want to
+    #  be able to define them abstractly. I want to describe the hitboxes for all Rannos
+    #  before they are assigned to an instance of Ranno.
+    # todo: make sure this works when facing left!
+    # todo: give hitbox a knockback_angle, and make sure THAT works facing left
+
+    @staticmethod
+    def map_hitboxes(hitbox_mapping):
+        # todo: allow some frames to have no hitboxes. How will I represent that?
+        return {
+            frame: hitboxes
+            for frames, hitboxes in hitbox_mapping.items()
+            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
+        }
+
+    def __init__(self, instance):
+        self.instance = instance
+        self.hitbox_data = self.map_hitboxes(self.hitbox_mapping)
+
+    def __call__(self, n):
+        """ This is the equivalent to the function states """
+        self.image = self.sprite_animation.get_frame(n)
+        self.hitboxes = self.get_hitboxes(n)
+
+    def get_hitboxes(self, n):
+        hitbox_data = self.hitbox_data.get(n, [])
+        return [Hitbox(owner=self.instance, **data) for data in hitbox_data]

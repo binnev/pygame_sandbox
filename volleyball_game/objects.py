@@ -4,9 +4,9 @@ import numpy
 import pygame as pygame
 from numpy.core._multiarray_umath import sign
 
-from base.animation import SpriteDict
+from base.animation import SpriteDict, SpriteAnimation
 from base.keyhandler import KeyHandler
-from base.objects.entities import Entity, CollisionMixin, Point, Hitbox
+from base.objects.entities import Entity, CollisionMixin, Point, Hitbox, Move
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
 from volleyball_game.conf import TICKS_PER_SPRITE_FRAME
@@ -90,7 +90,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.states.DIVE_GETUP: self.state_dive_getup,
             self.states.STANDING_DEFENSE: self.state_standing_defense,
             self.states.AERIAL_DEFENSE: self.state_aerial_defense,
-            self.states.WEIRD_HIT: self.state_weird_hit,
+            self.states.WEIRD_HIT: self.WeirdHit(self),
+            # self.states.WEIRD_HIT: self.state_weird_hit,
         }
         self.aerial_jumps_used = 0
 
@@ -347,38 +348,32 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if KeyHandler.is_released(self.keymap.DEFEND):
             self.state = self.states.STAND
 
-    def hitbox(self, *args, **kwargs):
-        hitbox = Hitbox(*args, owner=self, **kwargs)
-        self.level.add_hitbox(hitbox)
+    class VolleyballMove(Move):
+        def __call__(self):
+            # fixme: convert to frames
+            super().__call__(self.instance.frames_elapsed)
+            self.instance.image = self.image
+            for hitbox in self.hitboxes:
+                self.instance.level.add_hitbox(hitbox)
 
-    def state_weird_hit(self):
-        image = self.sprites["weird_hit_" + self.facing].get_frame(self.frames_elapsed)
-        first_hitbox = Hitbox(
-            knockback=20, owner=self, angle=45, x_offset=5, y_offset=-40, width=30, height=40
-        )
-        second_hitbox = Hitbox(
-            knockback=20, owner=self, angle=-10, x_offset=5, y_offset=-80, width=60, height=20
-        )
-        third_hitbox = Hitbox(
-            knockback=20, owner=self, angle=10, x_offset=-35, y_offset=-80, width=60, height=20
-        )
-        # todo: make sure this works when facing left!
-        # todo: give hitbox a knockback_angle, and make sure THAT works facing left
-        hitboxes = {
-            **{ii: first_hitbox for ii in range(1, 2)},
-            **{ii: second_hitbox for ii in range(2, 3)},
-            **{ii: third_hitbox for ii in range(3, 6)},
+    class WeirdHit(VolleyballMove):
+        first_hitbox = dict(knockback=20, angle=45, x_offset=5, y_offset=-40, width=30, height=40)
+        second_hitbox = dict(knockback=20, angle=-10, x_offset=5, y_offset=-80, width=60, height=20)
+        third_hitbox = dict(knockback=20, angle=10, x_offset=-35, y_offset=-80, width=60, height=20)
+
+        hitbox_mapping = {
+            (1, 2): [first_hitbox],
+            (2, 3): [second_hitbox],
+            (3, 6): [third_hitbox],
         }
-        # create hitbox
-        frame_number = self.frames_elapsed // self.game.ticks_per_frame
-        hitbox = hitboxes.get(frame_number)
-        if hitbox is not None:
-            self.level.add_hitbox(hitbox)
 
-        if image:
-            self.image = image
-        else:
-            self.state = self.states.STAND
+        def __call__(self):
+            self.sprite_animation = self.instance.sprites["weird_hit_" + self.instance.facing]
+
+            super().__call__()
+            # custom logic here
+            if not self.instance.image:
+                self.instance.state = self.instance.states.STAND
 
     def state_aerial_defense(self):
         # fixme: air resistance etc isn't applied in here. Need to take that out of state_fall

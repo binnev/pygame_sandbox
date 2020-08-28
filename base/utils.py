@@ -74,3 +74,7 @@ def mask_to_surface(mask, set_color=None):
             if mask.get_at((x, y)):
                 surface.set_at((x, y), set_color)
     return surface
+
+
+def ticks_to_frames(tick, ticks_per_frame):
+    return tick // ticks_per_frame
