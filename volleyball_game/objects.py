@@ -16,6 +16,17 @@ from volleyball_game.sprites.volleyball import volleyball_sprites
 
 # todo: allow states to describe the rect dimensions when the entity is in that state. E.g.
 #  during a dive the player's rect should be longer and thinner.
+class VolleyballMove(Move):
+    def __call__(self):
+        # fixme: convert to frames
+        super().__call__(self.instance.frames_elapsed)
+        self.instance.image = self.image
+        for hitbox in self.hitboxes:
+            self.instance.level.add_hitbox(hitbox)
+
+    def end_when_animation_ends(self, next_state):
+        if not self.sprite_animation.get_frame(self.instance.frames_elapsed + 1):
+            self.instance.state = next_state
 
 
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
@@ -349,14 +360,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if KeyHandler.is_released(self.keymap.DEFEND):
             self.state = self.states.STAND
 
-    class VolleyballMove(Move):
-        def __call__(self):
-            # fixme: convert to frames
-            super().__call__(self.instance.ticks_elapsed)
-            self.instance.image = self.image
-            for hitbox in self.hitboxes:
-                self.instance.level.add_hitbox(hitbox)
-
     class WeirdHit(VolleyballMove):
         first_hitbox = dict(knockback=20, angle=45, x_offset=5, y_offset=-40, width=30, height=40)
         second_hitbox = dict(knockback=20, angle=-10, x_offset=5, y_offset=-80, width=60, height=20)
@@ -372,9 +375,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.sprite_animation = self.instance.sprites["weird_hit_" + self.instance.facing]
 
             super().__call__()
-            # custom logic here
-            if not self.instance.image:
-                self.instance.state = self.instance.states.STAND
+            self.end_when_animation_ends(self.instance.states.STAND)
 
     def state_aerial_defense(self):
         # fixme: air resistance etc isn't applied in here. Need to take that out of state_fall
