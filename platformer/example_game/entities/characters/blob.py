@@ -85,7 +85,9 @@ PROJECTILE_SPRITES = {
 folder = sprites_folder / "volleyball"
 BALL_SPRITES = {
     "default": SpriteAnimation(
-        SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet((32, 32), scale=SCALE_SPRITES),
+        SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
+            (32, 32), scale=SCALE_SPRITES
+        ),
         game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
     ),
 }
@@ -152,9 +154,9 @@ class Blob(Character):
         self.allow_fastfall()
         self.enforce_max_fall_speed()
 
-        if self.frames_elapsed == 10:  # todo: don't hard-code this
+        if self.ticks_elapsed == 10:  # todo: don't hard-code this
             self.create_projectile()
-        if self.frames_elapsed == 12:
+        if self.ticks_elapsed == 12:
             self.state = self.states.FALL if self.airborne else self.states.STAND
 
     # ============ actions ==============

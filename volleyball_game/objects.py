@@ -4,12 +4,12 @@ import numpy
 import pygame as pygame
 from numpy.core._multiarray_umath import sign
 
-from base.animation import SpriteDict, SpriteAnimation
+from base.animation import SpriteDict
 from base.keyhandler import KeyHandler
-from base.objects.entities import Entity, CollisionMixin, Point, Hitbox, Move
+from base.objects.entities import Entity, CollisionMixin, Move
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
-from volleyball_game.conf import TICKS_PER_SPRITE_FRAME
+from volleyball_game import conf
 from volleyball_game.sprites.stickman import stickman_sprites
 from volleyball_game.sprites.volleyball import volleyball_sprites
 
@@ -19,6 +19,7 @@ from volleyball_game.sprites.volleyball import volleyball_sprites
 
 
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
+    game_ticks_per_sprite_frame = conf.TICKS_PER_SPRITE_FRAME
 
     # class properties
     facing_right: bool
@@ -214,7 +215,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             f"v = {self.v:.5f},",
             f"friction = {self.friction:.2f},",
             f"aerial_jumps_used = {self.aerial_jumps_used}",
-            f"frames_elapsed = {self.frames_elapsed}",
+            f"ticks_elapsed = {self.ticks_elapsed}",
         )
 
     def enforce_max_fall_speed(self):
@@ -261,13 +262,13 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def state_jumpsquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
 
-        if self.frames_elapsed == self.jumpsquat_frames:
+        if self.ticks_elapsed == self.jumpsquat_frames:
             self.enter_jump()
 
     def state_divesquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
 
-        if self.frames_elapsed == self.jumpsquat_frames:
+        if self.ticks_elapsed == self.jumpsquat_frames:
             self.enter_dive()
 
     def enter_dive(self):
@@ -351,7 +352,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     class VolleyballMove(Move):
         def __call__(self):
             # fixme: convert to frames
-            super().__call__(self.instance.frames_elapsed)
+            super().__call__(self.instance.ticks_elapsed)
             self.instance.image = self.image
             for hitbox in self.hitboxes:
                 self.instance.level.add_hitbox(hitbox)

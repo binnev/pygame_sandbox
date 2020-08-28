@@ -8,10 +8,11 @@ from base.keyhandler import KeyHandler
 
 class AnimationMixin:
     """Handles animation for a state machine class. Subclasses should have their own
-    dictionary of sprite animations. Each state function can then use `frames_elapsed`
+    dictionary of sprite animations. Each state function can then use `ticks_elapsed`
     counter to assign the correct sprite frame to self.image"""
 
-    frames_elapsed = 0
+    ticks_elapsed = 0  # number of game ticks elapsed in the current state
+    game_ticks_per_sprite_frame: int  # higher = slower animation framerate
 
     @property
     def state(self):
@@ -21,11 +22,15 @@ class AnimationMixin:
     def state(self, new_state):
         """Reset animation counter when state changes"""
         self._state = new_state
-        self.frames_elapsed = 0
+        self.ticks_elapsed = 0
+
+    @property
+    def frames_elapsed(self):
+        return self.ticks_elapsed // self.game_ticks_per_sprite_frame
 
     def update_animation(self):
         """Call this inside subclass update method"""
-        self.frames_elapsed += 1
+        self.ticks_elapsed += 1
 
 
 class PhysicsMixin:
@@ -77,7 +82,6 @@ class HistoryMixin:
         self.history.append(
             {attr: deepcopy(getattr(self, attr)) for attr in self.attributes_to_remember}
         )
-
 
 
 class SimpleMovementMixin:
