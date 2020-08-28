@@ -52,7 +52,7 @@ class ExampleGame(Game):
         run = True
         while run:
             keys = pygame.key.get_pressed()
-            self.key_handler.update(keys)
+            self.key_handler.append(keys)
             pressed = self.key_handler.get_pressed()
 
             if pressed[pygame.K_ESCAPE]:

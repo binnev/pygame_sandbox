@@ -16,7 +16,7 @@ from base.objects.entities import (
     Entity,
     Projectile,
 )
-from ...conf import SCALE_SPRITES, TICKS_PER_SPRITE_FRAME
+from ...conf import SCALE_SPRITES
 
 sprites_folder = Path("sprites/")
 
@@ -53,14 +53,12 @@ blob_file_mapping = {
 BLOB_SPRITES = SpriteDict(
     size=(32, 32),
     scale=SCALE_SPRITES,
-    game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
     file_mapping=blob_file_mapping,
 )
 
 ORANGE_BLOB_SPRITES = SpriteDict(
     size=(32, 32),
     scale=SCALE_SPRITES,
-    game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
     file_mapping=blob_file_mapping,
     colormap=colormap,
 )
@@ -71,14 +69,12 @@ PROJECTILE_SPRITES = {
         SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
             (32, 32), scale=SCALE_SPRITES
         ),
-        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
     ),
     "left": SpriteAnimation(
         SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
             (32, 32), scale=SCALE_SPRITES
         ),
         flip_horizontal=True,
-        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
     ),
 }
 
@@ -88,7 +84,6 @@ BALL_SPRITES = {
         SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
             (32, 32), scale=SCALE_SPRITES
         ),
-        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
     ),
 }
 
