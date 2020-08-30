@@ -81,7 +81,7 @@ def ticks_to_frames(tick, ticks_per_frame):
     return tick // ticks_per_frame
 
 
-def draw_arrow(surface, p1, p2, color=None):
+def draw_arrow_between_points(surface, p1, p2, color=None):
     p1 = numpy.array(p1)
     p2 = numpy.array(p2)
     dx, dy = p2 - p1
@@ -114,3 +114,13 @@ def draw_arrow(surface, p1, p2, color=None):
     image_rect = arrowhead_image.get_rect()
     image_rect.center = p2
     surface.blit(arrowhead_image, image_rect)
+
+
+def draw_arrow(surface, origin, angle: "degrees", color=None, length=50):
+    """ angle needs to be in degrees """
+    angle = numpy.deg2rad(angle)
+    dx = length * numpy.cos(angle)
+    dy = -length * numpy.sin(angle)  # dy needs to be flipped because pygame y downwards
+
+    p2 = numpy.array(origin) + (dx, dy)
+    draw_arrow_between_points(surface, origin, p2, color)

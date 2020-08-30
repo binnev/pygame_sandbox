@@ -631,6 +631,7 @@ class Hitbox(Entity):
     def __init__(
         self,
         knockback,
+        knockback_angle,
         width,
         height,
         damage=None,
@@ -643,6 +644,7 @@ class Hitbox(Entity):
         self.owner = owner
         self.damage = damage
         self.knockback = knockback
+        self.knockback_angle = knockback_angle
         self.angle = angle
         self.x_offset = x_offset
         self.y_offset = y_offset
@@ -674,15 +676,7 @@ class Hitbox(Entity):
     def draw(self, surface, debug=False):
         super().draw(surface)
         if self.angle is not None:
-            magnitude = 100
-            dx = magnitude * numpy.cos(self.angle)
-            dy = magnitude * numpy.sin(self.angle)
-            draw_arrow(
-                surface,
-                self.centroid,
-                (self.centroid.x + dx, self.centroid.y + dy),
-                color=self.debug_color,
-            )
+            draw_arrow(surface, self.centroid, self.knockback_angle, color=self.debug_color)
 
     # def draw_image(self, surface):
     #     """Hitboxes should be invisible by default. """

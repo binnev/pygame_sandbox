@@ -361,9 +361,33 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.STAND
 
     class WeirdHit(VolleyballMove):
-        first_hitbox = dict(knockback=20, angle=45, x_offset=5, y_offset=-40, width=30, height=40)
-        second_hitbox = dict(knockback=20, angle=-10, x_offset=5, y_offset=-80, width=60, height=20)
-        third_hitbox = dict(knockback=20, angle=10, x_offset=-35, y_offset=-80, width=60, height=20)
+        first_hitbox = dict(
+            knockback=20,
+            angle=45,
+            knockback_angle=80,
+            x_offset=5,
+            y_offset=-40,
+            width=30,
+            height=40,
+        )
+        second_hitbox = dict(
+            knockback=20,
+            angle=-10,
+            knockback_angle=120,
+            x_offset=5,
+            y_offset=-80,
+            width=60,
+            height=20,
+        )
+        third_hitbox = dict(
+            knockback=20,
+            angle=10,
+            knockback_angle=180,
+            x_offset=-35,
+            y_offset=-80,
+            width=60,
+            height=20,
+        )
 
         hitbox_mapping = {
             (1, 2): [first_hitbox],

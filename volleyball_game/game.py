@@ -49,12 +49,12 @@ class VolleyballGame(Game):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                ########################### arrow testing ##########################
-                if event.type == pygame.MOUSEMOTION:
-                    mouse_xy = event.pos
-                    screen_center = self.window.get_rect().center
-                    draw_arrow(self.window, screen_center, mouse_xy)
-                    ###################################################################
+                # ########################### arrow testing ##########################
+                # if event.type == pygame.MOUSEMOTION:
+                #     mouse_xy = event.pos
+                #     screen_center = self.window.get_rect().center
+                #     draw_arrow(self.window, screen_center, mouse_xy)
+                #     ###################################################################
 
             if KeyHandler.is_pressed(pygame.K_F1):
                 debug = not debug
