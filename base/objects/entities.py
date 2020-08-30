@@ -673,14 +673,14 @@ class Hitbox(Entity):
                 self.owner.y + self.y_offset,
             )
 
-    def draw(self, surface, debug=False):
-        super().draw(surface)
+    def draw_debug(self, surface):
+        self.draw_image(surface)
         if self.angle is not None:
             draw_arrow(surface, self.centroid, self.knockback_angle, color=self.debug_color)
 
-    # def draw_image(self, surface):
-    #     """Hitboxes should be invisible by default. """
-    #     pass
+    def draw(self, surface, debug=False):
+        # if debug:
+        self.draw_debug(surface)
 
 
 class Move:
