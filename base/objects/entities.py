@@ -493,7 +493,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             f"v = {self.v:.5f},",
             f"friction = {self.friction:.2f},",
             f"aerial_jumps_used = {self.aerial_jumps_used}",
-            f"frames_elapsed = {self.frames_elapsed}",
+            f"ticks_elapsed = {self.ticks_elapsed}",
         )
 
     def enforce_max_fall_speed(self):
@@ -534,7 +534,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_jumpsquat(self):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
-        if self.frames_elapsed == self.jumpsquat_frames:
+        if self.ticks_elapsed == self.jumpsquat_frames:
             self.enter_jump()
         # todo: add any other actions that are allowed in jumpsquat state... wavedash ahem.
 

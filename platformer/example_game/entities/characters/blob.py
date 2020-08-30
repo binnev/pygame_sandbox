@@ -17,7 +17,7 @@ from base.objects.entities import (
     Entity,
     Projectile,
 )
-from ...conf import SCALE_SPRITES, TICKS_PER_SPRITE_FRAME
+from ...conf import SCALE_SPRITES
 
 sprites_folder = Path("sprites/")
 
@@ -163,9 +163,9 @@ class Blob(Character):
         self.allow_fastfall()
         self.enforce_max_fall_speed()
 
-        if self.frames_elapsed == 10:  # todo: don't hard-code this
+        if self.ticks_elapsed == 10:  # todo: don't hard-code this
             self.create_projectile()
-        if self.frames_elapsed == 12:
+        if self.ticks_elapsed == 12:
             self.state = self.states.FALL if self.airborne else self.states.STAND
 
     # ============ actions ==============

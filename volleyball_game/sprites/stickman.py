@@ -53,9 +53,4 @@ file_mapping = {
 
 def stickman_sprites():
     """I need to use a closure here because otherwise pygame kicks up a fuss about initialization"""
-    return SpriteDict(
-        size=(32, 32),
-        scale=conf.SCALE_SPRITES,
-        game_ticks_per_sprite_frame=conf.TICKS_PER_SPRITE_FRAME,
-        file_mapping=file_mapping,
-    )
+    return SpriteDict(size=(32, 32), scale=conf.SCALE_SPRITES, file_mapping=file_mapping,)

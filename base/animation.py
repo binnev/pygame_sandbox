@@ -118,29 +118,24 @@ class SpriteAnimation:
         flip_horizontal=False,
         flip_vertical=False,
         looping=True,
-        game_ticks_per_sprite_frame=1,
         **kwargs,
     ):
         self.frames = [
             pygame.transform.flip(f, bool(flip_horizontal), bool(flip_vertical)) for f in frames
         ]
         self.looping = looping
-        self.game_ticks_per_sprite_frame = game_ticks_per_sprite_frame
 
-    def get_frame(self, game_tick: int):
+    def get_frame(self, n: int):
         """
-        Animate the sprite. Given an integer `game_tick` representing how many
-        iterations the game has performed, return a sprite frame. Handles looping
-        through a finite list of frames. The higher `game_ticks_per_sprite_frame`,
-        the slower the animation will be (the frame will be displayed for more game
-        ticks).
+        Animate the sprite. Given an integer `n` representing how many iterations the game has
+        performed, return a sprite frame. Handles looping through a finite list of frames.
         """
         if self.looping:
-            return self.frames[game_tick // self.game_ticks_per_sprite_frame % len(self.frames)]
+            return self.frames[n % len(self.frames)]
         else:
             # return False when we've run out of frames.
             try:
-                return self.frames[game_tick // self.game_ticks_per_sprite_frame]
+                return self.frames[n]
             except IndexError:
                 return False
 
@@ -155,12 +150,7 @@ class SpriteDict(dict):
     """
 
     def __init__(
-        self,
-        size: (int, int),
-        file_mapping: dict,
-        scale: int = 1,
-        game_ticks_per_sprite_frame: int = 1,
-        colormap: dict = None,
+        self, size: (int, int), file_mapping: dict, scale: int = 1, colormap: dict = None,
     ):
         """
         Default parameters (size, scale, etc) will be used for all sprites, unless the
@@ -174,7 +164,6 @@ class SpriteDict(dict):
             defaults = {
                 "size": size,
                 "scale": scale,
-                "game_ticks_per_sprite_frame": game_ticks_per_sprite_frame,
             }
             defaults.update(sprite_info)
 
