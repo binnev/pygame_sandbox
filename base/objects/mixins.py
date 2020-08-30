@@ -79,7 +79,6 @@ class HistoryMixin:
         )
 
 
-
 class SimpleMovementMixin:
     x: int
     y: int
@@ -122,7 +121,10 @@ class CollisionMixin:
 
     def can_stand_on_droppable_platform(self, platform):
         was_above_platform = self.history[-1]["rect"].bottom <= platform.rect.top
-        not_holding_down = not self.keys[Keys.DOWN]
+        # fixme: this is assuming what keys the object uses to drop through platforms. Generalise
+        #  this. Also Keys object has moved.
+        keys = KeyHandler.get_down()
+        not_holding_down = not keys[self.keymap.DOWN]
         return self.is_touching(platform) and was_above_platform and not_holding_down
 
     def can_stand_on_solid_platform(self, platform):

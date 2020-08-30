@@ -1,14 +1,20 @@
 import pygame
 
+from base.game import Game
+from base.keyhandler import KeyHandler
 from base.objects.entities import MovingEntity
 from platformer.example_game.entities.characters.blob import Blob, Ball
 from platformer.example_game.levels import TestLevel, FinalDestination, VolleyballCourt
-from platformer.objects.game import Game
+from platformer.example_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class ExampleGame(Game):
-    def __init__(self, window, fps=None):
-        super().__init__(window, fps)
+    window_height = SCREEN_HEIGHT
+    window_width = SCREEN_WIDTH
+    window_caption = "pixel smash"
+
+    def __init__(self):
+        super().__init__()
         self.levels = {
             "test_level": TestLevel,
             "final_destination": FinalDestination,
@@ -17,16 +23,16 @@ class ExampleGame(Game):
 
     def run_level(self, level_class):
         level = level_class(game=self)
-        level.add(MovingEntity(50, 200, 50, 50), type="character")
+        # level.add(MovingEntity(50, 200, 50, 50), type="character")
         # level.add(Blob(150, 200, skin=2), type="character")
-        # level.add(Blob(50, 200), type="character")
+        level.add(Blob(50, 200), type="character")
         debug = True
 
         run = True
         while run:
             keys = pygame.key.get_pressed()
-            self.key_handler.update(keys)
-            pressed = self.key_handler.get_pressed()
+            KeyHandler.append(keys)
+            pressed = KeyHandler.get_pressed()
 
             if pressed[pygame.K_ESCAPE]:
                 run = False
@@ -41,7 +47,7 @@ class ExampleGame(Game):
                 level.add(Ball(200, 200), type="projectile")
             if pressed[pygame.K_d]:
                 debug = not debug
-            level.update(keys)
+            level.update()
             level.draw(
                 self.window, debug=debug,
             )
@@ -52,8 +58,8 @@ class ExampleGame(Game):
         run = True
         while run:
             keys = pygame.key.get_pressed()
-            self.key_handler.update(keys)
-            pressed = self.key_handler.get_pressed()
+            KeyHandler.append(keys)
+            pressed = KeyHandler.get_pressed()
 
             if pressed[pygame.K_ESCAPE]:
                 run = False

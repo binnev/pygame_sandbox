@@ -3,6 +3,8 @@ import random
 import numpy as np
 import pygame
 
+from base.keyhandler import KeyHandler
+
 """
 TODO: 
 [ ] make object oriented version. The current functions just deal with lists of numbers. 
@@ -64,8 +66,9 @@ class Board:
             y = random.randint(0, self.size - 1)
         self.grid[x][y] = 2
 
-    def update(self, keys):
+    def update(self):
         self.previous_grid = self.grid.copy()
+        keys = KeyHandler.get_pressed()
         self.handle_keypresses(keys)
 
     def has_changed(self):

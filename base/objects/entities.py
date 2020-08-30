@@ -289,7 +289,7 @@ class Projectile(Entity, AnimationMixin):
         super().__init__(x, y, width, height, groups=groups)
         self.facing = facing
 
-    def update(self, keys):
+    def update(self):
 
         if self.facing == "right":
             self.x += self.speed
@@ -432,8 +432,8 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     # ============== main methods ====================
 
-    def update(self, keys):
-        self.keys = keys
+    def update(self):
+        self.keys = KeyHandler.get_down()
         self.update_physics()
         self.execute_state()
         self.enforce_screen_limits(*self.level.game.screen_size)
@@ -523,7 +523,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_stand(self):
         self.image = self.sprites["stand"].get_frame(self.frames_elapsed)
-        if self.keys_pressed[Keys.JUMP]:  # enter jumpsquat
+        if KeyHandler.is_pressed(Keys.JUMP):  # enter jumpsquat
             self.state = self.states.JUMPSQUAT
         if self.keys[Keys.DOWN]:  # enter squat
             self.state = self.states.SQUAT
@@ -573,7 +573,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         # double-jump
         if (
-            self.keys_pressed[Keys.JUMP]
+            KeyHandler.is_pressed(Keys.JUMP)
             and self.aerial_jumps_used < self.aerial_jumps
             and not self.double_jump_cooldown
         ):
@@ -592,7 +592,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.image = self.sprites["crouch"].get_frame(self.frames_elapsed)
         if self.airborne:
             self.state = self.states.FALL
-        if self.keys_pressed[Keys.JUMP]:
+        if KeyHandler.is_pressed(Keys.JUMP):
             self.state = self.states.JUMPSQUAT
         # if squat key released, exit squat state
         if not self.keys[Keys.DOWN]:
@@ -613,7 +613,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.u += self.ground_acceleration
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed
-        if self.keys_pressed[Keys.JUMP]:
+        if KeyHandler.is_pressed(Keys.JUMP):
             self.state = self.states.JUMPSQUAT
         if self.keys[Keys.DOWN]:
             self.state = self.states.SQUAT

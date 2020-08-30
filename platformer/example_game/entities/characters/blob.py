@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy
 import pygame
 from base.animation import SpriteAnimation, SpriteSheet, SpriteDict
+from base.keyhandler import KeyHandler
 
 from base.objects.mixins import (
     AnimationMixin,
@@ -50,45 +51,55 @@ blob_file_mapping = {
     },
 }
 
-BLOB_SPRITES = SpriteDict(
-    size=(32, 32),
-    scale=SCALE_SPRITES,
-    game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    file_mapping=blob_file_mapping,
-)
 
-ORANGE_BLOB_SPRITES = SpriteDict(
-    size=(32, 32),
-    scale=SCALE_SPRITES,
-    game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    file_mapping=blob_file_mapping,
-    colormap=colormap,
-)
+def blob_sprites():
+    return SpriteDict(
+        size=(32, 32),
+        scale=SCALE_SPRITES,
+        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+        file_mapping=blob_file_mapping,
+    )
 
-folder = sprites_folder / "blob"
-PROJECTILE_SPRITES = {
-    "right": SpriteAnimation(
-        SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
-            (32, 32), scale=SCALE_SPRITES
+
+def orange_blob_sprites():
+    return SpriteDict(
+        size=(32, 32),
+        scale=SCALE_SPRITES,
+        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+        file_mapping=blob_file_mapping,
+        colormap=colormap,
+    )
+
+
+def projectile_sprites():
+    folder = sprites_folder / "blob"
+    return {
+        "right": SpriteAnimation(
+            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
+                (32, 32), scale=SCALE_SPRITES
+            ),
+            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
         ),
-        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    ),
-    "left": SpriteAnimation(
-        SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
-            (32, 32), scale=SCALE_SPRITES
+        "left": SpriteAnimation(
+            SpriteSheet((folder / "blob_projectile.png").as_posix()).load_sheet(
+                (32, 32), scale=SCALE_SPRITES
+            ),
+            flip_horizontal=True,
+            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
         ),
-        flip_horizontal=True,
-        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    ),
-}
+    }
 
-folder = sprites_folder / "volleyball"
-BALL_SPRITES = {
-    "default": SpriteAnimation(
-        SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet((32, 32), scale=SCALE_SPRITES),
-        game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
-    ),
-}
+
+def ball_sprites():
+    folder = sprites_folder / "volleyball"
+    return {
+        "default": SpriteAnimation(
+            SpriteSheet((folder / "volleyball.png").as_posix()).load_sheet(
+                (32, 32), scale=SCALE_SPRITES
+            ),
+            game_ticks_per_sprite_frame=TICKS_PER_SPRITE_FRAME,
+        ),
+    }
 
 
 class Blob(Character):
@@ -116,18 +127,18 @@ class Blob(Character):
     projectile_cooldown_frames = 30
     projectile_cooldown = 0
 
-    skins = {
-        1: BLOB_SPRITES,
-        2: ORANGE_BLOB_SPRITES,
-    }
-
     def __init__(self, x, y, skin=1, groups=[]):
         """Extend parent init method here e.g. by adding extra entries to the
         state_lookup dict"""
         super().__init__(x, y, groups)
+        self.keymap = Keys
         # add custom states
         self.states.SHOOT_PROJECTILE = "SHOOT_PROJECTILE"
         self.state_lookup.update({self.states.SHOOT_PROJECTILE: self.state_shoot_projectile})
+        self.skins = {
+            1: blob_sprites(),
+            2: orange_blob_sprites(),
+        }
         self.sprites = self.skins[skin]
 
     def update_cooldowns(self):
@@ -140,7 +151,7 @@ class Blob(Character):
     def state_fall(self):
         """Extends parent class state_fall by allowing shooting projectiles"""
         super().state_fall()
-        if self.keys_pressed[Keys.FIRE] and not self.projectile_cooldown:
+        if KeyHandler.is_pressed(self.keymap.FIRE) and not self.projectile_cooldown:
             self.state = self.states.SHOOT_PROJECTILE
 
     def state_shoot_projectile(self):
@@ -160,9 +171,9 @@ class Blob(Character):
     # ============ actions ==============
 
     def create_projectile(self):
-        if self.keys[Keys.RIGHT]:
+        if self.keys[self.keymap.RIGHT]:
             facing = "right"
-        elif self.keys[Keys.LEFT]:
+        elif self.keys[self.keymap.LEFT]:
             facing = "left"
         else:
             facing = "right" if self.u > 0 else "left"
@@ -172,23 +183,26 @@ class Blob(Character):
 
 class BlobProjectile(Projectile):
     image = None
-    sprites = PROJECTILE_SPRITES
     speed = 7
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sprites = projectile_sprites()
 
 
 class Ball(Entity, AnimationMixin, PhysicsMixin, CollisionMixin):
     width = 50
     height = 50
-    sprites = BALL_SPRITES
-    image = sprites["default"].get_frame(0)
     BOUNCINESS = 3
     GRAVITY = 0.5
     AIR_RESISTANCE = 0.01
 
     def __init__(self, x, y, groups=[], color=None):
         super().__init__(x, y, self.width, self.height, groups=groups)
+        self.sprites = ball_sprites()
+        image = self.sprites["default"].get_frame(0)
 
-    def update(self, keys):
+    def update(self):
         self.handle_collisions()
         self.handle_hits()
         self.update_physics()

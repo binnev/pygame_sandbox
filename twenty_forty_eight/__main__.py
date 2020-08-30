@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pygame
 
+from base.keyhandler import KeyHandler
 from twenty_forty_eight.objects import Board
 
 cm = plt.cm.viridis
@@ -11,6 +12,7 @@ def colormap(value, max_):
     return [offset + i * (255 - offset) for i in cm(value / max_)[:-1]]
 
 
+KeyHandler.initialise()
 pygame.init()
 X = 400
 Y = 400
@@ -27,7 +29,8 @@ while run:
 
     # ============= react to key presses ==============
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_ESCAPE]:
+    KeyHandler.append(keys)
+    if KeyHandler.is_pressed(pygame.K_ESCAPE):
         pygame.quit()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -35,7 +38,7 @@ while run:
 
     if any(keys):
         print("a key was pressed this tick")
-        board.update(keys)
+        board.update()
 
         if board.is_full():
             run = False
