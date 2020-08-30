@@ -1,8 +1,9 @@
 import pygame
 
+from base import draw
 from base.game import Game
 from base.keyhandler import KeyHandler
-from base.utils import draw_arrow
+from base.utils import draw_arrow, draw_rect
 from volleyball_game import conf
 from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt
@@ -58,6 +59,9 @@ class VolleyballGame(Game):
                 level.add(
                     Volleyball(conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT // 4), type="projectile"
                 )
+            if KeyHandler.is_down(pygame.K_r):
+                transparent_red = (*pygame.color.THECOLORS["red"][:3], 150)
+                draw.rect(self.window, transparent_red, (100, 100, 60, 200))
 
             # wait for button press before advancing
             if frame_by_frame:

@@ -3,6 +3,8 @@ from collections import namedtuple
 import numpy
 import pygame
 
+from base import draw
+
 Point = namedtuple("Point", ["x", "y"])
 
 
@@ -90,7 +92,7 @@ def draw_arrow_between_points(surface, p1, p2, color=None):
     # Great job, pygame developers -.-
     angle = numpy.rad2deg(numpy.arctan2(-dy, dx))
     color = color if color else pygame.color.THECOLORS["red"]
-    pygame.draw.line(surface, color, p1, p2, 2)
+    draw.line(surface, color, p1, p2, 10)
 
     font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
     text = font.render(f"dx={dx} dy={dy} angle={angle} ", True, color)
@@ -101,7 +103,7 @@ def draw_arrow_between_points(surface, p1, p2, color=None):
     arrowhead_image = pygame.Surface((arrowhead_length, arrowhead_width)).convert_alpha()
     arrowhead_image.fill((0, 0, 0, 0))
     arrowhead_origin = numpy.array(arrowhead_image.get_rect().midleft)
-    pygame.draw.polygon(
+    draw.polygon(
         arrowhead_image,
         color,
         [
@@ -124,3 +126,16 @@ def draw_arrow(surface, origin, angle: "degrees", color=None, length=50):
 
     p2 = numpy.array(origin) + (dx, dy)
     draw_arrow_between_points(surface, origin, p2, color)
+
+
+def draw_rect(surface, color, rect, width=0):
+    # make a surface with exactly the same dimensions as the screen
+    surface_with_alpha = pygame.Surface((surface.get_width(), surface.get_height())).convert_alpha()
+    surface_with_alpha.fill((0, 0, 0, 0))
+    # pygame.draw *does* respect alpha values when you're not plotting to screen
+    pygame.draw.rect(surface_with_alpha, color, rect, width)
+    # now blit the whole surface to the screen
+    surface.blit(surface_with_alpha, (0, 0))
+
+    # todo: now generalise this so that it can do pygame's other draw utils. Can i make a
+    #  decorator for pygame's draw functions? Or a wrapper around the whole pygame.draw module?
