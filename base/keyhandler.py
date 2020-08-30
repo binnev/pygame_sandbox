@@ -1,5 +1,7 @@
 from collections import deque
 
+import pygame
+
 from base.singleton import Singleton
 
 
@@ -22,20 +24,24 @@ class KeyHandler(deque, Singleton):
         super().__init__(maxlen=queue_length)
 
     @classmethod
+    def read_new_keypresses(cls):
+        cls.append(pygame.key.get_pressed())
+
+    @classmethod
     def append(cls, value):
         instance = cls.get_instance()
         return super().append(instance, value)
 
     @classmethod
     def get_down(cls):
-        """Return the current state of keys---which are currently down"""
+        """ Return the keys which are currently held down """
         instance = cls.get_instance()
         return instance[-1] if len(instance) > 0 else Empty()
 
     @classmethod
     def get_pressed(cls):
-        """Return the keys that have just been pressed---i.e. those that are down this
-        tick but not the previous tick"""
+        """ Return the keys that have just been pressed---i.e. those that are down this tick but
+        not the previous tick """
         instance = cls.get_instance()
         try:
             current = instance[-1]
@@ -46,8 +52,8 @@ class KeyHandler(deque, Singleton):
 
     @classmethod
     def get_released(cls):
-        """Return the keys that have just been released---i.e. those that are not down
-        this tick, but were down the previous tick"""
+        """ Return the keys that have just been released---i.e. those that are not down this
+        tick, but were down the previous tick """
         instance = cls.get_instance()
         try:
             current = instance[-1]
@@ -58,16 +64,18 @@ class KeyHandler(deque, Singleton):
 
     @classmethod
     def is_pressed(cls, key):
+        """ Check if a key has been pressed this tick """
         keys = cls.get_pressed()
         return keys[key]
 
     @classmethod
     def is_down(cls, key):
+        """ Check if a key is currently held down """
         keys = cls.get_down()
         return keys[key]
 
     @classmethod
     def is_released(cls, key):
+        """ Check if a key has been released this tick """
         keys = cls.get_released()
         return keys[key]
-

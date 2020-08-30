@@ -28,15 +28,14 @@ while run:
     pygame.time.delay(100)
 
     # ============= react to key presses ==============
-    keys = pygame.key.get_pressed()
-    KeyHandler.append(keys)
+    KeyHandler.read_new_keypresses()
     if KeyHandler.is_pressed(pygame.K_ESCAPE):
         pygame.quit()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
 
-    if any(keys):
+    if any(KeyHandler.get_pressed()):
         print("a key was pressed this tick")
         board.update()
 

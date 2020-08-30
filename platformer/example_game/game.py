@@ -30,8 +30,7 @@ class ExampleGame(Game):
 
         run = True
         while run:
-            keys = pygame.key.get_pressed()
-            KeyHandler.append(keys)
+            KeyHandler.read_new_keypresses()
             pressed = KeyHandler.get_pressed()
 
             if pressed[pygame.K_ESCAPE]:
@@ -57,8 +56,7 @@ class ExampleGame(Game):
     def main(self):
         run = True
         while run:
-            keys = pygame.key.get_pressed()
-            KeyHandler.append(keys)
+            KeyHandler.read_new_keypresses()
             pressed = KeyHandler.get_pressed()
 
             if pressed[pygame.K_ESCAPE]:

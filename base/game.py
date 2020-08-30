@@ -28,7 +28,7 @@ class Game:
         run = True
         ii = 0
         while run:
-            KeyHandler.append(pygame.key.get_pressed())
+            KeyHandler.read_new_keypresses()
 
             if KeyHandler.is_pressed(pygame.K_ESCAPE):
                 run = False

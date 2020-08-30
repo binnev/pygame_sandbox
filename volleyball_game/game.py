@@ -40,8 +40,7 @@ class VolleyballGame(Game):
         ii = 0
         while run:
             ii += 1
-            keys = pygame.key.get_pressed()
-            KeyHandler.append(keys)
+            KeyHandler.read_new_keypresses()
 
             if KeyHandler.is_pressed(pygame.K_ESCAPE):
                 run = False

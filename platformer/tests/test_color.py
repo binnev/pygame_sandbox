@@ -3,8 +3,9 @@ from pathlib import Path
 import pygame
 import pytest
 
-from platformer.objects.animation import recolor_sprite, pad_alpha
-from platformer.objects.keyhandlers import KeyHandler
+from base.animation import recolor_sprite, pad_alpha
+from base.keyhandler import KeyHandler
+
 
 SCALE = 5
 FPS = 60
@@ -13,15 +14,14 @@ clock = pygame.time.Clock()
 pygame.init()
 window = pygame.display.set_mode((500, 500))
 window.fill((255, 255, 255))
-key_handler = KeyHandler(queue_length=5)
+KeyHandler.initialise(queue_length=5)
 
 
 def simple_game_loop(func):
     run = True
     while run:
-        keys = pygame.key.get_pressed()
-        key_handler.update(keys)
-        pressed = key_handler.get_pressed()
+        KeyHandler.read_new_keypresses()
+        pressed = KeyHandler.get_pressed()
 
         if pressed[pygame.K_ESCAPE]:
             run = False
