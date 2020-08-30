@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+import numpy
 import pygame
 
 Point = namedtuple("Point", ["x", "y"])
@@ -78,3 +79,38 @@ def mask_to_surface(mask, set_color=None):
 
 def ticks_to_frames(tick, ticks_per_frame):
     return tick // ticks_per_frame
+
+
+def draw_arrow(surface, p1, p2, color=None):
+    p1 = numpy.array(p1)
+    p2 = numpy.array(p2)
+    dx, dy = p2 - p1
+
+    # y is down in pygame, but rotations are still counterclockwise, so we need to reverse y.
+    # Great job, pygame developers -.-
+    angle = numpy.rad2deg(numpy.arctan2(-dy, dx))
+    color = color if color else pygame.color.THECOLORS["red"]
+    pygame.draw.line(surface, color, p1, p2, 2)
+
+    font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
+    text = font.render(f"dx={dx} dy={dy} angle={angle} ", True, color)
+    surface.blit(text, (100, 100))
+
+    arrowhead_width = 20
+    arrowhead_length = 40
+    arrowhead_image = pygame.Surface((arrowhead_length, arrowhead_width)).convert_alpha()
+    arrowhead_image.fill((0, 0, 0, 0))
+    arrowhead_origin = numpy.array(arrowhead_image.get_rect().midleft)
+    pygame.draw.polygon(
+        arrowhead_image,
+        color,
+        [
+            arrowhead_origin + (arrowhead_length, 0),
+            arrowhead_origin + (0, arrowhead_width / 2),
+            arrowhead_origin + (0, -arrowhead_width / 2),
+        ],
+    )
+    arrowhead_image = pygame.transform.rotate(arrowhead_image, angle)
+    image_rect = arrowhead_image.get_rect()
+    image_rect.center = p2
+    surface.blit(arrowhead_image, image_rect)

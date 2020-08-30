@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+import numpy
 import pygame
 from numpy import sign
 
@@ -7,7 +8,7 @@ from base.animation import SpriteAnimation
 from base.groups import EntityGroup
 from base.keyhandler import KeyHandler
 from base.objects.mixins import HistoryMixin, AnimationMixin, CollisionMixin
-from base.utils import touching, mask_to_surface, ticks_to_frames
+from base.utils import touching, mask_to_surface, ticks_to_frames, draw_arrow
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -623,7 +624,8 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
 class Hitbox(Entity):
 
-    debug_color = (*pygame.color.THECOLORS["red"][:3], 50)
+    # fixme: why doesn't this transparency work?
+    debug_color = (*pygame.color.THECOLORS["red"][:3], 150)
     owner = None
 
     def __init__(
@@ -667,6 +669,19 @@ class Hitbox(Entity):
             self._rect.center = (
                 self.owner.x + self.x_offset,
                 self.owner.y + self.y_offset,
+            )
+
+    def draw(self, surface, debug=False):
+        super().draw(surface)
+        if self.angle is not None:
+            magnitude = 100
+            dx = magnitude * numpy.cos(self.angle)
+            dy = magnitude * numpy.sin(self.angle)
+            draw_arrow(
+                surface,
+                self.centroid,
+                (self.centroid.x + dx, self.centroid.y + dy),
+                color=self.debug_color,
             )
 
     # def draw_image(self, surface):

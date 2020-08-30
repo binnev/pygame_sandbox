@@ -2,6 +2,7 @@ import pygame
 
 from base.game import Game
 from base.keyhandler import KeyHandler
+from base.utils import draw_arrow
 from volleyball_game import conf
 from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt
@@ -41,12 +42,19 @@ class VolleyballGame(Game):
         while run:
             ii += 1
             KeyHandler.read_new_keypresses()
+            self.window.fill((255, 255, 255))  # clear screen
 
             if KeyHandler.is_pressed(pygame.K_ESCAPE):
                 run = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                ########################### arrow testing ##########################
+                if event.type == pygame.MOUSEMOTION:
+                    mouse_xy = event.pos
+                    screen_center = self.window.get_rect().center
+                    draw_arrow(self.window, screen_center, mouse_xy)
+                    ###################################################################
 
             if KeyHandler.is_pressed(pygame.K_F1):
                 debug = not debug
@@ -69,7 +77,6 @@ class VolleyballGame(Game):
             print(player1.u)
 
             # draw stuff
-            self.window.fill((255, 255, 255))
             level.draw(
                 self.window, debug=debug,
             )
