@@ -121,6 +121,35 @@ class VolleyballGame(Game):
                     ball_in_play = False
                     ball.kill()
 
+            # do scoring if ball bounces off net
+            bouncing_balls = pygame.sprite.spritecollide(level.net, level.projectiles, dokill=False)
+            for ball in bouncing_balls:
+                # if the ball bounces off the top of the net, ignore it
+                if ball.centroid.y < level.net.rect.top:
+                    continue
+                if ball.last_touched_by == player1:
+                    score[-1] += 1
+                    to_serve = "left"
+                else:
+                    score[0] += 1
+                    to_serve = "right"
+                time.sleep(1)
+                ball_in_play = False
+                ball.kill()
+
+            if score[0] == 5 or score[1] == 5:
+                winner = "Left" if score[0] == 5 else "Right"
+                text = self.font.render(
+                    f"{winner} player wins {score[0]}-{score[1]}", True, (0, 0, 0)
+                )
+                textRect = text.get_rect()
+                textRect.center = (self.window_width // 2, 50)
+                self.window.blit(text, textRect)
+                pygame.display.flip()
+                time.sleep(3)
+                score = [0, 0]
+                reset()
+
             # wait for button press before advancing
             if frame_by_frame:
                 if not KeyHandler.is_pressed(pygame.K_F3):

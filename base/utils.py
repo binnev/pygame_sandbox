@@ -94,9 +94,9 @@ def draw_arrow_between_points(surface, p1, p2, color=None):
     color = color if color else pygame.color.THECOLORS["red"]
     draw.line(surface, color, p1, p2, 10)
 
-    font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
-    text = font.render(f"dx={dx} dy={dy} angle={angle} ", True, color)
-    surface.blit(text, (100, 100))
+    # font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
+    # text = font.render(f"dx={dx} dy={dy} angle={angle} ", True, color)
+    # surface.blit(text, (100, 100))
 
     arrowhead_width = 20
     arrowhead_length = 40

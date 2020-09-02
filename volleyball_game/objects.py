@@ -406,7 +406,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     class StandingDefense(VolleyballMove):
         sweet_spot = dict(
             knockback=20,
-            knockback_angle=80,
+            knockback_angle=70,
             angle=0,
             x_offset=15,
             y_offset=-45,
@@ -415,7 +415,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         )
         sour_spot = dict(
             knockback=10,
-            knockback_angle=80,
+            knockback_angle=91,
             angle=0,
             x_offset=20,
             y_offset=-45,
@@ -479,7 +479,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     class AerialDefense(VolleyballMove):
         sweet_spot = dict(
             knockback=20,
-            knockback_angle=80,
+            knockback_angle=70,
             angle=0,
             x_offset=15,
             y_offset=-45,
@@ -488,7 +488,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         )
         sour_spot = dict(
             knockback=10,
-            knockback_angle=80,
+            knockback_angle=91,
             angle=0,
             x_offset=20,
             y_offset=-45,
@@ -776,8 +776,8 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
 
 class Volleyball(Ball):
     mass = 1
-    width = 50
-    height = 50
+    width = 40
+    height = 40
     bounciness = 1
     gravity = 0.5
     air_resistance = 0.01
