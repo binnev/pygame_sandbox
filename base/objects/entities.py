@@ -637,6 +637,8 @@ class Hitbox(Entity):
         damage=None,
         owner=None,
         angle=0,
+        x=0,
+        y=0,
         x_offset=0,
         y_offset=0,
         **kwargs,
@@ -648,7 +650,7 @@ class Hitbox(Entity):
         self.angle = angle
         self.x_offset = x_offset
         self.y_offset = y_offset
-        super().__init__(x=10, y=20, width=width, height=height, **kwargs)
+        super().__init__(x=x, y=y, width=width, height=height, **kwargs)
 
         self.image = pygame.Surface((self.width, self.height))
         pygame.draw.ellipse(self.image, self.debug_color, (0, 0, self.width, self.height))

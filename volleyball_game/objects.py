@@ -6,7 +6,7 @@ from numpy.core._multiarray_umath import sign
 
 from base.animation import SpriteDict
 from base.keyhandler import KeyHandler
-from base.objects.entities import Entity, CollisionMixin, Move
+from base.objects.entities import Entity, CollisionMixin, Move, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
 from volleyball_game import conf
@@ -100,10 +100,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.states.DIVE: self.state_dive,
             self.states.DIVESQUAT: self.state_divesquat,
             self.states.DIVE_GETUP: self.state_dive_getup,
-            self.states.STANDING_DEFENSE: self.state_standing_defense,
+            self.states.STANDING_DEFENSE: self.StandingDefense(self),
             self.states.AERIAL_DEFENSE: self.state_aerial_defense,
             self.states.WEIRD_HIT: self.WeirdHit(self),
-            # self.states.WEIRD_HIT: self.state_weird_hit,
         }
         self.aerial_jumps_used = 0
 
@@ -354,11 +353,26 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         else:
             self.state = self.states.STAND
 
-    def state_standing_defense(self):
-        self.image = self.sprites["standing_hit_" + self.facing].get_frame(self.frames_elapsed)
-        # create hitbox
-        if KeyHandler.is_released(self.keymap.DEFEND):
-            self.state = self.states.STAND
+    class StandingDefense(VolleyballMove):
+        hitbox = dict(
+            knockback=20,
+            knockback_angle=80,
+            angle=0,
+            x_offset=15,
+            y_offset=-45,
+            width=50,
+            height=20,
+        )
+        # todo: if key is None the hitbox should map to ALL frames.
+        hitbox_mapping = {(0, 999): [hitbox]}
+
+        def __call__(self):
+            # todo: automate the "facing" mechanic in VolleyBallMove. Here I just want to pass
+            #  the name of the spriteanimation.
+            self.sprite_animation = self.instance.sprites["standing_hit_" + self.instance.facing]
+            super().__call__()
+            if KeyHandler.is_released(self.instance.keymap.DEFEND):
+                self.instance.state = self.instance.states.STAND
 
     class WeirdHit(VolleyballMove):
         first_hitbox = dict(
@@ -579,13 +593,17 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         un_overlap(movable_object=self, immovable_object=platform)
 
     def handle_collisions(self):
-        players = pygame.sprite.spritecollide(self, self.level.characters, dokill=False)
-        for player in players:
-            self.handle_collision_with_player(player)
+        # players = pygame.sprite.spritecollide(self, self.level.characters, dokill=False)
+        # for player in players:
+        #     self.handle_collision_with_player(player)
 
         platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
         for platform in platforms:
             self.handle_collision_with_platform(platform)
+
+        hitboxes = pygame.sprite.spritecollide(self, self.level.hitboxes, dokill=False)
+        for hitbox in hitboxes:
+            handle_hitbox_collision(hitbox, self)
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:
@@ -603,8 +621,18 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
 
 
 class Volleyball(Ball):
+    mass = 1
     width = 50
     height = 50
     bounciness = 1
     gravity = 0.5
     air_resistance = 0.01
+
+
+def handle_hitbox_collision(hitbox, object):
+    # todo: apply hitbox damage?
+    magnitude = hitbox.knockback / object.mass
+    u = magnitude * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
+    v = -magnitude * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
+    object.u = u
+    object.v = v
