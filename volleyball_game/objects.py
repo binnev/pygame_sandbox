@@ -17,25 +17,37 @@ from volleyball_game.sprites.volleyball import volleyball_sprites
 # todo: allow states to describe the rect dimensions when the entity is in that state. E.g.
 #  during a dive the player's rect should be longer and thinner.
 class VolleyballMove(Move):
-    sprite_animation_name = "standing_hit"
-    left_and_right_versions = True
+    sprite_animation_name: str
+    left_and_right_versions: bool
+    hitboxes: ["Hitbox"]
+    active_hitboxes: ["Hitbox"]
 
     def __call__(self):
+        """ This is the equivalent to the function states """
         # fixme: convert to frames
-        self.sprite_animation = self.instance.sprites[
-            self.sprite_animation_name + "_" + self.instance.facing
-        ]
+        # flip sprite animation automatically
+        name = self.sprite_animation_name
+        if self.left_and_right_versions:
+            name += "_" + self.instance.facing
+        self.sprite_animation = self.instance.sprites[name]
+
         super().__call__(self.instance.frames_elapsed)
+
         self.instance.image = self.image
-        for hitbox in self.hitboxes:
+
+        # flip hitboxes
+        if not self.instance.facing_right:
+            self.active_hitboxes = self.flip_hitboxes(self.active_hitboxes)
+
+        for hitbox in self.active_hitboxes:
             self.instance.level.add_hitbox(hitbox)
 
     def end_when_animation_ends(self, next_state):
         if not self.sprite_animation.get_frame(self.instance.frames_elapsed + 1):
             self.instance.state = next_state
 
-    def flip_x(self):
-        """ Flip to create a left-facing version of self. Hitboxes. Sprites. """
+    def flip_hitboxes(self, hitboxes):
+        return [hitbox.flip_x() for hitbox in hitboxes]
 
 
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
@@ -428,10 +440,10 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             (2, 3): [second_hitbox],
             (3, 6): [third_hitbox],
         }
+        sprite_animation_name = "weird_hit"
+        left_and_right_versions = True
 
         def __call__(self):
-            self.sprite_animation = self.instance.sprites["weird_hit_" + self.instance.facing]
-
             super().__call__()
             self.end_when_animation_ends(self.instance.states.STAND)
 

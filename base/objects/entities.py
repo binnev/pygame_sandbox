@@ -1,4 +1,5 @@
 from collections import namedtuple
+from copy import copy
 
 import numpy
 import pygame
@@ -45,7 +46,7 @@ class Entity(pygame.sprite.Sprite):
         super().__init__(*groups)
 
         # fixme: it's stupid to load the font here. Attach this to game or something?
-        self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
+        # self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
         self.color = color if color else self.debug_color
         self.width = width
         self.height = height
@@ -684,6 +685,13 @@ class Hitbox(Entity):
         # if debug:
         self.draw_debug(surface)
 
+    def flip_x(self):
+        new_hitbox = copy(self)
+        new_hitbox.knockback_angle = 180 - self.knockback_angle
+        new_hitbox.angle = 180 - self.angle
+        new_hitbox.x_offset = -self.x_offset
+        return new_hitbox
+
 
 class Move:
     sprite_animation: SpriteAnimation
@@ -694,6 +702,16 @@ class Move:
     # todo: make sure this works when facing left!
     # todo: give hitbox a knockback_angle, and make sure THAT works facing left
 
+    def __init__(self, instance):
+        self.instance = instance
+        self.hitbox_data = self.map_hitboxes(self.hitbox_mapping)
+
+    def __call__(self, n):
+        """ This is the equivalent to the function states. Here n is either ticks or frames;
+        we're using it to pick up the correct sprite image and hitboxes. """
+        self.image = self.sprite_animation.get_frame(n)
+        self.active_hitboxes = self.get_active_hitboxes(n)
+
     @staticmethod
     def map_hitboxes(hitbox_mapping):
         # todo: allow some frames to have no hitboxes. How will I represent that?
@@ -703,15 +721,6 @@ class Move:
             for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
         }
 
-    def __init__(self, instance):
-        self.instance = instance
-        self.hitbox_data = self.map_hitboxes(self.hitbox_mapping)
-
-    def __call__(self, n):
-        """ This is the equivalent to the function states """
-        self.image = self.sprite_animation.get_frame(n)
-        self.hitboxes = self.get_hitboxes(n)
-
-    def get_hitboxes(self, n):
+    def get_active_hitboxes(self, n):
         hitbox_data = self.hitbox_data.get(n, [])
         return [Hitbox(owner=self.instance, **data) for data in hitbox_data]
