@@ -395,8 +395,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         )
         # todo: if key is None the hitbox should map to ALL frames.
         hitbox_mapping = {
-            (1, 2): [sweet_spot],
-            (3, 999): [sour_spot],
+            (0, 1): [sweet_spot],
+            (2, 999): [sour_spot],
         }
         sprite_animation_name = "standing_hit"
         left_and_right_versions = True

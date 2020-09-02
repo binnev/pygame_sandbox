@@ -653,7 +653,8 @@ class Hitbox(Entity):
         self.y_offset = y_offset
         super().__init__(x=x, y=y, width=width, height=height, **kwargs)
 
-        self.image = pygame.Surface((self.width, self.height))
+        self.image = pygame.Surface((self.width, self.height)).convert_alpha()
+        self.image.fill((0, 0, 0, 0))
         pygame.draw.ellipse(self.image, self.debug_color, (0, 0, self.width, self.height))
         colorkey = self.image.get_at((0, 0))
         self.image.set_colorkey(colorkey)
