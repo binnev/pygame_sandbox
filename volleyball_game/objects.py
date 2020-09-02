@@ -28,6 +28,9 @@ class VolleyballMove(Move):
         if not self.sprite_animation.get_frame(self.instance.frames_elapsed + 1):
             self.instance.state = next_state
 
+    def flip_x(self):
+        """ Flip to create a left-facing version of self. Hitboxes. Sprites. """
+
 
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     game_ticks_per_sprite_frame = conf.TICKS_PER_SPRITE_FRAME
@@ -354,7 +357,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.STAND
 
     class StandingDefense(VolleyballMove):
-        hitbox = dict(
+        sweet_spot = dict(
             knockback=20,
             knockback_angle=80,
             angle=0,
@@ -363,8 +366,20 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             width=50,
             height=20,
         )
+        sour_spot = dict(
+            knockback=10,
+            knockback_angle=80,
+            angle=0,
+            x_offset=15,
+            y_offset=-45,
+            width=30,
+            height=10,
+        )
         # todo: if key is None the hitbox should map to ALL frames.
-        hitbox_mapping = {(0, 999): [hitbox]}
+        hitbox_mapping = {
+            (1, 2): [sweet_spot],
+            (3, 999): [sour_spot],
+        }
 
         def __call__(self):
             # todo: automate the "facing" mechanic in VolleyBallMove. Here I just want to pass
