@@ -8,7 +8,7 @@ from base.utils import draw_arrow, draw_rect
 from volleyball_game import conf
 from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt
-from volleyball_game.objects import Stickman, Volleyball
+from volleyball_game.objects import Stickman, Volleyball, Bowlingball
 
 
 class VolleyballGame(Game):
@@ -52,8 +52,12 @@ class VolleyballGame(Game):
                 if event.type == pygame.QUIT:
                     pygame.quit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    button = pygame.mouse.get_pressed()
                     x, y = pygame.mouse.get_pos()
-                    level.add(Volleyball(x, y), type="projectile")
+                    if button[0]:
+                        level.add(Volleyball(x, y), type="projectile")
+                    if button[-1]:
+                        level.add(Bowlingball(x, y), type="projectile")
 
             if KeyHandler.is_pressed(pygame.K_F1):
                 debug = not debug

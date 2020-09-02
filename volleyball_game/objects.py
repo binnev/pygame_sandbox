@@ -93,6 +93,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         DIVE_GETUP = "DIVE_GETUP"
         STANDING_DEFENSE = "STANDING_DEFENSE"
         AERIAL_DEFENSE = "AERIAL_DEFENSE"
+        AERIAL_ATTACK = "AERIAL_ATTACK"
         WEIRD_HIT = "WEIRD_HIT"
 
     # references to other objects
@@ -118,11 +119,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.states.FALL: self.state_fall,
             self.states.RUN: self.state_run,
             self.states.SQUAT: self.state_squat,
-            self.states.DIVE: self.state_dive,
+            self.states.DIVE: self.Dive(self),
             self.states.DIVESQUAT: self.state_divesquat,
             self.states.DIVE_GETUP: self.state_dive_getup,
             self.states.STANDING_DEFENSE: self.StandingDefense(self),
-            self.states.AERIAL_DEFENSE: self.state_aerial_defense,
+            self.states.AERIAL_DEFENSE: self.AerialDefense(self),
+            self.states.AERIAL_ATTACK: self.AerialAttack(self),
             self.states.WEIRD_HIT: self.WeirdHit(self),
         }
         self.aerial_jumps_used = 0
@@ -329,6 +331,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         if KeyHandler.is_down(self.keymap.DEFEND):
             self.state = self.states.AERIAL_DEFENSE
+        if KeyHandler.is_down(self.keymap.ATTACK):
+            self.state = self.states.AERIAL_ATTACK
 
         # double-jump
         if (
@@ -347,24 +351,68 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.STAND
             self.v = 0
 
-    def state_dive(self):
-        self.image = self.sprites["dive_" + self.facing].get_frame(self.frames_elapsed)
+    # def state_dive(self):
+    #     self.image = self.sprites["dive_" + self.facing].get_frame(self.frames_elapsed)
+    #
+    #     # update horizontal position
+    #     if KeyHandler.is_down(self.keymap.LEFT):
+    #         self.u -= self.air_acceleration
+    #     if KeyHandler.is_down(self.keymap.RIGHT):
+    #         self.u += self.air_acceleration
+    #     # limit dive speed
+    #     if abs(self.u) > self.dive_speed:
+    #         self.u = sign(self.u) * self.dive_speed
+    #
+    #     self.enforce_max_fall_speed()
+    #     self.allow_fastfall()
+    #
+    #     if not self.airborne:
+    #         self.state = self.states.DIVE_GETUP
+    #         self.v = 0
 
-        # update horizontal position
-        if KeyHandler.is_down(self.keymap.LEFT):
-            self.u -= self.air_acceleration
-        if KeyHandler.is_down(self.keymap.RIGHT):
-            self.u += self.air_acceleration
-        # limit dive speed
-        if abs(self.u) > self.dive_speed:
-            self.u = sign(self.u) * self.dive_speed
+    class Dive(VolleyballMove):
+        sweet_spot = dict(
+            knockback=20,
+            knockback_angle=95,
+            angle=0,
+            x_offset=30,
+            y_offset=-45,
+            width=50,
+            height=20,
+        )
+        sour_spot = dict(
+            knockback=10,
+            knockback_angle=95,
+            angle=0,
+            x_offset=40,
+            y_offset=-45,
+            width=40,
+            height=15,
+        )
+        hitbox_mapping = {
+            (0, 1): [sweet_spot],
+            (2, 999): [sour_spot],
+        }
+        sprite_animation_name = "dive"
+        left_and_right_versions = True
 
-        self.enforce_max_fall_speed()
-        self.allow_fastfall()
+        def __call__(self):
+            super().__call__()
+            # update horizontal position
+            if KeyHandler.is_down(self.instance.keymap.LEFT):
+                self.instance.u -= self.instance.air_acceleration
+            if KeyHandler.is_down(self.instance.keymap.RIGHT):
+                self.instance.u += self.instance.air_acceleration
+            # limit dive speed
+            if abs(self.instance.u) > self.instance.dive_speed:
+                self.instance.u = sign(self.instance.u) * self.instance.dive_speed
 
-        if not self.airborne:
-            self.state = self.states.DIVE_GETUP
-            self.v = 0
+            self.instance.enforce_max_fall_speed()
+            self.instance.allow_fastfall()
+
+            if not self.instance.airborne:
+                self.instance.state = self.instance.states.DIVE_GETUP
+                self.instance.v = 0
 
     def state_dive_getup(self):
         animation = self.sprites["dive_getup_" + self.facing]
@@ -447,13 +495,67 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             super().__call__()
             self.end_when_animation_ends(self.instance.states.STAND)
 
-    def state_aerial_defense(self):
-        # fixme: air resistance etc isn't applied in here. Need to take that out of state_fall
-        #  and generalise it
-        self.image = self.sprites["standing_hit_" + self.facing].get_frame(self.frames_elapsed)
-        # create hitbox
-        if KeyHandler.is_released(self.keymap.DEFEND):
-            self.state = self.states.FALL
+    class AerialDefense(VolleyballMove):
+        sweet_spot = dict(
+            knockback=20,
+            knockback_angle=80,
+            angle=0,
+            x_offset=15,
+            y_offset=-45,
+            width=50,
+            height=20,
+        )
+        sour_spot = dict(
+            knockback=10,
+            knockback_angle=80,
+            angle=0,
+            x_offset=20,
+            y_offset=-45,
+            width=30,
+            height=10,
+        )
+        hitbox_mapping = {
+            (0, 1): [sweet_spot],
+            (2, 999): [sour_spot],
+        }
+        sprite_animation_name = "standing_hit"
+        left_and_right_versions = True
+
+        def __call__(self):
+            super().__call__()
+            if KeyHandler.is_released(self.instance.keymap.DEFEND):
+                self.instance.state = self.instance.states.FALL
+
+    class AerialAttack(VolleyballMove):
+        sweet_spot = dict(
+            knockback=20,
+            knockback_angle=30,
+            angle=0,
+            x_offset=15,
+            y_offset=-45,
+            width=50,
+            height=20,
+        )
+        sour_spot = dict(
+            knockback=10,
+            knockback_angle=30,
+            angle=0,
+            x_offset=20,
+            y_offset=-45,
+            width=30,
+            height=10,
+        )
+        hitbox_mapping = {
+            (0, 1): [sweet_spot],
+            (2, 999): [sour_spot],
+        }
+        sprite_animation_name = "standing_hit"
+        left_and_right_versions = True
+
+        def __call__(self):
+            super().__call__()
+            if KeyHandler.is_released(self.instance.keymap.ATTACK):
+                self.instance.state = self.instance.states.FALL
 
     def state_squat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
@@ -657,6 +759,15 @@ class Volleyball(Ball):
     width = 50
     height = 50
     bounciness = 1
+    gravity = 0.5
+    air_resistance = 0.01
+
+
+class Bowlingball(Ball):
+    mass = 4
+    width = 30
+    height = 30
+    bounciness = 0.5
     gravity = 0.5
     air_resistance = 0.01
 
