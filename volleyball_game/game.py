@@ -24,7 +24,6 @@ class VolleyballGame(Game):
 
     def run(self):
 
-        time.sleep(5)
         self.window.fill((255, 255, 255))
         level = VolleyballCourt(game=self)
         starting_positions = [
@@ -60,6 +59,8 @@ class VolleyballGame(Game):
 
             if KeyHandler.is_pressed(pygame.K_ESCAPE):
                 run = False
+                time.sleep(2)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
