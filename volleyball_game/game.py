@@ -3,8 +3,6 @@ import pygame
 from base import draw
 from base.game import Game
 from base.keyhandler import KeyHandler
-from base.objects.entities import Hitbox
-from base.utils import draw_arrow, draw_rect
 from volleyball_game import conf
 from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt

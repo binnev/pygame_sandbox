@@ -371,18 +371,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             width=50,
             height=20,
         )
-        sour_spot = dict(
-            knockback=10,
-            knockback_angle=95,
-            angle=0,
-            x_offset=40,
-            y_offset=-45,
-            width=40,
-            height=15,
-        )
         hitbox_mapping = {
-            (0, 1): [sweet_spot],
-            (2, 999): [sour_spot],
+            (0, 999): [sweet_spot],
         }
         sprite_animation_name = "dive"
         left_and_right_versions = True
@@ -514,6 +504,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         def __call__(self):
             super().__call__()
+            self.instance.enforce_max_fall_speed()
+            self.instance.allow_fastfall()
             if KeyHandler.is_released(self.instance.keymap.DEFEND):
                 self.instance.state = self.instance.states.FALL
 
@@ -528,7 +520,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             height=20,
         )
         sour_spot = dict(
-            knockback=10,
+            knockback=15,
             knockback_angle=30,
             angle=0,
             x_offset=20,
@@ -545,6 +537,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         def __call__(self):
             super().__call__()
+            self.instance.enforce_max_fall_speed()
+            self.instance.allow_fastfall()
             if KeyHandler.is_released(self.instance.keymap.ATTACK):
                 self.instance.state = self.instance.states.FALL
 
@@ -587,6 +581,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         def __call__(self):
             super().__call__()
+            self.instance.enforce_max_fall_speed()
+            self.instance.allow_fastfall()
             self.end_when_animation_ends(self.instance.states.FALL)
 
     def state_squat(self):
