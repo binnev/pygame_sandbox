@@ -388,7 +388,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             knockback=10,
             knockback_angle=80,
             angle=0,
-            x_offset=15,
+            x_offset=20,
             y_offset=-45,
             width=30,
             height=10,
@@ -409,30 +409,30 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     class WeirdHit(VolleyballMove):
         first_hitbox = dict(
             knockback=20,
-            angle=45,
+            angle=10,
             knockback_angle=80,
-            x_offset=5,
-            y_offset=-40,
-            width=30,
-            height=40,
+            x_offset=15,
+            y_offset=-55,
+            width=40,
+            height=20,
         )
         second_hitbox = dict(
             knockback=20,
             angle=-10,
             knockback_angle=120,
             x_offset=5,
-            y_offset=-80,
-            width=60,
-            height=20,
+            y_offset=-90,
+            width=50,
+            height=30,
         )
         third_hitbox = dict(
             knockback=20,
             angle=10,
             knockback_angle=180,
-            x_offset=-35,
-            y_offset=-80,
-            width=60,
-            height=20,
+            x_offset=-15,
+            y_offset=-90,
+            width=50,
+            height=30,
         )
 
         hitbox_mapping = {
