@@ -86,6 +86,10 @@ class Entity(pygame.sprite.Sprite):
         """In case this is different from centroid in a subclass"""
         return Point(self.x, self.y)
 
+    @xy.setter
+    def xy(self, xy):
+        self.x, self.y = xy
+
     @property
     def velocity(self):
         return [self.u, self.v]

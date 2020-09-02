@@ -661,6 +661,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
     bounciness: float  # max 1: 100% efficient bounce
     gravity: float
     air_resistance: float
+    last_touched_by: Player = None
 
     def __init__(self, x, y, groups=[]):
         super().__init__(x, y, self.width, self.height, groups=groups)
@@ -693,16 +694,6 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
 
         # don't allow sub-pixel speeds
         self.u = 0 if abs(self.u) < 0.5 else self.u
-
-    # def handle_hits(self):
-    #     hitboxes = pygame.sprite.spritecollide(
-    #         self, self.level.hitboxes, collided=pygame.sprite.collide_mask, dokill=False
-    #     )
-    #     for hitbox in hitboxes:
-    #         print(f"Ball hit by {hitbox.owner}'s hitbox")
-    #         # self.kill()
-    #         self.u = 10
-    #         self.v = -100
 
     def handle_collision_with_player(self, player):
         print(f"collided with {player}")
@@ -766,6 +757,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         hitboxes = pygame.sprite.spritecollide(self, self.level.hitboxes, dokill=False)
         for hitbox in hitboxes:
             handle_hitbox_collision(hitbox, self)
+            self.last_touched_by = hitbox.owner
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:
