@@ -94,6 +94,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         STANDING_DEFENSE = "STANDING_DEFENSE"
         AERIAL_DEFENSE = "AERIAL_DEFENSE"
         AERIAL_ATTACK = "AERIAL_ATTACK"
+        BACK_AIR = "BACK_AIR"
         WEIRD_HIT = "WEIRD_HIT"
 
     # references to other objects
@@ -125,6 +126,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.states.STANDING_DEFENSE: self.StandingDefense(self),
             self.states.AERIAL_DEFENSE: self.AerialDefense(self),
             self.states.AERIAL_ATTACK: self.AerialAttack(self),
+            self.states.BACK_AIR: self.BackAir(self),
             self.states.WEIRD_HIT: self.WeirdHit(self),
         }
         self.aerial_jumps_used = 0
@@ -329,10 +331,18 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if abs(self.u) > self.air_speed:
             self.u = sign(self.u) * self.air_speed
 
+        # aerial hits
         if KeyHandler.is_down(self.keymap.DEFEND):
             self.state = self.states.AERIAL_DEFENSE
         if KeyHandler.is_down(self.keymap.ATTACK):
-            self.state = self.states.AERIAL_ATTACK
+            # if holding back -> "back air"
+            if (self.facing_right and KeyHandler.is_down(self.keymap.LEFT)) or (
+                not self.facing_right and KeyHandler.is_down(self.keymap.RIGHT)
+            ):
+                self.state = self.states.BACK_AIR
+            else:
+                # if holding forward or no direction input -> "forward air"
+                self.state = self.states.AERIAL_ATTACK
 
         # double-jump
         if (
@@ -350,25 +360,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if not self.airborne:
             self.state = self.states.STAND
             self.v = 0
-
-    # def state_dive(self):
-    #     self.image = self.sprites["dive_" + self.facing].get_frame(self.frames_elapsed)
-    #
-    #     # update horizontal position
-    #     if KeyHandler.is_down(self.keymap.LEFT):
-    #         self.u -= self.air_acceleration
-    #     if KeyHandler.is_down(self.keymap.RIGHT):
-    #         self.u += self.air_acceleration
-    #     # limit dive speed
-    #     if abs(self.u) > self.dive_speed:
-    #         self.u = sign(self.u) * self.dive_speed
-    #
-    #     self.enforce_max_fall_speed()
-    #     self.allow_fastfall()
-    #
-    #     if not self.airborne:
-    #         self.state = self.states.DIVE_GETUP
-    #         self.v = 0
 
     class Dive(VolleyballMove):
         sweet_spot = dict(
@@ -557,6 +548,47 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             if KeyHandler.is_released(self.instance.keymap.ATTACK):
                 self.instance.state = self.instance.states.FALL
 
+    class BackAir(VolleyballMove):
+        first_hitbox = dict(
+            knockback=20,
+            angle=10,
+            knockback_angle=80,
+            x_offset=15,
+            y_offset=-55,
+            width=40,
+            height=20,
+        )
+        second_hitbox = dict(
+            knockback=20,
+            angle=-10,
+            knockback_angle=120,
+            x_offset=5,
+            y_offset=-90,
+            width=50,
+            height=30,
+        )
+        third_hitbox = dict(
+            knockback=20,
+            angle=10,
+            knockback_angle=180,
+            x_offset=-15,
+            y_offset=-90,
+            width=50,
+            height=30,
+        )
+
+        hitbox_mapping = {
+            (1, 2): [first_hitbox],
+            (2, 3): [second_hitbox],
+            (3, 6): [third_hitbox],
+        }
+        sprite_animation_name = "weird_hit"
+        left_and_right_versions = True
+
+        def __call__(self):
+            super().__call__()
+            self.end_when_animation_ends(self.instance.states.FALL)
+
     def state_squat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
 
@@ -606,7 +638,7 @@ class Stickman(Player):
     _fall_speed = 5
     fastfall_multiplier = 2.5
     aerial_jumps = 1
-    jump_power = 15
+    jump_power = 16
     jumpsquat_frames = 6
     friction = 0.3
     air_resistance = 0.03
