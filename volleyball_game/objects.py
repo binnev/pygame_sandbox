@@ -17,8 +17,14 @@ from volleyball_game.sprites.volleyball import volleyball_sprites
 # todo: allow states to describe the rect dimensions when the entity is in that state. E.g.
 #  during a dive the player's rect should be longer and thinner.
 class VolleyballMove(Move):
+    sprite_animation_name = "standing_hit"
+    left_and_right_versions = True
+
     def __call__(self):
         # fixme: convert to frames
+        self.sprite_animation = self.instance.sprites[
+            self.sprite_animation_name + "_" + self.instance.facing
+        ]
         super().__call__(self.instance.frames_elapsed)
         self.instance.image = self.image
         for hitbox in self.hitboxes:
@@ -380,11 +386,10 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             (1, 2): [sweet_spot],
             (3, 999): [sour_spot],
         }
+        sprite_animation_name = "standing_hit"
+        left_and_right_versions = True
 
         def __call__(self):
-            # todo: automate the "facing" mechanic in VolleyBallMove. Here I just want to pass
-            #  the name of the spriteanimation.
-            self.sprite_animation = self.instance.sprites["standing_hit_" + self.instance.facing]
             super().__call__()
             if KeyHandler.is_released(self.instance.keymap.DEFEND):
                 self.instance.state = self.instance.states.STAND
