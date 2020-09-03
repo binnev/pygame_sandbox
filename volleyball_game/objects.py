@@ -97,6 +97,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         AERIAL_ATTACK = "AERIAL_ATTACK"
         BACK_AIR = "BACK_AIR"
         WEIRD_HIT = "WEIRD_HIT"
+        TAUNT = "TAUNT"
 
     # references to other objects
     level = None
@@ -129,6 +130,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.states.AERIAL_ATTACK: self.AerialAttack(self),
             self.states.BACK_AIR: self.BackAir(self),
             self.states.WEIRD_HIT: self.WeirdHit(self),
+            self.states.TAUNT: self.Taunt(self),
         }
         self.aerial_jumps_used = 0
 
@@ -586,6 +588,41 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.instance.allow_fastfall()
             self.end_when_animation_ends(self.instance.states.FALL)
 
+    class Taunt(VolleyballMove):
+        hitbox = dict(
+            knockback=25,
+            angle=10,
+            knockback_angle=50,
+            x_offset=0,
+            y_offset=-60,
+            width=90,
+            height=60,
+        )
+        hitbox2 = dict(
+            knockback=15,
+            angle=-30,
+            knockback_angle=90,
+            x_offset=0,
+            y_offset=-35,
+            width=90,
+            height=60,
+        )
+        hitbox_mapping = {
+            (3, 9): [hitbox],
+            (10, 999): [hitbox2],
+        }
+        left_and_right_versions = True
+        sprite_animation_name = "taunt"
+
+        def __call__(self):
+            super().__call__()
+
+            if not self.image:
+                self.instance.image = self.sprite_animation.frames[-1]
+
+            if self.instance.frames_elapsed == 30:
+                self.instance.state = self.instance.states.STAND
+
     def state_squat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
 
@@ -595,6 +632,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.JUMPSQUAT
         if not KeyHandler.is_down(self.keymap.DOWN):
             self.state = self.states.STAND
+        if self.frames_elapsed == 3:
+            self.state = self.states.TAUNT
 
     def state_run(self):
         self.image = self.sprites["run_" + self.facing].get_frame(self.frames_elapsed)
