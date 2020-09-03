@@ -52,6 +52,7 @@ class VolleyballGame(Game):
         score = [0, 0]
         to_serve = "left"
         ball_in_play = False
+        game_started = False
         while run:
             ii += 1
             KeyHandler.read_new_keypresses()
@@ -74,6 +75,8 @@ class VolleyballGame(Game):
 
             if KeyHandler.is_pressed(pygame.K_F1):
                 debug = not debug
+            if KeyHandler.is_pressed(pygame.K_RETURN):
+                game_started = not game_started
             if KeyHandler.is_pressed(pygame.K_F2):
                 frame_by_frame = not frame_by_frame
             if KeyHandler.is_pressed(pygame.K_b):
@@ -85,7 +88,7 @@ class VolleyballGame(Game):
                 draw.rect(self.window, transparent_red, (100, 100, 60, 200))
 
             # tee up the ball for whoever's turn it is to serve
-            if not ball_in_play:
+            if not ball_in_play and game_started:
                 reset()
                 x = player1.x if to_serve == "left" else player2.x
                 level.add(Volleyball(x, 100), type="projectile")

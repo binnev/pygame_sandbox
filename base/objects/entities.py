@@ -689,6 +689,7 @@ class Hitbox(Entity):
     def draw(self, surface, debug=False):
         if debug:
             self.draw_debug(surface)
+        self.draw_debug(surface)
 
     def flip_x(self):
         new_hitbox = copy(self)

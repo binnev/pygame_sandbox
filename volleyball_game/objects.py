@@ -484,8 +484,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             knockback=20,
             knockback_angle=70,
             angle=0,
-            x_offset=15,
-            y_offset=-45,
+            x_offset=0,
+            y_offset=-90,
             width=50,
             height=20,
         )
@@ -493,8 +493,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             knockback=10,
             knockback_angle=91,
             angle=0,
-            x_offset=20,
-            y_offset=-45,
+            x_offset=0,
+            y_offset=-90,
             width=30,
             height=10,
         )
@@ -502,7 +502,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             (0, 1): [sweet_spot],
             (2, 999): [sour_spot],
         }
-        sprite_animation_name = "standing_hit"
+        sprite_animation_name = "aerial_defense"
         left_and_right_versions = True
 
         def __call__(self):
@@ -535,7 +535,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             (0, 1): [sweet_spot],
             (2, 999): [sour_spot],
         }
-        sprite_animation_name = "standing_hit"
+        sprite_animation_name = "flying_kick"
         left_and_right_versions = True
 
         def __call__(self):
@@ -579,7 +579,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             (2, 3): [second_hitbox],
             (3, 6): [third_hitbox],
         }
-        sprite_animation_name = "weird_hit"
+        sprite_animation_name = "back_air"
         left_and_right_versions = True
 
         def __call__(self):
