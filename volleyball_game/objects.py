@@ -10,6 +10,7 @@ from base.objects.entities import Entity, CollisionMixin, Move, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
 from volleyball_game import conf
+from volleyball_game.sprites.particle_effects import explosion_sprites
 from volleyball_game.sprites.stickman import stickman_sprites
 from volleyball_game.sprites.volleyball import volleyball_sprites
 
@@ -644,8 +645,8 @@ class ParticleEffect(SingleUseAnimation):
 
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.sprites = stickman_sprites()
-        self.sprite_animation = self.sprites["dive_getup_right"]
+        self.sprites = explosion_sprites()
+        self.sprite_animation = self.sprites["default"]
         self.image = self.sprite_animation.get_frame(0)
 
 
@@ -786,7 +787,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         for hitbox in hitboxes:
             handle_hitbox_collision(hitbox, self)
             self.last_touched_by = hitbox.owner
-            self.level.add(ParticleEffect(self.x, self.y), type="projectile")
+            self.level.add(ParticleEffect(self.x, self.y), type="particle_effect")
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:

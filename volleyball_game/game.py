@@ -68,7 +68,7 @@ class VolleyballGame(Game):
                     button = pygame.mouse.get_pressed()
                     x, y = pygame.mouse.get_pos()
                     if button[0]:
-                        level.add(ParticleEffect(x, y), type="projectile")
+                        level.add(ParticleEffect(x, y), type="particle_effect")
                     # if button[-1]:
                     #     level.add(Bowlingball(x, y), type="projectile")
 

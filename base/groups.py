@@ -33,6 +33,7 @@ class Level(EntityGroup):
         self.characters = EntityGroup()
         self.projectiles = EntityGroup()
         self.hitboxes = EntityGroup()
+        self.particle_effects = EntityGroup()
 
     def add(self, *objects, type=None):
         # add to Level spritegroup (similar to "all" group)
@@ -46,6 +47,8 @@ class Level(EntityGroup):
             self.projectiles.add(*objects)
         if type == "hitbox":
             self.hitboxes.add(*objects)
+        if type == "particle_effect":
+            self.particle_effects.add(*objects)
         # give the object a reference to this level
         for obj in objects:
             obj.level = self
