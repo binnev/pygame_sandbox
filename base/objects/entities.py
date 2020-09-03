@@ -687,8 +687,8 @@ class Hitbox(Entity):
             draw_arrow(surface, self.centroid, self.knockback_angle, color=self.debug_color)
 
     def draw(self, surface, debug=False):
-        # if debug:
-        self.draw_debug(surface)
+        if debug:
+            self.draw_debug(surface)
 
     def flip_x(self):
         new_hitbox = copy(self)
