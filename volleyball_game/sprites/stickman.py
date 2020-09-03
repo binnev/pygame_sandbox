@@ -48,6 +48,13 @@ file_mapping = {
         "num_images": 5,
         "flip_horizontal": True,
     },
+    "taunt_right": {"filename": folder / "stick_taunt.png", "looping": False, "num_images": 14,},
+    "taunt_left": {
+        "filename": folder / "stick_taunt.png",
+        "looping": False,
+        "num_images": 14,
+        "flip_horizontal": True,
+    },
 }
 
 
