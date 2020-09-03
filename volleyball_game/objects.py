@@ -4,7 +4,7 @@ import numpy
 import pygame as pygame
 from numpy.core._multiarray_umath import sign
 
-from base.animation import SpriteDict
+from base.animation import SpriteDict, SpriteAnimation
 from base.keyhandler import KeyHandler
 from base.objects.entities import Entity, CollisionMixin, Move, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
@@ -621,6 +621,34 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 self.state = self.states.STANDING_DEFENSE
 
 
+class SingleUseAnimation(Entity, AnimationMixin):
+    width: int
+    height: int
+    sprite_animation: SpriteAnimation
+    game_ticks_per_sprite_frame = conf.TICKS_PER_SPRITE_FRAME
+
+    def __init__(self, x, y):
+        super().__init__(x, y, self.width, self.height)
+
+    def update(self):
+        self.update_animation()
+        # todo: why doesn't update_animation do this?
+        self.image = self.sprite_animation.get_frame(self.frames_elapsed)
+        if not self.sprite_animation.get_frame(self.frames_elapsed + 1):
+            self.kill()
+
+
+class ParticleEffect(SingleUseAnimation):
+    width = 100
+    height = 100
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.sprites = stickman_sprites()
+        self.sprite_animation = self.sprites["dive_getup_right"]
+        self.image = self.sprite_animation.get_frame(0)
+
+
 class Stickman(Player):
     width = 80
     height = 70
@@ -758,6 +786,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         for hitbox in hitboxes:
             handle_hitbox_collision(hitbox, self)
             self.last_touched_by = hitbox.owner
+            self.level.add(ParticleEffect(self.x, self.y), type="projectile")
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:
