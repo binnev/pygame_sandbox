@@ -513,12 +513,30 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 self.instance.state = self.instance.states.FALL
 
     class AerialAttack(VolleyballMove):
+        hand_hitbox = dict(
+            knockback=5,
+            knockback_angle=100,
+            angle=0,
+            x_offset=-20,
+            y_offset=-70,
+            width=50,
+            height=30,
+        )
+        back_knee = dict(
+            knockback=5,
+            knockback_angle=160,
+            angle=30,
+            x_offset=-20,
+            y_offset=-30,
+            width=40,
+            height=30,
+        )
         sweet_spot = dict(
             knockback=20,
             knockback_angle=30,
             angle=0,
-            x_offset=15,
-            y_offset=-45,
+            x_offset=20,
+            y_offset=-40,
             width=50,
             height=20,
         )
@@ -526,14 +544,14 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             knockback=15,
             knockback_angle=30,
             angle=0,
-            x_offset=20,
-            y_offset=-45,
+            x_offset=25,
+            y_offset=-40,
             width=30,
             height=10,
         )
         hitbox_mapping = {
-            (0, 1): [sweet_spot],
-            (2, 999): [sour_spot],
+            (2, 3): [sweet_spot, hand_hitbox, back_knee],
+            (4, 6): [sour_spot, hand_hitbox, back_knee],
         }
         sprite_animation_name = "flying_kick"
         left_and_right_versions = True
@@ -542,42 +560,31 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             super().__call__()
             self.instance.enforce_max_fall_speed()
             self.instance.allow_fastfall()
-            if KeyHandler.is_released(self.instance.keymap.ATTACK):
-                self.instance.state = self.instance.states.FALL
+            self.end_when_animation_ends(self.instance.states.FALL)
 
     class BackAir(VolleyballMove):
-        first_hitbox = dict(
+        sweet_spot = dict(
             knockback=20,
-            angle=10,
-            knockback_angle=80,
-            x_offset=15,
-            y_offset=-55,
-            width=40,
-            height=20,
-        )
-        second_hitbox = dict(
-            knockback=20,
-            angle=-10,
+            angle=-30,
             knockback_angle=120,
-            x_offset=5,
-            y_offset=-90,
-            width=50,
-            height=30,
+            x_offset=20,
+            y_offset=-80,
+            width=30,
+            height=50,
         )
-        third_hitbox = dict(
-            knockback=20,
-            angle=10,
-            knockback_angle=180,
-            x_offset=-15,
-            y_offset=-90,
-            width=50,
-            height=30,
+        sour_spot = dict(
+            knockback=10,
+            angle=-30,
+            knockback_angle=120,
+            x_offset=20,
+            y_offset=-80,
+            width=25,
+            height=45,
         )
 
         hitbox_mapping = {
-            (1, 2): [first_hitbox],
-            (2, 3): [second_hitbox],
-            (3, 6): [third_hitbox],
+            (1, 2): [sweet_spot],
+            (3, 99): [sour_spot],
         }
         sprite_animation_name = "back_air"
         left_and_right_versions = True
