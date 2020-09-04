@@ -3,6 +3,7 @@ import time
 import pygame
 
 from base import draw
+from base.draw import Canvas
 from base.game import Game
 from base.keyhandler import KeyHandler
 from volleyball_game import conf
@@ -21,6 +22,7 @@ class VolleyballGame(Game):
     def __init__(self):
         super().__init__()
         self.font = pygame.font.Font(pygame.font.match_font("ubuntu"), 50)
+        Canvas.initialise()
 
     def run(self):
 
@@ -57,6 +59,7 @@ class VolleyballGame(Game):
             ii += 1
             KeyHandler.read_new_keypresses()
             self.window.fill((255, 255, 255))  # clear screen
+            Canvas.get_instance().fill((255, 255, 255))
 
             if KeyHandler.is_pressed(pygame.K_ESCAPE):
                 run = False
@@ -85,7 +88,9 @@ class VolleyballGame(Game):
                 )
             if KeyHandler.is_down(pygame.K_r):
                 transparent_red = (*pygame.color.THECOLORS["red"][:3], 150)
-                draw.rect(self.window, transparent_red, (100, 100, 60, 200))
+                draw.rect(self.window, transparent_red, (200, 100, 60, 200))
+                # we draw to canvas using standard pygame drawing methods
+                pygame.draw.rect(Canvas.get_instance(), transparent_red, (100, 100, 60, 200))
 
             # tee up the ball for whoever's turn it is to serve
             if not ball_in_play and game_started:
@@ -171,6 +176,8 @@ class VolleyballGame(Game):
             textRect.center = (self.window_width // 2, 50)
             self.window.blit(text, textRect)
 
+            # Canvas draws its contents to screen once per tick.
+            Canvas.blit_to_window()
             pygame.display.flip()
 
             # destroy hitboxes
