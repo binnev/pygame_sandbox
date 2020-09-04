@@ -261,7 +261,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = self.fall_speed
 
     def allow_fastfall(self):
-        if KeyHandler.is_pressed(self.keymap.DOWN) and self.v > 0:
+        if KeyHandler.is_down(self.keymap.DOWN) and self.v > 0:
             self.fastfall = True
             self.v = self.fall_speed
 
@@ -700,18 +700,18 @@ class Stickman(Player):
     width = 80
     height = 70
     _state = None
-    ground_acceleration = 1
-    ground_speed = 7
-    air_acceleration = 0.5
+    ground_acceleration = 3
+    ground_speed = 9
+    air_acceleration = 2
     air_speed = ground_speed
     dive_speed = 10
-    gravity = 1.2
+    gravity = 1.5
     _fall_speed = 5
-    fastfall_multiplier = 2.5
+    fastfall_multiplier = 3
     aerial_jumps = 1
-    jump_power = 16
-    jumpsquat_frames = 6
-    friction = 0.3
+    jump_power = 20
+    jumpsquat_frames = 3
+    friction = 0.5
     air_resistance = 0.03
     crouch_height_multiplier = 0.7
 

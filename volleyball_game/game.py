@@ -177,7 +177,7 @@ class VolleyballGame(Game):
             self.window.blit(text, textRect)
 
             # Canvas draws its contents to screen once per tick.
-            Canvas.blit_to_window()
+            # Canvas.blit_to_window()
             pygame.display.flip()
 
             # destroy hitboxes
