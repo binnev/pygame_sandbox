@@ -2,6 +2,11 @@ import functools
 
 import pygame
 
+# todo: I suspect this is slow because it is blitting the entire "screen" to the screen every
+#  tick. So stuff like hitboxes slows it down very quickly. As an optimisation, how about making
+#  a Canvas singleton which respects alpha, drawing everything onto that using normal
+#  Pygame.draw, and then blitting that canvas to screen once per tick?
+
 
 def get_it_together_pygame(func):
     @functools.wraps(func)
