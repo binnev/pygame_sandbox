@@ -46,7 +46,7 @@ class Entity(pygame.sprite.Sprite):
         super().__init__(*groups)
 
         # fixme: it's stupid to load the font here. Attach this to game or something?
-        self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
+        # self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
         self.color = color if color else self.debug_color
         self.width = width
         self.height = height
@@ -628,33 +628,59 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
 
 class Hitbox(Entity):
+    """
+    Things to work on:
 
-    # fixme: why doesn't this transparency work?
+    - A target should never be hit twice by the same instance of the same hitbox. E.g. if Ranno
+    does a nair and the hitbox is colliding with the target for 2 frames, then target should only
+    take the damage and knockback once.
+
+    - Sweet/sour spots. If the target is hit by both, I want only one hitbox to apply.
+        - E.g. Marth's tipper hitboxes should only be active if none of his non-tipper hitboxes are
+        colliding with the target.
+        - E.g. Zetterburn's up-air: if the sweet spot connects, the sour spot should not connect.
+
+    """
+
     debug_color = (*pygame.color.THECOLORS["red"][:3], 150)
-    owner = None
+    owner: Entity = None
+    knockback: float
+    knockback_angle: float
+    damage: float
+    width: int
+    height: int
+    angle: float
+    x: int
+    y: int
+    x_offset: int
+    y_offset: int
 
     def __init__(
         self,
-        knockback,
-        knockback_angle,
-        width,
-        height,
+        knockback=None,
+        knockback_angle=None,
+        width=None,
+        height=None,
         damage=None,
         owner=None,
-        angle=0,
-        x=0,
-        y=0,
-        x_offset=0,
-        y_offset=0,
+        angle=None,
+        x=None,
+        y=None,
+        x_offset=None,
+        y_offset=None,
         **kwargs,
     ):
-        self.owner = owner
-        self.damage = damage
-        self.knockback = knockback
-        self.knockback_angle = knockback_angle
-        self.angle = angle
-        self.x_offset = x_offset
-        self.y_offset = y_offset
+        # overwrite class parameters at instantiation, if any params are passed
+        self.owner = owner if owner is not None else self.owner
+        self.damage = damage if damage is not None else self.damage
+        self.knockback = knockback if knockback is not None else self.knockback
+        self.knockback_angle = (
+            knockback_angle if knockback_angle is not None else self.knockback_angle
+        )
+        self.angle = angle if angle is not None else self.angle
+        self.x_offset = x_offset if x_offset is not None else self.x_offset
+        self.y_offset = y_offset if y_offset is not None else self.y_offset
+
         super().__init__(x=x, y=y, width=width, height=height, **kwargs)
 
         self.image = pygame.Surface((self.width, self.height)).convert_alpha()
