@@ -692,6 +692,8 @@ class Hitbox(Entity):
 
     @property
     def rect(self):
+        """ If the hitbox has an owner, it will follow its owner's x and y (offset by x_offset
+        and y_offset). """
         self.align_to_owner()
         return self._rect
 
