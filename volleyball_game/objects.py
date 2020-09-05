@@ -265,6 +265,16 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.fastfall = True
             self.v = self.fall_speed
 
+    def allow_aerial_drift(self):
+        # update horizontal position
+        if KeyHandler.is_down(self.keymap.LEFT):
+            self.u -= self.air_acceleration
+        if KeyHandler.is_down(self.keymap.RIGHT):
+            self.u += self.air_acceleration
+        # limit horizontal speed
+        if abs(self.u) > self.air_speed:
+            self.u = sign(self.u) * self.air_speed
+
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.x < 0:
             self.x = 0
@@ -325,15 +335,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def state_fall(self):
         self.image = self.sprites["jump_" + self.facing].get_frame(self.frames_elapsed)
 
-        # update horizontal position
-        if KeyHandler.is_down(self.keymap.LEFT):
-            self.u -= self.air_acceleration
-        if KeyHandler.is_down(self.keymap.RIGHT):
-            self.u += self.air_acceleration
-        # limit horizontal speed
-        if abs(self.u) > self.air_speed:
-            self.u = sign(self.u) * self.air_speed
-
         # aerial hits
         if KeyHandler.is_down(self.keymap.DEFEND):
             self.state = self.states.AERIAL_DEFENSE
@@ -359,6 +360,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         self.enforce_max_fall_speed()
         self.allow_fastfall()
+        self.allow_aerial_drift()
 
         if not self.airborne:
             self.state = self.states.STAND
@@ -509,6 +511,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             super().__call__()
             self.instance.enforce_max_fall_speed()
             self.instance.allow_fastfall()
+            self.instance.allow_aerial_drift()
             if KeyHandler.is_released(self.instance.keymap.DEFEND):
                 self.instance.state = self.instance.states.FALL
 
@@ -560,6 +563,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             super().__call__()
             self.instance.enforce_max_fall_speed()
             self.instance.allow_fastfall()
+            self.instance.allow_aerial_drift()
             self.end_when_animation_ends(self.instance.states.FALL)
 
     class BackAir(VolleyballMove):
@@ -593,6 +597,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             super().__call__()
             self.instance.enforce_max_fall_speed()
             self.instance.allow_fastfall()
+            self.instance.allow_aerial_drift()
             self.end_when_animation_ends(self.instance.states.FALL)
 
     class Taunt(VolleyballMove):

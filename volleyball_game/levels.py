@@ -6,7 +6,7 @@ from volleyball_game import conf
 class VolleyballCourt(Level):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        COURT_WIDTH = 1100
+        COURT_WIDTH = 1300
         NET_HEIGHT = 250
         self.ground = Platform(
             conf.SCREEN_WIDTH // 2 - COURT_WIDTH // 2,
