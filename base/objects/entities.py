@@ -46,7 +46,7 @@ class Entity(pygame.sprite.Sprite):
         super().__init__(*groups)
 
         # fixme: it's stupid to load the font here. Attach this to game or something?
-        # self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
+        self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
         self.color = color if color else self.debug_color
         self.width = width
         self.height = height
