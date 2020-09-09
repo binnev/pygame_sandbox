@@ -26,9 +26,8 @@ class Game:
 
     def main(self):
         """ This is the outermost game function which runs once. It contains the outermost game
-        loop. """
+        loop. Here's where you should put your main event state machine. """
         run = True
-        ii = 0
         while run:
             KeyHandler.read_new_keypresses()
 
@@ -38,8 +37,6 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
-            print(ii)
-            ii += 1
             self.run()
             pygame.display.flip()
             self.clock.tick(self.fps)

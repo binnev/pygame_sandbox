@@ -156,7 +156,7 @@ class Entity(pygame.sprite.Sprite):
             mask_surface = mask_to_surface(self.mask, translucent_color)
             mask_outline = self.mask.outline()
             # add the outline to the mask surface
-            pygame.draw.polygon(mask_surface, color, mask_outline, 1)
+            pygame.draw.polygon(mask_surface, color, mask_outline, 5)
             surface.blit(mask_surface, self.image_rect)
 
         # draw centroid
