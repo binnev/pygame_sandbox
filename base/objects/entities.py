@@ -646,12 +646,12 @@ class Hitbox(Entity):
     owner: Entity = None
     knockback: float
     knockback_angle: float
-    damage: float
+    damage: float = 0
     width: int
     height: int
     angle: float
-    x: int
-    y: int
+    x: int = 0
+    y: int = 0
     x_offset: int
     y_offset: int
 
