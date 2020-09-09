@@ -25,6 +25,8 @@ class Game:
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
 
     def main(self):
+        """ This is the outermost game function which runs once. It contains the outermost game
+        loop. """
         run = True
         ii = 0
         while run:
@@ -43,7 +45,8 @@ class Game:
             self.clock.tick(self.fps)
 
     def run(self):
-        """Override me"""
+        """ run can be a set of instructions to be carried out in the main() game loop, or it can
+        define another game loop of its own. """
         self.window.fill((0, 255, 0))
         text = self.font.render("This is the default game", True, (0, 0, 0))
         textRect = text.get_rect()
