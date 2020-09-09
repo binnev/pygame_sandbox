@@ -14,6 +14,8 @@ class GuiButton(Entity):
     self.state to set self.frames elapsed etc. I think I can also improve the way states are
     defined. Perhaps I can use the factory method to register states. Also, AnimationMixin should
     use self.current_animation to draw frames from. Then states can set current_animation.
+
+    todo: implement passing "on_click" callbacks.
     """
 
     def __init__(self, *args, **kwargs):
