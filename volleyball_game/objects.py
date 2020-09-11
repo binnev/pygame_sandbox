@@ -540,7 +540,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             angle=0,
             x_offset=20,
             y_offset=-40,
-            width=50,
+            width=60,
             height=20,
         )
         sour_spot = dict(
@@ -553,8 +553,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             height=10,
         )
         hitbox_mapping = {
-            (2, 3): [sweet_spot, hand_hitbox, back_knee],
-            (4, 6): [sour_spot, hand_hitbox, back_knee],
+            (2, 4): [sweet_spot, back_knee],
+            (5, 6): [sour_spot, back_knee],
         }
         sprite_animation_name = "flying_kick"
         left_and_right_versions = True
