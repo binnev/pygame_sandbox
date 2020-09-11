@@ -18,6 +18,11 @@ class GuiButton(Entity):
     todo: implement passing "on_click" callbacks.
     """
 
+    # These attributes are set by whatever is managing the buttons. The button itself doesn't
+    # check these.
+    focus: bool  # is the mouse hovering over the button at the moment?
+    clicked: bool  # is the button currently being clicked?
+
     def __init__(self, *args, **kwargs):
         self.text = kwargs.pop("text", None)
         self.text_color = kwargs.pop("text_color", None)
@@ -46,12 +51,11 @@ class GuiButton(Entity):
         translucent_color = color[:3] + (50,)
         mask_surface = mask_to_surface(self.mask, translucent_color)
         mask_outline = self.mask.outline()
-        # add the outline to the mask surface
         pygame.draw.polygon(mask_surface, color, mask_outline, 15)
         surface.blit(mask_surface, self.image_rect)
 
     def update(self):
-        if self.focus and any(pygame.mouse.get_pressed()):
+        if self.focus and self.clicked:
             self.color = pygame.color.THECOLORS["green"]
         else:
             self.color = pygame.color.THECOLORS["red"]

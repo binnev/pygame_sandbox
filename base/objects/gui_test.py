@@ -34,8 +34,11 @@ class GuiTestGround(Game):
         """ Will be called repeatedly during the main() loop """
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
+        def mouse_hovering
+
+        # this code is currently the "menu" or "button manager". It tells the buttons if they
+        # have focus or not.
         for thing in self.gui_elements:
-            # if mouse is inside element, print name of element
             if thing.rect.collidepoint(mouse_x, mouse_y):
                 thing.focus = True
             else:
