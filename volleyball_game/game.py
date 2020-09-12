@@ -39,7 +39,10 @@ class VolleyballGame(Game):
             facing_right=True,
         )
         player2 = Stickman(
-            *starting_positions[1], input=KeyInputHandler(key_mapping=Player2), facing_right=False,
+            # *starting_positions[1], input=KeyInputHandler(key_mapping=Player2), facing_right=False,
+            *starting_positions[1],
+            input=GamecubeControllerInputHandler(controller_id=0),
+            facing_right=False,
         )
         level.add(
             player1, player2, type="character",
