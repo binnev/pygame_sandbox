@@ -7,7 +7,7 @@ from base.draw import Canvas
 from base.game import Game
 from base.keyhandler import KeyHandler
 from volleyball_game import conf
-from volleyball_game.keys import Player1, Player2
+from volleyball_game.keys import Player1, Player2, KeyInputHandler, GamecubeControllerInputHandler
 from volleyball_game.levels import VolleyballCourt
 from volleyball_game.objects import Stickman, Volleyball, Bowlingball, ParticleEffect
 
@@ -33,8 +33,14 @@ class VolleyballGame(Game):
             (3 * conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 100),
         ]
 
-        player1 = Stickman(*starting_positions[0], keymap=Player1, facing_right=True,)
-        player2 = Stickman(*starting_positions[1], keymap=Player2, facing_right=False,)
+        player1 = Stickman(
+            *starting_positions[0],
+            input=GamecubeControllerInputHandler(controller_id=0),
+            facing_right=True,
+        )
+        player2 = Stickman(
+            *starting_positions[1], input=KeyInputHandler(key_mapping=Player2), facing_right=False,
+        )
         level.add(
             player1, player2, type="character",
         )

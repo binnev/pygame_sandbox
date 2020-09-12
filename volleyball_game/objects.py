@@ -105,7 +105,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     # historymixin
     attributes_to_remember = ["rect", "x", "y"]
 
-    def __init__(self, x, y, facing_right=True, keymap=None, groups=[]):
+    def __init__(self, x, y, facing_right=True, input=None, groups=[]):
 
         super().__init__(x, y, self.width, self.height, groups=groups)
         HistoryMixin.__init__(self)
@@ -115,7 +115,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.state = self.states.FALL
         self.fastfall = False
         self.facing_right = facing_right
-        self.keymap = keymap
+        self.input = input
         self.state_lookup = {
             self.states.STAND: self.state_stand,
             self.states.JUMPSQUAT: self.state_jumpsquat,
@@ -261,15 +261,15 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = self.fall_speed
 
     def allow_fastfall(self):
-        if KeyHandler.is_down(self.keymap.DOWN) and self.v > 0:
+        if self.input.down and self.v > 0:
             self.fastfall = True
             self.v = self.fall_speed
 
     def allow_aerial_drift(self):
         # update horizontal position
-        if KeyHandler.is_down(self.keymap.LEFT):
+        if self.input.left:
             self.u -= self.air_acceleration
-        if KeyHandler.is_down(self.keymap.RIGHT):
+        if self.input.right:
             self.u += self.air_acceleration
         # limit horizontal speed
         if abs(self.u) > self.air_speed:
@@ -294,15 +294,15 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.frames_elapsed)
 
-        if KeyHandler.is_pressed(self.keymap.UP):
+        if self.input.up:  # todo: change to PRESSED, not down
             self.state = self.states.JUMPSQUAT
-        if KeyHandler.is_down(self.keymap.DOWN):
+        if self.input.down:
             self.state = self.states.SQUAT
-        if KeyHandler.is_down(self.keymap.LEFT) or KeyHandler.is_down(self.keymap.RIGHT):
+        if self.input.left or self.input.right:
             self.state = self.states.RUN
-        if KeyHandler.is_down(self.keymap.DEFEND):
+        if self.input.defend:
             self.state = self.states.STANDING_DEFENSE
-        if KeyHandler.is_down(self.keymap.ATTACK):
+        if self.input.attack:
             self.state = self.states.WEIRD_HIT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
@@ -336,12 +336,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.image = self.sprites["jump_" + self.facing].get_frame(self.frames_elapsed)
 
         # aerial hits
-        if KeyHandler.is_down(self.keymap.DEFEND):
+        if self.input.defend:
             self.state = self.states.AERIAL_DEFENSE
-        if KeyHandler.is_down(self.keymap.ATTACK):
+        if self.input.attack:
             # if holding back -> "back air"
-            if (self.facing_right and KeyHandler.is_down(self.keymap.LEFT)) or (
-                not self.facing_right and KeyHandler.is_down(self.keymap.RIGHT)
+            if (self.facing_right and self.input.left) or (
+                not self.facing_right and self.input.right
             ):
                 self.state = self.states.BACK_AIR
             else:
@@ -350,7 +350,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         # double-jump
         if (
-            KeyHandler.is_pressed(self.keymap.UP)
+            self.input.up  # todo: change to PRESSED
             and self.aerial_jumps_used < self.aerial_jumps
             and not self.double_jump_cooldown
         ):
@@ -384,21 +384,22 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         def __call__(self):
             super().__call__()
+            instance = self.instance
             # update horizontal position
-            if KeyHandler.is_down(self.instance.keymap.LEFT):
-                self.instance.u -= self.instance.air_acceleration
-            if KeyHandler.is_down(self.instance.keymap.RIGHT):
-                self.instance.u += self.instance.air_acceleration
+            if instance.input.left:
+                instance.u -= instance.air_acceleration
+            if instance.input.right:
+                instance.u += instance.air_acceleration
             # limit dive speed
-            if abs(self.instance.u) > self.instance.dive_speed:
-                self.instance.u = sign(self.instance.u) * self.instance.dive_speed
+            if abs(instance.u) > instance.dive_speed:
+                instance.u = sign(instance.u) * instance.dive_speed
 
-            self.instance.enforce_max_fall_speed()
-            self.instance.allow_fastfall()
+            instance.enforce_max_fall_speed()
+            instance.allow_fastfall()
 
-            if not self.instance.airborne:
-                self.instance.state = self.instance.states.DIVE_GETUP
-                self.instance.v = 0
+            if not instance.airborne:
+                instance.state = instance.states.DIVE_GETUP
+                instance.v = 0
 
     def state_dive_getup(self):
         animation = self.sprites["dive_getup_" + self.facing]
@@ -437,8 +438,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         def __call__(self):
             super().__call__()
-            if KeyHandler.is_released(self.instance.keymap.DEFEND):
-                self.instance.state = self.instance.states.STAND
+            instance = self.instance
+            if not instance.input.defend:
+                instance.state = instance.states.STAND
 
     class WeirdHit(VolleyballMove):
         first_hitbox = dict(
@@ -508,12 +510,13 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         left_and_right_versions = True
 
         def __call__(self):
+            instance = self.instance
             super().__call__()
-            self.instance.enforce_max_fall_speed()
-            self.instance.allow_fastfall()
-            self.instance.allow_aerial_drift()
-            if KeyHandler.is_released(self.instance.keymap.DEFEND):
-                self.instance.state = self.instance.states.FALL
+            instance.enforce_max_fall_speed()
+            instance.allow_fastfall()
+            instance.allow_aerial_drift()
+            if not instance.input.defend:
+                instance.state = instance.states.FALL
 
     class AerialAttack(VolleyballMove):
         hand_hitbox = dict(
@@ -640,9 +643,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         if self.airborne:
             self.state = self.states.FALL
-        if KeyHandler.is_pressed(self.keymap.UP):
+        if self.input.up:  # todo: change to PRESSED
             self.state = self.states.JUMPSQUAT
-        if not KeyHandler.is_down(self.keymap.DOWN):
+        if not self.input.down:
             self.state = self.states.STAND
         if self.frames_elapsed == 3:
             self.state = self.states.TAUNT
@@ -650,23 +653,23 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def state_run(self):
         self.image = self.sprites["run_" + self.facing].get_frame(self.frames_elapsed)
 
-        if not KeyHandler.is_down(self.keymap.LEFT) and not KeyHandler.is_down(self.keymap.RIGHT):
+        if not self.input.left and not self.input.right:
             self.state = self.states.STAND
-        if KeyHandler.is_down(self.keymap.LEFT):
+        if self.input.left:
             self.facing_right = False
             self.u -= self.ground_acceleration
-        if KeyHandler.is_down(self.keymap.RIGHT):
+        if self.input.right:
             self.facing_right = True
             self.u += self.ground_acceleration
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed
-        if KeyHandler.is_pressed(self.keymap.UP):
+        if self.input.up:  # todo: change to PRESSED
             self.state = self.states.JUMPSQUAT
-        if KeyHandler.is_down(self.keymap.DOWN):
+        if self.input.down:
             self.state = self.states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
-        if KeyHandler.is_pressed(self.keymap.DEFEND):
+        if self.input.defend:  # todo: change to PRESSED
             if abs(self.u) == self.ground_speed:
                 self.state = self.states.DIVESQUAT
             else:
