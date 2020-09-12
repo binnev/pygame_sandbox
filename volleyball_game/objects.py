@@ -261,9 +261,19 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = self.fall_speed
 
     def allow_fastfall(self):
-        if KeyHandler.is_pressed(self.keymap.DOWN) and self.v > 0:
+        if KeyHandler.is_down(self.keymap.DOWN) and self.v > 0:
             self.fastfall = True
             self.v = self.fall_speed
+
+    def allow_aerial_drift(self):
+        # update horizontal position
+        if KeyHandler.is_down(self.keymap.LEFT):
+            self.u -= self.air_acceleration
+        if KeyHandler.is_down(self.keymap.RIGHT):
+            self.u += self.air_acceleration
+        # limit horizontal speed
+        if abs(self.u) > self.air_speed:
+            self.u = sign(self.u) * self.air_speed
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.x < 0:
@@ -325,15 +335,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def state_fall(self):
         self.image = self.sprites["jump_" + self.facing].get_frame(self.frames_elapsed)
 
-        # update horizontal position
-        if KeyHandler.is_down(self.keymap.LEFT):
-            self.u -= self.air_acceleration
-        if KeyHandler.is_down(self.keymap.RIGHT):
-            self.u += self.air_acceleration
-        # limit horizontal speed
-        if abs(self.u) > self.air_speed:
-            self.u = sign(self.u) * self.air_speed
-
         # aerial hits
         if KeyHandler.is_down(self.keymap.DEFEND):
             self.state = self.states.AERIAL_DEFENSE
@@ -359,6 +360,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         self.enforce_max_fall_speed()
         self.allow_fastfall()
+        self.allow_aerial_drift()
 
         if not self.airborne:
             self.state = self.states.STAND
@@ -509,6 +511,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             super().__call__()
             self.instance.enforce_max_fall_speed()
             self.instance.allow_fastfall()
+            self.instance.allow_aerial_drift()
             if KeyHandler.is_released(self.instance.keymap.DEFEND):
                 self.instance.state = self.instance.states.FALL
 
@@ -537,7 +540,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             angle=0,
             x_offset=20,
             y_offset=-40,
-            width=50,
+            width=60,
             height=20,
         )
         sour_spot = dict(
@@ -550,8 +553,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             height=10,
         )
         hitbox_mapping = {
-            (2, 3): [sweet_spot, hand_hitbox, back_knee],
-            (4, 6): [sour_spot, hand_hitbox, back_knee],
+            (2, 4): [sweet_spot, back_knee],
+            (5, 6): [sour_spot, back_knee],
         }
         sprite_animation_name = "flying_kick"
         left_and_right_versions = True
@@ -560,6 +563,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             super().__call__()
             self.instance.enforce_max_fall_speed()
             self.instance.allow_fastfall()
+            self.instance.allow_aerial_drift()
             self.end_when_animation_ends(self.instance.states.FALL)
 
     class BackAir(VolleyballMove):
@@ -593,6 +597,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             super().__call__()
             self.instance.enforce_max_fall_speed()
             self.instance.allow_fastfall()
+            self.instance.allow_aerial_drift()
             self.end_when_animation_ends(self.instance.states.FALL)
 
     class Taunt(VolleyballMove):
@@ -700,18 +705,18 @@ class Stickman(Player):
     width = 80
     height = 70
     _state = None
-    ground_acceleration = 1
-    ground_speed = 7
-    air_acceleration = 0.5
+    ground_acceleration = 3
+    ground_speed = 9
+    air_acceleration = 2
     air_speed = ground_speed
     dive_speed = 10
-    gravity = 1.2
+    gravity = 1.5
     _fall_speed = 5
-    fastfall_multiplier = 2.5
+    fastfall_multiplier = 3
     aerial_jumps = 1
-    jump_power = 16
-    jumpsquat_frames = 6
-    friction = 0.3
+    jump_power = 20
+    jumpsquat_frames = 3
+    friction = 0.5
     air_resistance = 0.03
     crouch_height_multiplier = 0.7
 
