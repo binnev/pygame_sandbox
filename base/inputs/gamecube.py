@@ -1,101 +1,200 @@
 import pygame
 
+# button/input names. These are used similar to e.g. pygame.K_ESCAPE
+A = 0
+B = 1
+X = 2
+Y = 3
+Z = 4
+L = 5
+R = 6
+START = 7
+GREY_STICK_LEFT = 8
+GREY_STICK_RIGHT = 9
+GREY_STICK_UP = 10
+GREY_STICK_DOWN = 11
+YELLOW_STICK_LEFT = 12
+YELLOW_STICK_RIGHT = 13
+YELLOW_STICK_UP = 14
+YELLOW_STICK_DOWN = 15
+R_AXIS = 16
+L_AXIS = 17
+D_PAD_LEFT = 18
+D_PAD_RIGHT = 19
+D_PAD_UP = 20
+D_PAD_DOWN = 21
+
+
+def linear_map(input_value, input_range, output_range, limit_output=True):
+    """ Linearly map a set of inputs to a set of outputs. If limit_output==True, don't output any
+    values outside the output range. Will still allow inputs outside the input range. """
+    input_min, input_max = input_range
+    output_min, output_max = output_range
+
+    di = input_max - input_min
+    do = output_max - output_min
+    gradient = do / di
+    offset = output_min - gradient * input_min
+
+    # y = mx + c
+    output_value = gradient * input_value + offset
+
+    if limit_output:
+        output_value = max(output_value, output_min)
+        output_value = min(output_value, output_max)
+
+    return output_value
+
+
+def create_mapping(input_range, output_range, limit_output=True):
+    """ Partially execute the linear_map function to store the input/output ranges so we don't
+    have to input them every time. """
+
+    def wrapper(input_value):
+        return linear_map(input_value, input_range, output_range, limit_output)
+
+    return wrapper
+
 
 class GamecubeController:
     """ A handler class to map pygame's axis and button numbers to the gamecube's
     nomenclature. """
 
-    ANALOG_MAGNITUDE = 0.86  # max output value of the analog stick
-    CSTICK_MAGNITUDE = 0.86  # max output value of the C stick
+    # input ranges. Use these to set minimum (i.e. dead zone) and maximum input values
+    GREY_STICK_INPUT_RANGE = (0.1, 0.86)
+    YELLOW_STICK_INPUT_RANGE = (0.1, 0.86)
+    TRIGGER_INPUT_RANGE = (-0.7, 1)
 
     def __init__(self, joystick_id):
-        self.joystick_id = joystick_id
-        # get the joystick from pygame
-        self.joystick = pygame.joystick.Joystick(joystick_id)
-        # switch on the joystick
-        self.joystick.init()
+        self.joystick = pygame.joystick.Joystick(joystick_id)  # get the joystick from pygame
+        self.joystick.init()  # turn on the joystick
 
-    # =================== axis properties =======================
+    def get_values(self):
+        """ Get the current state of all the inputs. For buttons return 1 if pressed. For axes
+        return a value between 0 and 1. This is intended to be equivalent to
+        pygame.key.get_pressed() so that the inputs can be processed in the same way. """
+        return (
+            self.A,
+            self.B,
+            self.X,
+            self.Y,
+            self.Z,
+            self.L,
+            self.R,
+            self.START,
+            self.GREY_STICK_LEFT,
+            self.GREY_STICK_RIGHT,
+            self.GREY_STICK_UP,
+            self.GREY_STICK_DOWN,
+            self.YELLOW_STICK_LEFT,
+            self.YELLOW_STICK_RIGHT,
+            self.YELLOW_STICK_UP,
+            self.YELLOW_STICK_DOWN,
+            self.R_AXIS,
+            self.L_AXIS,
+            self.D_PAD_LEFT,
+            self.D_PAD_RIGHT,
+            self.D_PAD_UP,
+            self.D_PAD_DOWN,
+        )
+
+    # =================== AXES =======================
 
     @property
-    def ANALOG_X(self):
+    def _GREY_STICK_X_AXIS(self):
         return self.joystick.get_axis(0)
 
     @property
-    def ANALOG_Y(self):
+    def _GREY_STICK_Y_AXIS(self):
         return self.joystick.get_axis(1)
 
     @property
-    def CSTICK_X(self):
+    def _YELLOW_STICK_X_AXIS(self):
         return self.joystick.get_axis(5)
 
     @property
-    def CSTICK_Y(self):
+    def _YELLOW_STICK_Y_AXIS(self):
         return self.joystick.get_axis(2)
 
     @property
-    def _L_AXIS(self):
+    def _L_TRIGGER_AXIS(self):
         return self.joystick.get_axis(3)
 
     @property
-    def _R_AXIS(self):
+    def _R_TRIGGER_AXIS(self):
         return self.joystick.get_axis(4)
 
-    def _normalise(self, value, normalising_parameter, cap=1.0):
-        """ Return the normalised, absolute, capped value """
-        normalised_value = abs(value) / normalising_parameter
-        return min(normalised_value, cap)
+    @property
+    def GREY_STICK_LEFT(self):
+        return linear_map(-self._GREY_STICK_X_AXIS, self.GREY_STICK_INPUT_RANGE, (0, 1))
 
     @property
-    def ANALOG_LEFT(self):
-        return self._normalise(self.ANALOG_X, self.ANALOG_MAGNITUDE) if self.ANALOG_X < 0 else 0.0
+    def GREY_STICK_RIGHT(self):
+        return linear_map(self._GREY_STICK_X_AXIS, self.GREY_STICK_INPUT_RANGE, (0, 1))
 
     @property
-    def ANALOG_RIGHT(self):
-        return self._normalise(self.ANALOG_X, self.ANALOG_MAGNITUDE) if self.ANALOG_X > 0 else 0.0
+    def GREY_STICK_UP(self):
+        return linear_map(-self._GREY_STICK_Y_AXIS, self.GREY_STICK_INPUT_RANGE, (0, 1))
 
     @property
-    def ANALOG_UP(self):
-        return self._normalise(self.ANALOG_Y, self.ANALOG_MAGNITUDE) if self.ANALOG_Y < 0 else 0.0
+    def GREY_STICK_DOWN(self):
+        return linear_map(self._GREY_STICK_Y_AXIS, self.GREY_STICK_INPUT_RANGE, (0, 1))
 
     @property
-    def ANALOG_DOWN(self):
-        return self._normalise(self.ANALOG_Y, self.ANALOG_MAGNITUDE) if self.ANALOG_Y > 0 else 0.0
+    def YELLOW_STICK_LEFT(self):
+        return linear_map(-self._YELLOW_STICK_X_AXIS, self.YELLOW_STICK_INPUT_RANGE, (0, 1))
 
     @property
-    def CSTICK_LEFT(self):
-        return self._normalise(self.CSTICK_X, self.CSTICK_MAGNITUDE) if self.CSTICK_X < 0 else 0.0
+    def YELLOW_STICK_RIGHT(self):
+        return linear_map(self._YELLOW_STICK_X_AXIS, self.YELLOW_STICK_INPUT_RANGE, (0, 1))
 
     @property
-    def CSTICK_RIGHT(self):
-        return self._normalise(self.CSTICK_X, self.CSTICK_MAGNITUDE) if self.CSTICK_X > 0 else 0.0
+    def YELLOW_STICK_UP(self):
+        return linear_map(-self._YELLOW_STICK_Y_AXIS, self.YELLOW_STICK_INPUT_RANGE, (0, 1))
 
     @property
-    def CSTICK_UP(self):
-        return self._normalise(self.CSTICK_Y, self.CSTICK_MAGNITUDE) if self.CSTICK_Y < 0 else 0.0
-
-    @property
-    def CSTICK_DOWN(self):
-        return self._normalise(self.CSTICK_Y, self.CSTICK_MAGNITUDE) if self.CSTICK_Y > 0 else 0.0
-
-    def _normalise_trigger(self):
-        pass
+    def YELLOW_STICK_DOWN(self):
+        return linear_map(self._YELLOW_STICK_Y_AXIS, self.YELLOW_STICK_INPUT_RANGE, (0, 1))
 
     @property
     def R_AXIS(self):
-        return self._normalise_trigger(self._R_AXIS, self.TRIGGER_MAGNITUDE)
+        return linear_map(self._R_TRIGGER_AXIS, self.TRIGGER_INPUT_RANGE, (0, 1))
 
     @property
     def L_AXIS(self):
-        return self._normalise_trigger(self.CSTICK_Y, self.TRIGGER_MAGNITUDE)
+        return linear_map(self._L_TRIGGER_AXIS, self.TRIGGER_INPUT_RANGE, (0, 1))
 
-    # =================== hat properties =======================
+    # =================== 4-WAY SWITCHES =======================
 
     @property
-    def D_PAD(self):
+    def _D_PAD(self):
         return self.joystick.get_hat(0)
 
-    # =================== button properties =======================
+    @property
+    def _D_PAD_X(self):
+        return self._D_PAD[0]
+
+    @property
+    def _D_PAD_Y(self):
+        return self._D_PAD[1]
+
+    @property
+    def D_PAD_LEFT(self):
+        return int(self._D_PAD_X < 0)
+
+    @property
+    def D_PAD_RIGHT(self):
+        return int(self._D_PAD_X > 0)
+
+    @property
+    def D_PAD_UP(self):
+        return int(self._D_PAD_Y > 0)
+
+    @property
+    def D_PAD_DOWN(self):
+        return int(self._D_PAD_Y < 0)
+
+    # =================== BUTTONS =======================
 
     @property
     def X(self):
@@ -136,7 +235,7 @@ if __name__ == "__main__":
         def __init__(self):
             self.reset()
             pygame.font.init()
-            self.font = pygame.font.Font(None, 20)
+            self.font = pygame.font.Font(None, 30)
 
         def tprint(self, screen, textString):
             textBitmap = self.font.render(textString, True, BLACK)
@@ -146,7 +245,7 @@ if __name__ == "__main__":
         def reset(self):
             self.x = 10
             self.y = 10
-            self.line_height = 15
+            self.line_height = 20
 
         def indent(self):
             self.x += 10
@@ -184,19 +283,29 @@ if __name__ == "__main__":
 
         textPrint.tprint(screen, "Axes:")
         textPrint.indent()
-        for button in "L_AXIS R_AXIS ANALOG_X ANALOG_Y CSTICK_X CSTICK_Y".split():
-            textPrint.tprint(screen, f"{button}: {getattr(controller, button)}")
-        textPrint.tprint(screen, "---")
         for button in (
-            "ANALOG_LEFT ANALOG_RIGHT ANALOG_UP ANALOG_DOWN "
-            "CSTICK_LEFT CSTICK_RIGHT CSTICK_UP CSTICK_DOWN "
+            "_L_TRIGGER_AXIS _R_TRIGGER_AXIS "
+            "_GREY_STICK_X_AXIS _GREY_STICK_Y_AXIS "
+            "_YELLOW_STICK_X_AXIS "
+            "_YELLOW_STICK_Y_AXIS "
         ).split():
             textPrint.tprint(screen, f"{button}: {getattr(controller, button)}")
         textPrint.unindent()
 
         textPrint.tprint(screen, "Hats:")
         textPrint.indent()
-        for button in "D_PAD".split():
+        for button in "_D_PAD".split():
+            textPrint.tprint(screen, f"{button}: {getattr(controller, button)}")
+        textPrint.unindent()
+
+        textPrint.tprint(screen, "PROCESSED INPUTS:")
+        textPrint.indent()
+        for button in (
+            "GREY_STICK_LEFT GREY_STICK_RIGHT GREY_STICK_UP GREY_STICK_DOWN "
+            "YELLOW_STICK_LEFT YELLOW_STICK_RIGHT YELLOW_STICK_UP YELLOW_STICK_DOWN "
+            "R_AXIS L_AXIS "
+            "D_PAD_LEFT D_PAD_RIGHT D_PAD_UP D_PAD_DOWN "
+        ).split():
             textPrint.tprint(screen, f"{button}: {getattr(controller, button)}")
         textPrint.unindent()
 
