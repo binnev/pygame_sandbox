@@ -7,7 +7,6 @@ from numpy import sign
 
 from base.animation import SpriteAnimation
 from base.groups import EntityGroup
-from base.keyhandler import KeyHandler
 from base.objects.mixins import HistoryMixin, AnimationMixin, CollisionMixin
 from base.utils import touching, mask_to_surface, ticks_to_frames, draw_arrow
 

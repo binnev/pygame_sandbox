@@ -5,7 +5,6 @@ import pygame as pygame
 from numpy.core._multiarray_umath import sign
 
 from base.animation import SpriteDict, SpriteAnimation
-from base.keyhandler import KeyHandler
 from base.objects.entities import Entity, CollisionMixin, Move, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
@@ -261,15 +260,17 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = self.fall_speed
 
     def allow_fastfall(self):
-        if self.input.is_down(DOWN) and self.v > 0:
+        input = self.input
+        if input.is_down(input.DOWN) and self.v > 0:
             self.fastfall = True
             self.v = self.fall_speed
 
     def allow_aerial_drift(self):
+        input = self.input
         # update horizontal position
-        if self.input.is_down(LEFT):
+        if input.is_down(input.LEFT):
             self.u -= self.air_acceleration
-        if self.input.is_down(RIGHT):
+        if input.is_down(input.RIGHT):
             self.u += self.air_acceleration
         # limit horizontal speed
         if abs(self.u) > self.air_speed:
@@ -293,16 +294,16 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.frames_elapsed)
-
-        if self.input.is_pressed(UP):  # todo: change to PRESSED, not down
+        input = self.input
+        if input.is_pressed(input.Y):
             self.state = self.states.JUMPSQUAT
-        if self.input.is_down(DOWN):
+        if input.is_down(input.DOWN):
             self.state = self.states.SQUAT
-        if self.input.is_down(LEFT) or self.input.is_down(RIGHT):
+        if input.is_down(input.LEFT) or input.is_down(input.RIGHT):
             self.state = self.states.RUN
-        if self.input.is_down(A):
+        if input.is_down(input.A):
             self.state = self.states.STANDING_DEFENSE
-        if self.input.is_down(B):
+        if input.is_down(input.B):
             self.state = self.states.WEIRD_HIT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
@@ -334,14 +335,14 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_fall(self):
         self.image = self.sprites["jump_" + self.facing].get_frame(self.frames_elapsed)
-
+        input = self.input
         # aerial hits
-        if self.input.is_down(A):
+        if input.is_down(input.A):
             self.state = self.states.AERIAL_DEFENSE
-        if self.input.is_down(B):
+        if input.is_down(input.B):
             # if holding back -> "back air"
-            if (self.facing_right and self.input.is_down(LEFT)) or (
-                not self.facing_right and self.input.is_down(RIGHT)
+            if (self.facing_right and input.is_down(input.LEFT)) or (
+                not self.facing_right and input.is_down(input.RIGHT)
             ):
                 self.state = self.states.BACK_AIR
             else:
@@ -350,7 +351,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         # double-jump
         if (
-            self.input.is_pressed(UP)  # todo: change to PRESSED
+            input.is_pressed(input.Y)
             and self.aerial_jumps_used < self.aerial_jumps
             and not self.double_jump_cooldown
         ):
@@ -385,10 +386,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __call__(self):
             super().__call__()
             instance = self.instance
+            input = instance.input
             # update horizontal position
-            if instance.input.is_down(LEFT):
+            if input.is_down(input.LEFT):
                 instance.u -= instance.air_acceleration
-            if instance.input.is_down(RIGHT):
+            if input.is_down(input.RIGHT):
                 instance.u += instance.air_acceleration
             # limit dive speed
             if abs(instance.u) > instance.dive_speed:
@@ -439,7 +441,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __call__(self):
             super().__call__()
             instance = self.instance
-            if not instance.input.is_down(A):
+            input = instance.input
+            if not input.is_down(input.A):
                 instance.state = instance.states.STAND
 
     class WeirdHit(VolleyballMove):
@@ -511,11 +514,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         def __call__(self):
             instance = self.instance
+            input = instance.input
             super().__call__()
             instance.enforce_max_fall_speed()
             instance.allow_fastfall()
             instance.allow_aerial_drift()
-            if not instance.input.is_down(A):
+            if not input.is_down(input.A):
                 instance.state = instance.states.FALL
 
     class AerialAttack(VolleyballMove):
@@ -640,36 +644,36 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_squat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
-
+        input = self.input
         if self.airborne:
             self.state = self.states.FALL
-        if self.input.is_pressed(Y):  # todo: change to PRESSED
+        if input.is_pressed(input.Y):
             self.state = self.states.JUMPSQUAT
-        if not self.input.is_down(DOWN):
+        if not input.is_down(input.DOWN):
             self.state = self.states.STAND
         if self.frames_elapsed == 3:
             self.state = self.states.TAUNT
 
     def state_run(self):
         self.image = self.sprites["run_" + self.facing].get_frame(self.frames_elapsed)
-
-        if not self.input.is_down(LEFT) and not self.input.is_down(RIGHT):
+        input = self.input
+        if not input.is_down(input.LEFT) and not input.is_down(input.RIGHT):
             self.state = self.states.STAND
-        if self.input.is_down(LEFT):
+        if input.is_down(input.LEFT):
             self.facing_right = False
             self.u -= self.ground_acceleration
-        if self.input.is_down(RIGHT):
+        if input.is_down(input.RIGHT):
             self.facing_right = True
             self.u += self.ground_acceleration
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed
-        if self.input.is_pressed(Y):  # todo: change to PRESSED
+        if input.is_pressed(input.Y):  # todo: change to PRESSED
             self.state = self.states.JUMPSQUAT
-        if self.input.is_down(DOWN):
+        if input.is_down(input.DOWN):
             self.state = self.states.SQUAT
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.states.FALL
-        if self.input.is_pressed(A):  # todo: change to PRESSED
+        if input.is_pressed(input.A):  # todo: change to PRESSED
             if abs(self.u) == self.ground_speed:
                 self.state = self.states.DIVESQUAT
             else:

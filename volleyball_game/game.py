@@ -5,9 +5,10 @@ import pygame
 from base import draw
 from base.draw import Canvas
 from base.game import Game
-from base.keyhandler import KeyHandler
+from base.inputs.keyboard import KeyboardInputQueue
 from volleyball_game import conf
-from volleyball_game.keys import Player1, Player2, KeyInputHandler, GamecubeControllerInputHandler
+
+from volleyball_game.inputs import GamecubeController, Keyboard1
 from volleyball_game.levels import VolleyballCourt
 from volleyball_game.objects import Stickman, Volleyball, Bowlingball, ParticleEffect
 
@@ -23,6 +24,10 @@ class VolleyballGame(Game):
         super().__init__()
         self.font = pygame.font.Font(pygame.font.match_font("ubuntu"), 50)
         Canvas.initialise()
+        self.keyboard_input = KeyboardInputQueue(queue_length=5)
+        self.controller0 = GamecubeController(controller_id=0)
+        self.controller1 = GamecubeController(controller_id=1)
+        self.input_devices = [self.keyboard_input, self.controller0, self.controller1]
 
     def run(self):
 
@@ -33,17 +38,11 @@ class VolleyballGame(Game):
             (3 * conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 100),
         ]
 
-        player1 = Stickman(
-            *starting_positions[0],
-            input=GamecubeControllerInputHandler(controller_id=0),
-            facing_right=True,
-        )
-        player2 = Stickman(
-            # *starting_positions[1], input=KeyInputHandler(key_mapping=Player2), facing_right=False,
-            *starting_positions[1],
-            input=GamecubeControllerInputHandler(controller_id=0),
-            facing_right=False,
-        )
+        # todo: now I'm passing input handler instances to the player instances, but I'm not
+        #  storing them on the game. If the player instance dies, then the input handler instance
+        #  is lost. This should really be stored at game level.
+        player1 = Stickman(*starting_positions[0], input=self.controller0, facing_right=True,)
+        player2 = Stickman(*starting_positions[1], input=Keyboard1(), facing_right=False,)
         level.add(
             player1, player2, type="character",
         )
@@ -66,11 +65,12 @@ class VolleyballGame(Game):
         game_started = False
         while run:
             ii += 1
-            KeyHandler.read_new_keypresses()
+            for input_device in self.input_devices:
+                input_device.read_new_inputs()
             self.window.fill((255, 255, 255))  # clear screen
             Canvas.get_instance().fill((255, 255, 255))
 
-            if KeyHandler.is_pressed(pygame.K_ESCAPE):
+            if self.keyboard_input.is_pressed(pygame.K_ESCAPE):
                 run = False
                 time.sleep(2)
 
@@ -82,20 +82,20 @@ class VolleyballGame(Game):
                     x, y = pygame.mouse.get_pos()
                     if button[0]:
                         level.add(ParticleEffect(x, y), type="particle_effect")
-                    # if button[-1]:
-                    #     level.add(Bowlingball(x, y), type="projectile")
+                    if button[-1]:
+                        level.add(Volleyball(x, y), type="projectile")
 
-            if KeyHandler.is_pressed(pygame.K_F1):
+            if self.keyboard_input.is_pressed(pygame.K_F1):
                 debug = not debug
-            if KeyHandler.is_pressed(pygame.K_RETURN):
+            if self.keyboard_input.is_pressed(pygame.K_RETURN):
                 game_started = not game_started
-            if KeyHandler.is_pressed(pygame.K_F2):
+            if self.keyboard_input.is_pressed(pygame.K_F2):
                 frame_by_frame = not frame_by_frame
-            if KeyHandler.is_pressed(pygame.K_b):
+            if self.keyboard_input.is_pressed(pygame.K_b):
                 level.add(
                     Volleyball(conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT // 4), type="projectile"
                 )
-            if KeyHandler.is_down(pygame.K_r):
+            if self.keyboard_input.is_down(pygame.K_r):
                 transparent_red = (*pygame.color.THECOLORS["red"][:3], 150)
                 draw.rect(self.window, transparent_red, (200, 100, 60, 200))
                 # we draw to canvas using standard pygame drawing methods
@@ -169,7 +169,7 @@ class VolleyballGame(Game):
 
             # wait for button press before advancing
             if frame_by_frame:
-                if not KeyHandler.is_pressed(pygame.K_F3):
+                if not self.keyboard_input.is_pressed(pygame.K_F3):
                     print(f"waiting on frame {ii}")
                     continue  # skip the rest of the actions
                 else:

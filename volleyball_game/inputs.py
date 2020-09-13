@@ -1,14 +1,24 @@
 import pygame
 
 from base.inputs import gamecube
-from base.inputs.gamecube import GamecubeController
-from base.inputs.queue import InputQueue
+from base.inputs.gamecube import GamecubeControllerInputQueue, GamecubeControllerReader
+from base.inputs.keyboard import KeyboardInputQueue
 
 
-class GamecubeInputMapping:
-    # todo: find a good way of doing this. Mapping multiple keys to one action.
-    #  - aerials: forward on the grey stick plus A, but also forward on the C stick.
-    #  - x and y both do jump
+class GamecubeController(GamecubeControllerInputQueue):
+    """ VolleyballGame objects will receive this as their `input` parameter.
+    They will do stuff like:
+    ```
+    input = self.input  # that's the instance of this class
+    if input.is_pressed(input.LEFT):
+        # do action for left
+    ```
+    it's necessary to refer to input.LEFT (and not import LEFT from somewhere else) because it is
+    specific to the input device. GamecubeController.LEFT will be a different value to
+    Keyboard.LEFT.
+    """
+
+    # key mapping
     LEFT = gamecube.GREY_STICK_LEFT
     RIGHT = gamecube.GREY_STICK_RIGHT
     UP = gamecube.GREY_STICK_UP
@@ -17,9 +27,18 @@ class GamecubeInputMapping:
     B = gamecube.B
     X = gamecube.X
     Y = gamecube.Y
+    C_UP = gamecube.YELLOW_STICK_UP
+    C_DOWN = gamecube.YELLOW_STICK_DOWN
+    C_LEFT = gamecube.YELLOW_STICK_LEFT
+    C_RIGHT = gamecube.YELLOW_STICK_RIGHT
+    START = pygame.K_RETURN
+
+    def __init__(self, controller_id, queue_length=5):
+        controller = GamecubeControllerReader(controller_id)
+        super().__init__(controller, queue_length=queue_length)
 
 
-class KeyboardPlayer1:
+class Keyboard1(KeyboardInputQueue):
     LEFT = pygame.K_s
     RIGHT = pygame.K_f
     UP = None
@@ -35,7 +54,7 @@ class KeyboardPlayer1:
     START = pygame.K_RETURN
 
 
-class KeyboardPlayer2:
+class Keyboard2(Keyboard1):
     LEFT = pygame.K_l
     RIGHT = pygame.K_QUOTE
     UP = None
@@ -49,71 +68,6 @@ class KeyboardPlayer2:
     C_LEFT = None
     C_RIGHT = None
     START = pygame.K_RETURN
-
-
-class KeyInputHandler:
-    """ Maps certain keys to the inputs expected by the volleyball game -- e.g. 'K' maps to
-    'left' input. """
-
-    # todo: at the moment this just maps which keys are down. Make a way to record if keys have
-    #  just been pressed. Maybe subclass Key_handler?
-
-    def __init__(self, key_mapping):
-        self.key_mapping = key_mapping
-
-    @property
-    def left(self):
-        return KeyHandler.is_down(self.key_mapping.LEFT)
-
-    @property
-    def right(self):
-        return KeyHandler.is_down(self.key_mapping.RIGHT)
-
-    @property
-    def up(self):
-        return KeyHandler.is_down(self.key_mapping.UP)
-
-    @property
-    def down(self):
-        return KeyHandler.is_down(self.key_mapping.DOWN)
-
-    @property
-    def defend(self):
-        return KeyHandler.is_down(self.key_mapping.DEFEND)
-
-    @property
-    def attack(self):
-        return KeyHandler.is_down(self.key_mapping.ATTACK)
-
-
-class GamecubeControllerInputHandler:
-    def __init__(self, controller_id):
-        self.controller = GamecubeController(controller_id)
-
-    @property
-    def left(self):
-        return self.controller.ANALOG_X < 0 and abs(self.controller.ANALOG_X) > 0.1
-
-    @property
-    def right(self):
-        return self.controller.ANALOG_X > 0 and abs(self.controller.ANALOG_X) > 0.1
-
-    @property
-    def up(self):
-        # return self.controller.ANALOG_Y < 0 and abs(self.controller.ANALOG_Y) > 0.1
-        return self.controller.Y
-
-    @property
-    def down(self):
-        return self.controller.ANALOG_Y > 0 and abs(self.controller.ANALOG_Y) > 0.1
-
-    @property
-    def defend(self):
-        return self.controller.A
-
-    @property
-    def attack(self):
-        return self.controller.B
 
 
 """ 

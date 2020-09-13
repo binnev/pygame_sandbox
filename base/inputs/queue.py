@@ -13,78 +13,59 @@ class Empty(tuple):
         return 0
 
 
-class InputQueue(deque, Singleton):
+class InputQueue(deque):
     """
     Provides additional functionality beyond pygame.key.get_pressed().
     - Maintains a buffer of the last few inputs
     - Calculates which keys have been pressed and released this tick
     """
 
-    # fixme: should this still be a singleton if I am using multiple gamecube controllers for
-    #  example?
-
     def __init__(self, queue_length=5):
         super().__init__(maxlen=queue_length)
 
-    @classmethod
     def get_new_values(self):
         """ Subclasses should implement this. It should be something like
         pygame.key.get_pressed() """
         raise NotImplementedError
 
-    @classmethod
-    def read_new_keypresses(cls):
-        cls.append(cls.get_new_values())
+    def read_new_inputs(self):
+        self.append(self.get_new_values())
 
-    @classmethod
-    def append(cls, value):
-        instance = cls.get_instance()
-        return super().append(instance, value)
-
-    @classmethod
-    def get_down(cls):
+    def get_down(self):
         """ Return the keys which are currently held down """
-        instance = cls.get_instance()
-        return instance[-1] if len(instance) > 0 else Empty()
+        return self[-1] if len(self) > 0 else Empty()
 
-    @classmethod
-    def get_pressed(cls):
+    def get_pressed(self):
         """ Return the keys that have just been pressed---i.e. those that are down this tick but
         not the previous tick """
-        instance = cls.get_instance()
         try:
-            current = instance[-1]
-            previous = instance[-2]
+            current = self[-1]
+            previous = self[-2]
             return tuple(int(c and not p) for c, p in zip(current, previous))
         except IndexError:
             return Empty()
 
-    @classmethod
-    def get_released(cls):
+    def get_released(self):
         """ Return the keys that have just been released---i.e. those that are not down this
         tick, but were down the previous tick """
-        instance = cls.get_instance()
         try:
-            current = instance[-1]
-            previous = instance[-2]
+            current = self[-1]
+            previous = self[-2]
             return tuple(int(p and not c) for c, p in zip(current, previous))
         except IndexError:
             return Empty()
 
-    @classmethod
-    def is_pressed(cls, key):
+    def is_pressed(self, key):
         """ Check if a key has been pressed this tick """
-        keys = cls.get_pressed()
+        keys = self.get_pressed()
         return keys[key]
 
-    @classmethod
-    def is_down(cls, key):
+    def is_down(self, key):
         """ Check if a key is currently held down """
-        keys = cls.get_down()
+        keys = self.get_down()
         return keys[key]
 
-    @classmethod
-    def is_released(cls, key):
+    def is_released(self, key):
         """ Check if a key has been released this tick """
-        keys = cls.get_released()
+        keys = self.get_released()
         return keys[key]

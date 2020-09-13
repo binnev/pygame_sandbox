@@ -1,6 +1,6 @@
 import pygame
 
-from base.keyhandler import KeyHandler
+from base.inputs.keyboard import KeyboardInputQueue
 
 
 class Game:
@@ -21,16 +21,16 @@ class Game:
 
         self.window = window
         self.clock = pygame.time.Clock()
-        KeyHandler.initialise(queue_length=5)
+        self.keyboard_input = KeyboardInputQueue(queue_length=5)
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
 
     def main(self):
         run = True
         ii = 0
         while run:
-            KeyHandler.read_new_keypresses()
+            self.keyboard_input.read_new_inputs()
 
-            if KeyHandler.is_pressed(pygame.K_ESCAPE):
+            if self.keyboard_input.is_pressed(pygame.K_ESCAPE):
                 run = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

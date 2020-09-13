@@ -11,6 +11,8 @@ if inputs[gamecube.A]:
 import pygame
 
 # button/input indices. These are used for lookup similarly to e.g. pygame.K_ESCAPE
+from base.inputs.queue import InputQueue
+
 A = 0
 B = 1
 X = 2
@@ -66,7 +68,7 @@ def create_mapping(input_range, output_range, limit_output=True):
     return wrapper
 
 
-class GamecubeController:
+class GamecubeControllerReader:
     """ A handler class to map pygame's axis and button numbers to the gamecube's
     nomenclature. """
 
@@ -241,6 +243,23 @@ class GamecubeController:
         return self.joystick.get_button(9)
 
 
+class GamecubeControllerInputQueue(InputQueue):
+    """
+    A wrapper around GamecubeController and InputQueue which leaves all the fiddly input-reading
+    logic to GamecubeController, and provides a convenient interface for accessing the queue of
+    inputs.
+
+    This allows games to subclass this class and define new key mappings
+    """
+
+    def __init__(self, controller, queue_length=5):
+        super().__init__(queue_length)
+        self.controller = controller
+
+    def get_new_values(self):
+        return self.controller.get_values()
+
+
 if __name__ == "__main__":
 
     class TextPrint(object):
@@ -282,7 +301,7 @@ if __name__ == "__main__":
 
         screen.fill(WHITE)
         textPrint.reset()
-        controller = GamecubeController(joystick_id=0)
+        controller = GamecubeControllerReader(joystick_id=0)
 
         textPrint.indent()
         textPrint.tprint(screen, "Gamecube controller 0")
