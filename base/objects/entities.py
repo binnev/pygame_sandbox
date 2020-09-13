@@ -731,8 +731,6 @@ class Move:
     # fixme: Hitboxes can't be defined without an owner yet. I need this, because I want to
     #  be able to define them abstractly. I want to describe the hitboxes for all Rannos
     #  before they are assigned to an instance of Ranno.
-    # todo: make sure this works when facing left!
-    # todo: give hitbox a knockback_angle, and make sure THAT works facing left
 
     def __init__(self, instance):
         self.instance = instance

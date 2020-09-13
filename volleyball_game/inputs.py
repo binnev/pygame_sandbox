@@ -47,10 +47,10 @@ class Keyboard0(KeyboardInputQueue):
     B = pygame.K_a
     X = None
     Y = pygame.K_e
-    C_UP = None
-    C_DOWN = None
-    C_LEFT = None
-    C_RIGHT = None
+    C_UP = pygame.K_ESCAPE  # fixme
+    C_DOWN = pygame.K_ESCAPE  # fixme
+    C_LEFT = pygame.K_ESCAPE  # fixme
+    C_RIGHT = pygame.K_ESCAPE  # fixme
     START = pygame.K_RETURN
 
 
@@ -63,10 +63,10 @@ class Keyboard1(Keyboard0):
     B = pygame.K_k
     X = None
     Y = pygame.K_p
-    C_UP = None
-    C_DOWN = None
-    C_LEFT = None
-    C_RIGHT = None
+    C_UP = pygame.K_ESCAPE  # fixme
+    C_DOWN = pygame.K_ESCAPE  # fixme
+    C_LEFT = pygame.K_ESCAPE  # fixme
+    C_RIGHT = pygame.K_ESCAPE  # fixme
     START = pygame.K_RETURN
 
 

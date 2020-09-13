@@ -336,10 +336,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def state_fall(self):
         self.image = self.sprites["jump_" + self.facing].get_frame(self.frames_elapsed)
         input = self.input
+
         # aerial hits
+        # fixme: clean this up.
         if input.is_down(input.A):
             self.state = self.states.AERIAL_DEFENSE
-        if input.is_down(input.B):
+        if input.is_pressed(input.B):
             # if holding back -> "back air"
             if (self.facing_right and input.is_down(input.LEFT)) or (
                 not self.facing_right and input.is_down(input.RIGHT)
@@ -348,7 +350,15 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             else:
                 # if holding forward or no direction input -> "forward air"
                 self.state = self.states.AERIAL_ATTACK
+        if (input.is_pressed(input.C_LEFT) and self.facing_right) or (
+            input.is_pressed(input.C_RIGHT) and not self.facing_right
+        ):
+            self.state = self.states.BACK_AIR
 
+        if (input.is_pressed(input.C_LEFT) and not self.facing_right) or (
+            input.is_pressed(input.C_RIGHT) and self.facing_right
+        ):
+            self.state = self.states.AERIAL_ATTACK
         # double-jump
         if (
             input.is_pressed(input.Y)
@@ -521,6 +531,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             instance.allow_aerial_drift()
             if not input.is_down(input.A):
                 instance.state = instance.states.FALL
+            if not instance.airborne:
+                instance.state = instance.states.STAND
 
     class AerialAttack(VolleyballMove):
         hand_hitbox = dict(
@@ -533,8 +545,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             height=30,
         )
         back_knee = dict(
-            knockback=5,
-            knockback_angle=160,
+            knockback=7,
+            knockback_angle=100,
             angle=30,
             x_offset=-20,
             y_offset=-30,
@@ -568,10 +580,13 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         def __call__(self):
             super().__call__()
-            self.instance.enforce_max_fall_speed()
-            self.instance.allow_fastfall()
-            self.instance.allow_aerial_drift()
-            self.end_when_animation_ends(self.instance.states.FALL)
+            instance = self.instance
+            instance.enforce_max_fall_speed()
+            instance.allow_fastfall()
+            instance.allow_aerial_drift()
+            self.end_when_animation_ends(instance.states.FALL)
+            if not instance.airborne:
+                instance.state = instance.states.STAND
 
     class BackAir(VolleyballMove):
         sweet_spot = dict(
@@ -602,10 +617,13 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         def __call__(self):
             super().__call__()
-            self.instance.enforce_max_fall_speed()
-            self.instance.allow_fastfall()
-            self.instance.allow_aerial_drift()
-            self.end_when_animation_ends(self.instance.states.FALL)
+            instance = self.instance
+            instance.enforce_max_fall_speed()
+            instance.allow_fastfall()
+            instance.allow_aerial_drift()
+            self.end_when_animation_ends(instance.states.FALL)
+            if not instance.airborne:
+                instance.state = instance.states.STAND
 
     class Taunt(VolleyballMove):
         hitbox = dict(
