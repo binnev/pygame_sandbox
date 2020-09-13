@@ -7,7 +7,7 @@ class VolleyballCourt(Level):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         COURT_WIDTH = 1300
-        NET_HEIGHT = 250
+        NET_HEIGHT = 250 - 100
         self.ground = Platform(
             conf.SCREEN_WIDTH // 2 - COURT_WIDTH // 2,
             conf.SCREEN_HEIGHT - 20,
@@ -17,7 +17,7 @@ class VolleyballCourt(Level):
         )
         self.net = Platform(
             conf.SCREEN_WIDTH // 2,
-            conf.SCREEN_HEIGHT - NET_HEIGHT - 50,
+            conf.SCREEN_HEIGHT - NET_HEIGHT - 50 - 100,
             10,
             NET_HEIGHT,
             can_fall_through=False,

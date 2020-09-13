@@ -730,7 +730,7 @@ class Stickman(Player):
     width = 80
     height = 70
     _state = None
-    ground_acceleration = 3
+    ground_acceleration = 10  # 3
     ground_speed = 9
     air_acceleration = 2
     air_speed = ground_speed
@@ -741,7 +741,7 @@ class Stickman(Player):
     aerial_jumps = 1
     jump_power = 20
     jumpsquat_frames = 3
-    friction = 0.5
+    friction = 1  # 0.5
     air_resistance = 0.03
     crouch_height_multiplier = 0.7
 
