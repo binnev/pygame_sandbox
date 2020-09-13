@@ -38,7 +38,7 @@ class GamecubeController(GamecubeControllerInputQueue):
         super().__init__(controller, queue_length=queue_length)
 
 
-class Keyboard1(KeyboardInputQueue):
+class Keyboard0(KeyboardInputQueue):
     LEFT = pygame.K_s
     RIGHT = pygame.K_f
     UP = None
@@ -54,7 +54,7 @@ class Keyboard1(KeyboardInputQueue):
     START = pygame.K_RETURN
 
 
-class Keyboard2(Keyboard1):
+class Keyboard1(Keyboard0):
     LEFT = pygame.K_l
     RIGHT = pygame.K_QUOTE
     UP = None

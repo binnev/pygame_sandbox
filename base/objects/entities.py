@@ -1,14 +1,13 @@
 from collections import namedtuple
 from copy import copy
 
-import numpy
 import pygame
 from numpy import sign
 
 from base.animation import SpriteAnimation
 from base.groups import EntityGroup
 from base.objects.mixins import HistoryMixin, AnimationMixin, CollisionMixin
-from base.utils import touching, mask_to_surface, ticks_to_frames, draw_arrow
+from base.utils import touching, mask_to_surface, draw_arrow
 
 Point = namedtuple("Point", ["x", "y"])
 
