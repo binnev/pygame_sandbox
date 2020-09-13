@@ -1,6 +1,16 @@
+"""
+similar to pygame.key.get_pressed()
+Usage:
+```
+controller1 = GamecubeController(1)
+inputs = controller1.get_values()
+if inputs[gamecube.A]:
+    # do action for A
+```
+"""
 import pygame
 
-# button/input names. These are used similar to e.g. pygame.K_ESCAPE
+# button/input indices. These are used for lookup similarly to e.g. pygame.K_ESCAPE
 A = 0
 B = 1
 X = 2
@@ -70,9 +80,11 @@ class GamecubeController:
         self.joystick.init()  # turn on the joystick
 
     def get_values(self):
-        """ Get the current state of all the inputs. For buttons return 1 if pressed. For axes
-        return a value between 0 and 1. This is intended to be equivalent to
-        pygame.key.get_pressed() so that the inputs can be processed in the same way. """
+        """ Get the current state of all the inputs. This is intended to be equivalent to
+        pygame.key.get_pressed so that the inputs can be processed in the same way. """
+        # todo: the d-pad properties each access the d-pad values when they are called. So we're
+        #  checking the status of the d-pad 4 times per tick when once would do. If the inputs
+        #  ever get slow, maybe look at this.
         return (
             self.A,
             self.B,
