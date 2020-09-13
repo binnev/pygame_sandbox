@@ -1,25 +1,54 @@
 import pygame
 
-from base.inputs import GamecubeController
-from base.keyhandler import KeyHandler
+from base.inputs import gamecube
+from base.inputs.gamecube import GamecubeController
+from base.inputs.queue import InputQueue
 
 
-class Player1:
+class GamecubeInputMapping:
+    # todo: find a good way of doing this. Mapping multiple keys to one action.
+    #  - aerials: forward on the grey stick plus A, but also forward on the C stick.
+    #  - x and y both do jump
+    LEFT = gamecube.GREY_STICK_LEFT
+    RIGHT = gamecube.GREY_STICK_RIGHT
+    UP = gamecube.GREY_STICK_UP
+    DOWN = gamecube.GREY_STICK_DOWN
+    A = gamecube.A
+    B = gamecube.B
+    X = gamecube.X
+    Y = gamecube.Y
+
+
+class KeyboardPlayer1:
     LEFT = pygame.K_s
     RIGHT = pygame.K_f
-    UP = pygame.K_e
+    UP = None
     DOWN = pygame.K_d
-    DEFEND = pygame.K_z
-    ATTACK = pygame.K_a
+    A = pygame.K_z
+    B = pygame.K_a
+    X = None
+    Y = pygame.K_e
+    C_UP = None
+    C_DOWN = None
+    C_LEFT = None
+    C_RIGHT = None
+    START = pygame.K_RETURN
 
 
-class Player2:
+class KeyboardPlayer2:
     LEFT = pygame.K_l
     RIGHT = pygame.K_QUOTE
-    UP = pygame.K_p
+    UP = None
     DOWN = pygame.K_SEMICOLON
-    DEFEND = pygame.K_COMMA
-    ATTACK = pygame.K_k
+    A = pygame.K_COMMA
+    B = pygame.K_k
+    X = None
+    Y = pygame.K_p
+    C_UP = None
+    C_DOWN = None
+    C_LEFT = None
+    C_RIGHT = None
+    START = pygame.K_RETURN
 
 
 class KeyInputHandler:

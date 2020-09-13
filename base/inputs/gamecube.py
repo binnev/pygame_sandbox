@@ -1,5 +1,5 @@
 """
-similar to pygame.key.get_pressed()
+# similar to pygame.key.get_pressed()
 Usage:
 ```
 controller1 = GamecubeController(1)

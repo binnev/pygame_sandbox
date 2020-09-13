@@ -13,19 +13,28 @@ class Empty(tuple):
         return 0
 
 
-class KeyHandler(deque, Singleton):
+class InputQueue(deque, Singleton):
     """
     Provides additional functionality beyond pygame.key.get_pressed().
-    - Maintains a buffer of the last few keypresses
+    - Maintains a buffer of the last few inputs
     - Calculates which keys have been pressed and released this tick
     """
+
+    # fixme: should this still be a singleton if I am using multiple gamecube controllers for
+    #  example?
 
     def __init__(self, queue_length=5):
         super().__init__(maxlen=queue_length)
 
     @classmethod
+    def get_new_values(self):
+        """ Subclasses should implement this. It should be something like
+        pygame.key.get_pressed() """
+        raise NotImplementedError
+
+    @classmethod
     def read_new_keypresses(cls):
-        cls.append(pygame.key.get_pressed())
+        cls.append(cls.get_new_values())
 
     @classmethod
     def append(cls, value):
