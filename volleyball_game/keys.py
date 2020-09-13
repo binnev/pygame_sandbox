@@ -1,6 +1,6 @@
 import pygame
 
-from base.controllers import GamecubeController
+from base.inputs import GamecubeController
 from base.keyhandler import KeyHandler
 
 
@@ -85,3 +85,38 @@ class GamecubeControllerInputHandler:
     @property
     def attack(self):
         return self.controller.B
+
+
+""" 
+Merge/unify KeyHandler and this. There are a lot of similar inputs. KeyHandler is basically the 
+InputHandler for the keyboard. 
+
+Use a lookup rather than having the button/axis name in the function. Save that for the 
+specific controller handler instance.
+
+How to handle button/axis inputs for the same action? E.g. "left" mapping to a) keyboard "D" 
+button, but also to the grey stick x axis on a GC controller? I want to be able to access a) the 
+value of the grey stick axis (for drift in increments between 0--1) and b) I want to know if the 
+player just "pressed" "left". 
+
+Maybe for each input have a value lookup (0/1 for buttons; 0--1 for axes) and also a "pressed" 
+criteria, which for both could be "is the value > 0.2". 
+
+INPUT DEVICE    INPUT NAMES     VOLLEYBALL INPUTS
+============    ===========     =================
+GC controller
+-------------
+button 0        X               jump
+button 1        A               defend
+button 2        B               attack
+axis 0          ANALOG_X        left/right
+axis 1          ANALOG_Y        up/down
+
+Keyboard        
+pygame.key      pygame key 
+.get_pressed()  names
+button 0        E               up
+button 1        S               left
+button 2        A               attack
+button 4        Z               defend
+"""
