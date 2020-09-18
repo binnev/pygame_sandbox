@@ -10,6 +10,7 @@ from base.objects.entities import Entity, CollisionMixin, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
 from volleyball_game import conf
+from volleyball_game.inputs import GamecubeController
 from volleyball_game.sprites.particle_effects import explosion_sprites
 from volleyball_game.sprites.stickman import stickman_sprites
 from volleyball_game.sprites.volleyball import volleyball_sprites
@@ -112,7 +113,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     # historymixin
     attributes_to_remember = ["rect", "x", "y"]
 
-    def __init__(self, x, y, facing_right=True, input=None, groups=[]):
+    def __init__(self, x, y, facing_right=True, input: GamecubeController = None, groups=[]):
 
         super().__init__(x, y, self.width, self.height, groups=groups)
         HistoryMixin.__init__(self)
@@ -292,6 +293,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.StandingDefense(self)
         if input.is_down(input.B):
             self.state = self.WeirdHit(self)
+        if input.is_pressed(input.D_PAD_UP):
+            self.state = self.Taunt(self)
+
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.state_fall
 
@@ -787,8 +791,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.state_jumpsquat
         if not input.is_down(input.DOWN):
             self.state = self.state_stand
-        if self.frames_elapsed == 3:
-            self.state = self.Taunt(self)
 
     def state_run(self):
         self.image = self.sprites["run_" + self.facing].get_frame(self.frames_elapsed)

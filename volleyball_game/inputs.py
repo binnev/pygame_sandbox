@@ -32,6 +32,7 @@ class GamecubeController(GamecubeControllerInputQueue):
     C_LEFT = gamecube.YELLOW_STICK_LEFT
     C_RIGHT = gamecube.YELLOW_STICK_RIGHT
     START = pygame.K_RETURN
+    D_PAD_UP = gamecube.D_PAD_UP
 
     def __init__(self, controller_id, queue_length=5):
         controller = GamecubeControllerReader(controller_id)
