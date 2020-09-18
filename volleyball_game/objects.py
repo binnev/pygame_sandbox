@@ -664,7 +664,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             )
             self.sour_spot = Hitbox(
                 owner=instance,
-                knockback=10,
+                knockback=15,
                 angle=30,
                 knockback_angle=120,
                 x_offset=-20,
@@ -672,7 +672,18 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 width=40,
                 height=20,
             )
+            self.overhead = Hitbox(
+                owner=instance,
+                knockback=10,
+                angle=10,
+                knockback_angle=120,
+                x_offset=0,
+                y_offset=-80,
+                width=30,
+                height=20,
+            )
             self.hitbox_mapping = {
+                (1, 1): [self.overhead],
                 (2, 4): [self.sweet_spot, self.sour_spot],
             }
             super().__init__(instance)
