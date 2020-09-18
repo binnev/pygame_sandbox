@@ -40,6 +40,17 @@ file_mapping = {
         "flip_horizontal": True,
         "looping": False,
     },
+    "back_air2_right": {
+        "filename": folder / "stick_back_air2.png",
+        "num_images": 5,
+        "looping": False,
+    },
+    "back_air2_left": {
+        "filename": folder / "stick_back_air2.png",
+        "num_images": 5,
+        "flip_horizontal": True,
+        "looping": False,
+    },
     "fall_right": {"filename": folder / "stick_jump.png"},
     "fall_left": {"filename": folder / "stick_jump.png", "flip_horizontal": True,},
     "jump_right": {"filename": folder / "stick_jump.png", "num_images": 3},

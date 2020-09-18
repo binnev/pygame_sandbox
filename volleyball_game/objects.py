@@ -606,7 +606,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             if not instance.airborne:
                 instance.state = instance.state_stand
 
-    class BackAir(VolleyballMove):
+    class BackScoop(VolleyballMove):
         sprite_animation_name = "back_air"
         left_and_right_versions = True
 
@@ -634,6 +634,46 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.hitbox_mapping = {
                 (1, 2): [self.sweet_spot],
                 (3, 99): [self.sour_spot],
+            }
+            super().__init__(instance)
+
+        def __call__(self):
+            super().__call__()
+            instance = self.instance
+            instance.enforce_max_fall_speed()
+            instance.allow_fastfall()
+            instance.allow_aerial_drift()
+            self.end_when_animation_ends(instance.state_fall)
+            if not instance.airborne:
+                instance.state = instance.state_stand
+
+    class BackAir(VolleyballMove):
+        sprite_animation_name = "back_air2"
+        left_and_right_versions = True
+
+        def __init__(self, instance):
+            self.sweet_spot = Hitbox(
+                owner=instance,
+                knockback=20,
+                angle=-30,
+                knockback_angle=170,
+                x_offset=-35,
+                y_offset=-55,
+                width=30,
+                height=30,
+            )
+            self.sour_spot = Hitbox(
+                owner=instance,
+                knockback=10,
+                angle=30,
+                knockback_angle=120,
+                x_offset=-20,
+                y_offset=-80,
+                width=40,
+                height=20,
+            )
+            self.hitbox_mapping = {
+                (2, 4): [self.sweet_spot, self.sour_spot],
             }
             super().__init__(instance)
 
