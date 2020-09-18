@@ -106,24 +106,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     double_jump_cooldown_frames = 15
     double_jump_cooldown = 0
 
-    class states:
-        DEFAULT = "DEFAULT"
-        JUMPSQUAT = "JUMPSQUAT"
-        JUMP = "JUMP"
-        STAND = "STAND"
-        RUN = "RUN"
-        SQUAT = "SQUAT"
-        FALL = "FALL"
-        DIVE = "DIVE"
-        DIVESQUAT = "DIVESQUAT"
-        DIVE_GETUP = "DIVE_GETUP"
-        STANDING_DEFENSE = "STANDING_DEFENSE"
-        AERIAL_DEFENSE = "AERIAL_DEFENSE"
-        AERIAL_ATTACK = "AERIAL_ATTACK"
-        BACK_AIR = "BACK_AIR"
-        WEIRD_HIT = "WEIRD_HIT"
-        TAUNT = "TAUNT"
-
     # references to other objects
     level = None
 
@@ -137,26 +119,10 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         self.u = 0
         self.v = 0
-        self.state = self.states.FALL
+        self.state = self.state_fall
         self.fastfall = False
         self.facing_right = facing_right
         self.keymap = keymap
-        self.state_lookup = {
-            self.states.STAND: self.state_stand,
-            self.states.JUMPSQUAT: self.state_jumpsquat,
-            self.states.FALL: self.state_fall,
-            self.states.RUN: self.state_run,
-            self.states.SQUAT: self.state_squat,
-            self.states.DIVESQUAT: self.state_divesquat,
-            self.states.DIVE_GETUP: self.state_dive_getup,
-            self.states.DIVE: self.Dive,
-            self.states.STANDING_DEFENSE: self.StandingDefense,
-            self.states.AERIAL_DEFENSE: self.AerialDefense,
-            self.states.AERIAL_ATTACK: self.AerialAttack,
-            self.states.BACK_AIR: self.BackAir,
-            self.states.WEIRD_HIT: self.WeirdHit,
-            self.states.TAUNT: self.Taunt,
-        }
         self.aerial_jumps_used = 0
 
     # ============== properties ==============
@@ -182,7 +148,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         # todo: states should be responsible for this kind of thing
         # shrink rect when crouching
         midbottom = self._rect.midbottom
-        if self.state in [self.states.SQUAT, self.states.JUMPSQUAT]:
+        if self.state in [self.state_squat, self.state_jumpsquat]:
             self._rect.height = self.height * self.crouch_height_multiplier
         else:
             self._rect.height = self.height
@@ -220,7 +186,10 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def update(self):
         self.update_physics()
-        self.execute_state()
+        try:
+            self.state()
+        except Exception as e:
+            print("")
         self.enforce_screen_limits(*self.level.game.screen_size)
         # self.debug_print()
         self.update_cooldowns()
@@ -233,14 +202,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         # todo: make a cooldowns mixin which does this for a list of cooldowns.
         if self.double_jump_cooldown:
             self.double_jump_cooldown -= 1
-
-    def execute_state(self):
-        """Each state has a corresponding function that handles keypresses and events"""
-        func = self.state_lookup[self.state]  # grab the state function
-        # if it's a class based move, instantiate it.
-        if isinstance(func, type) and issubclass(func, VolleyballMove):
-            func = func(self)
-        func()  # execute it
 
     def update_physics(self):
 
@@ -323,17 +284,17 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.frames_elapsed)
 
         if KeyHandler.is_pressed(self.keymap.UP):
-            self.state = self.states.JUMPSQUAT
+            self.state = self.state_jumpsquat
         if KeyHandler.is_down(self.keymap.DOWN):
-            self.state = self.states.SQUAT
+            self.state = self.state_squat
         if KeyHandler.is_down(self.keymap.LEFT) or KeyHandler.is_down(self.keymap.RIGHT):
-            self.state = self.states.RUN
+            self.state = self.state_run
         if KeyHandler.is_down(self.keymap.DEFEND):
-            self.state = self.states.STANDING_DEFENSE
+            self.state = self.StandingDefense(self)
         if KeyHandler.is_down(self.keymap.ATTACK):
-            self.state = self.states.WEIRD_HIT
+            self.state = self.WeirdHit(self)
         if self.airborne:  # e.g. by walking off the edge of a platform
-            self.state = self.states.FALL
+            self.state = self.state_fall
 
     def state_jumpsquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
@@ -351,13 +312,13 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.u = 40 if self.facing_right else -40
         self.v = -self.jump_power / 3
         self.y -= 1
-        self.state = self.states.DIVE
+        self.state = self.Dive(self)
         self.fastfall = False
 
     def enter_jump(self):
         self.v = -self.jump_power
         self.y -= 1  # need this to become airborne. Hacky?
-        self.state = self.states.FALL
+        self.state = self.state_fall
         self.fastfall = False
 
     def state_fall(self):
@@ -365,16 +326,16 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         # aerial hits
         if KeyHandler.is_down(self.keymap.DEFEND):
-            self.state = self.states.AERIAL_DEFENSE
+            self.state = self.AerialDefense(self)
         if KeyHandler.is_down(self.keymap.ATTACK):
             # if holding back -> "back air"
             if (self.facing_right and KeyHandler.is_down(self.keymap.LEFT)) or (
                 not self.facing_right and KeyHandler.is_down(self.keymap.RIGHT)
             ):
-                self.state = self.states.BACK_AIR
+                self.state = self.BackAir(self)
             else:
                 # if holding forward or no direction input -> "forward air"
-                self.state = self.states.AERIAL_ATTACK
+                self.state = self.AerialAttack(self)
 
         # double-jump
         if (
@@ -391,7 +352,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.allow_aerial_drift()
 
         if not self.airborne:
-            self.state = self.states.STAND
+            self.state = self.state_stand
             self.v = 0
 
     class Dive(VolleyballMove):
@@ -429,7 +390,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.instance.allow_fastfall()
 
             if not self.instance.airborne:
-                self.instance.state = self.instance.states.DIVE_GETUP
+                self.instance.state = self.instance.state_dive_getup
                 self.instance.v = 0
 
     def state_dive_getup(self):
@@ -438,7 +399,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if image:
             self.image = image
         else:
-            self.state = self.states.STAND
+            self.state = self.state_stand
 
     class StandingDefense(VolleyballMove):
         sprite_animation_name = "standing_hit"
@@ -475,7 +436,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __call__(self):
             super().__call__()
             if KeyHandler.is_released(self.instance.keymap.DEFEND):
-                self.instance.state = self.instance.states.STAND
+                self.instance.state = self.instance.state_stand
 
     class WeirdHit(VolleyballMove):
         sprite_animation_name = "weird_hit"
@@ -521,7 +482,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
         def __call__(self):
             super().__call__()
-            self.end_when_animation_ends(self.instance.states.STAND)
+            self.end_when_animation_ends(self.instance.state_stand)
 
     class AerialDefense(VolleyballMove):
         sprite_animation_name = "aerial_defense"
@@ -560,7 +521,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.instance.allow_fastfall()
             self.instance.allow_aerial_drift()
             if KeyHandler.is_released(self.instance.keymap.DEFEND):
-                self.instance.state = self.instance.states.FALL
+                self.instance.state = self.instance.state_fall
 
     class AerialAttack(VolleyballMove):
         sprite_animation_name = "flying_kick"
@@ -569,13 +530,13 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             self.back_knee = Hitbox(
                 owner=instance,
-                knockback=5,
-                knockback_angle=90,  # 160,
+                knockback=7,
+                knockback_angle=100,
                 angle=30,
                 x_offset=-20,
                 y_offset=-30,
-                width=200,  # 40,
-                height=200,  # 30,
+                width=40,
+                height=30,
             )
             self.sweet_spot = Hitbox(
                 owner=instance,
@@ -608,7 +569,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.instance.enforce_max_fall_speed()
             self.instance.allow_fastfall()
             self.instance.allow_aerial_drift()
-            self.end_when_animation_ends(self.instance.states.FALL)
+            self.end_when_animation_ends(self.instance.state_fall)
 
     class BackAir(VolleyballMove):
         sprite_animation_name = "back_air"
@@ -646,7 +607,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.instance.enforce_max_fall_speed()
             self.instance.allow_fastfall()
             self.instance.allow_aerial_drift()
-            self.end_when_animation_ends(self.instance.states.FALL)
+            self.end_when_animation_ends(self.instance.state_fall)
 
     class Taunt(VolleyballMove):
         left_and_right_versions = True
@@ -686,25 +647,25 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 self.instance.image = self.sprite_animation.frames[-1]
 
             if self.instance.frames_elapsed == 30:
-                self.instance.state = self.instance.states.STAND
+                self.instance.state = self.instance.state_stand
 
     def state_squat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
 
         if self.airborne:
-            self.state = self.states.FALL
+            self.state = self.state_fall
         if KeyHandler.is_pressed(self.keymap.UP):
-            self.state = self.states.JUMPSQUAT
+            self.state = self.state_jumpsquat
         if not KeyHandler.is_down(self.keymap.DOWN):
-            self.state = self.states.STAND
+            self.state = self.state_stand
         if self.frames_elapsed == 3:
-            self.state = self.states.TAUNT
+            self.state = self.Taunt(self)
 
     def state_run(self):
         self.image = self.sprites["run_" + self.facing].get_frame(self.frames_elapsed)
 
         if not KeyHandler.is_down(self.keymap.LEFT) and not KeyHandler.is_down(self.keymap.RIGHT):
-            self.state = self.states.STAND
+            self.state = self.state_stand
         if KeyHandler.is_down(self.keymap.LEFT):
             self.facing_right = False
             self.u -= self.ground_acceleration
@@ -714,16 +675,16 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if abs(self.u) > self.ground_speed:  # enforce run speed
             self.u = sign(self.u) * self.ground_speed
         if KeyHandler.is_pressed(self.keymap.UP):
-            self.state = self.states.JUMPSQUAT
+            self.state = self.state_jumpsquat
         if KeyHandler.is_down(self.keymap.DOWN):
-            self.state = self.states.SQUAT
+            self.state = self.state_squat
         if self.airborne:  # e.g. by walking off the edge of a platform
-            self.state = self.states.FALL
+            self.state = self.state_fall
         if KeyHandler.is_pressed(self.keymap.DEFEND):
             if abs(self.u) == self.ground_speed:
-                self.state = self.states.DIVESQUAT
+                self.state = self.state_divesquat
             else:
-                self.state = self.states.STANDING_DEFENSE
+                self.state = self.StandingDefense(self)
 
 
 class SingleUseAnimation(Entity, AnimationMixin):

@@ -50,10 +50,10 @@ class VolleyballGame(Game):
         def reset():
             player1.xy = starting_positions[0]
             player1.u = player1.v = 0
-            player1.state = player1.states.STAND
+            player1.state = player1.state_stand
             player2.xy = starting_positions[1]
             player2.u = player2.v = 0
-            player2.state = player2.states.STAND
+            player2.state = player2.state_stand
 
         run = True
         debug = False
