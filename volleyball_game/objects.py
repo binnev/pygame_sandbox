@@ -1,3 +1,4 @@
+from collections import deque
 from pathlib import Path
 
 import numpy
@@ -755,7 +756,6 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         #  physics off) and "airborne" (physics on).
         #  The same goes for handling hits. States could allow or not allow self to be hit.
         self.handle_collisions()
-        # self.handle_hits()
         self.update_physics()
         self.update_animation()
         self.enforce_screen_limits(*self.level.game.screen_size)
@@ -826,19 +826,15 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         un_overlap(movable_object=self, immovable_object=platform)
 
     def handle_collisions(self):
-        # players = pygame.sprite.spritecollide(self, self.level.characters, dokill=False)
-        # for player in players:
-        #     self.handle_collision_with_player(player)
 
         platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
         for platform in platforms:
             self.handle_collision_with_platform(platform)
 
-        hitboxes = pygame.sprite.spritecollide(self, self.level.hitboxes, dokill=False)
-        for hitbox in hitboxes:
-            handle_hitbox_collision(hitbox, self)
-            self.last_touched_by = hitbox.owner
-            self.level.add(ParticleEffect(self.x, self.y), type="particle_effect")
+    def handle_hit(self, hitbox):
+        self.last_touched_by = hitbox.owner
+        self.level.add(ParticleEffect(self.x, self.y), type="particle_effect")
+        print(f"Ball hit by hitbox {id(hitbox)}")
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:
@@ -873,10 +869,61 @@ class Bowlingball(Ball):
     air_resistance = 0.01
 
 
-def handle_hitbox_collision(hitbox, object):
-    # todo: apply hitbox damage?
-    magnitude = hitbox.knockback / object.mass
-    u = magnitude * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
-    v = -magnitude * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
-    object.u = u
-    object.v = v
+class HitHandler:
+    def __init__(self):
+        # queue for storing
+        self.queue = deque(maxlen=200)
+
+    def handle_hits(self, hitboxes, objects):
+        """
+        Manage the effects of hitboxes hitting other entities.
+
+        This function shouldn't know the details of how each object reacts to getting hit. That
+        is the responsibility of the object to define those methods. This function's
+        responsibility is to ensure no object instance is hit more than once by the same hitbox
+        instance.
+        """
+
+        for object in objects:
+            colliding_hitboxes = pygame.sprite.spritecollide(object, hitboxes, dokill=False)
+            for hitbox in colliding_hitboxes:
+                # hitboxes should never hit their owner
+                if hitbox.owner == object:
+                    continue
+
+                # if these two instances have already met, don't repeat the interaction
+                if (hitbox, object) in self.queue:
+                    continue
+
+                self.handle_hitbox_collision(hitbox, object)
+                self.add_completed_pair(hitbox, object)
+
+        # todo: prevent duplicates
+        #  in order to do this, this function needs to maintain state. How?
+
+    @staticmethod
+    def handle_hitbox_collision(hitbox, object):
+        # todo: apply hitbox damage?
+        # here's where we calculate how far/fast the object gets knocked
+        magnitude = hitbox.knockback / object.mass
+        u = magnitude * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
+        v = -magnitude * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
+        object.u = u
+        object.v = v
+        object.handle_hit(hitbox)
+        hitbox.handle_hit(object)
+
+    def add_completed_pair(self, hitbox, object):
+        self.queue.append((hitbox, object))
+
+
+class PersistentHitbox(ParticleEffect):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.hitbox = Hitbox(
+            knockback_angle=90, knockback=5, width=200, height=200, angle=0, x=x, y=y, owner=self
+        )
+
+    def update(self):
+        super().update()
+        self.level.add_hitbox(self.hitbox)

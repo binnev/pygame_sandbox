@@ -9,7 +9,14 @@ from base.keyhandler import KeyHandler
 from volleyball_game import conf
 from volleyball_game.keys import Player1, Player2
 from volleyball_game.levels import VolleyballCourt
-from volleyball_game.objects import Stickman, Volleyball, Bowlingball, ParticleEffect
+from volleyball_game.objects import (
+    Stickman,
+    Volleyball,
+    Bowlingball,
+    ParticleEffect,
+    HitHandler,
+    PersistentHitbox,
+)
 
 
 class VolleyballGame(Game):
@@ -38,6 +45,7 @@ class VolleyballGame(Game):
         level.add(
             player1, player2, type="character",
         )
+        hit_handler = HitHandler()
 
         def reset():
             player1.xy = starting_positions[0]
@@ -72,7 +80,7 @@ class VolleyballGame(Game):
                     button = pygame.mouse.get_pressed()
                     x, y = pygame.mouse.get_pos()
                     if button[0]:
-                        level.add(ParticleEffect(x, y), type="particle_effect")
+                        level.add(PersistentHitbox(x, y), type="particle_effect")
                     # if button[-1]:
                     #     level.add(Bowlingball(x, y), type="projectile")
 
@@ -145,6 +153,7 @@ class VolleyballGame(Game):
                 ball_in_play = False
                 ball.kill()
 
+            # end the game
             if score[0] == 5 or score[1] == 5:
                 winner = "Left" if score[0] == 5 else "Right"
                 text = self.font.render(
@@ -167,6 +176,7 @@ class VolleyballGame(Game):
                     print("advanced 1 frame")
 
             level.update()
+            hit_handler.handle_hits(level.hitboxes, [*level.characters, *level.projectiles])
 
             # draw stuff
             level.draw(self.window, debug=debug)

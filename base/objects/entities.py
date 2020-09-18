@@ -652,8 +652,8 @@ class Hitbox(Entity):
     angle: float
     x: int = 0
     y: int = 0
-    x_offset: int
-    y_offset: int
+    x_offset: int = 0
+    y_offset: int = 0
 
     def __init__(
         self,
@@ -690,6 +690,12 @@ class Hitbox(Entity):
         self.image.set_colorkey(colorkey)
         self.image = pygame.transform.rotate(self.image, self.angle)
 
+    def handle_hit(self, object):
+        """ Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
+        context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
+        electric """
+        pass
+
     @property
     def rect(self):
         """ If the hitbox has an owner, it will follow its owner's x and y (offset by x_offset
@@ -717,7 +723,7 @@ class Hitbox(Entity):
     def draw(self, surface, debug=False):
         if debug:
             self.draw_debug(surface)
-        # self.draw_debug(surface)
+        self.draw_debug(surface)
 
     def flip_x(self):
         new_hitbox = copy(self)
