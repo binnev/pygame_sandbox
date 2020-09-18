@@ -23,10 +23,10 @@ class Game:
         self.clock = pygame.time.Clock()
         self.keyboard_input = KeyboardInputQueue(queue_length=5)
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
+        self.tick = 0
 
     def main(self):
         run = True
-        ii = 0
         while run:
             self.keyboard_input.read_new_inputs()
 
@@ -36,11 +36,10 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
-            print(ii)
-            ii += 1
             self.run()
             pygame.display.flip()
             self.clock.tick(self.fps)
+            self.tick += 1
 
     def run(self):
         """Override me"""
