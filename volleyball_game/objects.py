@@ -356,7 +356,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.BackAir(self)
 
         if (input.is_pressed(input.B) and (holding_forward or not holding_back)) or Cstick_forward:
-            self.state = self.AerialAttack(self)
+            self.state = self.ForwardAir(self)
 
         if input.is_pressed(input.C_DOWN):
             self.state = self.DownAir(self)
@@ -555,7 +555,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             if not instance.airborne:
                 instance.state = instance.state_stand
 
-    class AerialAttack(VolleyballMove):
+    class ForwardAir(VolleyballMove):
         sprite_animation_name = "flying_kick"
         left_and_right_versions = True
 
@@ -591,8 +591,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 height=10,
             )
             self.hitbox_mapping = {
-                (2, 2): [self.sweet_spot, self.back_knee],
-                (3, 6): [self.sour_spot, self.back_knee],
+                (1, 1): [self.sweet_spot, self.back_knee],
+                (2, 5): [self.sour_spot, self.back_knee],
             }
             super().__init__(instance)
 

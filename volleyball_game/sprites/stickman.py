@@ -20,12 +20,12 @@ file_mapping = {
     "run_left": {"filename": folder / "stick_run.png", "num_images": 8, "flip_horizontal": True,},
     "flying_kick_right": {
         "filename": folder / "stick_flying_kick.png",
-        "num_images": 8,
+        "num_images": 7,
         "looping": False,
     },
     "flying_kick_left": {
         "filename": folder / "stick_flying_kick.png",
-        "num_images": 8,
+        "num_images": 7,
         "flip_horizontal": True,
         "looping": False,
     },
