@@ -83,6 +83,13 @@ file_mapping = {
         "num_images": 14,
         "flip_horizontal": True,
     },
+    "stomp_right": {"filename": folder / "stick_stomp.png", "looping": False, "num_images": 6,},
+    "stomp_left": {
+        "filename": folder / "stick_stomp.png",
+        "looping": False,
+        "num_images": 6,
+        "flip_horizontal": True,
+    },
 }
 
 

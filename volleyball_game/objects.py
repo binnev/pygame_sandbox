@@ -335,28 +335,32 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.image = self.sprites["jump_" + self.facing].get_frame(self.frames_elapsed)
         input = self.input
 
+        holding_back = (self.facing_right and input.is_down(input.LEFT)) or (
+            not self.facing_right and input.is_down(input.RIGHT)
+        )
+        holding_forward = (self.facing_right and input.is_down(input.RIGHT)) or (
+            not self.facing_right and input.is_down(input.LEFT)
+        )
+        Cstick_back = (self.facing_right and input.is_pressed(input.C_LEFT)) or (
+            not self.facing_right and input.is_pressed(input.C_RIGHT)
+        )
+        Cstick_forward = (self.facing_right and input.is_pressed(input.C_RIGHT)) or (
+            not self.facing_right and input.is_pressed(input.C_LEFT)
+        )
+
         # aerial hits
-        # fixme: clean this up.
         if input.is_down(input.A):
             self.state = self.AerialDefense(self)
-        if input.is_pressed(input.B):
-            # if holding back -> "back air"
-            if (self.facing_right and input.is_down(input.LEFT)) or (
-                not self.facing_right and input.is_down(input.RIGHT)
-            ):
-                self.state = self.BackAir(self)
-            else:
-                # if holding forward or no direction input -> "forward air"
-                self.state = self.AerialAttack(self)
-        if (input.is_pressed(input.C_LEFT) and self.facing_right) or (
-            input.is_pressed(input.C_RIGHT) and not self.facing_right
-        ):
+
+        if (input.is_pressed(input.B) and holding_back) or Cstick_back:
             self.state = self.BackAir(self)
 
-        if (input.is_pressed(input.C_LEFT) and not self.facing_right) or (
-            input.is_pressed(input.C_RIGHT) and self.facing_right
-        ):
+        if (input.is_pressed(input.B) and (holding_forward or not holding_back)) or Cstick_forward:
             self.state = self.AerialAttack(self)
+
+        if input.is_pressed(input.C_DOWN):
+            self.state = self.DownAir(self)
+
         # double-jump
         if (
             input.is_pressed(input.Y)
@@ -630,6 +634,46 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.hitbox_mapping = {
                 (1, 2): [self.sweet_spot],
                 (3, 99): [self.sour_spot],
+            }
+            super().__init__(instance)
+
+        def __call__(self):
+            super().__call__()
+            instance = self.instance
+            instance.enforce_max_fall_speed()
+            instance.allow_fastfall()
+            instance.allow_aerial_drift()
+            self.end_when_animation_ends(instance.state_fall)
+            if not instance.airborne:
+                instance.state = instance.state_stand
+
+    class DownAir(VolleyballMove):
+        sprite_animation_name = "stomp"
+        left_and_right_versions = True
+
+        def __init__(self, instance):
+            self.nipple_spike = Hitbox(
+                owner=instance,
+                knockback=20,
+                angle=0,
+                knockback_angle=280,
+                x_offset=0,
+                y_offset=-70,
+                width=60,
+                height=30,
+            )
+            self.feet = Hitbox(
+                owner=instance,
+                knockback=25,
+                angle=0,
+                knockback_angle=270,
+                x_offset=5,
+                y_offset=-20,
+                width=30,
+                height=60,
+            )
+            self.hitbox_mapping = {
+                (3, 5): [self.feet, self.nipple_spike],
             }
             super().__init__(instance)
 
