@@ -93,6 +93,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     fastfall_multiplier: float
     aerial_jumps: int
     jump_power: float
+    shorthop_power: float
     jumpsquat_frames: int
     friction: float
     air_resistance: float
@@ -301,7 +302,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
 
         if self.ticks_elapsed == self.jumpsquat_frames:
-            self.enter_jump()
+            # if still holding jump, do a fullhop
+            if self.input.is_down(self.input.Y):
+                self.enter_jump()
+            # else do a shorthop
+            else:
+                self.enter_shorthop()
 
     def state_divesquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
@@ -318,6 +324,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def enter_jump(self):
         self.v = -self.jump_power
+        self.y -= 1  # need this to become airborne. Hacky?
+        self.state = self.state_fall
+        self.fastfall = False
+
+    def enter_shorthop(self):
+        self.v = -self.shorthop_power
         self.y -= 1  # need this to become airborne. Hacky?
         self.state = self.state_fall
         self.fastfall = False
@@ -560,7 +572,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.sweet_spot = Hitbox(
                 owner=instance,
                 knockback=20,
-                knockback_angle=30,
+                knockback_angle=10,
                 angle=0,
                 x_offset=20,
                 y_offset=-40,
@@ -569,8 +581,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             )
             self.sour_spot = Hitbox(
                 owner=instance,
-                knockback=15,
-                knockback_angle=30,
+                knockback=10,
+                knockback_angle=45,
                 angle=0,
                 x_offset=25,
                 y_offset=-40,
@@ -578,8 +590,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 height=10,
             )
             self.hitbox_mapping = {
-                (2, 4): [self.sweet_spot, self.back_knee],
-                (5, 6): [self.sour_spot, self.back_knee],
+                (2, 2): [self.sweet_spot, self.back_knee],
+                (3, 6): [self.sour_spot, self.back_knee],
             }
             super().__init__(instance)
 
@@ -754,6 +766,7 @@ class Stickman(Player):
     fastfall_multiplier = 3
     aerial_jumps = 1
     jump_power = 20
+    shorthop_power = 10
     jumpsquat_frames = 3
     friction = 1  # 0.5
     air_resistance = 0.03
