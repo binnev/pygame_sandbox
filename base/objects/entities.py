@@ -690,6 +690,9 @@ class Hitbox(Entity):
         self.image.set_colorkey(colorkey)
         self.image = pygame.transform.rotate(self.image, self.angle)
 
+    def __repr__(self):
+        return f"Hitbox with id {id(self)}"
+
     def handle_hit(self, object):
         """ Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
         context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
@@ -731,36 +734,3 @@ class Hitbox(Entity):
         new_hitbox.angle = 180 - self.angle
         new_hitbox.x_offset = -self.x_offset
         return new_hitbox
-
-
-class Move:
-    sprite_animation: SpriteAnimation
-    hitbox_mapping: dict  # mapping of frame keys to hitbox values
-    # fixme: Hitboxes can't be defined without an owner yet. I need this, because I want to
-    #  be able to define them abstractly. I want to describe the hitboxes for all Rannos
-    #  before they are assigned to an instance of Ranno.
-    # todo: make sure this works when facing left!
-    # todo: give hitbox a knockback_angle, and make sure THAT works facing left
-
-    def __init__(self, instance):
-        self.instance = instance
-        self.hitbox_data = self.map_hitboxes(self.hitbox_mapping)
-
-    def __call__(self, n):
-        """ This is the equivalent to the function states. Here n is either ticks or frames;
-        we're using it to pick up the correct sprite image and hitboxes. """
-        self.image = self.sprite_animation.get_frame(n)
-        self.active_hitboxes = self.get_active_hitboxes(n)
-
-    @staticmethod
-    def map_hitboxes(hitbox_mapping):
-        # todo: allow some frames to have no hitboxes. How will I represent that?
-        return {
-            frame: hitboxes
-            for frames, hitboxes in hitbox_mapping.items()
-            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
-        }
-
-    def get_active_hitboxes(self, n):
-        hitbox_data = self.hitbox_data.get(n, [])
-        return [Hitbox(owner=self.instance, **data) for data in hitbox_data]

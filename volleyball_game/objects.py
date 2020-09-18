@@ -7,7 +7,7 @@ from numpy.core._multiarray_umath import sign
 
 from base.animation import SpriteDict, SpriteAnimation
 from base.keyhandler import KeyHandler
-from base.objects.entities import Entity, CollisionMixin, Move, Hitbox
+from base.objects.entities import Entity, CollisionMixin, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
 from volleyball_game import conf
@@ -18,31 +18,55 @@ from volleyball_game.sprites.volleyball import volleyball_sprites
 
 # todo: allow states to describe the rect dimensions when the entity is in that state. E.g.
 #  during a dive the player's rect should be longer and thinner.
-class VolleyballMove(Move):
+class VolleyballMove:
     sprite_animation_name: str
+    sprite_animation: SpriteAnimation
+    hitbox_mapping: dict  # mapping of frame keys to hitbox values
     left_and_right_versions: bool
     hitboxes: ["Hitbox"]
     active_hitboxes: ["Hitbox"]
 
+    def __init__(self, instance):
+        self.instance = instance
+        # at instantiation, create flipped hitboxes.
+        self.hitbox_mapping_flipped = {
+            key: self.flip_hitboxes(hitboxes) for key, hitboxes in self.hitbox_mapping.items()
+        }
+        self.hitboxes = self.map_hitboxes(self.hitbox_mapping)
+        self.hitboxes_flipped = self.map_hitboxes(self.hitbox_mapping_flipped)
+
     def __call__(self):
-        """ This is the equivalent to the function states """
+        """ This is the equivalent to the function states. """
         # fixme: convert to frames
         # flip sprite animation automatically
-        name = self.sprite_animation_name
-        if self.left_and_right_versions:
-            name += "_" + self.instance.facing
+        name = self.sprite_animation_name + "_" + self.instance.facing
         self.sprite_animation = self.instance.sprites[name]
 
-        super().__call__(self.instance.frames_elapsed)
+        frames_elapsed = self.instance.frames_elapsed
+        self.image = self.sprite_animation.get_frame(frames_elapsed)
+
+        # flip hitboxes automatically
+        self.active_hitboxes = self.get_active_hitboxes(
+            frames_elapsed, flip=not self.instance.facing_right
+        )
 
         self.instance.image = self.image
 
-        # flip hitboxes
-        if not self.instance.facing_right:
-            self.active_hitboxes = self.flip_hitboxes(self.active_hitboxes)
-
         for hitbox in self.active_hitboxes:
             self.instance.level.add_hitbox(hitbox)
+
+    @staticmethod
+    def map_hitboxes(hitbox_mapping):
+        # todo: allow some frames to have no hitboxes. How will I represent that?
+        return {
+            frame: hitboxes
+            for frames, hitboxes in hitbox_mapping.items()
+            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
+        }
+
+    def get_active_hitboxes(self, n, flip):
+        source = self.hitboxes if not flip else self.hitboxes_flipped
+        return source.get(n, [])
 
     def end_when_animation_ends(self, next_state):
         if not self.sprite_animation.get_frame(self.instance.frames_elapsed + 1):
@@ -123,15 +147,15 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.states.FALL: self.state_fall,
             self.states.RUN: self.state_run,
             self.states.SQUAT: self.state_squat,
-            self.states.DIVE: self.Dive(self),
             self.states.DIVESQUAT: self.state_divesquat,
             self.states.DIVE_GETUP: self.state_dive_getup,
-            self.states.STANDING_DEFENSE: self.StandingDefense(self),
-            self.states.AERIAL_DEFENSE: self.AerialDefense(self),
-            self.states.AERIAL_ATTACK: self.AerialAttack(self),
-            self.states.BACK_AIR: self.BackAir(self),
-            self.states.WEIRD_HIT: self.WeirdHit(self),
-            self.states.TAUNT: self.Taunt(self),
+            self.states.DIVE: self.Dive,
+            self.states.STANDING_DEFENSE: self.StandingDefense,
+            self.states.AERIAL_DEFENSE: self.AerialDefense,
+            self.states.AERIAL_ATTACK: self.AerialAttack,
+            self.states.BACK_AIR: self.BackAir,
+            self.states.WEIRD_HIT: self.WeirdHit,
+            self.states.TAUNT: self.Taunt,
         }
         self.aerial_jumps_used = 0
 
@@ -213,6 +237,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def execute_state(self):
         """Each state has a corresponding function that handles keypresses and events"""
         func = self.state_lookup[self.state]  # grab the state function
+        # if it's a class based move, instantiate it.
+        if isinstance(func, type) and issubclass(func, VolleyballMove):
+            func = func(self)
         func()  # execute it
 
     def update_physics(self):
@@ -368,20 +395,24 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.v = 0
 
     class Dive(VolleyballMove):
-        sweet_spot = dict(
-            knockback=20,
-            knockback_angle=95,
-            angle=0,
-            x_offset=30,
-            y_offset=-45,
-            width=50,
-            height=20,
-        )
-        hitbox_mapping = {
-            (0, 999): [sweet_spot],
-        }
         sprite_animation_name = "dive"
         left_and_right_versions = True
+
+        def __init__(self, instance):
+            self.sweet_spot = Hitbox(
+                owner=instance,
+                knockback=20,
+                knockback_angle=95,
+                angle=0,
+                x_offset=30,
+                y_offset=-45,
+                width=50,
+                height=20,
+            )
+            self.hitbox_mapping = {
+                (0, 999): [self.sweet_spot],
+            }
+            super().__init__(instance)
 
         def __call__(self):
             super().__call__()
@@ -410,31 +441,36 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.states.STAND
 
     class StandingDefense(VolleyballMove):
-        sweet_spot = dict(
-            knockback=20,
-            knockback_angle=70,
-            angle=0,
-            x_offset=15,
-            y_offset=-45,
-            width=50,
-            height=20,
-        )
-        sour_spot = dict(
-            knockback=10,
-            knockback_angle=91,
-            angle=0,
-            x_offset=20,
-            y_offset=-45,
-            width=30,
-            height=10,
-        )
-        # todo: if key is None the hitbox should map to ALL frames.
-        hitbox_mapping = {
-            (0, 1): [sweet_spot],
-            (2, 999): [sour_spot],
-        }
         sprite_animation_name = "standing_hit"
         left_and_right_versions = True
+
+        def __init__(self, instance):
+            self.sweet_spot = Hitbox(
+                owner=instance,
+                knockback=20,
+                knockback_angle=70,
+                angle=0,
+                x_offset=15,
+                y_offset=-45,
+                width=50,
+                height=20,
+            )
+            self.sour_spot = Hitbox(
+                owner=instance,
+                knockback=10,
+                knockback_angle=91,
+                angle=0,
+                x_offset=20,
+                y_offset=-45,
+                width=30,
+                height=10,
+            )
+            # todo: if key is None the hitbox should map to ALL frames.
+            self.hitbox_mapping = {
+                (0, 1): [self.sweet_spot],
+                (2, 999): [self.sour_spot],
+            }
+            super().__init__(instance)
 
         def __call__(self):
             super().__call__()
@@ -442,71 +478,81 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 self.instance.state = self.instance.states.STAND
 
     class WeirdHit(VolleyballMove):
-        first_hitbox = dict(
-            knockback=20,
-            angle=10,
-            knockback_angle=80,
-            x_offset=15,
-            y_offset=-55,
-            width=40,
-            height=20,
-        )
-        second_hitbox = dict(
-            knockback=20,
-            angle=-10,
-            knockback_angle=120,
-            x_offset=5,
-            y_offset=-90,
-            width=50,
-            height=30,
-        )
-        third_hitbox = dict(
-            knockback=20,
-            angle=10,
-            knockback_angle=180,
-            x_offset=-15,
-            y_offset=-90,
-            width=50,
-            height=30,
-        )
-
-        hitbox_mapping = {
-            (1, 2): [first_hitbox],
-            (2, 3): [second_hitbox],
-            (3, 6): [third_hitbox],
-        }
         sprite_animation_name = "weird_hit"
         left_and_right_versions = True
+
+        def __init__(self, instance):
+            self.first_hitbox = Hitbox(
+                owner=instance,
+                knockback=20,
+                angle=10,
+                knockback_angle=80,
+                x_offset=15,
+                y_offset=-55,
+                width=40,
+                height=20,
+            )
+            self.second_hitbox = Hitbox(
+                owner=instance,
+                knockback=20,
+                angle=-10,
+                knockback_angle=120,
+                x_offset=5,
+                y_offset=-90,
+                width=50,
+                height=30,
+            )
+            self.third_hitbox = Hitbox(
+                owner=instance,
+                knockback=20,
+                angle=10,
+                knockback_angle=180,
+                x_offset=-15,
+                y_offset=-90,
+                width=50,
+                height=30,
+            )
+            self.hitbox_mapping = {
+                (1, 2): [self.first_hitbox],
+                (2, 3): [self.second_hitbox],
+                (3, 6): [self.third_hitbox],
+            }
+            super().__init__(instance)
 
         def __call__(self):
             super().__call__()
             self.end_when_animation_ends(self.instance.states.STAND)
 
     class AerialDefense(VolleyballMove):
-        sweet_spot = dict(
-            knockback=20,
-            knockback_angle=70,
-            angle=0,
-            x_offset=0,
-            y_offset=-90,
-            width=50,
-            height=20,
-        )
-        sour_spot = dict(
-            knockback=10,
-            knockback_angle=91,
-            angle=0,
-            x_offset=0,
-            y_offset=-90,
-            width=30,
-            height=10,
-        )
-        hitbox_mapping = {
-            (0, 1): [sweet_spot],
-            (2, 999): [sour_spot],
-        }
         sprite_animation_name = "aerial_defense"
         left_and_right_versions = True
+
+        def __init__(self, instance):
+            self.sweet_spot = Hitbox(
+                owner=instance,
+                knockback=20,
+                knockback_angle=70,
+                angle=0,
+                x_offset=0,
+                y_offset=-90,
+                width=50,
+                height=20,
+            )
+            self.sour_spot = Hitbox(
+                owner=instance,
+                knockback=10,
+                knockback_angle=91,
+                angle=0,
+                x_offset=0,
+                y_offset=-90,
+                width=30,
+                height=10,
+            )
+            self.hitbox_mapping = {
+                (0, 1): [self.sweet_spot],
+                (2, 999): [self.sour_spot],
+            }
+            super().__init__(instance)
 
         def __call__(self):
             super().__call__()
@@ -517,48 +563,45 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 self.instance.state = self.instance.states.FALL
 
     class AerialAttack(VolleyballMove):
-        hand_hitbox = dict(
-            knockback=5,
-            knockback_angle=100,
-            angle=0,
-            x_offset=-20,
-            y_offset=-70,
-            width=50,
-            height=30,
-        )
-        back_knee = dict(
-            knockback=5,
-            knockback_angle=160,
-            angle=30,
-            x_offset=-20,
-            y_offset=-30,
-            width=40,
-            height=30,
-        )
-        sweet_spot = dict(
-            knockback=20,
-            knockback_angle=30,
-            angle=0,
-            x_offset=20,
-            y_offset=-40,
-            width=60,
-            height=20,
-        )
-        sour_spot = dict(
-            knockback=15,
-            knockback_angle=30,
-            angle=0,
-            x_offset=25,
-            y_offset=-40,
-            width=30,
-            height=10,
-        )
-        hitbox_mapping = {
-            (2, 4): [sweet_spot, back_knee],
-            (5, 6): [sour_spot, back_knee],
-        }
         sprite_animation_name = "flying_kick"
         left_and_right_versions = True
+
+        def __init__(self, instance):
+            self.back_knee = Hitbox(
+                owner=instance,
+                knockback=5,
+                knockback_angle=90,  # 160,
+                angle=30,
+                x_offset=-20,
+                y_offset=-30,
+                width=200,  # 40,
+                height=200,  # 30,
+            )
+            self.sweet_spot = Hitbox(
+                owner=instance,
+                knockback=20,
+                knockback_angle=30,
+                angle=0,
+                x_offset=20,
+                y_offset=-40,
+                width=60,
+                height=20,
+            )
+            self.sour_spot = Hitbox(
+                owner=instance,
+                knockback=15,
+                knockback_angle=30,
+                angle=0,
+                x_offset=25,
+                y_offset=-40,
+                width=30,
+                height=10,
+            )
+            self.hitbox_mapping = {
+                (2, 4): [self.sweet_spot, self.back_knee],
+                (5, 6): [self.sour_spot, self.back_knee],
+            }
+            super().__init__(instance)
 
         def __call__(self):
             super().__call__()
@@ -568,31 +611,35 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.end_when_animation_ends(self.instance.states.FALL)
 
     class BackAir(VolleyballMove):
-        sweet_spot = dict(
-            knockback=20,
-            angle=-30,
-            knockback_angle=120,
-            x_offset=20,
-            y_offset=-80,
-            width=30,
-            height=50,
-        )
-        sour_spot = dict(
-            knockback=10,
-            angle=-30,
-            knockback_angle=120,
-            x_offset=20,
-            y_offset=-80,
-            width=25,
-            height=45,
-        )
-
-        hitbox_mapping = {
-            (1, 2): [sweet_spot],
-            (3, 99): [sour_spot],
-        }
         sprite_animation_name = "back_air"
         left_and_right_versions = True
+
+        def __init__(self, instance):
+            self.sweet_spot = Hitbox(
+                owner=instance,
+                knockback=20,
+                angle=-30,
+                knockback_angle=120,
+                x_offset=20,
+                y_offset=-80,
+                width=30,
+                height=50,
+            )
+            self.sour_spot = Hitbox(
+                owner=instance,
+                knockback=10,
+                angle=-30,
+                knockback_angle=120,
+                x_offset=20,
+                y_offset=-80,
+                width=25,
+                height=45,
+            )
+            self.hitbox_mapping = {
+                (1, 2): [self.sweet_spot],
+                (3, 99): [self.sour_spot],
+            }
+            super().__init__(instance)
 
         def __call__(self):
             super().__call__()
@@ -602,30 +649,35 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.end_when_animation_ends(self.instance.states.FALL)
 
     class Taunt(VolleyballMove):
-        hitbox = dict(
-            knockback=25,
-            angle=10,
-            knockback_angle=50,
-            x_offset=0,
-            y_offset=-60,
-            width=90,
-            height=60,
-        )
-        hitbox2 = dict(
-            knockback=15,
-            angle=-30,
-            knockback_angle=90,
-            x_offset=0,
-            y_offset=-35,
-            width=90,
-            height=60,
-        )
-        hitbox_mapping = {
-            (3, 9): [hitbox],
-            (10, 999): [hitbox2],
-        }
         left_and_right_versions = True
         sprite_animation_name = "taunt"
+
+        def __init__(self, instance):
+            self.hitbox = Hitbox(
+                owner=instance,
+                knockback=25,
+                angle=10,
+                knockback_angle=50,
+                x_offset=0,
+                y_offset=-60,
+                width=90,
+                height=60,
+            )
+            self.hitbox2 = Hitbox(
+                owner=instance,
+                knockback=15,
+                angle=-30,
+                knockback_angle=90,
+                x_offset=0,
+                y_offset=-35,
+                width=90,
+                height=60,
+            )
+            self.hitbox_mapping = {
+                (3, 9): [self.hitbox],
+                (10, 999): [self.hitbox2],
+            }
+            super().__init__(instance)
 
         def __call__(self):
             super().__call__()
