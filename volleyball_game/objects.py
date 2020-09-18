@@ -766,7 +766,7 @@ class Stickman(Player):
     fastfall_multiplier = 3
     aerial_jumps = 1
     jump_power = 20
-    shorthop_power = 10
+    shorthop_power = 11
     jumpsquat_frames = 3
     friction = 1  # 0.5
     air_resistance = 0.03
