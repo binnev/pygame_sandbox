@@ -186,10 +186,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def update(self):
         self.update_physics()
-        try:
-            self.state()
-        except Exception as e:
-            print("")
+        self.state()
         self.enforce_screen_limits(*self.level.game.screen_size)
         # self.debug_print()
         self.update_cooldowns()
@@ -723,6 +720,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             else:
                 self.state = self.StandingDefense(self)
 
+    def handle_hit(self, hitbox):
+        self.level.add(ParticleEffect(*hitbox.rect.center), type="particle_effect")
+
 
 class SingleUseAnimation(Entity, AnimationMixin):
     width: int
@@ -753,6 +753,7 @@ class ParticleEffect(SingleUseAnimation):
 
 
 class Stickman(Player):
+    mass = 1
     width = 80
     height = 70
     _state = None
@@ -768,7 +769,7 @@ class Stickman(Player):
     jump_power = 20
     shorthop_power = 11
     jumpsquat_frames = 3
-    friction = 1  # 0.5
+    friction = 0.8
     air_resistance = 0.03
     crouch_height_multiplier = 0.7
 
@@ -877,7 +878,6 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         un_overlap(movable_object=self, immovable_object=platform)
 
     def handle_collisions(self):
-
         platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
         for platform in platforms:
             self.handle_collision_with_platform(platform)
@@ -961,6 +961,8 @@ class HitHandler:
         v = -magnitude * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
         object.u = u
         object.v = v
+        object.x += u
+        object.y += v
         object.handle_hit(hitbox)
         hitbox.handle_hit(object)
 

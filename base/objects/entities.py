@@ -678,8 +678,12 @@ class Hitbox(Entity):
         self.angle = angle if angle is not None else self.angle
         self.x_offset = x_offset if x_offset is not None else self.x_offset
         self.y_offset = y_offset if y_offset is not None else self.y_offset
+        self.x = x if x is not None else self.x
+        self.y = y if y is not None else self.y
 
-        super().__init__(x=x, y=y, width=width, height=height, **kwargs)
+        super().__init__(
+            x=x, y=y, width=width, height=height, **kwargs,
+        )
 
         self.image = pygame.Surface((self.width, self.height)).convert_alpha()
         self.image.fill((0, 0, 0, 0))

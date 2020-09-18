@@ -76,6 +76,7 @@ class VolleyballGame(Game):
         to_serve = "left"
         ball_in_play = False
         game_started = False
+        max_score = 10
         while run:
             ii += 1
             for input_device in self.input_devices:
@@ -168,8 +169,8 @@ class VolleyballGame(Game):
                 ball.kill()
 
             # end the game
-            if score[0] == 5 or score[1] == 5:
-                winner = "Left" if score[0] == 5 else "Right"
+            if score[0] == max_score or score[1] == max_score:
+                winner = "Left" if score[0] == max_score else "Right"
                 text = self.font.render(
                     f"{winner} player wins {score[0]}-{score[1]}", True, (0, 0, 0)
                 )
