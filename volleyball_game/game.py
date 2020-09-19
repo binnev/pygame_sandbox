@@ -23,11 +23,13 @@ class VolleyballGame(Game):
     window_height = conf.SCREEN_HEIGHT
     window_caption = "LAG SPIKE"
     ticks_per_frame = conf.TICKS_PER_SPRITE_FRAME
+    font_name = "ubuntu"
+    font_size = 50
 
     def __init__(self):
         super().__init__()
-        self.font = pygame.font.Font(pygame.font.match_font("ubuntu"), 50)
-        Canvas.initialise()
+        self.canvas = Canvas.initialise()
+
         # input devices that are specific to this game
         self.keyboard0 = Keyboard0()
         self.keyboard1 = Keyboard1()
@@ -42,6 +44,7 @@ class VolleyballGame(Game):
 
     def run(self):
 
+        # setup stuff before the main game loop:
         self.window.fill((255, 255, 255))
         level = VolleyballCourt(game=self)
         starting_positions = [
@@ -64,25 +67,100 @@ class VolleyballGame(Game):
             player2.u = player2.v = 0
             player2.state = player2.state_stand
 
+        def score_bouncing_balls(level, match):
+            """ do scoring if ball bounces off ground. """
+            bouncing_balls = pygame.sprite.spritecollide(
+                level.ground, level.projectiles, dokill=False
+            )
+            for ball in bouncing_balls:
+                time.sleep(1)
+                # right player goal
+                if ball.x < level.net.x:
+                    match.score[-1] += 1
+                    match.to_serve = "left"
+                else:
+                    match.score[0] += 1
+                    match.to_serve = "right"
+                ball.kill()
+                match.ball_in_play = False
+
+        def tee_up(level, match, player1, player2):
+            # tee up the ball for whoever's turn it is to serve
+            reset()
+            x = player1.x if match.to_serve == "left" else player2.x
+            level.add(Volleyball(x, 100), type="projectile")
+            match.ball_in_play = True
+
+        def score_balls_out_of_play(level, match):
+            # do scoring if ball falls off bottom
+            for ball in level.projectiles:
+                if ball.rect.bottom > conf.SCREEN_HEIGHT:
+                    # player 1 knocked the ball out
+                    if ball.last_touched_by == player1:
+                        match.score[-1] += 1
+                        match.to_serve = "left"
+                    else:
+                        match.score[0] += 1
+                        match.to_serve = "right"
+                    time.sleep(1)
+                    match.ball_in_play = False
+                    ball.kill()
+
+        def score_balls_in_net(level, match):
+            # do scoring if ball bounces off net
+            bouncing_balls = pygame.sprite.spritecollide(level.net, level.projectiles, dokill=False)
+            for ball in bouncing_balls:
+                # if the ball bounces off the top of the net, ignore it
+                if ball.centroid.y < level.net.rect.top:
+                    continue
+                if ball.last_touched_by == player1:
+                    match.score[-1] += 1
+                    match.to_serve = "left"
+                else:
+                    match.score[0] += 1
+                    match.to_serve = "right"
+                time.sleep(1)
+                match.ball_in_play = False
+                ball.kill()
+
+        def end_game(level, match):
+            # end the game
+            if match.score[0] == match.max_score or match.score[1] == match.max_score:
+                winner = "Left" if match.score[0] == match.max_score else "Right"
+                text = self.font.render(
+                    f"{winner} player wins {match.score[0]}-{match.score[1]}", True, (0, 0, 0)
+                )
+                textRect = text.get_rect()
+                textRect.center = (self.window_width // 2, 50)
+                self.window.blit(text, textRect)
+                pygame.display.flip()
+                time.sleep(3)
+                match.score = [0, 0]
+                reset()
+
         run = True
         debug = False
         frame_by_frame = False
-        ii = 0
-        score = [0, 0]
-        to_serve = "left"
-        ball_in_play = False
-        game_started = False
-        max_score = 10
+
+        # fixme: this is ugly and hacky
+        class Match:
+            score = [0, 0]
+            to_serve = "left"
+            ball_in_play = False
+            game_started = False
+            max_score = 10
+
+        # main volleyball game loop:
         while run:
-            ii += 1
-            for input_device in self.input_devices:
-                input_device.read_new_inputs()
+            # todo: duplicated
+            for device in self.input_devices:
+                device.read_new_inputs()
             self.window.fill((255, 255, 255))  # clear screen
             Canvas.get_instance().fill((255, 255, 255))
 
             if self.keyboard.is_pressed(pygame.K_ESCAPE):
                 run = False
-                time.sleep(2)
+                time.sleep(1)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -98,7 +176,7 @@ class VolleyballGame(Game):
             if self.keyboard.is_pressed(pygame.K_F1):
                 debug = not debug
             if self.keyboard.is_pressed(pygame.K_RETURN):
-                game_started = not game_started
+                Match.game_started = not Match.game_started
             if self.keyboard.is_pressed(pygame.K_F2):
                 frame_by_frame = not frame_by_frame
             if self.keyboard.is_pressed(pygame.K_b):
@@ -111,77 +189,16 @@ class VolleyballGame(Game):
                 # we draw to canvas using standard pygame drawing methods
                 pygame.draw.rect(Canvas.get_instance(), transparent_red, (100, 100, 60, 200))
 
-            # tee up the ball for whoever's turn it is to serve
-            if not ball_in_play and game_started:
-                reset()
-                x = player1.x if to_serve == "left" else player2.x
-                level.add(Volleyball(x, 100), type="projectile")
-                ball_in_play = True
-
-            # do scoring if ball bounces off ground.
-            bouncing_balls = pygame.sprite.spritecollide(
-                level.ground, level.projectiles, dokill=False
-            )
-            for ball in bouncing_balls:
-                time.sleep(1)
-                # right player goal
-                if ball.x < level.net.x:
-                    score[-1] += 1
-                    to_serve = "left"
-                else:
-                    score[0] += 1
-                    to_serve = "right"
-                ball.kill()
-                ball_in_play = False
-
-            # do scoring if ball falls off bottom
-            for ball in level.projectiles:
-                if ball.rect.bottom > conf.SCREEN_HEIGHT:
-                    # player 1 knocked the ball out
-                    if ball.last_touched_by == player1:
-                        score[-1] += 1
-                        to_serve = "left"
-                    else:
-                        score[0] += 1
-                        to_serve = "right"
-                    time.sleep(1)
-                    ball_in_play = False
-                    ball.kill()
-
-            # do scoring if ball bounces off net
-            bouncing_balls = pygame.sprite.spritecollide(level.net, level.projectiles, dokill=False)
-            for ball in bouncing_balls:
-                # if the ball bounces off the top of the net, ignore it
-                if ball.centroid.y < level.net.rect.top:
-                    continue
-                if ball.last_touched_by == player1:
-                    score[-1] += 1
-                    to_serve = "left"
-                else:
-                    score[0] += 1
-                    to_serve = "right"
-                time.sleep(1)
-                ball_in_play = False
-                ball.kill()
-
-            # end the game
-            if score[0] == max_score or score[1] == max_score:
-                winner = "Left" if score[0] == max_score else "Right"
-                text = self.font.render(
-                    f"{winner} player wins {score[0]}-{score[1]}", True, (0, 0, 0)
-                )
-                textRect = text.get_rect()
-                textRect.center = (self.window_width // 2, 50)
-                self.window.blit(text, textRect)
-                pygame.display.flip()
-                time.sleep(3)
-                score = [0, 0]
-                reset()
+            if not Match.ball_in_play and Match.game_started:
+                tee_up(level, Match, player1, player2)
+            score_bouncing_balls(level, Match)
+            score_balls_out_of_play(level, Match)
+            score_balls_in_net(level, Match)
+            end_game(level, Match)
 
             # wait for button press before advancing
             if frame_by_frame:
                 if not self.keyboard.is_pressed(pygame.K_F3):
-                    print(f"waiting on frame {ii}")
                     continue  # skip the rest of the actions
                 else:
                     print("advanced 1 frame")
@@ -192,7 +209,7 @@ class VolleyballGame(Game):
             # draw stuff
             level.draw(self.window, debug=debug)
             # draw scoreboard
-            text = self.font.render(f"{score[0]}-{score[1]}", True, (0, 0, 0))
+            text = self.font.render(f"{Match.score[0]}-{Match.score[1]}", True, (0, 0, 0))
             textRect = text.get_rect()
             textRect.center = (self.window_width // 2, 50)
             self.window.blit(text, textRect)

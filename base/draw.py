@@ -10,6 +10,8 @@ from base.singleton import Singleton
 
 
 class Canvas(pygame.Surface, Singleton):
+    # todo: I don't think this should be a singleton. What if I want to have several canvases;
+    #  one for the background, one for the foreground, etc?
     def __init__(self):
         """ This method is used by Singleton to create an instance of pygame.Surface which is
         stored as Canvas.instance. This surface has the same dimensions as the game

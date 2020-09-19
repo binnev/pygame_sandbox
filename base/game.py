@@ -11,26 +11,32 @@ class Game:
     window_height: int
     window_caption: str
     ticks_per_frame: int
+    font_name: str = "ubuntucondensed"
+    font_size: int = 30
 
     def __init__(self):
         pygame.init()
         pygame.font.init()
 
-        self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
+        self.font = pygame.font.Font(pygame.font.match_font(self.font_name), self.font_size)
         self.window = pygame.display.set_mode((self.window_width, self.window_height))
         pygame.display.set_caption(self.window_caption)
         self.clock = pygame.time.Clock()
 
+        # input devices
         self.keyboard = KeyboardInputQueue()
-
         self.input_devices = [self.keyboard]
 
     def main(self):
         self.tick = 0
         run = True
         while run:
-            self.keyboard.read_new_inputs()
+            # input devices should be read once per tick in the main game loop.
+            # That can be the single source of truth regarding inputs.
+            for device in self.input_devices:
+                device.read_new_inputs()
 
+            # provide a default exit option
             if self.keyboard.is_pressed(pygame.K_ESCAPE):
                 run = False
             for event in pygame.event.get():
