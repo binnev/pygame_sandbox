@@ -38,7 +38,7 @@ class GuiTestGround(Game):
 
         def mouse_hovering_over(element):
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            return thing.rect.collidepoint(mouse_x, mouse_y)
+            return element.rect.collidepoint(mouse_x, mouse_y)
 
         def mouse_clicking(element):
             mouse_buttons = pygame.mouse.get_pressed()
