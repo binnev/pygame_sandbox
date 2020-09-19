@@ -86,7 +86,7 @@ class GamecubeControllerReader:
     YELLOW_STICK_INPUT_RANGE = (0.1, 0.86)
     TRIGGER_INPUT_RANGE = (-0.7, 1)
 
-    def __init__(self, joystick_id):
+    def __init__(self, joystick_id: int):
         self.joystick = pygame.joystick.Joystick(joystick_id)  # get the joystick from pygame
         self.joystick.init()  # turn on the joystick
 
@@ -264,14 +264,14 @@ class GamecubeControllerReader:
 
 class GamecubeControllerInputQueue(InputQueue):
     """
-    A wrapper around GamecubeController and InputQueue which leaves all the fiddly input-reading
-    logic to GamecubeController, and provides a convenient interface for accessing the queue of
-    inputs.
+    A wrapper around GamecubeControllerReader and InputQueue which leaves all the fiddly
+    input-reading logic to GamecubeControllerReader, and provides a convenient interface for
+    accessing the queue of inputs.
 
-    This allows games to subclass this class and define new key mappings
+    This allows games to subclass this class and define new key mappings e.g. "A" --> "attack"
     """
 
-    def __init__(self, controller, queue_length=5):
+    def __init__(self, controller: GamecubeControllerReader, queue_length=5):
         super().__init__(queue_length)
         self.controller = controller
 
@@ -280,6 +280,7 @@ class GamecubeControllerInputQueue(InputQueue):
 
 
 if __name__ == "__main__":
+    """ visual input checking. """
 
     class TextPrint(object):
         def __init__(self):
