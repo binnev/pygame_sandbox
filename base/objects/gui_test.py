@@ -26,6 +26,8 @@ class GuiTestGround(Game):
                 text="press me",
                 color=pygame.color.THECOLORS["red"],
                 text_color=(255, 255, 255, 255),
+                on_focus=lambda: print("hovering!"),
+                on_click=lambda: print("clicking!"),
             )
         )
         super().main()

@@ -1,4 +1,5 @@
 import pygame
+from pygame.color import Color
 
 from base.objects.entities import Entity
 from base.utils import mask_to_surface
@@ -23,14 +24,28 @@ class GuiButton(Entity):
     focus: bool  # is the mouse hovering over the button at the moment?
     click: bool  # is the button currently being clicked?
 
-    def __init__(self, *args, **kwargs):
-        self.text = kwargs.pop("text", None)
-        self.text_color = kwargs.pop("text_color", None)
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        text=None,
+        text_color=None,
+        on_click: "callback" = None,
+        on_focus: "callback" = None,
+        **kwargs
+    ):
+        self.text = text
+        self.text_color = text_color
         if not self.text_color:
             self.text_color = self.debug_color
-        super().__init__(*args, **kwargs)
+        super().__init__(x=x, y=y, width=width, height=height, **kwargs)
         self.focus = False
         self.click = False
+        self.highlight = False
+        self.on_click = on_click or (lambda: None)
+        self.on_focus = on_focus or (lambda: None)
 
     @property
     def image(self):
@@ -45,7 +60,7 @@ class GuiButton(Entity):
 
     def draw(self, surface, debug=False):
         super().draw(surface, debug)
-        if self.focus:
+        if self.highlight:
             self.draw_highlight(surface)
 
     def draw_highlight(self, surface):
@@ -57,8 +72,24 @@ class GuiButton(Entity):
         surface.blit(mask_surface, self.image_rect)
 
     def update(self):
-        if self.focus and self.click:
-            self.color = pygame.color.THECOLORS["green"]
-        else:
-            self.color = pygame.color.THECOLORS["red"]
+        self.color = Color("green")
+        self.highlight = False
+
+        if self.focus:
+            self._own_on_focus()
+            self.on_focus()
+
+        if self.click:
+            self._own_on_click()
+            self.on_click()
+
         super().update()
+
+    def _own_on_focus(self):
+        """ The button's own logic that is executed when the button has focus. Not to be confused
+        with self.on_focus which will be a callback passed by the creator of the button. """
+        self.highlight = True
+
+    def _own_on_click(self):
+        """ Button's own logic for when clicked. """
+        self.color = Color("red")
