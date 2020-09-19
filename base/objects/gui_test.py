@@ -31,19 +31,23 @@ class GuiTestGround(Game):
         super().main()
 
     def run(self):
-        """ Will be called repeatedly during the main() loop """
+        """ Will be called every tick of the main() loop """
+
+        # this code is currently the "menu" or "button manager". It tells the buttons if they
+        # have focus or not.
 
         def mouse_hovering_over(element):
             mouse_x, mouse_y = pygame.mouse.get_pos()
             return thing.rect.collidepoint(mouse_x, mouse_y)
 
-        # this code is currently the "menu" or "button manager". It tells the buttons if they
-        # have focus or not.
+        def mouse_clicking(element):
+            mouse_buttons = pygame.mouse.get_pressed()
+            return mouse_hovering_over(element) and any(mouse_buttons)
+
         for thing in self.gui_elements:
-            if mouse_hovering_over(thing):
-                thing.focus = True
-            else:
-                thing.focus = False
+            thing.focus = mouse_hovering_over(thing)
+            thing.click = mouse_clicking(thing)
+
         self.gui_elements.update()
         self.gui_elements.draw(self.window, debug=False)
 

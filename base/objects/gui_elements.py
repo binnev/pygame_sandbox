@@ -21,7 +21,7 @@ class GuiButton(Entity):
     # These attributes are set by whatever is managing the buttons. The button itself doesn't
     # check these.
     focus: bool  # is the mouse hovering over the button at the moment?
-    clicked: bool  # is the button currently being clicked?
+    click: bool  # is the button currently being clicked?
 
     def __init__(self, *args, **kwargs):
         self.text = kwargs.pop("text", None)
@@ -29,6 +29,8 @@ class GuiButton(Entity):
         if not self.text_color:
             self.text_color = self.debug_color
         super().__init__(*args, **kwargs)
+        self.focus = False
+        self.click = False
 
     @property
     def image(self):
@@ -55,7 +57,7 @@ class GuiButton(Entity):
         surface.blit(mask_surface, self.image_rect)
 
     def update(self):
-        if self.focus and self.clicked:
+        if self.focus and self.click:
             self.color = pygame.color.THECOLORS["green"]
         else:
             self.color = pygame.color.THECOLORS["red"]
