@@ -7,14 +7,11 @@ from base.draw import Canvas
 from base.game import Game
 from base.inputs.keyboard import KeyboardInputQueue
 from volleyball_game import conf
-
 from volleyball_game.inputs import GamecubeController, Keyboard1, Keyboard0
 from volleyball_game.levels import VolleyballCourt
 from volleyball_game.objects import (
     Stickman,
     Volleyball,
-    Bowlingball,
-    ParticleEffect,
     HitHandler,
     PersistentHitbox,
 )
@@ -31,13 +28,12 @@ class VolleyballGame(Game):
         super().__init__()
         self.font = pygame.font.Font(pygame.font.match_font("ubuntu"), 50)
         Canvas.initialise()
-        self.keyboard = KeyboardInputQueue()
+        # input devices that are specific to this game
         self.keyboard0 = Keyboard0()
         self.keyboard1 = Keyboard1()
         self.controller0 = GamecubeController(controller_id=0)
         self.controller1 = GamecubeController(controller_id=1)
-        self.input_devices = [
-            self.keyboard,
+        self.input_devices += [
             self.keyboard0,
             self.keyboard1,
             self.controller0,

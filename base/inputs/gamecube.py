@@ -69,8 +69,17 @@ def create_mapping(input_range, output_range, limit_output=True):
 
 
 class GamecubeControllerReader:
-    """ A handler class to map pygame's axis and button numbers to the gamecube's
-    nomenclature. """
+    """ Class to read the inputs of a GameCube controller plugged into the Mayflash "GameCube
+    Controller Adapter for Wii U & PC USB"
+
+    This class
+    - reads the values from the controller's buttons (binary values) axes (analog inputs such as
+    control sticks and triggers) and hats (the 4-way D pad)
+    - maps the values of the inputs to a 0-1 range and exposes these as named properties if the
+    user wants to access a single value.
+    - exposes a .get_values() method which returns a tuple of all the inputs (similar to how
+    pygame deals with keyboard and mouse input.
+    """
 
     # input ranges. Use these to set minimum (i.e. dead zone) and maximum input values
     GREY_STICK_INPUT_RANGE = (0.1, 0.86)
@@ -112,7 +121,9 @@ class GamecubeControllerReader:
             self.D_PAD_DOWN,
         )
 
-    # =================== AXES =======================
+    # =================== AXES (=ANALOG INPUTS) =======================
+
+    # uncalibrated internal values
 
     @property
     def _GREY_STICK_X_AXIS(self):
@@ -137,6 +148,8 @@ class GamecubeControllerReader:
     @property
     def _R_TRIGGER_AXIS(self):
         return self.joystick.get_axis(4)
+
+    # calibrated external values
 
     @property
     def GREY_STICK_LEFT(self):
@@ -180,6 +193,8 @@ class GamecubeControllerReader:
 
     # =================== 4-WAY SWITCHES =======================
 
+    # uncalibrated internal values
+
     @property
     def _D_PAD(self):
         return self.joystick.get_hat(0)
@@ -191,6 +206,8 @@ class GamecubeControllerReader:
     @property
     def _D_PAD_Y(self):
         return self._D_PAD[1]
+
+    # calibrated external values
 
     @property
     def D_PAD_LEFT(self):
@@ -208,7 +225,9 @@ class GamecubeControllerReader:
     def D_PAD_DOWN(self):
         return int(self._D_PAD_Y < 0)
 
-    # =================== BUTTONS =======================
+    # =================== BUTTONS (=BINARY VALUES) =======================
+
+    # calibrated external values
 
     @property
     def X(self):

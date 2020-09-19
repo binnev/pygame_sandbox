@@ -9,7 +9,7 @@ class GamecubeController(GamecubeControllerInputQueue):
     """ VolleyballGame objects will receive this as their `input` parameter.
     They will do stuff like:
     ```
-    input = self.input  # that's the instance of this class
+    input = self.input  # "input" = the instance of this class
     if input.is_pressed(input.LEFT):
         # do action for left
     ```

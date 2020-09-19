@@ -16,27 +16,31 @@ class Game:
         pygame.init()
         pygame.font.init()
 
-        window = pygame.display.set_mode((self.window_width, self.window_height))
-        pygame.display.set_caption(self.window_caption)
-
-        self.window = window
-        self.clock = pygame.time.Clock()
-        self.keyboard_input = KeyboardInputQueue(queue_length=5)
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
-        self.tick = 0
+        self.window = pygame.display.set_mode((self.window_width, self.window_height))
+        pygame.display.set_caption(self.window_caption)
+        self.clock = pygame.time.Clock()
+
+        self.keyboard = KeyboardInputQueue()
+
+        self.input_devices = [self.keyboard]
 
     def main(self):
+        self.tick = 0
         run = True
         while run:
-            self.keyboard_input.read_new_inputs()
+            self.keyboard.read_new_inputs()
 
-            if self.keyboard_input.is_pressed(pygame.K_ESCAPE):
+            if self.keyboard.is_pressed(pygame.K_ESCAPE):
                 run = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
-            self.run()
+            # --------------------------------------------------------------
+            self.run()  # <<<<<<<<<<<< game logic in here <<<<<<<<<<<<<<<<<<
+            # --------------------------------------------------------------
+
             pygame.display.flip()
             self.clock.tick(self.fps)
             self.tick += 1
