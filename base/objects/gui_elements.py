@@ -72,7 +72,7 @@ class GuiButton(Entity):
         surface.blit(mask_surface, self.image_rect)
 
     def update(self):
-        self.color = Color("green")
+        self.color = (0, 100, 100)
         self.highlight = False
 
         if self.focus:
