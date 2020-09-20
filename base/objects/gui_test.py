@@ -71,17 +71,7 @@ class GuiTestGround(Game):
         time.sleep(1)
 
         while run:
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        click = True
-
+            allow_exit()
             self.window.fill((255, 255, 255))
             text = self.font.render("Main menu", True, (0, 0, 0))
             textRect = text.get_rect()
@@ -110,7 +100,6 @@ class GuiTestGround(Game):
             if quit_button.click:
                 pygame.quit()
 
-            allow_exit()
             self.clock.tick(self.fps)
             pygame.display.flip()
 
@@ -124,7 +113,7 @@ class GuiTestGround(Game):
         time.sleep(1)
 
         if next_menu:
-            return next_menu()  # fixme: I don't think this prevents infinite recursion.
+            return next_menu()  # fixme: this doesn not prevent infinite recursion.
 
     def game(self):
         print("GAME")
@@ -143,16 +132,7 @@ class GuiTestGround(Game):
         time.sleep(1)
 
         while run:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        click = True
-
+            allow_exit()
             self.window.fill((255, 255, 255))
             text = self.font.render("Settings", True, (0, 0, 0))
             textRect = text.get_rect()
@@ -174,7 +154,6 @@ class GuiTestGround(Game):
                 next_menu = self.main_menu
                 run = False  # cascade back up the tree to the main menu
 
-            allow_exit()
             self.clock.tick(self.fps)
             pygame.display.flip()
 
@@ -188,7 +167,7 @@ class GuiTestGround(Game):
         time.sleep(1)
 
         if next_menu:
-            return next_menu()  # fixme: this is either bonkers or genius
+            return next_menu()  # fixme: this doesn not prevent infinite recursion.
 
 
 def main():
