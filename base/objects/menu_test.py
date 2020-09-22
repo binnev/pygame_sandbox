@@ -1,13 +1,73 @@
 import sys
 
+import numpy
 import pygame
+
+from base.groups import EntityGroup
+from base.objects.gui_elements import GuiButton
+from base.objects.gui_test import mouse_hovering_over, mouse_clicking
+from base.objects.mixins import AnimationMixin
 
 mainClock = pygame.time.Clock()
 pygame.init()
 pygame.display.set_caption("Game base")
 screen = pygame.display.set_mode((500, 500), 0, 32)
-
 font = pygame.font.SysFont(None, 50)
+
+
+def animate_ease(start, stop, num, function):
+    distance = stop - start
+    ease = numpy.array(list(map(function, numpy.linspace(0, 1, num))))
+    output = start + ease * distance
+    return output
+
+
+def ease_in(start, stop, num, power=3):
+    return animate_ease(start, stop, num, function=lambda x: x ** power)
+
+
+def ease_out(start, stop, num, power=3):
+    return animate_ease(start, stop, num, function=lambda x: 1 - (1 - x) ** power)
+
+
+class Menu(EntityGroup, AnimationMixin):
+    def update(self, *args):
+        super().update()  # call .update() on all children objects in self
+        self.ticks_elapsed += 1
+        self.state()
+        self.check_children_status()
+
+    def check_children_status(self):
+        for element in self:
+            element.focus = mouse_hovering_over(element)
+            element.click = mouse_clicking(element)
+
+
+class MainMenu(Menu):
+    def __init__(self):
+        super().__init__()
+        self.state = self.animate_in
+        self.button1 = GuiButton(0, 0, 200, 50)
+        self.button2 = GuiButton(0, 0, 200, 50)
+        self.add(self.button1, self.button2)
+
+    def animate_in(self):
+        try:
+            # todo: maybe make these generators so that you're not generating the entire array
+            #  each tick
+            xs = ease_out(0, 250, 30)
+            ys = ease_out(0, 200, 30)
+            self.button1.x = xs[self.ticks_elapsed]
+            self.button1.y = ys[self.ticks_elapsed]
+
+            ys = ease_out(0, 300, 30)
+            self.button2.x = xs[self.ticks_elapsed]
+            self.button2.y = ys[self.ticks_elapsed]
+        except IndexError:
+            self.state = self.idle
+
+    def idle(self):
+        pass  # waiting for user input here.
 
 
 def draw_text(text, font, color, surface, x, y):
@@ -17,35 +77,11 @@ def draw_text(text, font, color, surface, x, y):
     surface.blit(textobj, textrect)
 
 
-click = False
+def main():
+    menu = MainMenu()
 
-
-def button(x, y, width, height, text="", color=(255, 0, 0), text_color=(100, 100, 100)):
-    rect = pygame.Rect(x, y, width, height)
-    pygame.draw.rect(screen, color, rect)
-    draw_text(text, font, text_color, screen, x, y)
-    return rect
-
-
-def main_menu():
     while True:
-        screen.fill((0, 0, 0))
-        draw_text("main menu", font, (255, 255, 255), screen, 20, 20)
-
-        mx, my = pygame.mouse.get_pos()
-
-        button_1 = button(50, 100, 200, 50, "game")
-        button_2 = button(50, 200, 200, 50, "options")
-
-        if button_1.collidepoint((mx, my)):
-            if click:
-                game()
-        if button_2.collidepoint((mx, my)):
-            if click:
-                options()
-
-        click = False
-
+        screen.fill((255, 255, 255))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -54,46 +90,13 @@ def main_menu():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
 
-        pygame.display.update()
+        menu.update()
+        menu.draw(screen)
+
         mainClock.tick(60)
-
-
-def game():
-    running = True
-    while running:
-        screen.fill((0, 0, 0))
-        draw_text("game", font, (255, 255, 255), screen, 20, 20)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-
         pygame.display.update()
-        mainClock.tick(60)
 
 
-def options():
-    running = True
-    while running:
-        screen.fill((0, 0, 0))
-        draw_text("options", font, (255, 255, 255), screen, 20, 20)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-
-        pygame.display.update()
-        mainClock.tick(60)
-
-
-main_menu()
+if __name__ == "__main__":
+    main()
