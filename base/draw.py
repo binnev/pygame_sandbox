@@ -6,6 +6,34 @@ import pygame
 #  tick. So stuff like hitboxes slows it down very quickly. As an optimisation, how about making
 #  a Canvas singleton which respects alpha, drawing everything onto that using normal
 #  Pygame.draw, and then blitting that canvas to screen once per tick?
+from base.singleton import Singleton
+
+
+class Canvas(pygame.Surface, Singleton):
+    def __init__(self):
+        """ This method is used by Singleton to create an instance of pygame.Surface which is
+        stored as Canvas.instance. This surface has the same dimensions as the game
+        window """
+        display = pygame.display.get_surface()
+        width = display.get_width()
+        height = display.get_height()
+        # create self; a pygame.Surface which respects transparency
+        super().__init__((width, height))
+
+    @classmethod
+    def initialise(cls, *args, **kwargs):
+        """ Need to wrap Singleton.initialise because we need to do some setup that involves
+        mutating the instance object. Perhaps this is an indication that my current singleton
+        implementation is not optimal... """
+        super().initialise(*args, **kwargs)
+        # this is not possible inside Canvas.__init__
+        cls.instance = cls.instance.convert_alpha()
+        return cls.instance
+
+    @classmethod
+    def blit_to_window(cls):
+        window = pygame.display.get_surface()
+        window.blit(cls.instance, (0, 0))
 
 
 def get_it_together_pygame(func):

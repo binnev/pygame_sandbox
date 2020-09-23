@@ -3,8 +3,6 @@ from copy import deepcopy
 
 import pygame
 
-from base.keyhandler import KeyHandler
-
 
 class AnimationMixin:
     """Handles animation for a state machine class. Subclasses should have their own

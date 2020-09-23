@@ -20,12 +20,12 @@ file_mapping = {
     "run_left": {"filename": folder / "stick_run.png", "num_images": 8, "flip_horizontal": True,},
     "flying_kick_right": {
         "filename": folder / "stick_flying_kick.png",
-        "num_images": 8,
+        "num_images": 7,
         "looping": False,
     },
     "flying_kick_left": {
         "filename": folder / "stick_flying_kick.png",
-        "num_images": 8,
+        "num_images": 7,
         "flip_horizontal": True,
         "looping": False,
     },
@@ -37,6 +37,17 @@ file_mapping = {
     "back_air_left": {
         "filename": folder / "stick_back_air.png",
         "num_images": 7,
+        "flip_horizontal": True,
+        "looping": False,
+    },
+    "back_air2_right": {
+        "filename": folder / "stick_back_air2.png",
+        "num_images": 5,
+        "looping": False,
+    },
+    "back_air2_left": {
+        "filename": folder / "stick_back_air2.png",
+        "num_images": 5,
         "flip_horizontal": True,
         "looping": False,
     },
@@ -81,6 +92,13 @@ file_mapping = {
         "filename": folder / "stick_taunt.png",
         "looping": False,
         "num_images": 14,
+        "flip_horizontal": True,
+    },
+    "stomp_right": {"filename": folder / "stick_stomp.png", "looping": False, "num_images": 6,},
+    "stomp_left": {
+        "filename": folder / "stick_stomp.png",
+        "looping": False,
+        "num_images": 6,
         "flip_horizontal": True,
     },
 }

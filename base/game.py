@@ -1,6 +1,6 @@
 import pygame
 
-from base.keyhandler import KeyHandler
+from base.inputs.keyboard import KeyboardInputQueue
 
 
 class Game:
@@ -21,17 +21,18 @@ class Game:
 
         self.window = window
         self.clock = pygame.time.Clock()
-        KeyHandler.initialise(queue_length=5)
+        self.keyboard_input = KeyboardInputQueue(queue_length=5)
         self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
+        self.tick = 0
 
     def main(self):
         """ This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine. """
         run = True
         while run:
-            KeyHandler.read_new_keypresses()
+            self.keyboard_input.read_new_inputs()
 
-            if KeyHandler.is_pressed(pygame.K_ESCAPE):
+            if self.keyboard_input.is_pressed(pygame.K_ESCAPE):
                 run = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -40,6 +41,7 @@ class Game:
             self.run()
             pygame.display.flip()
             self.clock.tick(self.fps)
+            self.tick += 1
 
     def run(self):
         """ run can be a set of instructions to be carried out in the main() game loop, or it can

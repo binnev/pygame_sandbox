@@ -1,15 +1,13 @@
 from collections import namedtuple
 from copy import copy
 
-import numpy
 import pygame
 from numpy import sign
 
 from base.animation import SpriteAnimation
 from base.groups import EntityGroup
-from base.keyhandler import KeyHandler
 from base.objects.mixins import HistoryMixin, AnimationMixin, CollisionMixin
-from base.utils import touching, mask_to_surface, ticks_to_frames, draw_arrow
+from base.utils import touching, mask_to_surface, draw_arrow
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -631,34 +629,64 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
 
 class Hitbox(Entity):
+    """
+    Things to work on:
 
-    # fixme: why doesn't this transparency work?
+    - A target should never be hit twice by the same instance of the same hitbox. E.g. if Ranno
+    does a nair and the hitbox is colliding with the target for 2 frames, then target should only
+    take the damage and knockback once.
+
+    - Sweet/sour spots. If the target is hit by both, I want only one hitbox to apply.
+        - E.g. Marth's tipper hitboxes should only be active if none of his non-tipper hitboxes are
+        colliding with the target.
+        - E.g. Zetterburn's up-air: if the sweet spot connects, the sour spot should not connect.
+
+    """
+
     debug_color = (*pygame.color.THECOLORS["red"][:3], 150)
-    owner = None
+    owner: Entity = None
+    knockback: float
+    knockback_angle: float
+    damage: float = 0
+    width: int
+    height: int
+    angle: float
+    x: int = 0
+    y: int = 0
+    x_offset: int = 0
+    y_offset: int = 0
 
     def __init__(
         self,
-        knockback,
-        knockback_angle,
-        width,
-        height,
+        knockback=None,
+        knockback_angle=None,
+        width=None,
+        height=None,
         damage=None,
         owner=None,
-        angle=0,
-        x=0,
-        y=0,
-        x_offset=0,
-        y_offset=0,
+        angle=None,
+        x=None,
+        y=None,
+        x_offset=None,
+        y_offset=None,
         **kwargs,
     ):
-        self.owner = owner
-        self.damage = damage
-        self.knockback = knockback
-        self.knockback_angle = knockback_angle
-        self.angle = angle
-        self.x_offset = x_offset
-        self.y_offset = y_offset
-        super().__init__(x=x, y=y, width=width, height=height, **kwargs)
+        # overwrite class parameters at instantiation, if any params are passed
+        self.owner = owner if owner is not None else self.owner
+        self.damage = damage if damage is not None else self.damage
+        self.knockback = knockback if knockback is not None else self.knockback
+        self.knockback_angle = (
+            knockback_angle if knockback_angle is not None else self.knockback_angle
+        )
+        self.angle = angle if angle is not None else self.angle
+        self.x_offset = x_offset if x_offset is not None else self.x_offset
+        self.y_offset = y_offset if y_offset is not None else self.y_offset
+        self.x = x if x is not None else self.x
+        self.y = y if y is not None else self.y
+
+        super().__init__(
+            x=x, y=y, width=width, height=height, **kwargs,
+        )
 
         self.image = pygame.Surface((self.width, self.height)).convert_alpha()
         self.image.fill((0, 0, 0, 0))
@@ -667,8 +695,19 @@ class Hitbox(Entity):
         self.image.set_colorkey(colorkey)
         self.image = pygame.transform.rotate(self.image, self.angle)
 
+    def __repr__(self):
+        return f"Hitbox with id {id(self)}"
+
+    def handle_hit(self, object):
+        """ Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
+        context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
+        electric """
+        pass
+
     @property
     def rect(self):
+        """ If the hitbox has an owner, it will follow its owner's x and y (offset by x_offset
+        and y_offset). """
         self.align_to_owner()
         return self._rect
 
@@ -700,36 +739,3 @@ class Hitbox(Entity):
         new_hitbox.angle = 180 - self.angle
         new_hitbox.x_offset = -self.x_offset
         return new_hitbox
-
-
-class Move:
-    sprite_animation: SpriteAnimation
-    hitbox_mapping: dict  # mapping of frame keys to hitbox values
-    # fixme: Hitboxes can't be defined without an owner yet. I need this, because I want to
-    #  be able to define them abstractly. I want to describe the hitboxes for all Rannos
-    #  before they are assigned to an instance of Ranno.
-    # todo: make sure this works when facing left!
-    # todo: give hitbox a knockback_angle, and make sure THAT works facing left
-
-    def __init__(self, instance):
-        self.instance = instance
-        self.hitbox_data = self.map_hitboxes(self.hitbox_mapping)
-
-    def __call__(self, n):
-        """ This is the equivalent to the function states. Here n is either ticks or frames;
-        we're using it to pick up the correct sprite image and hitboxes. """
-        self.image = self.sprite_animation.get_frame(n)
-        self.active_hitboxes = self.get_active_hitboxes(n)
-
-    @staticmethod
-    def map_hitboxes(hitbox_mapping):
-        # todo: allow some frames to have no hitboxes. How will I represent that?
-        return {
-            frame: hitboxes
-            for frames, hitboxes in hitbox_mapping.items()
-            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
-        }
-
-    def get_active_hitboxes(self, n):
-        hitbox_data = self.hitbox_data.get(n, [])
-        return [Hitbox(owner=self.instance, **data) for data in hitbox_data]
