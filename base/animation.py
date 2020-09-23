@@ -55,21 +55,29 @@ class SpriteSheet:
     sheet: pygame.Surface
 
     def __init__(self, filename, colormap=None):
-        # todo: move the spritesheet loading out of the init method. Then I can safely
-        #  instantiate this without needing pygame.display initialised. Make a separate
-        #  load_image_file method.
         filename = Path(filename).as_posix()
         self.filename = filename
+        self.colormap = colormap
+        self.load_image_file()  # fixme: remove
+
+    def load_image_file(self):
+        """ Don't call this until pygame.display has been initiated. """
         try:
-            self.sheet = pygame.image.load(filename).convert_alpha()
-            if colormap:
-                self.recolor(colormap)
+            self.sheet = pygame.image.load(self.filename).convert_alpha()
+            if self.colormap:
+                self.recolor(self.colormap)
         except pygame.error as message:
-            print("Unable to load spritesheet image:", filename)
+            print("Unable to load spritesheet image:", self.filename)
             raise Exception(message)
 
-    def image_at(self, rectangle, colorkey=None, scale=None):
-        """Load a specific image from a specific rectangle"""
+    def scale_image(self, image, scale: int):
+        x_scale = image.get_rect().width * scale
+        y_scale = image.get_rect().height * scale
+        image = pygame.transform.scale(image, (x_scale, y_scale))
+        return image
+
+    def get_image(self, rectangle, colorkey=None, scale=None):
+        """ Load a piece of the image using a rectangle """
 
         rect = pygame.Rect(rectangle)
         image = self.sheet.subsurface(rect)
@@ -79,17 +87,10 @@ class SpriteSheet:
                 colorkey = image.get_at((0, 0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         if scale:
-            image = pygame.transform.scale(
-                image, (image.get_rect().width * scale, image.get_rect().height * scale)
-            )
+            image = self.scale_image(image, scale)
         return image
 
-    def images_at(self, rects, colorkey=None, scale=None, num_images=None):
-        """Load a whole bunch of images and return them as a list"""
-        result = [self.image_at(rect, colorkey, scale) for rect in rects]
-        return result[:num_images] if num_images else result
-
-    def load_sheet(
+    def get_images(
         self,
         size: (int, int),
         colorkey: int = None,
@@ -97,7 +98,7 @@ class SpriteSheet:
         num_images: int = None,
         **kwargs,
     ) -> [pygame.Surface]:
-        """Load a whole spritesheet and return frames as a list of images."""
+        """ Get subsurfaces from image and return a list of images. """
         width, height = size
         num_horizontal = self.sheet.get_rect().width // width
         num_vertical = self.sheet.get_rect().height // height
@@ -106,7 +107,7 @@ class SpriteSheet:
             for j in range(num_vertical)
             for i in range(num_horizontal)
         ]
-        images = [self.image_at(rect, colorkey, scale) for rect in rects]
+        images = [self.get_image(rect, colorkey, scale) for rect in rects]
         images = list(filter(not_empty, images))
         return images[:num_images] if num_images else images
 
@@ -126,7 +127,6 @@ class SpriteAnimation:
     Handles the animating of a collection of frames.
     TODO:
       - allow resampling (showing frames more than once with a mapping)
-      - maybe even create functions for ease-in and ease-out sampling?
     """
 
     def __init__(
@@ -185,7 +185,7 @@ class SpriteDict(dict):
             defaults.update(sprite_info)
 
             sprite_sheet = SpriteSheet(sprite_info["filename"], colormap)
-            frames_list = sprite_sheet.load_sheet(**defaults)
+            frames_list = sprite_sheet.get_images(**defaults)
             sprite_animation = SpriteAnimation(frames_list, **defaults)
 
             self[sprite_name] = sprite_animation
