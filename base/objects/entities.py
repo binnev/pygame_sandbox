@@ -43,7 +43,7 @@ class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
 
-        self.color = color if color else self.debug_color
+        self.color = color or self.debug_color
         self.width = width
         self.height = height
         self.state = None

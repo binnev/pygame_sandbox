@@ -63,6 +63,7 @@ class MainMenu(Menu):
             50,
             text="random explosion",
             text_color=Color("white"),
+            color=(100, 0, 100),
             on_click=lambda: self.add(
                 Explosion(x=random() * SCREEN_WIDTH, y=random() * SCREEN_HEIGHT)
             ),
@@ -78,6 +79,7 @@ class MainMenu(Menu):
             50,
             text="quit",
             text_color=Color("white"),
+            color=(100, 0, 100),
             on_click=lambda: goto_state(self.animate_out),
         )
         self.add(self.button1, self.button2)

@@ -6,23 +6,11 @@ from base.utils import mask_to_surface
 
 
 class GuiButton(Entity):
-    """
-    todo: even something as simple as a button must be a state machine. Perhaps I should build
-    the state machine functionality into Entity? If I want a button to do an animation on hover (
-    instead of just showing its outline) then I need a state to handle that animation.
-
-    todo: Perhaps I should unify Entity and AnimationMixin. Animationmixin explicitly uses
-    self.state to set self.frames elapsed etc. I think I can also improve the way states are
-    defined. Perhaps I can use the factory method to register states. Also, AnimationMixin should
-    use self.current_animation to draw frames from. Then states can set current_animation.
-
-    todo: implement passing "on_click" callbacks.
-    """
-
     # These attributes are set by whatever is managing the buttons. The button itself doesn't
     # check these.
     focus: bool  # is the mouse hovering over the button at the moment?
     click: bool  # is the button currently being clicked?
+    debug_color = (0, 100, 100)
 
     def __init__(
         self,
@@ -37,10 +25,9 @@ class GuiButton(Entity):
         **kwargs
     ):
         self.text = text
-        self.text_color = text_color
-        if not self.text_color:
-            self.text_color = self.debug_color
+        self.text_color = text_color or self.debug_color
         super().__init__(x=x, y=y, width=width, height=height, **kwargs)
+        self.current_color = self.color
         self.focus = False
         self.click = False
         self.highlight = False
@@ -50,7 +37,7 @@ class GuiButton(Entity):
     @property
     def image(self):
         image = pygame.Surface((self.width, self.height)).convert_alpha()
-        image.fill(self.color)
+        image.fill(self.current_color)
         if self.text:
             text = self.font.render(self.text, True, self.text_color)
             textRect = text.get_rect()
@@ -64,7 +51,7 @@ class GuiButton(Entity):
             self.draw_highlight(surface)
 
     def draw_highlight(self, surface):
-        color = pygame.color.THECOLORS["brown"]
+        color = pygame.color.THECOLORS["brown"]  # todo: make highlight color
         translucent_color = color[:3] + (50,)
         mask_surface = mask_to_surface(self.mask, translucent_color)
         mask_outline = self.mask.outline()
@@ -72,7 +59,7 @@ class GuiButton(Entity):
         surface.blit(mask_surface, self.image_rect)
 
     def update(self):
-        self.color = (0, 100, 100)
+        self.current_color = self.color
         self.highlight = False
 
         if self.focus:
@@ -92,4 +79,4 @@ class GuiButton(Entity):
 
     def _own_on_click(self):
         """ Button's own logic for when clicked. """
-        self.color = Color("red")
+        self.current_color = Color("red")
