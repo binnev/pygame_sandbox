@@ -33,8 +33,8 @@ def scale_image(image: pygame.Surface, scale: int):
     return image
 
 
-def flip_image(image, flip_horizontal=False, flip_vertical=False):
-    return pygame.transform.flip(image, bool(flip_horizontal), bool(flip_vertical))
+def flip_image(image, flip_x=False, flip_y=False):
+    return pygame.transform.flip(image, bool(flip_x), bool(flip_y))
 
 
 def recolor_image(surface, color_mapping: dict):
@@ -86,16 +86,7 @@ class SpriteSheet:
                 self.colorkey = self.sheet.get_at((0, 0))
             self.sheet.set_colorkey(self.colorkey, pygame.RLEACCEL)
 
-    def get_images(
-        self,
-        size: (int, int),
-        scale: float = None,
-        num_images: int = None,
-        flip_horizontal=False,
-        flip_vertical=False,
-        colormap: dict = None,
-        **kwargs,
-    ) -> [pygame.Surface]:
+    def get_images(self, size: (int, int), num_images: int = None, **kwargs,) -> [pygame.Surface]:
         """ This is the main interface for the rest of the code. Split the spritesheet into
         images, scale/flip/recolor them, and return a list of images.  """
         width, height = size
@@ -109,12 +100,6 @@ class SpriteSheet:
 
         images = [self.sheet.subsurface(rect) for rect in rects]
         images = list(filter(not_empty, images))
-        if scale:
-            images = [scale_image(image, scale) for image in images]
-        if flip_horizontal or flip_vertical:
-            images = [flip_image(image, flip_horizontal, flip_vertical) for image in images]
-        if colormap:
-            images = [recolor_image(image, colormap) for image in images]
         if num_images:
             images = images[:num_images]
         return images
@@ -128,10 +113,24 @@ class SpriteAnimation:
     """
 
     def __init__(
-        self, frames: [pygame.Surface], looping=True, **kwargs,
+        self,
+        images: [pygame.Surface],
+        looping=True,
+        scale: float = None,
+        flip_x=False,
+        flip_y=False,
+        colormap: dict = None,
+        **kwargs,
     ):
-        self.frames = frames
         self.looping = looping
+        if scale:
+            images = [scale_image(image, scale) for image in images]
+        if flip_x or flip_y:
+            images = [flip_image(image, flip_x, flip_y) for image in images]
+        if colormap:
+            images = [recolor_image(image, colormap) for image in images]
+
+        self.frames = images
 
     def get_frame(self, n: int):
         """
@@ -150,6 +149,11 @@ class SpriteAnimation:
     def __len__(self):
         return len(self.frames)
 
+    def copy(
+        self, scale: float = None, flip_x=False, flip_y=False, colormap: dict = None,
+    ):
+        return self.__class__(self.frames, self.looping, scale, flip_x, flip_y, colormap)
+
 
 class SpriteDict(dict):
     """
@@ -158,7 +162,11 @@ class SpriteDict(dict):
     """
 
     def __init__(
-        self, size: (int, int), file_mapping: dict, scale: int = 1, colormap: dict = None,
+        self,
+        size: (int, int) = None,
+        file_mapping: dict = None,
+        scale: int = 1,
+        colormap: dict = None,
     ):
         """
         Default parameters (size, scale, etc) will be used for all sprites, unless the
