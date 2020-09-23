@@ -1,10 +1,7 @@
-from pathlib import Path
-
-from base.animation import SpriteDict
+from base.animation import SpriteDict, relative_folder
 from volleyball_game import conf
 
-sprites_folder = Path("sprites/")
-folder = sprites_folder / "particle_effects"
+folder = relative_folder(__file__, "particle_effects")
 
 file_mapping = {
     "default": {"filename": folder / "explosion.png", "looping": False, "num_images": 5},

@@ -1,10 +1,7 @@
-from pathlib import Path
-
-from base.animation import SpriteDict
+from base.animation import SpriteDict, relative_folder
 from volleyball_game import conf
 
-sprites_folder = Path("sprites/")
-folder = sprites_folder / "stickman"
+folder = relative_folder(__file__, "stickman")
 
 # todo: make something to automatically create left-facing versions?
 # todo: make this a dict of SpriteAnimations so that they can autocomplete arguments. Use a

@@ -1,10 +1,7 @@
-from pathlib import Path
-
-from base.animation import SpriteDict
+from base.animation import SpriteDict, relative_folder
 from volleyball_game import conf
 
-sprites_folder = Path("sprites/")
-folder = sprites_folder / "volleyball"
+folder = relative_folder(__file__, "volleyball")
 
 file_mapping = {
     "default": {"filename": folder / "volleyball.png"},

@@ -5,6 +5,10 @@ import numpy
 import pygame
 
 
+def relative_folder(current_file: str, folder: str):
+    return Path(current_file).absolute().parent / folder
+
+
 def pad_alpha(colour_tuple):
     if len(colour_tuple) == 3:
         # if no alpha channel supplied, assume it's full opacity
