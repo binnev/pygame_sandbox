@@ -876,9 +876,6 @@ class Stickman(Player):
     projectile_cooldown_frames = 30
     projectile_cooldown = 0
 
-    sprites_folder = Path("sprites/")
-    image = pygame.image.load((sprites_folder / "stickman/stick_stand.png").as_posix())
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.sprites = stickman_sprites()

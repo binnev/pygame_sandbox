@@ -11,6 +11,7 @@ from base.objects.entities import Entity
 from base.objects.gui_elements import GuiButton
 from base.objects.gui_test import mouse_hovering_over, mouse_clicking
 from base.objects.mixins import AnimationMixin
+from volleyball_game.objects import ParticleEffect
 
 mainClock = pygame.time.Clock()
 pygame.init()
@@ -64,8 +65,9 @@ class MainMenu(Menu):
             text="random explosion",
             text_color=Color("white"),
             color=(100, 0, 100),
+            # on_click=lambda: self.add(Explosion(x=random() * SCREEN_WIDTH, y=random() * SCREEN_HEIGHT)),
             on_click=lambda: self.add(
-                Explosion(x=random() * SCREEN_WIDTH, y=random() * SCREEN_HEIGHT)
+                ParticleEffect(x=random() * SCREEN_WIDTH, y=random() * SCREEN_HEIGHT)
             ),
         )
 
