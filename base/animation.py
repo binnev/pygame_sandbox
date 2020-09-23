@@ -5,8 +5,15 @@ import numpy
 import pygame
 
 
+def not_empty(surface: pygame.Surface):
+    """ Check if a surface has any non-zero pixels. `Surface.get_bounding_rect()` returns the
+    smallest rectangle on the surface containing data. If the surface is empty, it will return
+    Rect(0, 0, 0, 0), for which `any` returns False """
+    return any(surface.get_bounding_rect())
+
+
 def relative_folder(current_file: str, folder: str):
-    return Path(current_file).absolute().parent / folder
+    return Path(current_file).parent.absolute() / folder
 
 
 def pad_alpha(colour_tuple):
@@ -27,9 +34,9 @@ def recolor_sprite(surface, color_mapping: dict):
     # surface.copy() inherits surface's colorkey; preserving transparency
     new_surface = surface.copy()
 
-    # iterate over all the pixels in the old surface, and write a pixel to the new
-    # surface in the corresponding position. If the colour of the present pixel has an
-    # entry in the color_mapping dict, then write the new colour instead of the old one.
+    # iterate over all the pixels in the old surface, and write a pixel to the new surface in the
+    # corresponding position. If the colour of the present pixel has an entry in the
+    # color_mapping dict, then write the new colour instead of the old one.
     for x in range(width):
         for y in range(height):
             color = surface.get_at((x, y))[:]
@@ -48,7 +55,11 @@ class SpriteSheet:
     sheet: pygame.Surface
 
     def __init__(self, filename, colormap=None):
+        # todo: move the spritesheet loading out of the init method. Then I can safely
+        #  instantiate this without needing pygame.display initialised. Make a separate
+        #  load_image_file method.
         filename = Path(filename).as_posix()
+        self.filename = filename
         try:
             self.sheet = pygame.image.load(filename).convert_alpha()
             if colormap:
@@ -95,8 +106,9 @@ class SpriteSheet:
             for j in range(num_vertical)
             for i in range(num_horizontal)
         ]
-        result = [self.image_at(rect, colorkey, scale) for rect in rects]
-        return result[:num_images] if num_images else result
+        images = [self.image_at(rect, colorkey, scale) for rect in rects]
+        images = list(filter(not_empty, images))
+        return images[:num_images] if num_images else images
 
     def recolor(self, colormap: dict) -> None:
         """Recolor spritesheet in place"""
