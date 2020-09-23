@@ -26,7 +26,18 @@ def pad_alpha(colour_tuple):
         raise Exception("bogus colour, man")
 
 
-def recolor_sprite(surface, color_mapping: dict):
+def scale_image(image: pygame.Surface, scale: int):
+    x_scale = image.get_rect().width * scale
+    y_scale = image.get_rect().height * scale
+    image = pygame.transform.scale(image, (x_scale, y_scale))
+    return image
+
+
+def flip_image(image, flip_horizontal=False, flip_vertical=False):
+    return pygame.transform.flip(image, bool(flip_horizontal), bool(flip_vertical))
+
+
+def recolor_image(surface, color_mapping: dict):
 
     # make sure the colourmap has alpha channel on all colours
     color_mapping = {pad_alpha(k): pad_alpha(v) for k, v in color_mapping.items()}
@@ -54,72 +65,59 @@ class SpriteSheet:
 
     sheet: pygame.Surface
 
-    def __init__(self, filename, colormap=None):
+    def __init__(self, filename, colorkey=None):
         filename = Path(filename).as_posix()
         self.filename = filename
-        self.colormap = colormap
-        self.load_image_file()  # fixme: remove
+        self.colorkey = colorkey
+
+        # todo: remove me
+        self.load_image_file()
 
     def load_image_file(self):
-        """ Don't call this until pygame.display has been initiated. """
+        """ Load the image file. Don't call this until pygame.display has been initiated. """
         try:
             self.sheet = pygame.image.load(self.filename).convert_alpha()
-            if self.colormap:
-                self.recolor(self.colormap)
         except pygame.error as message:
             print("Unable to load spritesheet image:", self.filename)
             raise Exception(message)
 
-    def scale_image(self, image, scale: int):
-        x_scale = image.get_rect().width * scale
-        y_scale = image.get_rect().height * scale
-        image = pygame.transform.scale(image, (x_scale, y_scale))
-        return image
-
-    def get_image(self, rectangle, colorkey=None, scale=None):
-        """ Load a piece of the image using a rectangle """
-
-        rect = pygame.Rect(rectangle)
-        image = self.sheet.subsurface(rect)
-
-        if colorkey is not None:
-            if colorkey is -1:
-                colorkey = image.get_at((0, 0))
-            image.set_colorkey(colorkey, pygame.RLEACCEL)
-        if scale:
-            image = self.scale_image(image, scale)
-        return image
+        if self.colorkey is not None:
+            if self.colorkey is -1:
+                self.colorkey = self.sheet.get_at((0, 0))
+            self.sheet.set_colorkey(self.colorkey, pygame.RLEACCEL)
 
     def get_images(
         self,
         size: (int, int),
-        colorkey: int = None,
         scale: float = None,
         num_images: int = None,
+        flip_horizontal=False,
+        flip_vertical=False,
+        colormap: dict = None,
         **kwargs,
     ) -> [pygame.Surface]:
-        """ Get subsurfaces from image and return a list of images. """
+        """ This is the main interface for the rest of the code. Split the spritesheet into
+        images, scale/flip/recolor them, and return a list of images.  """
         width, height = size
         num_horizontal = self.sheet.get_rect().width // width
         num_vertical = self.sheet.get_rect().height // height
         rects = [
-            (width * i, height * j, width, height)
+            pygame.Rect((width * i, height * j, width, height))
             for j in range(num_vertical)
             for i in range(num_horizontal)
         ]
-        images = [self.get_image(rect, colorkey, scale) for rect in rects]
+
+        images = [self.sheet.subsurface(rect) for rect in rects]
         images = list(filter(not_empty, images))
-        return images[:num_images] if num_images else images
-
-    def recolor(self, colormap: dict) -> None:
-        """Recolor spritesheet in place"""
-        self.sheet = recolor_sprite(self.sheet, colormap)
-
-    def copy_and_recolor(self, colormap: dict):
-        """Return a recolored copy of the spritesheet (saves reloading the image)"""
-        new_spritesheet = deepcopy(self)
-        new_spritesheet.recolor(colormap)
-        return new_spritesheet
+        if scale:
+            images = [scale_image(image, scale) for image in images]
+        if flip_horizontal or flip_vertical:
+            images = [flip_image(image, flip_horizontal, flip_vertical) for image in images]
+        if colormap:
+            images = [recolor_image(image, colormap) for image in images]
+        if num_images:
+            images = images[:num_images]
+        return images
 
 
 class SpriteAnimation:
@@ -130,16 +128,9 @@ class SpriteAnimation:
     """
 
     def __init__(
-        self,
-        frames: [pygame.Surface],
-        flip_horizontal=False,
-        flip_vertical=False,
-        looping=True,
-        **kwargs,
+        self, frames: [pygame.Surface], looping=True, **kwargs,
     ):
-        self.frames = [
-            pygame.transform.flip(f, bool(flip_horizontal), bool(flip_vertical)) for f in frames
-        ]
+        self.frames = frames
         self.looping = looping
 
     def get_frame(self, n: int):

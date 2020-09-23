@@ -3,7 +3,7 @@ from pathlib import Path
 import pygame
 import pytest
 
-from base.animation import recolor_sprite, pad_alpha
+from base.animation import recolor_image, pad_alpha
 from base.keyhandler import KeyHandler
 
 
@@ -58,7 +58,7 @@ def test_recolor():
         (0, 30, 255): (0, 163, 0),  # convert blue to green
         (195, 0, 255): (255, 255, 0),  # convert purple to yellow
     }
-    result = recolor_sprite(image, color_mapping)
+    result = recolor_image(image, color_mapping)
 
     def func():
         window.fill((69, 69, 69))
@@ -81,7 +81,7 @@ def test_transparent_recolor():
         (0, 0, 0, 0): (120, 62, 151, 150),  # convert transparent to translucent purple
     }
 
-    result = recolor_sprite(image, color_mapping)
+    result = recolor_image(image, color_mapping)
 
     def func():
         window.fill((69, 69, 69))
