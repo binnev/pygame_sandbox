@@ -523,7 +523,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             self.sweet_spot = Hitbox(
                 owner=instance,
-                knockback=20,
+                knockback=15,
                 knockback_angle=70,
                 angle=0,
                 x_offset=0,
@@ -533,7 +533,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             )
             self.sour_spot = Hitbox(
                 owner=instance,
-                knockback=10,
+                knockback=7,
                 knockback_angle=91,
                 angle=0,
                 x_offset=0,
