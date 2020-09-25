@@ -6,10 +6,10 @@ import pygame
 
 class AnimationMixin:
     """Handles animation for a state machine class. Subclasses should have their own
-    dictionary of sprite animations. Each state function can then use `ticks_elapsed`
+    dictionary of sprite animations. Each state function can then use `game_tick`
     counter to assign the correct sprite frame to self.image"""
 
-    ticks_elapsed = 0  # number of game ticks elapsed in the current state
+    game_tick = 0  # number of game ticks elapsed in the current state
     frame_duration: int  # higher = slower animation framerate
 
     @property
@@ -20,16 +20,16 @@ class AnimationMixin:
     def state(self, new_state):
         """Reset animation counter when state changes"""
         self._state = new_state
-        self.ticks_elapsed = 0
+        self.game_tick = 0
 
     @property
-    def frames_elapsed(self):
+    def animation_frame(self):
         """ Convert game ticks to animation frames. """
-        return self.ticks_elapsed // self.frame_duration
+        return self.game_tick // self.frame_duration
 
     def update_animation(self):
         """Call this inside subclass update method"""
-        self.ticks_elapsed += 1
+        self.game_tick += 1
 
 
 class PhysicsMixin:

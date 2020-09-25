@@ -53,6 +53,7 @@ class Keyboard0(KeyboardInputQueue):
     C_LEFT = pygame.K_ESCAPE  # fixme
     C_RIGHT = pygame.K_ESCAPE  # fixme
     START = pygame.K_RETURN
+    D_PAD_UP = pygame.K_ESCAPE  # fixme
 
 
 class Keyboard1(Keyboard0):
@@ -69,6 +70,7 @@ class Keyboard1(Keyboard0):
     C_LEFT = pygame.K_ESCAPE  # fixme
     C_RIGHT = pygame.K_ESCAPE  # fixme
     START = pygame.K_RETURN
+    D_PAD_UP = pygame.K_ESCAPE  # fixme
 
 
 """ 

@@ -42,12 +42,12 @@ class VolleyballMove:
         name = self.sprite_animation_name + "_" + self.instance.facing
         self.sprite_animation = self.instance.sprites[name]
 
-        frames_elapsed = self.instance.frames_elapsed
-        self.image = self.sprite_animation.get_frame(frames_elapsed)
+        animation_frame = self.instance.animation_frame
+        self.image = self.sprite_animation.get_frame(animation_frame)
 
         # flip hitboxes automatically
         self.active_hitboxes = self.get_active_hitboxes(
-            frames_elapsed, flip=not self.instance.facing_right
+            animation_frame, flip=not self.instance.facing_right
         )
 
         self.instance.image = self.image
@@ -69,7 +69,7 @@ class VolleyballMove:
         return source.get(n, [])
 
     def end_when_animation_ends(self, next_state):
-        if not self.sprite_animation.get_frame(self.instance.frames_elapsed + 1):
+        if not self.sprite_animation.get_frame(self.instance.animation_frame + 1):
             self.instance.state = next_state
 
     def flip_hitboxes(self, hitboxes):
@@ -240,7 +240,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             f"v = {self.v:.5f},",
             f"friction = {self.friction:.2f},",
             f"aerial_jumps_used = {self.aerial_jumps_used}",
-            f"ticks_elapsed = {self.ticks_elapsed}",
+            f"game_tick = {self.game_tick}",
         )
 
     def enforce_max_fall_speed(self):
@@ -281,7 +281,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     # ========================= state functions ================================
 
     def state_stand(self):
-        self.image = self.sprites["stand_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
         input = self.input
         if input.is_pressed(input.Y):
             self.state = self.state_jumpsquat
@@ -300,9 +300,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.state_fall
 
     def state_jumpsquat(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
 
-        if self.ticks_elapsed == self.jumpsquat_frames:
+        if self.game_tick == self.jumpsquat_frames:
             # if still holding jump, do a fullhop
             if self.input.is_down(self.input.Y):
                 self.enter_jump()
@@ -311,9 +311,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 self.enter_shorthop()
 
     def state_divesquat(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
 
-        if self.ticks_elapsed == self.jumpsquat_frames:
+        if self.game_tick == self.jumpsquat_frames:
             self.enter_dive()
 
     def enter_dive(self):
@@ -336,7 +336,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.fastfall = False
 
     def state_fall(self):
-        self.image = self.sprites["jump_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["jump_" + self.facing].get_frame(self.animation_frame)
         input = self.input
 
         holding_back = (self.facing_right and input.is_down(input.LEFT)) or (
@@ -425,7 +425,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_dive_getup(self):
         animation = self.sprites["dive_getup_" + self.facing]
-        image = animation.get_frame(self.frames_elapsed)
+        image = animation.get_frame(self.animation_frame)
         if image:
             self.image = image
         else:
@@ -779,11 +779,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             if not self.image:
                 self.instance.image = self.sprite_animation.frames[-1]
 
-            if self.instance.frames_elapsed == 30:
+            if self.instance.animation_frame == 30:
                 self.instance.state = self.instance.state_stand
 
     def state_squat(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
         input = self.input
         if self.airborne:
             self.state = self.state_fall
@@ -793,7 +793,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.state_stand
 
     def state_run(self):
-        self.image = self.sprites["run_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["run_" + self.facing].get_frame(self.animation_frame)
         input = self.input
         if not input.is_down(input.LEFT) and not input.is_down(input.RIGHT):
             self.state = self.state_stand
@@ -833,8 +833,8 @@ class SingleUseAnimation(Entity, AnimationMixin):
     def update(self):
         self.update_animation()
         # todo: why doesn't update_animation do this?
-        self.image = self.sprite_animation.get_frame(self.frames_elapsed)
-        if not self.sprite_animation.get_frame(self.frames_elapsed + 1):
+        self.image = self.sprite_animation.get_frame(self.animation_frame)
+        if not self.sprite_animation.get_frame(self.animation_frame + 1):
             self.kill()
 
 
