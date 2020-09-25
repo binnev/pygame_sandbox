@@ -25,7 +25,7 @@ class VolleyballGame(Game):
     window_width = conf.SCREEN_WIDTH
     window_height = conf.SCREEN_HEIGHT
     window_caption = "LAG SPIKE"
-    ticks_per_frame = conf.TICKS_PER_SPRITE_FRAME
+    frame_duration = conf.FRAME_DURATION
 
     def __init__(self):
         super().__init__()
@@ -34,14 +34,14 @@ class VolleyballGame(Game):
         self.keyboard = KeyboardInputQueue()
         self.keyboard0 = Keyboard0()
         self.keyboard1 = Keyboard1()
-        self.controller0 = GamecubeController(controller_id=0)
-        self.controller1 = GamecubeController(controller_id=1)
+        # self.controller0 = GamecubeController(controller_id=0)
+        # self.controller1 = GamecubeController(controller_id=1)
         self.input_devices = [
             self.keyboard,
             self.keyboard0,
             self.keyboard1,
-            self.controller0,
-            self.controller1,
+            # self.controller0,
+            # self.controller1,
         ]
 
     def run(self):
@@ -53,8 +53,8 @@ class VolleyballGame(Game):
             (3 * conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 100),
         ]
 
-        player1 = Stickman(*starting_positions[0], input=self.controller0, facing_right=True,)
-        player2 = Stickman(*starting_positions[1], input=self.controller1, facing_right=False,)
+        player1 = Stickman(*starting_positions[0], input=self.keyboard0, facing_right=True,)
+        player2 = Stickman(*starting_positions[1], input=self.keyboard1, facing_right=False,)
         level.add(
             player1, player2, type="character",
         )

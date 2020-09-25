@@ -10,7 +10,7 @@ class AnimationMixin:
     counter to assign the correct sprite frame to self.image"""
 
     ticks_elapsed = 0  # number of game ticks elapsed in the current state
-    game_ticks_per_sprite_frame: int  # higher = slower animation framerate
+    frame_duration: int  # higher = slower animation framerate
 
     @property
     def state(self):
@@ -24,7 +24,8 @@ class AnimationMixin:
 
     @property
     def frames_elapsed(self):
-        return self.ticks_elapsed // self.game_ticks_per_sprite_frame
+        """ Convert game ticks to animation frames. """
+        return self.ticks_elapsed // self.frame_duration
 
     def update_animation(self):
         """Call this inside subclass update method"""

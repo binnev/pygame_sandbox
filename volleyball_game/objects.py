@@ -77,7 +77,7 @@ class VolleyballMove:
 
 
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
-    game_ticks_per_sprite_frame = conf.TICKS_PER_SPRITE_FRAME
+    frame_duration = conf.FRAME_DURATION
 
     # class properties
     facing_right: bool
@@ -825,7 +825,7 @@ class SingleUseAnimation(Entity, AnimationMixin):
     width: int
     height: int
     sprite_animation: SpriteAnimation
-    game_ticks_per_sprite_frame = conf.TICKS_PER_SPRITE_FRAME
+    frame_duration = conf.FRAME_DURATION
 
     def __init__(self, x, y):
         super().__init__(x, y, self.width, self.height)
