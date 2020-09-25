@@ -69,8 +69,6 @@ class SpriteSheet:
         filename = Path(filename).as_posix()
         self.filename = filename
         self.colorkey = colorkey
-
-        # todo: remove me
         self.load_image_file()
 
     def load_image_file(self):
