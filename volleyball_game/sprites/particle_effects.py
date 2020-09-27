@@ -4,7 +4,7 @@ from volleyball_game import conf
 folder = relative_folder(__file__, "particle_effects")
 
 file_mapping = {
-    "default": {"filename": folder / "explosion.png", "looping": False, "num_images": 5},
+    "default": {"filename": folder / "explosion.png", "looping": False},
 }
 
 
