@@ -14,6 +14,7 @@ from volleyball_game.objects import (
     Volleyball,
     HitHandler,
     PersistentHitbox,
+    Runa,
 )
 
 
@@ -33,13 +34,13 @@ class VolleyballGame(Game):
         # input devices that are specific to this game
         self.keyboard0 = Keyboard0()
         self.keyboard1 = Keyboard1()
-        # self.controller0 = GamecubeController(controller_id=0)
-        # self.controller1 = GamecubeController(controller_id=1)
+        self.controller0 = GamecubeController(controller_id=0)
+        self.controller1 = GamecubeController(controller_id=1)
         self.input_devices += [
             self.keyboard0,
             self.keyboard1,
-            # self.controller0,
-            # self.controller1,
+            self.controller0,
+            self.controller1,
         ]
 
     def run(self):
@@ -52,8 +53,8 @@ class VolleyballGame(Game):
             (3 * conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 100),
         ]
 
-        player1 = Stickman(*starting_positions[0], input=self.keyboard0, facing_right=True,)
-        player2 = Stickman(*starting_positions[1], input=self.keyboard1, facing_right=False,)
+        player1 = Runa(*starting_positions[0], input=self.controller0, facing_right=True,)
+        player2 = Runa(*starting_positions[1], input=self.controller1, facing_right=False,)
         level.add(
             player1, player2, type="character",
         )
@@ -62,9 +63,11 @@ class VolleyballGame(Game):
         def reset():
             player1.xy = starting_positions[0]
             player1.u = player1.v = 0
+            player1.facing_right = True
             player1.state = player1.state_stand
             player2.xy = starting_positions[1]
             player2.u = player2.v = 0
+            player2.facing_right = False
             player2.state = player2.state_stand
 
         def score_bouncing_balls(level, match):

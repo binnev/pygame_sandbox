@@ -883,6 +883,52 @@ class Stickman(Player):
         self.sprites = stickman_sprites()
 
 
+class Runa(Stickman):
+    ground_speed = 15
+    jump_power = 30
+    dive_speed = 20
+
+    class Taunt(VolleyballMove):
+        left_and_right_versions = True
+        sprite_animation_name = "taunt"
+
+        def __init__(self, instance):
+            self.hitbox = Hitbox(
+                owner=instance,
+                knockback=100,
+                angle=10,
+                knockback_angle=70,
+                x_offset=0,
+                y_offset=-60,
+                width=90,
+                height=60,
+            )
+            self.hitbox2 = Hitbox(
+                owner=instance,
+                knockback=15,
+                angle=-30,
+                knockback_angle=90,
+                x_offset=0,
+                y_offset=-35,
+                width=90,
+                height=60,
+            )
+            self.hitbox_mapping = {
+                (3, 9): [self.hitbox],
+                (10, 999): [self.hitbox2],
+            }
+            super().__init__(instance)
+
+        def __call__(self):
+            super().__call__()
+
+            if not self.image:
+                self.instance.image = self.sprite_animation.frames[-1]
+
+            if self.instance.animation_frame == 10:
+                self.instance.state = self.instance.state_stand
+
+
 class Ball(Entity, AnimationMixin, PhysicsMixin):
     width: int
     height: int
