@@ -53,8 +53,8 @@ class VolleyballGame(Game):
             (3 * conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 100),
         ]
 
-        player1 = Runa(*starting_positions[0], input=self.controller0, facing_right=True,)
-        player2 = Runa(*starting_positions[1], input=self.controller1, facing_right=False,)
+        player1 = Stickman(*starting_positions[0], input=self.controller0, facing_right=True,)
+        player2 = Stickman(*starting_positions[1], input=self.controller1, facing_right=False,)
         level.add(
             player1, player2, type="character",
         )
