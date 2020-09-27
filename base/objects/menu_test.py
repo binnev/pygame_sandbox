@@ -91,7 +91,7 @@ class MainMenu(Menu):
         try:
             # todo: maybe make these generators so that you're not generating the entire array
             #  each tick
-            xs = ease_in_out(-250, 250, 60)
+            xs = ease_in_out(-250, 250, 20)
             for button in self:
                 button.x = xs[self.game_tick]
         except IndexError:
@@ -107,7 +107,7 @@ class MainMenu(Menu):
 
     def animate_out(self, next_scene):
         try:
-            xs = ease_in_out(250, 750, 60)
+            xs = ease_in_out(250, 750, 20)
             for button in self:
                 button.x = xs[self.game_tick]
         except IndexError:
@@ -126,7 +126,7 @@ class SettingsMenu(Menu):
 
     def animate_in(self):
         try:
-            xs = ease_in_out(-250, 250, 60)
+            xs = ease_in_out(-250, 250, 20)
             self.back_button.x = xs[self.game_tick]
         except IndexError:
             self.state = self.idle
@@ -137,7 +137,7 @@ class SettingsMenu(Menu):
 
     def animate_out(self, next_scene):
         try:
-            xs = ease_in_out(250, 750, 60)
+            xs = ease_in_out(250, 750, 20)
             self.back_button.x = xs[self.game_tick]
         except IndexError:
             self.next_scene = next_scene
