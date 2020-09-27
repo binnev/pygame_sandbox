@@ -3,12 +3,6 @@ from volleyball_game import conf
 
 folder = relative_folder(__file__, "stickman")
 
-# todo: make something to automatically create left-facing versions?
-# todo: make this a dict of SpriteAnimations so that they can autocomplete arguments. Use a
-#  defaults dict to supply shared params.
-#  don't forget to wrap the whole thing in a function so that it doesn't complain about display
-#  initialisation
-
 SPRITE_SIZE = (32, 32)
 
 
