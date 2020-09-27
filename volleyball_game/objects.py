@@ -218,7 +218,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.u = self.u - sign(self.u) * self.air_resistance
         else:  # friction
             # fixme: this causes sliding for small x velocities
-            self.u = self.u - sign(self.u) * self.friction
+            self.u *= self.friction
             self.v = 0
 
         self.x += self.u
