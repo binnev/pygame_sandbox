@@ -42,12 +42,12 @@ class VolleyballMove:
         name = self.sprite_animation_name + "_" + self.instance.facing
         self.sprite_animation = self.instance.sprites[name]
 
-        frames_elapsed = self.instance.frames_elapsed
-        self.image = self.sprite_animation.get_frame(frames_elapsed)
+        animation_frame = self.instance.animation_frame
+        self.image = self.sprite_animation.get_frame(animation_frame)
 
         # flip hitboxes automatically
         self.active_hitboxes = self.get_active_hitboxes(
-            frames_elapsed, flip=not self.instance.facing_right
+            animation_frame, flip=not self.instance.facing_right
         )
 
         self.instance.image = self.image
@@ -69,7 +69,7 @@ class VolleyballMove:
         return source.get(n, [])
 
     def end_when_animation_ends(self, next_state):
-        if not self.sprite_animation.get_frame(self.instance.frames_elapsed + 1):
+        if not self.sprite_animation.get_frame(self.instance.animation_frame + 1):
             self.instance.state = next_state
 
     def flip_hitboxes(self, hitboxes):
@@ -77,7 +77,7 @@ class VolleyballMove:
 
 
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
-    game_ticks_per_sprite_frame = conf.TICKS_PER_SPRITE_FRAME
+    frame_duration = conf.FRAME_DURATION
 
     # class properties
     facing_right: bool
@@ -217,7 +217,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if self.airborne:  # air resistance
             self.u = self.u - sign(self.u) * self.air_resistance
         else:  # friction
-            self.u = self.u - sign(self.u) * self.friction
+            # fixme: this causes sliding for small x velocities. Put this in a function to allow
+            #  states to apply friction or not.
+            self.u *= 1 - self.friction
             self.v = 0
 
         self.x += self.u
@@ -240,7 +242,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             f"v = {self.v:.5f},",
             f"friction = {self.friction:.2f},",
             f"aerial_jumps_used = {self.aerial_jumps_used}",
-            f"ticks_elapsed = {self.ticks_elapsed}",
+            f"game_tick = {self.game_tick}",
         )
 
     def enforce_max_fall_speed(self):
@@ -281,7 +283,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     # ========================= state functions ================================
 
     def state_stand(self):
-        self.image = self.sprites["stand_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
         input = self.input
         if input.is_pressed(input.Y):
             self.state = self.state_jumpsquat
@@ -300,9 +302,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.state_fall
 
     def state_jumpsquat(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
 
-        if self.ticks_elapsed == self.jumpsquat_frames:
+        if self.game_tick == self.jumpsquat_frames:
             # if still holding jump, do a fullhop
             if self.input.is_down(self.input.Y):
                 self.enter_jump()
@@ -311,9 +313,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 self.enter_shorthop()
 
     def state_divesquat(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
 
-        if self.ticks_elapsed == self.jumpsquat_frames:
+        if self.game_tick == self.jumpsquat_frames:
             self.enter_dive()
 
     def enter_dive(self):
@@ -336,7 +338,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         self.fastfall = False
 
     def state_fall(self):
-        self.image = self.sprites["jump_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["jump_" + self.facing].get_frame(self.animation_frame)
         input = self.input
 
         holding_back = (self.facing_right and input.is_down(input.LEFT)) or (
@@ -425,7 +427,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def state_dive_getup(self):
         animation = self.sprites["dive_getup_" + self.facing]
-        image = animation.get_frame(self.frames_elapsed)
+        image = animation.get_frame(self.animation_frame)
         if image:
             self.image = image
         else:
@@ -523,7 +525,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             self.sweet_spot = Hitbox(
                 owner=instance,
-                knockback=20,
+                knockback=15,
                 knockback_angle=70,
                 angle=0,
                 x_offset=0,
@@ -533,7 +535,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             )
             self.sour_spot = Hitbox(
                 owner=instance,
-                knockback=10,
+                knockback=7,
                 knockback_angle=91,
                 angle=0,
                 x_offset=0,
@@ -779,11 +781,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             if not self.image:
                 self.instance.image = self.sprite_animation.frames[-1]
 
-            if self.instance.frames_elapsed == 30:
+            if self.instance.animation_frame == 30:
                 self.instance.state = self.instance.state_stand
 
     def state_squat(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
         input = self.input
         if self.airborne:
             self.state = self.state_fall
@@ -793,7 +795,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.state = self.state_stand
 
     def state_run(self):
-        self.image = self.sprites["run_" + self.facing].get_frame(self.frames_elapsed)
+        self.image = self.sprites["run_" + self.facing].get_frame(self.animation_frame)
         input = self.input
         if not input.is_down(input.LEFT) and not input.is_down(input.RIGHT):
             self.state = self.state_stand
@@ -825,7 +827,7 @@ class SingleUseAnimation(Entity, AnimationMixin):
     width: int
     height: int
     sprite_animation: SpriteAnimation
-    game_ticks_per_sprite_frame = conf.TICKS_PER_SPRITE_FRAME
+    frame_duration = conf.FRAME_DURATION
 
     def __init__(self, x, y):
         super().__init__(x, y, self.width, self.height)
@@ -833,8 +835,8 @@ class SingleUseAnimation(Entity, AnimationMixin):
     def update(self):
         self.update_animation()
         # todo: why doesn't update_animation do this?
-        self.image = self.sprite_animation.get_frame(self.frames_elapsed)
-        if not self.sprite_animation.get_frame(self.frames_elapsed + 1):
+        self.image = self.sprite_animation.get_frame(self.animation_frame)
+        if not self.sprite_animation.get_frame(self.animation_frame + 1):
             self.kill()
 
 
@@ -854,7 +856,7 @@ class Stickman(Player):
     width = 80
     height = 70
     _state = None
-    ground_acceleration = 10  # 3
+    ground_acceleration = 5  # 3
     ground_speed = 9
     air_acceleration = 2
     air_speed = ground_speed
@@ -866,7 +868,7 @@ class Stickman(Player):
     jump_power = 20
     shorthop_power = 11
     jumpsquat_frames = 3
-    friction = 0.8
+    friction = 0.2
     air_resistance = 0.03
     crouch_height_multiplier = 0.7
 
@@ -875,9 +877,6 @@ class Stickman(Player):
     double_jump_cooldown = 0
     projectile_cooldown_frames = 30
     projectile_cooldown = 0
-
-    sprites_folder = Path("sprites/")
-    image = pygame.image.load((sprites_folder / "stickman/stick_stand.png").as_posix())
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

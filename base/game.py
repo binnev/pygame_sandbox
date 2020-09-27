@@ -28,6 +28,8 @@ class Game:
         self.input_devices = [self.keyboard]
 
     def main(self):
+        """ This is the outermost game function which runs once. It contains the outermost game
+        loop. Here's where you should put your main event state machine. """
         self.tick = 0
         run = True
         while run:
@@ -52,7 +54,8 @@ class Game:
             self.tick += 1
 
     def run(self):
-        """Override me"""
+        """ run can be a set of instructions to be carried out in the main() game loop, or it can
+        define another game loop of its own. """
         self.window.fill((0, 255, 0))
         text = self.font.render("This is the default game", True, (0, 0, 0))
         textRect = text.get_rect()

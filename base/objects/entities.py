@@ -43,9 +43,7 @@ class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, color=None, groups=[]):
         super().__init__(*groups)
 
-        # fixme: it's stupid to load the font here. Attach this to game or something?
-        self.font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 12,)
-        self.color = color if color else self.debug_color
+        self.color = color or self.debug_color
         self.width = width
         self.height = height
         self.state = None
@@ -54,6 +52,11 @@ class Entity(pygame.sprite.Sprite):
         self.y = y
 
     # =============== properties ====================
+
+    @property
+    def font(self):
+        # fixme: it's stupid to load the font here. Attach this to game or something?
+        return pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 24)
 
     @property
     def game(self):
@@ -151,7 +154,7 @@ class Entity(pygame.sprite.Sprite):
             mask_surface = mask_to_surface(self.mask, translucent_color)
             mask_outline = self.mask.outline()
             # add the outline to the mask surface
-            pygame.draw.polygon(mask_surface, color, mask_outline, 1)
+            pygame.draw.polygon(mask_surface, color, mask_outline, 5)
             surface.blit(mask_surface, self.image_rect)
 
         # draw centroid
