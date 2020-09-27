@@ -33,7 +33,7 @@ def stickman_sprites():
     stomp = SpriteSheet(filename=folder / "stick_stomp.png")
 
     # describe the animations -- do they loop, etc -- once here
-    bla = dict(
+    animations = dict(
         stand=SpriteAnimation(stand.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         run=SpriteAnimation(run.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         crouch=SpriteAnimation(crouch.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
@@ -70,54 +70,12 @@ def stickman_sprites():
     )
 
     # automatically create flipped versions
-    animations = {}
-    for name, animation in bla.items():
-        animations[name + "_right"] = animation
-        animations[name + "_left"] = animation.copy(flip_x=True)
+    two_sided_animations = {}
+    for name, animation in animations.items():
+        two_sided_animations[name + "_right"] = animation
+        two_sided_animations[name + "_left"] = animation.copy(flip_x=True)
 
     sprite_dict = SpriteDict(file_mapping={})
-    # sprite_dict = SpriteDict(size=(32, 32), scale=conf.SCALE_SPRITES, file_mapping=file_mapping,)
-    sprite_dict.update(animations)
-
-    file_mapping = {
-        "back_air_right": {"filename": folder / "stick_back_air.png", "looping": False,},
-        "back_air_left": {
-            "filename": folder / "stick_back_air.png",
-            "flip_x": True,
-            "looping": False,
-        },
-        "back_air2_right": {"filename": folder / "stick_back_air2.png", "looping": False,},
-        "back_air2_left": {
-            "filename": folder / "stick_back_air2.png",
-            "flip_x": True,
-            "looping": False,
-        },
-        "fall_right": {"filename": folder / "stick_jump.png"},
-        "fall_left": {"filename": folder / "stick_jump.png", "flip_x": True},
-        "jump_right": {"filename": folder / "stick_jump.png"},
-        "jump_left": {"filename": folder / "stick_jump.png", "flip_x": True},
-        "dive_right": {"filename": folder / "stick_dive.png"},
-        "dive_left": {"filename": folder / "stick_dive.png", "flip_x": True},
-        "dive_getup_right": {"filename": folder / "stick_dive_getup.png", "looping": False,},
-        "dive_getup_left": {
-            "filename": folder / "stick_dive_getup.png",
-            "flip_x": True,
-            "looping": False,
-        },
-        "aerial_defense_right": {"filename": folder / "stick_aerial_defense.png"},
-        "aerial_defense_left": {"filename": folder / "stick_aerial_defense.png", "flip_x": True,},
-        "standing_hit_right": {"filename": folder / "stick_standing_hit.png"},
-        "standing_hit_left": {"filename": folder / "stick_standing_hit.png", "flip_x": True,},
-        "weird_hit_right": {"filename": folder / "stick_weird_hit.png", "looping": False,},
-        "weird_hit_left": {
-            "filename": folder / "stick_weird_hit.png",
-            "looping": False,
-            "flip_x": True,
-        },
-        "taunt_right": {"filename": folder / "stick_taunt.png", "looping": False},
-        "taunt_left": {"filename": folder / "stick_taunt.png", "looping": False, "flip_x": True,},
-        "stomp_right": {"filename": folder / "stick_stomp.png", "looping": False},
-        "stomp_left": {"filename": folder / "stick_stomp.png", "looping": False, "flip_x": True,},
-    }
+    sprite_dict.update(two_sided_animations)
 
     return sprite_dict
