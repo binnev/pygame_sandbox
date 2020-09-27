@@ -217,8 +217,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if self.airborne:  # air resistance
             self.u = self.u - sign(self.u) * self.air_resistance
         else:  # friction
-            # fixme: this causes sliding for small x velocities
-            self.u *= self.friction
+            # fixme: this causes sliding for small x velocities. Put this in a function to allow
+            #  states to apply friction or not.
+            self.u *= 1 - self.friction
             self.v = 0
 
         self.x += self.u
@@ -855,7 +856,7 @@ class Stickman(Player):
     width = 80
     height = 70
     _state = None
-    ground_acceleration = 10  # 3
+    ground_acceleration = 5  # 3
     ground_speed = 9
     air_acceleration = 2
     air_speed = ground_speed
@@ -867,7 +868,7 @@ class Stickman(Player):
     jump_power = 20
     shorthop_power = 11
     jumpsquat_frames = 3
-    friction = 0.8
+    friction = 0.2
     air_resistance = 0.03
     crouch_height_multiplier = 0.7
 
