@@ -7,10 +7,10 @@ from pygame.sprite import Sprite
 
 from base.animation import ease_in_out
 from base.groups import EntityGroup
-from base.objects.entities import Entity
 from base.objects.gui_elements import GuiButton
 from base.objects.gui_test import mouse_hovering_over, mouse_clicking
 from base.objects.mixins import AnimationMixin
+from volleyball_game.inputs import Keyboard0, Keyboard1, GamecubeController
 from volleyball_game.objects import ParticleEffect
 
 mainClock = pygame.time.Clock()
@@ -111,7 +111,7 @@ class MainMenu(Menu):
 
 
 class SettingsMenu(Menu):
-    def __init__(self,):
+    def __init__(self):
         super().__init__()
         self.state = self.animate_in
         self.back_button = GuiButton(
@@ -141,21 +141,14 @@ class SettingsMenu(Menu):
             self.kill()
 
 
-def draw_text(text, font, color, surface, x, y):
-    textobj = font.render(text, 1, color)
-    textrect = textobj.get_rect()
-    textrect.topleft = (x, y)
-    surface.blit(textobj, textrect)
-
-
 class Game:
     def __init__(self):
         self.scenes = EntityGroup()
         super().__init__()
 
-    def add_scene(self, scene_instance):
-        scene_instance.game = self
-        self.scenes.add(scene_instance)
+    def add_scene(self, scene):
+        scene.game = self
+        self.scenes.add(scene)
 
     def main(self):
         # first scene
