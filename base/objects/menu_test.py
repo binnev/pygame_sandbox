@@ -1,9 +1,9 @@
 import sys
 from random import random
 
-import numpy
 import pygame
 from pygame import Color
+from pygame.sprite import Sprite
 
 from base.animation import ease_in_out
 from base.groups import EntityGroup
@@ -22,30 +22,28 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 font = pygame.font.SysFont(None, 50)
 
 
-class Menu(EntityGroup, AnimationMixin):
+class Menu(Sprite, AnimationMixin):
     def __init__(self):
         super().__init__()
-        self.next_scene = self
+        self.game = game
+        self.buttons = EntityGroup()
+        self.groups = [self.buttons]
 
     def update(self, *args):
-        super().update()  # calls .update() on all children objects in self
+        for group in self.groups:
+            group.update()
         self.update_animation()
         self.state()
-        self.check_children_status()
-        return self.next_scene
+        self.check_button_statuses()
 
-    def check_children_status(self):
-        for element in self:
+    def draw(self, surface, debug=False):
+        for group in self.groups:
+            group.draw(surface, debug)
+
+    def check_button_statuses(self):
+        for element in self.buttons:
             element.focus = mouse_hovering_over(element)
             element.click = mouse_clicking(element)
-
-    def set_state(self, new_state):
-        """ This setter is necessary because the lambdas used for button on_press callbacks don't
-        allow us to assign to attributes. """
-        self.state = new_state
-
-    def set_next_scene(self, next_scene):
-        self.next_scene = next_scene
 
     def animate_to(self, animation_function, next_scene_callable):
         """ Partial execution. State functions are called without any arguments, so if I want the
@@ -56,22 +54,13 @@ class Menu(EntityGroup, AnimationMixin):
 
         return wrapped
 
-    def animate(self, next_scene):
-        """ dummy. Delete me """
-        try:
-            xs = ease_in_out(250, 750, 60)
-            for button in self:
-                button.x = xs[self.game_tick]
-        except IndexError:
-            self.next_scene = next_scene
-
 
 class MainMenu(Menu):
     def __init__(self):
         super().__init__()
         self.state = self.animate_in
         self.explosion_button = GuiButton(
-            0,
+            -999,
             200,
             200,
             50,
@@ -80,19 +69,21 @@ class MainMenu(Menu):
             color=(100, 0, 100),
         )
         self.quit_button = GuiButton(
-            0, 400, 200, 50, text="quit", text_color=Color("white"), color=(100, 0, 100),
+            -999, 400, 200, 50, text="quit", text_color=Color("white"), color=(100, 0, 100),
         )
         self.settings_button = GuiButton(
-            0, 300, 200, 50, text="settings", text_color=Color("white"), color=(100, 0, 100),
+            -999, 300, 200, 50, text="settings", text_color=Color("white"), color=(100, 0, 100),
         )
-        self.add(self.explosion_button, self.quit_button, self.settings_button)
+        self.buttons.add(self.explosion_button, self.quit_button, self.settings_button)
+        self.explosions = EntityGroup()
+        self.groups.append(self.explosions)
 
     def animate_in(self):
         try:
             # todo: maybe make these generators so that you're not generating the entire array
             #  each tick
             xs = ease_in_out(-250, 250, 20)
-            for button in self:
+            for button in self.buttons:
                 button.x = xs[self.game_tick]
         except IndexError:
             self.state = self.idle
@@ -101,28 +92,32 @@ class MainMenu(Menu):
         if self.quit_button.click:
             self.state = self.animate_to(self.animate_out, None)
         if self.settings_button.click:
-            self.state = self.animate_to(self.animate_out, SettingsMenu())
+            self.game.add_scene(SettingsMenu())
+            self.state = self.animate_to(self.animate_out, None)
         if self.explosion_button.click:
-            self.add(ParticleEffect(x=random() * SCREEN_WIDTH, y=random() * SCREEN_HEIGHT)),
+            self.explosions.add(
+                ParticleEffect(x=random() * SCREEN_WIDTH, y=random() * SCREEN_HEIGHT)
+            ),
 
     def animate_out(self, next_scene):
         try:
             xs = ease_in_out(250, 750, 20)
-            for button in self:
+            for button in self.buttons:
                 button.x = xs[self.game_tick]
         except IndexError:
-            self.next_scene = next_scene
+            if next_scene:
+                self.game.scenes.add(next_scene)
             self.kill()
 
 
 class SettingsMenu(Menu):
-    def __init__(self):
+    def __init__(self,):
         super().__init__()
         self.state = self.animate_in
         self.back_button = GuiButton(
-            0, 200, 200, 50, text="back", text_color=Color("white"), color=(100, 0, 100),
+            -999, 200, 200, 50, text="back", text_color=Color("white"), color=(100, 0, 100),
         )
-        self.add(self.back_button)
+        self.buttons.add(self.back_button)
 
     def animate_in(self):
         try:
@@ -133,14 +128,16 @@ class SettingsMenu(Menu):
 
     def idle(self):
         if self.back_button.click:
-            self.state = self.animate_to(self.animate_out, MainMenu())
+            self.game.add_scene(MainMenu())
+            self.state = self.animate_to(self.animate_out, None)
 
     def animate_out(self, next_scene):
         try:
             xs = ease_in_out(250, 750, 20)
             self.back_button.x = xs[self.game_tick]
         except IndexError:
-            self.next_scene = next_scene
+            if next_scene:
+                self.game.scenes.add(next_scene)
             self.kill()
 
 
@@ -151,30 +148,40 @@ def draw_text(text, font, color, surface, x, y):
     surface.blit(textobj, textrect)
 
 
-def main():
-    scene = MainMenu()
+class Game:
+    def __init__(self):
+        self.scenes = EntityGroup()
+        super().__init__()
 
-    running = True
-    while running:
-        screen.fill((255, 255, 255))
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+    def add_scene(self, scene_instance):
+        scene_instance.game = self
+        self.scenes.add(scene_instance)
+
+    def main(self):
+        # first scene
+        self.add_scene(MainMenu())
+
+        running = True
+        while running:
+            screen.fill((255, 255, 255))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
 
-        scene.draw(screen)
-        # scenes can return the next scene
-        scene = scene.update()
+            self.scenes.draw(screen)
+            self.scenes.update()
 
-        mainClock.tick(60)
-        pygame.display.update()
-        if scene is None:
-            running = False
+            mainClock.tick(60)
+            pygame.display.update()
+            if not self.scenes:
+                running = False
 
 
 if __name__ == "__main__":
-    main()
+    game = Game()
+    game.main()

@@ -3,6 +3,7 @@ from copy import copy
 
 import pygame
 from numpy import sign
+from pygame.sprite import Sprite
 
 from base.animation import SpriteAnimation
 from base.groups import EntityGroup
@@ -23,7 +24,7 @@ class Keys:
     FIRE = pygame.K_SPACE
 
 
-class Entity(pygame.sprite.Sprite):
+class Entity(Sprite):
     """This is the class from which all game objects will be derived---Characters,
     projectiles, platforms, etc.
 
