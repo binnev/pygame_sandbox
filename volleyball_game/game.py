@@ -55,6 +55,7 @@ class VolleyballGame(Game):
         """ This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine. """
         self.add_scene(VolleyballMatch())
+        self.debug = False
         self.tick = 0
         running = True
         while running:
@@ -68,6 +69,8 @@ class VolleyballGame(Game):
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit()
+                    if event.key == pygame.K_F1:
+                        self.debug = not self.debug
 
             # input devices should be read once per tick in the main game loop.
             # That can be the single source of truth regarding inputs.
@@ -75,7 +78,7 @@ class VolleyballGame(Game):
                 device.read_new_inputs()
 
             self.scenes.update()
-            self.scenes.draw(self.window, debug=True)
+            self.scenes.draw(self.window, debug=self.debug)
             pygame.display.update()
 
             self.clock.tick(self.fps)
@@ -302,14 +305,12 @@ class VolleyballMatch(Sprite):
         before that property has been set. """
 
         self.player1 = Stickman(
-            *self.starting_positions[0], input=self.game.keyboard0, facing_right=True,
+            *self.starting_positions[0], input=self.game.controller0, facing_right=True,
         )
         self.player2 = Stickman(
             *self.starting_positions[1], input=self.game.keyboard1, facing_right=False,
         )
         self.level.add(self.player1, self.player2, type="character")
-
-        # self.tee_up()
 
         self.state = self.match
 
@@ -319,36 +320,22 @@ class VolleyballMatch(Sprite):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 button = pygame.mouse.get_pressed()
 
-        if self.game.keyboard.is_pressed(pygame.K_b):
-            x, y = pygame.mouse.get_pos()
-            self.level.add_projectile(Volleyball(x, y))
-
         # # reset
         # if self.game.keyboard.is_pressed(pygame.K_ESCAPE):
         #     self.state = self.start_match
         #     time.sleep(1)
 
-        # for event in pygame.event.get():
-        #     if event.type == pygame.MOUSEBUTTONDOWN:
-        #         button = pygame.mouse.get_pressed()
-        #         x, y = pygame.mouse.get_pos()
-        #         if button[0]:
-        #             self.level.add(PersistentHitbox(x, y), type="particle_effect")
-
-        # todo: move this to outermost game loop
-        # if self.keyboard.is_pressed(pygame.K_F1):
-        #     debug = not debug
-
         # if self.game.keyboard.is_pressed(pygame.K_F2):
         #     self.frame_by_frame = not self.frame_by_frame
 
-        # if self.game.keyboard.is_pressed(pygame.K_RETURN):
-        #     self.game_started = not self.game_started
+        if self.game.keyboard.is_pressed(pygame.K_RETURN):
+            self.game_started = not self.game_started
 
-        # self.score_bouncing_balls(level, match)
-        # self.score_balls_out_of_play(level, match)
-        # self.score_balls_in_net(level, match)
-        # self.end_game(level, match)
+        self.tee_up()
+        self.score_bouncing_balls()
+        self.score_balls_out_of_play()
+        # self.score_balls_in_net()
+        self.end_game()
 
         # # frame-by-frame mode
         # if self.frame_by_frame:
@@ -374,72 +361,76 @@ class VolleyballMatch(Sprite):
         self.player2.facing_right = False
         self.player2.state = self.player2.state_stand
 
-    def score_bouncing_balls(level, match):
+    def score_bouncing_balls(self):
         """ do scoring if ball bounces off ground. """
-        bouncing_balls = pygame.sprite.spritecollide(level.ground, level.projectiles, dokill=False)
+        bouncing_balls = pygame.sprite.spritecollide(
+            self.level.ground, self.level.projectiles, dokill=False
+        )
         for ball in bouncing_balls:
             time.sleep(1)
             # right player goal
-            if ball.x < level.net.x:
-                match.score[-1] += 1
-                match.to_serve = "left"
+            if ball.x < self.level.net.x:
+                self.score[-1] += 1
+                self.to_serve = "left"
             else:
-                match.score[0] += 1
-                match.to_serve = "right"
+                self.score[0] += 1
+                self.to_serve = "right"
             ball.kill()
-            match.ball_in_play = False
+            self.ball_in_play = False
 
     def tee_up(self):
-        # tee up the ball for whoever's turn it is to serve
+        # # tee up the ball for whoever's turn it is to serve
         if not self.ball_in_play and self.game_started:
             self.reset_player_positions()
             x = self.player1.x if self.to_serve == "left" else self.player2.x
             self.level.add(Volleyball(x, 100), type="projectile")
             self.ball_in_play = True
 
-    def score_balls_out_of_play(level, match):
+    def score_balls_out_of_play(self):
         # do scoring if ball falls off bottom
-        for ball in level.projectiles:
+        for ball in self.level.projectiles:
             if ball.rect.bottom > conf.SCREEN_HEIGHT:
                 # player 1 knocked the ball out
-                if ball.last_touched_by == player1:
-                    match.score[-1] += 1
-                    match.to_serve = "left"
+                if ball.last_touched_by == self.player1:
+                    self.score[-1] += 1
+                    self.to_serve = "left"
                 else:
-                    match.score[0] += 1
-                    match.to_serve = "right"
+                    self.score[0] += 1
+                    self.to_serve = "right"
                 time.sleep(1)
-                match.ball_in_play = False
+                self.ball_in_play = False
                 ball.kill()
 
-    def score_balls_in_net(level, match):
+    def score_balls_in_net(self):
         # do scoring if ball bounces off net
-        bouncing_balls = pygame.sprite.spritecollide(level.net, level.projectiles, dokill=False)
+        bouncing_balls = pygame.sprite.spritecollide(
+            self.level.net, self.level.projectiles, dokill=False
+        )
         for ball in bouncing_balls:
             # if the ball bounces off the top of the net, ignore it
-            if ball.centroid.y < level.net.rect.top:
+            if ball.centroid.y < self.level.net.rect.top:
                 continue
-            if ball.last_touched_by == player1:
-                match.score[-1] += 1
-                match.to_serve = "left"
+            if ball.last_touched_by == self.player1:
+                self.score[-1] += 1
+                self.to_serve = "left"
             else:
-                match.score[0] += 1
-                match.to_serve = "right"
+                self.score[0] += 1
+                self.to_serve = "right"
             time.sleep(1)
-            match.ball_in_play = False
+            self.ball_in_play = False
             ball.kill()
 
-    def end_game(level, match):
+    def end_game(self):
         # end the game
-        if match.score[0] == match.max_score or match.score[1] == match.max_score:
-            winner = "Left" if match.score[0] == match.max_score else "Right"
-            text = self.font.render(
-                f"{winner} player wins {match.score[0]}-{match.score[1]}", True, (0, 0, 0)
+        if self.score[0] == self.max_score or self.score[1] == self.max_score:
+            winner = "Left" if self.score[0] == self.max_score else "Right"
+            text = self.game.font.render(
+                f"{winner} player wins {self.score[0]}-{self.score[1]}", True, (0, 0, 0)
             )
             textRect = text.get_rect()
-            textRect.center = (self.window_width // 2, 50)
-            self.window.blit(text, textRect)
+            textRect.center = (self.game.window_width // 2, 50)
+            self.game.window.blit(text, textRect)
             pygame.display.flip()
             time.sleep(3)
-            match.score = [0, 0]
-            reset()
+            self.score = [0, 0]
+            self.reset_player_positions()
