@@ -251,7 +251,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def allow_fastfall(self):
         input = self.input
-        if input.is_down(input.DOWN) and self.v > 0:
+        if input.is_down(input.DOWN) and self.v > 0 and not self.fastfall:
+            self.level.add_particle_effect(JumpRing(*self.rect.midbottom))
             self.fastfall = True
             self.v = self.fall_speed
 
