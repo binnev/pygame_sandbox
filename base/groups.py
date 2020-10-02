@@ -64,3 +64,6 @@ class Level(EntityGroup):
 
     def add_hitbox(self, *objects):
         self.add(*objects, type="hitbox")
+
+    def add_particle_effect(self, *objects):
+        self.add(*objects, type="particle_effect")

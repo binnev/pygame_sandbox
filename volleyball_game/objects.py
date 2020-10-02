@@ -5,7 +5,7 @@ import numpy
 import pygame as pygame
 from numpy.core._multiarray_umath import sign
 
-from base.animation import SpriteDict, SpriteAnimation
+from base.animation import SpriteDict, SpriteAnimation, ease_out
 from base.objects.entities import Entity, CollisionMixin, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
@@ -388,6 +388,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.double_jump_cooldown = self.double_jump_cooldown_frames
             self.aerial_jumps_used += 1
             self.enter_jump()
+            self.level.add_particle_effect(JumpRing(*self.rect.midbottom))
 
         self.enforce_max_fall_speed()
         self.allow_fastfall()
@@ -852,6 +853,36 @@ class SingleUseAnimation(Entity, AnimationMixin):
             self.kill()
 
 
+class JumpRing(SingleUseAnimation):
+    # todo: refactor. this is a lot of code for a very simple thing.
+    width = 100
+    height = 30
+
+    class RingAnimation:
+        width = 100
+        height = 30
+        diameters = ease_out(30, 100, 5)
+
+        def get_frame(self, n):
+            """ Create a ring image animation """
+            try:
+                diameter = self.diameters[n]
+                surface = pygame.Surface((self.width, self.height)).convert_alpha()
+                surface.fill((0, 0, 0, 0))
+                rect = pygame.Rect(0, 0, diameter, diameter * self.height // self.width)
+                rect.center = surface.get_rect().center
+                pygame.draw.ellipse(surface, pygame.Color("red"), rect, 3 + n)
+                return surface
+            except IndexError:
+                return False  # animation finished
+
+    sprite_animation = RingAnimation()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.image = self.sprite_animation.get_frame(0)  # fixme: hacky because bad design
+
+
 class ParticleEffect(SingleUseAnimation):
     width = 100
     height = 100
@@ -860,7 +891,7 @@ class ParticleEffect(SingleUseAnimation):
         super().__init__(x, y)
         self.sprites = explosion_sprites()
         self.sprite_animation = self.sprites["default"]
-        self.image = self.sprite_animation.get_frame(0)
+        self.image = self.sprite_animation.get_frame(0)  # fixme: hacky because bad design
 
 
 class Stickman(Player):
