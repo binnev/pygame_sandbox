@@ -35,7 +35,7 @@ class Entity(Sprite):
     which are used by all subclasses.
     """
 
-    image: pygame.Surface = pygame.Surface((1, 1))
+    image: pygame.Surface
 
     debug_color = pygame.Color(69, 69, 69)
     debug_background = pygame.Color(255, 255, 255)
@@ -110,6 +110,8 @@ class Entity(Sprite):
 
     @property
     def image_rect(self):
+        # fixme: this is very bad!!! It means _image_rect is set only once, and if that's wrong
+        #  then it persists!
         if not hasattr(self, "_image_rect"):
             self._image_rect = self.image.get_rect()
         return self._image_rect

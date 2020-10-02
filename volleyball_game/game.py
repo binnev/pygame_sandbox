@@ -264,14 +264,14 @@ class VolleyballMatch(Sprite):
 
     game: VolleyballGame  # added by the game it adds this scene
     starting_positions = [
-        (conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 500),
-        (3 * conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 500),
+        (conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 100),
+        (3 * conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 100),
     ]
 
     def update(self):
+        self.state()
         for group in self.groups:
             group.update()
-        self.state()
 
     def draw(self, surface, debug=False):
         for group in self.groups:
@@ -302,23 +302,13 @@ class VolleyballMatch(Sprite):
         before that property has been set. """
 
         self.player1 = Stickman(
-            # *self.starting_positions[0],
-            500,
-            250,
-            input=self.game.keyboard0,
-            facing_right=True,
+            *self.starting_positions[0], input=self.game.keyboard0, facing_right=True,
         )
         self.player2 = Stickman(
-            # *self.starting_positions[1],
-            500,
-            250,
-            input=self.game.keyboard1,
-            facing_right=False,
+            *self.starting_positions[1], input=self.game.keyboard1, facing_right=False,
         )
         self.level.add(self.player1, self.player2, type="character")
-        self.level.add_projectile(Volleyball(500, 500))
-        for ii in range(0, 600, 100):
-            self.level.add_platform(Platform(ii, ii, 100, 30, can_fall_through=False,))
+
         # self.tee_up()
 
         self.state = self.match
@@ -333,7 +323,6 @@ class VolleyballMatch(Sprite):
             x, y = pygame.mouse.get_pos()
             self.level.add_projectile(Volleyball(x, y))
 
-        pygame.draw.rect(self.game.window, (0, 0, 0), (0, 0, 600, 600), 1)
         # # reset
         # if self.game.keyboard.is_pressed(pygame.K_ESCAPE):
         #     self.state = self.start_match
@@ -368,13 +357,12 @@ class VolleyballMatch(Sprite):
         #     else:
         #         print("advanced 1 frame")
 
-        # level.update()  # todo: already handled by self.update
-        # self.hit_handler.handle_hits(
-        #     self.level.hitboxes, [*self.level.characters, *self.level.projectiles]
-        # )
+        self.hit_handler.handle_hits(
+            self.level.hitboxes, [*self.level.characters, *self.level.projectiles]
+        )
 
-        # # destroy hitboxes
-        # self.level.hitboxes.kill()
+        # destroy hitboxes
+        self.level.hitboxes.kill()
 
     def reset_player_positions(self):
         self.player1.xy = self.starting_positions[0]

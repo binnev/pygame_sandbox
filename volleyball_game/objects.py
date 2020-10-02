@@ -12,7 +12,7 @@ from base.utils import get_overlap_between_objects, un_overlap
 from volleyball_game import conf
 from volleyball_game.inputs import GamecubeController
 from volleyball_game.sprites.particle_effects import explosion_sprites
-from volleyball_game.sprites.stickman import stickman_sprites
+from volleyball_game.sprites.stickman import stickman_sprites, SPRITE_SIZE
 from volleyball_game.sprites.volleyball import volleyball_sprites
 
 
@@ -267,7 +267,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.u = sign(self.u) * self.air_speed
 
     def enforce_screen_limits(self, screen_width, screen_height):
-        screen_height = screen_width = 600  # fixme
         if self.x < 0:
             self.x = 0
             self.u = 0
@@ -1031,7 +1030,6 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         print(f"Ball hit by hitbox {id(hitbox)}")
 
     def enforce_screen_limits(self, screen_width, screen_height):
-        screen_height = screen_width = 600  # fixme
         if self.rect.left < 0:
             self.rect.left = 0
             self.u *= -1
