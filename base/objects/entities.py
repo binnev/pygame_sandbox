@@ -35,7 +35,7 @@ class Entity(Sprite):
     which are used by all subclasses.
     """
 
-    image: pygame.Surface
+    image: pygame.Surface = pygame.Surface((1, 1))
 
     debug_color = pygame.Color(69, 69, 69)
     debug_background = pygame.Color(255, 255, 255)

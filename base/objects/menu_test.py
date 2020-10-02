@@ -28,7 +28,7 @@ class Menu(Sprite, AnimationMixin):
         self.buttons = EntityGroup()
         self.groups = [self.buttons]
 
-    def update(self, *args):
+    def update(self):
         for group in self.groups:
             group.update()
         self.update_animation()

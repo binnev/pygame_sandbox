@@ -2,11 +2,13 @@ import sys
 import time
 
 import pygame
+from pygame.sprite import Sprite
 
 from base import draw
 from base.draw import Canvas
 from base.game import Game
 from base.groups import EntityGroup
+from base.objects.entities import Platform
 from base.objects.menu_test import MainMenu
 from volleyball_game import conf
 from volleyball_game.inputs import GamecubeController, Keyboard1, Keyboard0
@@ -52,7 +54,7 @@ class VolleyballGame(Game):
     def main(self):
         """ This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine. """
-        self.add_scene(MainMenu())
+        self.add_scene(VolleyballMatch())
         self.tick = 0
         running = True
         while running:
@@ -73,8 +75,9 @@ class VolleyballGame(Game):
                 device.read_new_inputs()
 
             self.scenes.update()
-            self.scenes.draw(self.window)
+            self.scenes.draw(self.window, debug=True)
             pygame.display.update()
+
             self.clock.tick(self.fps)
             self.tick += 1
             if not self.scenes:
@@ -254,3 +257,201 @@ class VolleyballGame(Game):
             level.hitboxes.kill()
 
             self.clock.tick(self.fps)
+
+
+class VolleyballMatch(Sprite):
+    """ The scene in which the volleyballmatch takes place. """
+
+    game: VolleyballGame  # added by the game it adds this scene
+    starting_positions = [
+        (conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 500),
+        (3 * conf.SCREEN_WIDTH // 4, conf.SCREEN_HEIGHT - 500),
+    ]
+
+    def update(self):
+        for group in self.groups:
+            group.update()
+        self.state()
+
+    def draw(self, surface, debug=False):
+        for group in self.groups:
+            group.draw(surface, debug)
+
+        # draw scoreboard
+        text = self.game.font.render(f"{self.score[0]}-{self.score[1]}", True, (0, 0, 0))
+        textRect = text.get_rect()
+        textRect.center = (self.game.window_width // 2, 50)
+        self.game.window.blit(text, textRect)
+
+    def __init__(self):
+        super().__init__()
+        self.state = self.start_match
+        self.level = VolleyballCourt()
+        self.groups = [self.level]
+        self.frame_by_frame = False
+        self.hit_handler = HitHandler()
+
+        self.score = [0, 0]
+        self.to_serve = "left"
+        self.ball_in_play = False
+        self.game_started = False
+        self.max_score = 10
+
+    def start_match(self):
+        """ Stuff that can't go in the init method (probably because it refers to self.game
+        before that property has been set. """
+
+        self.player1 = Stickman(
+            # *self.starting_positions[0],
+            500,
+            250,
+            input=self.game.keyboard0,
+            facing_right=True,
+        )
+        self.player2 = Stickman(
+            # *self.starting_positions[1],
+            500,
+            250,
+            input=self.game.keyboard1,
+            facing_right=False,
+        )
+        self.level.add(self.player1, self.player2, type="character")
+        self.level.add_projectile(Volleyball(500, 500))
+        for ii in range(0, 600, 100):
+            self.level.add_platform(Platform(ii, ii, 100, 30, can_fall_through=False,))
+        # self.tee_up()
+
+        self.state = self.match
+
+    def match(self):
+        """ Main state function """
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                button = pygame.mouse.get_pressed()
+
+        if self.game.keyboard.is_pressed(pygame.K_b):
+            x, y = pygame.mouse.get_pos()
+            self.level.add_projectile(Volleyball(x, y))
+
+        pygame.draw.rect(self.game.window, (0, 0, 0), (0, 0, 600, 600), 1)
+        # # reset
+        # if self.game.keyboard.is_pressed(pygame.K_ESCAPE):
+        #     self.state = self.start_match
+        #     time.sleep(1)
+
+        # for event in pygame.event.get():
+        #     if event.type == pygame.MOUSEBUTTONDOWN:
+        #         button = pygame.mouse.get_pressed()
+        #         x, y = pygame.mouse.get_pos()
+        #         if button[0]:
+        #             self.level.add(PersistentHitbox(x, y), type="particle_effect")
+
+        # todo: move this to outermost game loop
+        # if self.keyboard.is_pressed(pygame.K_F1):
+        #     debug = not debug
+
+        # if self.game.keyboard.is_pressed(pygame.K_F2):
+        #     self.frame_by_frame = not self.frame_by_frame
+
+        # if self.game.keyboard.is_pressed(pygame.K_RETURN):
+        #     self.game_started = not self.game_started
+
+        # self.score_bouncing_balls(level, match)
+        # self.score_balls_out_of_play(level, match)
+        # self.score_balls_in_net(level, match)
+        # self.end_game(level, match)
+
+        # # frame-by-frame mode
+        # if self.frame_by_frame:
+        #     if not self.game.keyboard.is_pressed(pygame.K_F3):
+        #         return  # skip the rest of the actions
+        #     else:
+        #         print("advanced 1 frame")
+
+        # level.update()  # todo: already handled by self.update
+        # self.hit_handler.handle_hits(
+        #     self.level.hitboxes, [*self.level.characters, *self.level.projectiles]
+        # )
+
+        # # destroy hitboxes
+        # self.level.hitboxes.kill()
+
+    def reset_player_positions(self):
+        self.player1.xy = self.starting_positions[0]
+        self.player1.u = self.player1.v = 0
+        self.player1.facing_right = True
+        self.player1.state = self.player1.state_stand
+        self.player2.xy = self.starting_positions[1]
+        self.player2.u = self.player2.v = 0
+        self.player2.facing_right = False
+        self.player2.state = self.player2.state_stand
+
+    def score_bouncing_balls(level, match):
+        """ do scoring if ball bounces off ground. """
+        bouncing_balls = pygame.sprite.spritecollide(level.ground, level.projectiles, dokill=False)
+        for ball in bouncing_balls:
+            time.sleep(1)
+            # right player goal
+            if ball.x < level.net.x:
+                match.score[-1] += 1
+                match.to_serve = "left"
+            else:
+                match.score[0] += 1
+                match.to_serve = "right"
+            ball.kill()
+            match.ball_in_play = False
+
+    def tee_up(self):
+        # tee up the ball for whoever's turn it is to serve
+        if not self.ball_in_play and self.game_started:
+            self.reset_player_positions()
+            x = self.player1.x if self.to_serve == "left" else self.player2.x
+            self.level.add(Volleyball(x, 100), type="projectile")
+            self.ball_in_play = True
+
+    def score_balls_out_of_play(level, match):
+        # do scoring if ball falls off bottom
+        for ball in level.projectiles:
+            if ball.rect.bottom > conf.SCREEN_HEIGHT:
+                # player 1 knocked the ball out
+                if ball.last_touched_by == player1:
+                    match.score[-1] += 1
+                    match.to_serve = "left"
+                else:
+                    match.score[0] += 1
+                    match.to_serve = "right"
+                time.sleep(1)
+                match.ball_in_play = False
+                ball.kill()
+
+    def score_balls_in_net(level, match):
+        # do scoring if ball bounces off net
+        bouncing_balls = pygame.sprite.spritecollide(level.net, level.projectiles, dokill=False)
+        for ball in bouncing_balls:
+            # if the ball bounces off the top of the net, ignore it
+            if ball.centroid.y < level.net.rect.top:
+                continue
+            if ball.last_touched_by == player1:
+                match.score[-1] += 1
+                match.to_serve = "left"
+            else:
+                match.score[0] += 1
+                match.to_serve = "right"
+            time.sleep(1)
+            match.ball_in_play = False
+            ball.kill()
+
+    def end_game(level, match):
+        # end the game
+        if match.score[0] == match.max_score or match.score[1] == match.max_score:
+            winner = "Left" if match.score[0] == match.max_score else "Right"
+            text = self.font.render(
+                f"{winner} player wins {match.score[0]}-{match.score[1]}", True, (0, 0, 0)
+            )
+            textRect = text.get_rect()
+            textRect.center = (self.window_width // 2, 50)
+            self.window.blit(text, textRect)
+            pygame.display.flip()
+            time.sleep(3)
+            match.score = [0, 0]
+            reset()

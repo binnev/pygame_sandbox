@@ -188,7 +188,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def update(self):
         self.update_physics()
         self.state()
-        self.enforce_screen_limits(*self.level.game.screen_size)
+        self.enforce_screen_limits(*pygame.display.get_surface().get_size())
         # self.debug_print()
         self.update_cooldowns()
         self.update_animation()
@@ -267,6 +267,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.u = sign(self.u) * self.air_speed
 
     def enforce_screen_limits(self, screen_width, screen_height):
+        screen_height = screen_width = 600  # fixme
         if self.x < 0:
             self.x = 0
             self.u = 0
@@ -952,7 +953,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         self.handle_collisions()
         self.update_physics()
         self.update_animation()
-        self.enforce_screen_limits(*self.level.game.screen_size)
+        self.enforce_screen_limits(*pygame.display.get_surface().get_size())
 
     def update_physics(self):
         # update vertical position
@@ -1030,6 +1031,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         print(f"Ball hit by hitbox {id(hitbox)}")
 
     def enforce_screen_limits(self, screen_width, screen_height):
+        screen_height = screen_width = 600  # fixme
         if self.rect.left < 0:
             self.rect.left = 0
             self.u *= -1
