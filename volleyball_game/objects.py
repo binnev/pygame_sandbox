@@ -312,6 +312,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             else:
                 self.enter_shorthop()
 
+    def state_leapsquat(self):
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+
+        if self.game_tick == self.jumpsquat_frames:
+            self.enter_frog_jump()
+
     def state_divesquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
 
@@ -327,6 +333,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     def enter_jump(self):
         self.v = -self.jump_power
+        self.y -= 1  # need this to become airborne. Hacky?
+        self.state = self.state_fall
+        self.fastfall = False
+
+    def enter_frog_jump(self):
+        self.v = -self.jump_power * 1.5
         self.y -= 1  # need this to become airborne. Hacky?
         self.state = self.state_fall
         self.fastfall = False
@@ -790,7 +802,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if self.airborne:
             self.state = self.state_fall
         if input.is_pressed(input.Y):
-            self.state = self.state_jumpsquat
+            self.state = self.state_leapsquat
         if not input.is_down(input.DOWN):
             self.state = self.state_stand
 
