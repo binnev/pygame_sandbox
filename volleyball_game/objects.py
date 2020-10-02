@@ -1,9 +1,9 @@
 from collections import deque
-from pathlib import Path
 
 import numpy
-import pygame as pygame
+import pygame
 from numpy.core._multiarray_umath import sign
+from pygame import Color
 
 from base.animation import SpriteDict, SpriteAnimation, ease_out
 from base.objects.entities import Entity, CollisionMixin, Hitbox
@@ -12,7 +12,7 @@ from base.utils import get_overlap_between_objects, un_overlap
 from volleyball_game import conf
 from volleyball_game.inputs import GamecubeController
 from volleyball_game.sprites.particle_effects import explosion_sprites
-from volleyball_game.sprites.stickman import stickman_sprites, SPRITE_SIZE
+from volleyball_game.sprites.stickman import stickman_sprites
 from volleyball_game.sprites.volleyball import volleyball_sprites
 
 
@@ -252,7 +252,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     def allow_fastfall(self):
         input = self.input
         if input.is_down(input.DOWN) and self.v > 0 and not self.fastfall:
-            self.level.add_particle_effect(JumpRing(*self.rect.midbottom))
+            self.level.add_particle_effect(JumpRing(*self.rect.midbottom, color=Color("orange")))
             self.fastfall = True
             self.v = self.fall_speed
 
@@ -389,7 +389,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.double_jump_cooldown = self.double_jump_cooldown_frames
             self.aerial_jumps_used += 1
             self.enter_jump()
-            self.level.add_particle_effect(JumpRing(*self.rect.midbottom))
+            self.level.add_particle_effect(JumpRing(*self.rect.midbottom, color=Color("lightblue")))
 
         self.enforce_max_fall_speed()
         self.allow_fastfall()
@@ -856,13 +856,15 @@ class SingleUseAnimation(Entity, AnimationMixin):
 
 class JumpRing(SingleUseAnimation):
     # todo: refactor. this is a lot of code for a very simple thing.
-    width = 100
-    height = 30
 
     class RingAnimation:
-        width = 100
-        height = 30
         diameters = ease_out(30, 100, 5)
+
+        def __init__(self, width=None, height=None, color=None):
+            self.color = color or Color("red")
+            self.height = height or 30
+            self.width = width or 100
+            self.diameters = ease_out(self.width // 4, self.width, 5)
 
         def get_frame(self, n):
             """ Create a ring image animation """
@@ -872,14 +874,16 @@ class JumpRing(SingleUseAnimation):
                 surface.fill((0, 0, 0, 0))
                 rect = pygame.Rect(0, 0, diameter, diameter * self.height // self.width)
                 rect.center = surface.get_rect().center
-                pygame.draw.ellipse(surface, pygame.Color("red"), rect, 3 + n)
+                pygame.draw.ellipse(surface, self.color, rect, n)
                 return surface
             except IndexError:
                 return False  # animation finished
 
-    sprite_animation = RingAnimation()
-
     def __init__(self, *args, **kwargs):
+        color = kwargs.pop("color", None)
+        self.sprite_animation = self.RingAnimation(color=color)
+        self.width = self.sprite_animation.width
+        self.height = self.sprite_animation.height
         super().__init__(*args, **kwargs)
         self.image = self.sprite_animation.get_frame(0)  # fixme: hacky because bad design
 
