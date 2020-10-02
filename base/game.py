@@ -45,22 +45,15 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
-            # --------------------------------------------------------------
-            self.run()  # <<<<<<<<<<<< game logic in here <<<<<<<<<<<<<<<<<<
-            # --------------------------------------------------------------
+            self.window.fill((0, 255, 0))
+            text = self.font.render("This is the default game", True, (0, 0, 0))
+            textRect = text.get_rect()
+            textRect.center = (self.window_width // 2, self.window_height // 2)
+            self.window.blit(text, textRect)
 
             pygame.display.flip()
             self.clock.tick(self.fps)
             self.tick += 1
-
-    def run(self):
-        """ run can be a set of instructions to be carried out in the main() game loop, or it can
-        define another game loop of its own. """
-        self.window.fill((0, 255, 0))
-        text = self.font.render("This is the default game", True, (0, 0, 0))
-        textRect = text.get_rect()
-        textRect.center = (self.window_width // 2, self.window_height // 2)
-        self.window.blit(text, textRect)
 
     @property
     def screen_size(self):

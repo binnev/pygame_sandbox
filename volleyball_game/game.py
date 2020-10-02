@@ -1,3 +1,4 @@
+import sys
 import time
 
 import pygame
@@ -5,7 +6,8 @@ import pygame
 from base import draw
 from base.draw import Canvas
 from base.game import Game
-from base.inputs.keyboard import KeyboardInputQueue
+from base.groups import EntityGroup
+from base.objects.menu_test import MainMenu
 from volleyball_game import conf
 from volleyball_game.inputs import GamecubeController, Keyboard1, Keyboard0
 from volleyball_game.levels import VolleyballCourt
@@ -14,7 +16,6 @@ from volleyball_game.objects import (
     Volleyball,
     HitHandler,
     PersistentHitbox,
-    Runa,
 )
 
 
@@ -30,6 +31,7 @@ class VolleyballGame(Game):
     def __init__(self):
         super().__init__()
         self.canvas = Canvas.initialise()
+        self.scenes = EntityGroup()
 
         # input devices that are specific to this game
         self.keyboard0 = Keyboard0()
@@ -42,6 +44,41 @@ class VolleyballGame(Game):
             self.controller0,
             self.controller1,
         ]
+
+    def add_scene(self, scene):
+        scene.game = self
+        self.scenes.add(scene)
+
+    def main(self):
+        """ This is the outermost game function which runs once. It contains the outermost game
+        loop. Here's where you should put your main event state machine. """
+        self.add_scene(MainMenu())
+        self.tick = 0
+        running = True
+        while running:
+            self.window.fill((255, 255, 255))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
+
+            # input devices should be read once per tick in the main game loop.
+            # That can be the single source of truth regarding inputs.
+            for device in self.input_devices:
+                device.read_new_inputs()
+
+            self.scenes.update()
+            self.scenes.draw(self.window)
+            pygame.display.update()
+            self.clock.tick(self.fps)
+            self.tick += 1
+            if not self.scenes:
+                running = False
 
     def run(self):
 

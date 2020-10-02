@@ -25,7 +25,6 @@ font = pygame.font.SysFont(None, 50)
 class Menu(Sprite, AnimationMixin):
     def __init__(self):
         super().__init__()
-        self.game = game
         self.buttons = EntityGroup()
         self.groups = [self.buttons]
 

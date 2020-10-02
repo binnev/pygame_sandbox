@@ -6,7 +6,7 @@ class EntityGroup(pygame.sprite.Group):
 
     def __init__(self):
         """Keep a reference to the game class"""
-        super().__init__()
+        super().__init__()  # todo: delete
 
     def draw(self, surface, debug=False):
         """ Draws all of the member sprites onto the given surface. """
