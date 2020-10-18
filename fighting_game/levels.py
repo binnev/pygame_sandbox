@@ -23,8 +23,8 @@ class DefaultLevel(Level):
 
         self.droppable = Platform(SCREEN_WIDTH // 4, 500, 300, 40, droppable=True)
         self.droppable2 = Platform(SCREEN_WIDTH // 4, 400, 300, 20, droppable=True)
-        self.droppable3 = Platform(SCREEN_WIDTH * 3 // 4, 500, 300, 40, droppable=True)
-        self.droppable4 = Platform(SCREEN_WIDTH * 3 // 4, 400, 300, 20, droppable=True)
+        self.droppable3 = Platform(SCREEN_WIDTH * 3 // 4 - 120, 400, 100, 20, droppable=True)
+        self.droppable4 = Platform(SCREEN_WIDTH * 3 // 4, 400, 100, 20, droppable=True)
 
         self.add(
             self.ground,
