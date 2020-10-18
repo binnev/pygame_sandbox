@@ -25,5 +25,5 @@ class KeyboardInput(FightingGameInput, KeyboardInputQueue):
     A = pygame.K_j
     B = pygame.K_i
     X = pygame.K_o
-    Y = pygame.K_p
-    START = pygame.K_SPACE
+    Y = pygame.K_SPACE
+    START = pygame.K_p

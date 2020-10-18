@@ -1,3 +1,4 @@
+from numpy.core._multiarray_umath import sign
 import pygame
 from pygame import Color, Surface
 from pygame.rect import Rect
@@ -102,10 +103,98 @@ class Debugger(Character):
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__(x, y, input, facing_right)
-        self.state = self.state_debug
+        self.state = self.state_fall
+        self.gravity = 0.05
+        self.jump_power = 20
+        self.air_resistance = 0.1
 
     def update(self):
         self.state()
+        self.update_physics()
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+
+        def tprint(surface, x, y, textString):
+            font = pygame.font.Font(None, 30)
+            textBitmap = font.render(textString, True, Color("black"))
+            surface.blit(textBitmap, (x, y))
+
+        tprint(surface, 0, 0, f"u = {self.u}")
+        tprint(surface, 0, 10, f"v = {self.v}")
+
+    @property
+    def airborne(self):
+        return True
+
+    def update_physics(self):
+        if self.airborne:
+            self.v += self.gravity
+            magnitude = abs(self.u)
+            direction = sign(self.u)
+            speed = magnitude - self.air_resistance
+            speed = speed if speed > 0 else 0
+            self.u = speed * direction
+
+        # update horizontal position and handle platform collisions
+        self.x += self.u
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        moving_right = self.u > 0
+        for plat in platforms:
+            if plat.droppable:
+                pass  # you can move horizontally through droppable platforms
+            else:
+                if moving_right:
+                    self.rect.right = min([self.rect.right, plat.rect.left])
+                else:
+                    self.rect.left = max([self.rect.left, plat.rect.right])
+                self.u = 0
+
+        # update vertical position and handle platform collisions
+        old_rect = Rect(self.rect)  # remember previous position
+        self.y += self.v
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        moving_down = self.v > 0
+        for plat in platforms:
+            # droppable platforms
+            if plat.droppable:
+                if moving_down:
+                    # if character was already inside the platform, or player is holding down
+                    if (old_rect.bottom > plat.rect.top) or self.input.is_down(self.input.DOWN):
+                        pass
+                    # if character was above the platform and not holding down
+                    else:
+                        # don't go through the platform
+                        self.rect.bottom = min([self.rect.bottom, plat.rect.top])
+                        self.v = 0
+                else:  # if travelling up
+                    pass  # you can go upwards through droppable platforms
+
+            # solid platforms
+            else:
+                if moving_down:
+                    self.rect.bottom = min([self.rect.bottom, plat.rect.top])
+                    self.v = 0
+                else:
+                    self.rect.top = max([self.rect.top, plat.rect.bottom])
+                    self.v = 0
+
+    def state_fall(self):
+        # jump
+        if self.input.is_down(self.input.Y):
+            self.v = -self.jump_power
+
+        if self.input.is_down(self.input.LEFT):
+            self.u = -self.speed
+
+        if self.input.is_down(self.input.RIGHT):
+            self.u = self.speed
+
+        if self.input.is_down(self.input.UP):
+            self.v = -self.speed
+
+        if self.input.is_down(self.input.DOWN):
+            self.v = self.speed
 
     def state_debug(self):
         if self.input.is_down(self.input.LEFT):
