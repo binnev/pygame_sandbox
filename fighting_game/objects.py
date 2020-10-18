@@ -139,6 +139,7 @@ class Debugger(Character):
             f"airborne = {self.airborne}",
             f"touching: {touching}",
             f"colliding: {colliding}",
+            f"state: {self.state}",
         ]
         line_spacing = 20
         for ii, thing in enumerate(things_to_print):
@@ -205,21 +206,30 @@ class Debugger(Character):
                     self.v = 0
 
     def state_fall(self):
-        # jump
-        if self.input.is_down(self.input.Y):
-            self.v = -self.jump_power
-
-        if self.input.is_down(self.input.LEFT):
+        input = self.input
+        if input.is_down(input.LEFT):
             self.u = -self.speed
 
-        if self.input.is_down(self.input.RIGHT):
+        if input.is_down(input.RIGHT):
             self.u = self.speed
 
-        if self.input.is_down(self.input.UP):
+        if input.is_down(input.UP):
             self.v = -self.speed
 
-        if self.input.is_down(self.input.DOWN):
-            self.v = self.speed
+        if not self.airborne:
+            self.state = self.state_stand
+
+    def state_stand(self):
+        input = self.input
+        if input.is_down(input.DOWN):
+            self.v = 1  # need this to drop through platforms
+
+        if input.is_pressed(input.UP):
+            self.v = -self.jump_power
+            self.state = self.state_fall
+
+        if self.airborne:
+            self.state = self.state_fall
 
     def state_debug(self):
         if self.input.is_down(self.input.LEFT):
