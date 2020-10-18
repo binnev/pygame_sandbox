@@ -74,7 +74,7 @@ class Character(Entity):
     height: int
     color: Color
     level: Level
-    touch_box_margin = 1
+    touch_box_margin = 2
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__()
@@ -88,6 +88,7 @@ class Character(Entity):
 
     def update(self):
         self.state()
+        self.update_physics()
 
     def draw(self, surface: Surface, debug: bool = False):
         # pygame.draw.rect(surface, self.color, self.rect)
@@ -103,47 +104,6 @@ class Character(Entity):
 
     def touching(self, entity: Entity):
         return self.touch_box.colliderect(entity.rect)
-
-
-class Debugger(Character):
-    width = 50
-    height = 100
-    color = Color("cyan")
-    speed = 5
-
-    def __init__(self, x, y, input=FightingGameInput, facing_right=True):
-        super().__init__(x, y, input, facing_right)
-        self.state = self.state_fall
-        self.gravity = 0.3
-        self.jump_power = 20
-        self.air_resistance = 0.5
-
-    def update(self):
-        self.state()
-        self.update_physics()
-
-    def draw(self, surface: Surface, debug: bool = False):
-        super().draw(surface, debug)
-
-        def tprint(surface, x, y, textString):
-            font = pygame.font.Font(None, 30)
-            textBitmap = font.render(textString, True, Color("black"))
-            surface.blit(textBitmap, (x, y))
-
-        colliding = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
-        touching = [plat for plat in self.level.platforms if self.touching(plat)]
-
-        things_to_print = [
-            f"u = {self.u}",
-            f"v = {self.v}",
-            f"airborne = {self.airborne}",
-            f"touching: {touching}",
-            f"colliding: {colliding}",
-            f"state: {self.state}",
-        ]
-        line_spacing = 20
-        for ii, thing in enumerate(things_to_print):
-            tprint(surface, 0, ii * line_spacing, thing)
 
     @property
     def airborne(self):
@@ -213,8 +173,8 @@ class Debugger(Character):
         if input.is_down(input.RIGHT):
             self.u = self.speed
 
-        if input.is_down(input.UP):
-            self.v = -self.speed
+        if input.is_pressed(input.UP):
+            self.v = -self.jump_power
 
         if not self.airborne:
             self.state = self.state_stand
@@ -230,6 +190,43 @@ class Debugger(Character):
 
         if self.airborne:
             self.state = self.state_fall
+
+
+class Debugger(Character):
+    width = 50
+    height = 100
+    color = Color("cyan")
+    speed = 5
+    gravity = 0.3
+    jump_power = 10
+    air_resistance = 0.5
+
+    def __init__(self, x, y, input=FightingGameInput, facing_right=True):
+        super().__init__(x, y, input, facing_right)
+        self.state = self.state_fall
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+
+        def tprint(surface, x, y, textString):
+            font = pygame.font.Font(None, 30)
+            textBitmap = font.render(textString, True, Color("black"))
+            surface.blit(textBitmap, (x, y))
+
+        colliding = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        touching = [plat for plat in self.level.platforms if self.touching(plat)]
+
+        things_to_print = [
+            f"u = {self.u}",
+            f"v = {self.v}",
+            f"airborne = {self.airborne}",
+            f"touching: {touching}",
+            f"colliding: {colliding}",
+            f"state: {self.state.__name__}",
+        ]
+        line_spacing = 20
+        for ii, thing in enumerate(things_to_print):
+            tprint(surface, 0, ii * line_spacing, thing)
 
     def state_debug(self):
         if self.input.is_down(self.input.LEFT):
