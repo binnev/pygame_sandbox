@@ -74,6 +74,7 @@ class Character(Entity):
     height: int
     color: Color
     level: Level
+    touch_box_margin = 1
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__()
@@ -93,6 +94,15 @@ class Character(Entity):
         if debug:
             pygame.draw.rect(surface, self.debug_color, self.rect, 1)
             pygame.draw.circle(surface, self.debug_color, self.rect.center, 2, 1)
+            # draw touchbox
+            pygame.draw.rect(surface, Color("goldenrod"), self.touch_box, 1)
+
+    @property
+    def touch_box(self):
+        return self.rect.inflate(self.touch_box_margin, self.touch_box_margin)
+
+    def touching(self, entity: Entity):
+        return self.touch_box.colliderect(entity.rect)
 
 
 class Debugger(Character):
@@ -104,9 +114,9 @@ class Debugger(Character):
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__(x, y, input, facing_right)
         self.state = self.state_fall
-        self.gravity = 0.05
+        self.gravity = 0.3
         self.jump_power = 20
-        self.air_resistance = 0.1
+        self.air_resistance = 0.5
 
     def update(self):
         self.state()
@@ -120,8 +130,19 @@ class Debugger(Character):
             textBitmap = font.render(textString, True, Color("black"))
             surface.blit(textBitmap, (x, y))
 
-        tprint(surface, 0, 0, f"u = {self.u}")
-        tprint(surface, 0, 10, f"v = {self.v}")
+        colliding = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        touching = [plat for plat in self.level.platforms if self.touching(plat)]
+
+        things_to_print = [
+            f"u = {self.u}",
+            f"v = {self.v}",
+            f"airborne = {self.airborne}",
+            f"touching: {touching}",
+            f"colliding: {colliding}",
+        ]
+        line_spacing = 20
+        for ii, thing in enumerate(things_to_print):
+            tprint(surface, 0, ii * line_spacing, thing)
 
     @property
     def airborne(self):
