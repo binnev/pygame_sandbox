@@ -146,6 +146,10 @@ class Debugger(Character):
 
     @property
     def airborne(self):
+        for plat in self.level.platforms:
+            # if standing on top of platform
+            if self.touching(plat) and self.rect.bottom <= plat.rect.top:
+                return False
         return True
 
     def update_physics(self):
