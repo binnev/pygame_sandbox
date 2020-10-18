@@ -4,19 +4,38 @@ from pygame import Color, Surface
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 
+from base.animation import SpriteDict
 from fighting_game.groups import Level
 from fighting_game.inputs import FightingGameInput
+from fighting_game.sprites.stickman import stickman_sprites
 
 
 class Entity(Sprite):
+    image: Surface
     debug_color = Color("red")
     rect: Rect
+    game_tick = 0  # number of game ticks elapsed in the current state
+    frame_duration: int  # higher = slower animation framerate
 
     def update(self):
-        pass
+        self.update_animation()
 
     def draw(self, surface: Surface, debug: bool = False):
-        pass
+        if hasattr(self, "image"):
+            surface.blit(self.image, self.image_rect)
+        if debug:
+            pygame.draw.rect(surface, self.debug_color, self.rect, 1)
+            pygame.draw.circle(surface, self.debug_color, self.rect.center, 2, 1)
+
+    @property
+    def image_rect(self):
+        """ Default is to align the image with the center of the object """
+        if self.image:
+            image_rect = self.image.get_rect()
+            image_rect.center = self.rect.center
+            return image_rect
+        else:
+            return None
 
     @property
     def x(self):
@@ -34,6 +53,24 @@ class Entity(Sprite):
     def y(self, new_value):
         self.rect.centery = new_value
 
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, new_state):
+        """ Reset animation counter when state changes """
+        self._state = new_state
+        self.game_tick = 0
+
+    @property
+    def animation_frame(self):
+        """ Convert game ticks to animation frames. """
+        return self.game_tick // self.frame_duration
+
+    def update_animation(self):
+        self.game_tick += 1
+
 
 class Platform(Entity):
     color = Color("gray")
@@ -45,28 +82,8 @@ class Platform(Entity):
         self.rect.center = (x, y)
         self.droppable = droppable
         self.color = Color("green") if droppable else self.color
-
-    def draw(self, surface, debug=False):
-        pygame.draw.rect(surface, self.color, self.rect)
-        if debug:
-            pygame.draw.rect(surface, self.debug_color, self.rect, 1)
-            pygame.draw.circle(surface, self.debug_color, self.rect.center, 2, 1)
-
-    @property
-    def width(self):
-        return self.rect.width
-
-    @width.setter
-    def width(self, new_value):
-        self.rect.width = new_value
-
-    @property
-    def height(self):
-        return self.rect.height
-
-    @height.setter
-    def height(self, new_value):
-        self.rect.height = new_value
+        self.image = Surface((width, height))
+        self.image.fill(self.color)
 
 
 class Character(Entity):
@@ -74,7 +91,20 @@ class Character(Entity):
     height: int
     color: Color
     level: Level
+    sprites: SpriteDict
+    ground_acceleration: float
+    ground_speed: float
+    air_acceleration: float
+    air_speed: float
+    jump_power: float
+    gravity: float
+    friction: float
+    air_resistance: float
+    fall_speed: float
+    fast_fall_speed: float
+
     touch_box_margin = 2
+    frame_duration = 3
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__()
@@ -87,16 +117,19 @@ class Character(Entity):
         self.facing_right = facing_right
 
     def update(self):
+        super().update()
         self.state()
         self.update_physics()
 
     def draw(self, surface: Surface, debug: bool = False):
-        # pygame.draw.rect(surface, self.color, self.rect)
+        super().draw(surface, debug)
         if debug:
-            pygame.draw.rect(surface, self.debug_color, self.rect, 1)
-            pygame.draw.circle(surface, self.debug_color, self.rect.center, 2, 1)
             # draw touchbox
             pygame.draw.rect(surface, Color("goldenrod"), self.touch_box, 1)
+
+    @property
+    def facing(self):
+        return "right" if self.facing_right else "left"
 
     @property
     def touch_box(self):
@@ -114,14 +147,34 @@ class Character(Entity):
         return True
 
     def update_physics(self):
+        # modify speeds
         if self.airborne:
+            # vertical
             self.v += self.gravity
+            if self.v > self.fall_speed:
+                self.v = self.fall_speed
+            # horizontal
             magnitude = abs(self.u)
             direction = sign(self.u)
             speed = magnitude - self.air_resistance
+            speed = max([0, speed])
+            self.u = speed * direction
+            if self.u > self.air_speed:
+                self.u = self.air_speed
+            if self.u < -self.air_speed:
+                self.u = -self.air_speed
+        else:
+            magnitude = abs(self.u)
+            direction = sign(self.u)
+            speed = magnitude - self.friction
             speed = speed if speed > 0 else 0
             self.u = speed * direction
+            if self.u > self.ground_speed:
+                self.u = self.ground_speed
+            if self.u < -self.ground_speed:
+                self.u = -self.ground_speed
 
+        # modify position
         # update horizontal position and handle platform collisions
         self.x += self.u
         platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
@@ -166,28 +219,29 @@ class Character(Entity):
                     self.v = 0
 
     def state_fall(self):
+        self.image = self.sprites["jump_" + self.facing].get_frame(self.animation_frame)
         input = self.input
         if input.is_down(input.LEFT):
-            self.u = -self.speed
-
+            self.u -= self.air_acceleration
         if input.is_down(input.RIGHT):
-            self.u = self.speed
-
+            self.u += self.air_acceleration
         if input.is_pressed(input.UP):
             self.v = -self.jump_power
-
         if not self.airborne:
             self.state = self.state_stand
 
     def state_stand(self):
+        self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
         input = self.input
         if input.is_down(input.DOWN):
             self.v = 1  # need this to drop through platforms
-
+        if input.is_down(input.LEFT):
+            self.u -= self.ground_acceleration
+        if input.is_down(input.RIGHT):
+            self.u += self.ground_acceleration
         if input.is_pressed(input.UP):
             self.v = -self.jump_power
             self.state = self.state_fall
-
         if self.airborne:
             self.state = self.state_fall
 
@@ -196,14 +250,20 @@ class Debugger(Character):
     width = 50
     height = 100
     color = Color("cyan")
-    speed = 5
+    ground_acceleration = 99
+    ground_speed = 7
+    air_acceleration = 0.75
+    air_speed = 5
     gravity = 0.3
     jump_power = 10
-    air_resistance = 0.5
+    air_resistance = 0.1
+    friction = 1
+    fall_speed = 7
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__(x, y, input, facing_right)
         self.state = self.state_fall
+        self.sprites = stickman_sprites()
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
