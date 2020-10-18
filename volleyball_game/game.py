@@ -56,7 +56,7 @@ class VolleyballGame(Game):
     def main(self):
         """ This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine. """
-        self.add_scene(VolleyballMatch())
+        self.add_scene(MainMenu())
         self.debug = False
         self.tick = 0
         running = True
