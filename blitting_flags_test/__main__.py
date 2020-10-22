@@ -64,7 +64,7 @@ class Block(Entity):
 
 
 class Glow(Entity):
-    color = (30, 30, 30)
+    color = (50, 50, 50)
 
     def __init__(self, x, y, radius, color=None, variance=0, period=0):
         super().__init__()
@@ -117,10 +117,11 @@ class Spark(Entity):
 
 
 class Fountain(Entity):
-    color = Color("goldenrod")
+    color = (20, 20, 20)
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, color=None):
         super().__init__()
+        self.color = color or self.color
         self.rect = Rect(0, 0, 0, 0)
         self.x = x
         self.y = y
@@ -128,7 +129,7 @@ class Fountain(Entity):
 
     def update(self):
         super().update()
-        self.x, self.y = pygame.mouse.get_pos()
+        # self.x, self.y = pygame.mouse.get_pos()
         self.particles.add(
             Spark(
                 self.x,
@@ -170,11 +171,11 @@ def main():
     lighting = Group()
     lighting2 = Group()
     groups = [
-        lighting2,
         background,
         midground,
         lighting,
         foreground,
+        lighting2,
     ]
 
     # add static stuff
@@ -190,13 +191,14 @@ def main():
         Glow(150, 150, radius=50, variance=10, period=100),
         Glow(200, 140, radius=40, variance=5, period=50),
     )
-    lighting2.add(Fountain(300, 300))
+    lighting2.add(Fountain(500, 500, color=Color("greenyellow")))
     # create player
     player = Character(100, 100)
     midground.add(player)
 
     run = True
     pygame.draw.rect(window, Color("cyan"), (30, 40, 100, 200))
+    max_num_entities = 0
     while run:
         window.fill((0, 0, 0, 0))
 
@@ -208,19 +210,37 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = pygame.mouse.get_pos()
-                lighting2.add(Spark(x, y, 0, 0, radius=20, color=Color("red")))
+
+        left, middle, right = pygame.mouse.get_pressed()
+        if left:
+            x, y = pygame.mouse.get_pos()
+            lighting2.add(
+                *(
+                    Spark(
+                        x,
+                        y,
+                        u=random_between(-50, 50),
+                        v=random_between(-50, 50),
+                        radius=int(random_between(5, 100)),
+                        color=Color("purple"),
+                    )
+                    for __ in range(50)
+                ),
+            )
 
         for group in groups:
             group.update()
+
+        num_entities = sum(map(len, groups))
+        if num_entities > max_num_entities:
+            max_num_entities = num_entities
+            print(max_num_entities)
 
         # draw stuff
         for group in groups:
             group.draw(window)
         pygame.display.update()
         clock.tick(60)
-
 
 if __name__ == "__main__":
     main()
