@@ -20,7 +20,7 @@ class Character(Entity):
     width = 40
     height = 60
     color = Color("orange")
-    speed = 5
+    speed = 3
 
     def __init__(self, x, y):
         super().__init__()
@@ -56,7 +56,7 @@ class Block(Entity):
 
 
 class Glow(Entity):
-    color = (60, 60, 60)
+    color = (30, 30, 30)
 
     def __init__(self, x, y, radius, color=None, variance=0, period=0):
         super().__init__()
@@ -94,25 +94,25 @@ def main():
     midground = Group()
     foreground = Group()
     lighting = Group()
+    lighting2 = Group()
     groups = [
         background,
         midground,
         lighting,
         foreground,
+        lighting2,
     ]
 
     # add static stuff
     background.add(
         Block(100, 100, 100, 100, Color("cornsilk4")),
         Block(400, 100, 100, 100, Color("cornsilk4")),
-        Block(400, 250, 100, 100, Color("cornsilk4")),
-        Block(1400, 250, 100, 100, Color("cornsilk4")),
     )
-    foreground.add(
-        Block(250, 250, 333, 99, Color("darkred")),
-    )
+    foreground.add(Block(250, 250, 333, 99, Color("dodgerblue4")),)
     lighting.add(
         Glow(200, 200, radius=100, variance=20, period=360),
+        Glow(200, 200, radius=80, variance=20, period=360),
+        Glow(200, 200, radius=70, variance=20, period=360),
         Glow(150, 150, radius=50, variance=10, period=100),
         Glow(200, 140, radius=40, variance=5, period=50),
     )
