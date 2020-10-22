@@ -1,3 +1,4 @@
+import random
 import sys
 
 import numpy
@@ -14,6 +15,13 @@ def sin_values(mean, variance, n_points):
     ys = numpy.sin(xs)
     ys = ys * variance + mean
     return ys
+
+
+def random_between(min, max):
+    assert min < max
+    spread = max - min
+    value = min + random.random() * spread
+    return value
 
 
 class Character(Entity):
@@ -76,6 +84,72 @@ class Glow(Entity):
         surface.blit(surf, image_rect, special_flags=pygame.BLEND_RGB_ADD)
 
 
+class Spark(Entity):
+    gravity = 0.8
+    friction = 0.1
+    decay = 1
+    color = (20, 20, 20)
+
+    def __init__(self, x, y, u, v, radius, color=None):
+        super().__init__()
+        self.color = color or self.color
+        self.rect = Rect(0, 0, 0, 0)
+        self.x = x
+        self.y = y
+        self.u = u
+        self.v = v
+        self.radius = radius
+
+    def update(self):
+        self.x += self.u
+        self.y += self.v
+        self.v += self.gravity
+        self.u *= 1 - self.friction
+        self.radius -= self.decay
+        if self.radius == 0:
+            self.kill()
+
+    def draw(self, surface, debug=False):
+        surf = circle_surf(int(self.radius), self.color)
+        image_rect = surf.get_rect()
+        image_rect.center = self.rect.center
+        surface.blit(surf, image_rect, special_flags=pygame.BLEND_RGB_ADD)
+
+
+class Fountain(Entity):
+    color = Color("goldenrod")
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.rect = Rect(0, 0, 0, 0)
+        self.x = x
+        self.y = y
+        self.particles = Group()
+
+    def update(self):
+        super().update()
+        self.x, self.y = pygame.mouse.get_pos()
+        self.particles.add(
+            Spark(
+                self.x,
+                self.y,
+                u=random_between(-1, 1),
+                v=-random_between(10, 15),
+                radius=int(random_between(15, 50)),
+                color=self.color,
+            )
+        )
+        self.particles.update()
+
+    def draw(self, surface, debug=False):
+        surf = circle_surf(int(20), self.color)
+        image_rect = surf.get_rect()
+        image_rect.center = self.rect.center
+        surface.blit(surf, image_rect, special_flags=pygame.BLEND_RGB_ADD)
+
+        self.particles.draw(surface)
+
+
 def circle_surf(radius, color):
     surf = Surface((radius * 2, radius * 2))
     pygame.draw.circle(surf, color, (radius, radius), radius)
@@ -96,11 +170,11 @@ def main():
     lighting = Group()
     lighting2 = Group()
     groups = [
+        lighting2,
         background,
         midground,
         lighting,
         foreground,
-        lighting2,
     ]
 
     # add static stuff
@@ -116,8 +190,9 @@ def main():
         Glow(150, 150, radius=50, variance=10, period=100),
         Glow(200, 140, radius=40, variance=5, period=50),
     )
+    lighting2.add(Fountain(300, 300))
     # create player
-    player = Character(0, 0)
+    player = Character(100, 100)
     midground.add(player)
 
     run = True
@@ -133,6 +208,9 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                lighting2.add(Spark(x, y, 0, 0, radius=20, color=Color("red")))
 
         for group in groups:
             group.update()
