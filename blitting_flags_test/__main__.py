@@ -109,10 +109,10 @@ class Spark(Entity):
         blit_flag=None,
     ):
         super().__init__()
-        self.color = color or self.color
-        self.gravity = gravity or self.gravity
-        self.friction = friction or self.friction
-        self.decay = decay or self.decay
+        self.color = color if color is not None else self.color
+        self.gravity = gravity if gravity is not None else self.gravity
+        self.friction = friction if friction is not None else self.friction
+        self.decay = decay if decay is not None else self.decay
         self.blit_flag = blit_flag if blit_flag is not None else self.blit_flag
         self.rect = Rect(0, 0, 0, 0)
         self.x = x
@@ -165,15 +165,10 @@ class Fountain(Entity):
         self.particles.update()
 
     def draw(self, surface, debug=False):
-        surf = circle_surf(int(20), self.color)
-        image_rect = surf.get_rect()
-        image_rect.center = self.rect.center
-        surface.blit(surf, image_rect, special_flags=pygame.BLEND_RGB_ADD)
-
         self.particles.draw(surface)
 
 
-class Torch(Fountain):
+class Fire(Fountain):
     def update(self):
         self.particles.add(
             Spark(
@@ -189,6 +184,33 @@ class Torch(Fountain):
         self.particles.update()
 
 
+class Torch(Entity):
+    color = Color("orange")
+
+    def __init__(self, x, y, color=None):
+        super().__init__()
+        self.color = color or self.color
+        self.rect = Rect(0, 0, 0, 0)
+        self.x = x
+        self.y = y
+        self.children = Group()
+        block = Block(0, 0, 10, 100, Color("brown"))
+        block.rect.midtop = self.x, self.y
+        self.children.add(
+            block,
+            Glow(self.x, self.y, radius=100, variance=2, period=10, color=(20, 20, 20)),
+            Glow(self.x, self.y, radius=150, variance=3, period=10, color=(20, 20, 20)),
+            Fire(self.x, self.y),
+        )
+
+    def draw(self, surface: Surface, debug: bool = False):
+        self.children.draw(surface, debug)
+
+    def update(self):
+        super().update()
+        self.children.update()
+
+
 class Faucet(Fountain):
     def update(self):
         self.particles.add(
@@ -202,10 +224,67 @@ class Faucet(Fountain):
                 gravity=0.9,
                 decay=0.1,
                 blit_flag=False,
-                friction=0.1
+                friction=0.1,
             )
         )
         self.particles.update()
+
+
+class Shadow(Entity):
+    blit_flag = pygame.BLEND_RGB_MULT
+    gravity = 0
+    decay = 0
+    friction = 0
+    color = (100, 100, 100)
+
+    def __init__(self, x, y, radius, color=None, blit_flag=None, follow_object=None):
+        super().__init__()
+        self.color = self.color if color is None else color
+        self.blit_flag = self.blit_flag if blit_flag is None else blit_flag
+        self.follow_object = follow_object
+        self.rect = Rect(0, 0, 0, 0)
+        self.x = x
+        self.y = y
+        self.children = Group()
+        spark_kwargs = dict(gravity=self.gravity, friction=self.friction, decay=self.decay)
+        self.children.add(
+            Spark(
+                self.x, self.y, 0, 0, radius, color=self.color, blit_flag=blit_flag, **spark_kwargs
+            ),
+            Spark(
+                self.x,
+                self.y,
+                0,
+                0,
+                radius + 50,
+                color=self.color,
+                blit_flag=blit_flag,
+                **spark_kwargs
+            ),
+            Spark(
+                self.x,
+                self.y,
+                0,
+                0,
+                radius + 100,
+                color=self.color,
+                blit_flag=blit_flag,
+                **spark_kwargs
+            ),
+        )
+
+    def update(self):
+        super().update()
+        self.x, self.y = pygame.mouse.get_pos()
+        for child in self.children:
+            child.rect.center = self.rect.center
+        self.children.update()
+
+    def draw(self, surface: Surface, debug: bool = False):
+        shadow_surface = Surface((2000, 2000))
+        shadow_surface.fill(Color("black"))
+        self.children.draw(shadow_surface, debug)
+        surface.blit(shadow_surface, shadow_surface.get_rect(), special_flags=self.blit_flag)
 
 
 def circle_surf(radius, color):
@@ -228,7 +307,7 @@ def explosion(x, y, group):
                 gravity=0.7,
                 friction=0.2,
                 blit_flag=False,
-                decay=1.2
+                decay=1.2,
             )
         )
 
@@ -245,18 +324,22 @@ def main():
     foreground = Group()
     lighting = Group()
     lighting2 = Group()
+    shadows = Group()
     groups = [
         background,
         midground,
         lighting,
         lighting2,
         foreground,
+        shadows,
     ]
 
     # add static stuff
     background.add(
         Block(300, 300, 100, 100, Color("cornsilk4")),
         Block(600, 300, 100, 100, Color("cornsilk4")),
+        Torch(900, 600),
+        Fountain(400, 300, color=Color("greenyellow")),
     )
     foreground.add(Block(450, 450, 333, 99, Color("dodgerblue4")),)
     lighting.add(
@@ -265,12 +348,12 @@ def main():
         Glow(400, 400, radius=70, variance=20, period=360),
         Glow(350, 350, radius=50, variance=10, period=100),
         Glow(400, 340, radius=40, variance=5, period=50),
+        Torch(800, 750),
     )
     lighting2.add(
-        Fountain(400, 300, color=Color("greenyellow")),
-        Torch(500, 300),
-        Faucet(600, 300),
+        Fire(500, 300), Faucet(600, 300), Torch(800, 600),
     )
+    shadows.add(Shadow(150, 150, radius=200))
     # create player
     player = Character(100, 100)
     midground.add(player)
@@ -293,7 +376,7 @@ def main():
                 left, middle, right = pygame.mouse.get_pressed()
                 if left:
                     x, y = pygame.mouse.get_pos()
-                    explosion(x, y, lighting2)
+                    explosion(x, y, midground)
 
         for group in groups:
             group.update()
