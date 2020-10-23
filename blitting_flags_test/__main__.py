@@ -223,10 +223,10 @@ def main():
                     Spark(
                         x,
                         y,
-                        u=random_float(-50, 50),
+                        u=random_float(-70, 70),
                         v=random_float(-50, 50),
-                        radius=random_int(5, 100),
-                        color=(random_int(0, 255), random_int(0, 255), random_int(0, 255),),
+                        radius=random_int(5, 30),
+                        color=(random_int(150, 255), random_int(150, 255), random_int(0, 255),),
                     )
                 )
 
