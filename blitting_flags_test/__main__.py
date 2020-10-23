@@ -17,11 +17,15 @@ def sin_values(mean, variance, n_points):
     return ys
 
 
-def random_between(min, max):
+def random_float(min, max):
     assert min < max
     spread = max - min
     value = min + random.random() * spread
     return value
+
+
+def random_int(min, max):
+    return int(random_float(min, max))
 
 
 class Character(Entity):
@@ -134,9 +138,9 @@ class Fountain(Entity):
             Spark(
                 self.x,
                 self.y,
-                u=random_between(-1, 1),
-                v=-random_between(10, 15),
-                radius=int(random_between(15, 50)),
+                u=random_float(-1, 1),
+                v=-random_float(10, 15),
+                radius=random_int(15, 50),
                 color=self.color,
             )
         )
@@ -214,19 +218,17 @@ def main():
         left, middle, right = pygame.mouse.get_pressed()
         if left:
             x, y = pygame.mouse.get_pos()
-            lighting2.add(
-                *(
+            for __ in range(50):
+                lighting2.add(
                     Spark(
                         x,
                         y,
-                        u=random_between(-50, 50),
-                        v=random_between(-50, 50),
-                        radius=int(random_between(5, 100)),
-                        color=Color("purple"),
+                        u=random_float(-50, 50),
+                        v=random_float(-50, 50),
+                        radius=random_int(5, 100),
+                        color=(random_int(0, 255), random_int(0, 255), random_int(0, 255),),
                     )
-                    for __ in range(50)
-                ),
-            )
+                )
 
         for group in groups:
             group.update()
@@ -241,6 +243,7 @@ def main():
             group.draw(window)
         pygame.display.update()
         clock.tick(60)
+
 
 if __name__ == "__main__":
     main()
