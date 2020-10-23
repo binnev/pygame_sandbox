@@ -93,10 +93,27 @@ class Spark(Entity):
     friction = 0.1
     decay = 1
     color = (20, 20, 20)
+    blit_flag = pygame.BLEND_RGB_ADD
 
-    def __init__(self, x, y, u, v, radius, color=None):
+    def __init__(
+        self,
+        x,
+        y,
+        u,
+        v,
+        radius,
+        color=None,
+        gravity=None,
+        friction=None,
+        decay=None,
+        blit_flag=None,
+    ):
         super().__init__()
         self.color = color or self.color
+        self.gravity = gravity or self.gravity
+        self.friction = friction or self.friction
+        self.decay = decay or self.decay
+        self.blit_flag = blit_flag if blit_flag is not None else self.blit_flag
         self.rect = Rect(0, 0, 0, 0)
         self.x = x
         self.y = y
@@ -105,19 +122,19 @@ class Spark(Entity):
         self.radius = radius
 
     def update(self):
-        self.x += self.u
+        self.x += self.u  # todo: this never updates if u is less than 1
         self.y += self.v
         self.v += self.gravity
         self.u *= 1 - self.friction
         self.radius -= self.decay
-        if self.radius == 0:
+        if self.radius <= 0:
             self.kill()
 
     def draw(self, surface, debug=False):
         surf = circle_surf(int(self.radius), self.color)
         image_rect = surf.get_rect()
         image_rect.center = self.rect.center
-        surface.blit(surf, image_rect, special_flags=pygame.BLEND_RGB_ADD)
+        surface.blit(surf, image_rect, special_flags=self.blit_flag)
 
 
 class Fountain(Entity):
@@ -133,7 +150,6 @@ class Fountain(Entity):
 
     def update(self):
         super().update()
-        # self.x, self.y = pygame.mouse.get_pos()
         self.particles.add(
             Spark(
                 self.x,
@@ -153,6 +169,40 @@ class Fountain(Entity):
         surface.blit(surf, image_rect, special_flags=pygame.BLEND_RGB_ADD)
 
         self.particles.draw(surface)
+
+
+class Torch(Fountain):
+    def update(self):
+        self.particles.add(
+            Spark(
+                self.x,
+                self.y,
+                u=random_float(-1, 1),
+                v=-random_float(0, 1),
+                radius=random_int(15, 50),
+                color=(random_int(150, 255), random_int(100, 150), random_int(0, 50)),
+                gravity=-0.3,
+            )
+        )
+        self.particles.update()
+
+
+class Faucet(Fountain):
+    def update(self):
+        self.particles.add(
+            Spark(
+                self.x,
+                self.y,
+                u=random_float(-2, 2),
+                v=0,
+                radius=15,#random_int(15, 20),
+                color=(random_int(0, 20), random_int(50, 100), random_int(150, 255)),
+                gravity=0.3,
+                decay=0.2,
+                blit_flag=False,
+            )
+        )
+        self.particles.update()
 
 
 def circle_surf(radius, color):
@@ -195,7 +245,9 @@ def main():
         Glow(150, 150, radius=50, variance=10, period=100),
         Glow(200, 140, radius=40, variance=5, period=50),
     )
-    lighting2.add(Fountain(500, 500, color=Color("greenyellow")))
+    lighting2.add(
+        Fountain(500, 500, color=Color("greenyellow")), Torch(600, 500), Faucet(700, 500),
+    )
     # create player
     player = Character(100, 100)
     midground.add(player)

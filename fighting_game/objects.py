@@ -39,6 +39,7 @@ class Entity(Sprite):
 
     @property
     def x(self):
+        # todo: rethink this. Currently this clips off sub-pixel positions and speeds.
         return self.rect.centerx
 
     @x.setter
