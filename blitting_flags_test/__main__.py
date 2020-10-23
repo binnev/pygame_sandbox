@@ -122,16 +122,18 @@ class Spark(Entity):
         self.radius = radius
 
     def update(self):
-        self.x += self.u  # todo: this never updates if u is less than 1
-        self.y += self.v
+
+        self.x = round(self.x + self.u)
+        self.y = round(self.y + self.v)
         self.v += self.gravity
         self.u *= 1 - self.friction
+        self.v *= 1 - self.friction
         self.radius -= self.decay
         if self.radius <= 0:
             self.kill()
 
     def draw(self, surface, debug=False):
-        surf = circle_surf(int(self.radius), self.color)
+        surf = circle_surf(round(self.radius), self.color)
         image_rect = surf.get_rect()
         image_rect.center = self.rect.center
         surface.blit(surf, image_rect, special_flags=self.blit_flag)
@@ -194,12 +196,13 @@ class Faucet(Fountain):
                 self.x,
                 self.y,
                 u=random_float(-2, 2),
-                v=0,
-                radius=15,#random_int(15, 20),
+                v=4,
+                radius=15,  # random_int(15, 20),
                 color=(random_int(0, 20), random_int(50, 100), random_int(150, 255)),
-                gravity=0.3,
-                decay=0.2,
+                gravity=0.9,
+                decay=0.1,
                 blit_flag=False,
+                friction=0.1
             )
         )
         self.particles.update()
@@ -210,6 +213,24 @@ def circle_surf(radius, color):
     pygame.draw.circle(surf, color, (radius, radius), radius)
     surf.set_colorkey((0, 0, 0))
     return surf
+
+
+def explosion(x, y, group):
+    for __ in range(50):
+        group.add(
+            Spark(
+                x,
+                y,
+                u=random_float(-20, 20),
+                v=random_float(-50, 0),
+                radius=random_int(5, 100),
+                color=[random_int(10, 80)] * 3,
+                gravity=0.7,
+                friction=0.2,
+                blit_flag=False,
+                decay=1.2
+            )
+        )
 
 
 def main():
@@ -228,25 +249,27 @@ def main():
         background,
         midground,
         lighting,
-        foreground,
         lighting2,
+        foreground,
     ]
 
     # add static stuff
     background.add(
-        Block(100, 100, 100, 100, Color("cornsilk4")),
-        Block(400, 100, 100, 100, Color("cornsilk4")),
+        Block(300, 300, 100, 100, Color("cornsilk4")),
+        Block(600, 300, 100, 100, Color("cornsilk4")),
     )
-    foreground.add(Block(250, 250, 333, 99, Color("dodgerblue4")),)
+    foreground.add(Block(450, 450, 333, 99, Color("dodgerblue4")),)
     lighting.add(
-        Glow(200, 200, radius=100, variance=20, period=360),
-        Glow(200, 200, radius=80, variance=20, period=360),
-        Glow(200, 200, radius=70, variance=20, period=360),
-        Glow(150, 150, radius=50, variance=10, period=100),
-        Glow(200, 140, radius=40, variance=5, period=50),
+        Glow(400, 400, radius=100, variance=20, period=360),
+        Glow(400, 400, radius=80, variance=20, period=360),
+        Glow(400, 400, radius=70, variance=20, period=360),
+        Glow(350, 350, radius=50, variance=10, period=100),
+        Glow(400, 340, radius=40, variance=5, period=50),
     )
     lighting2.add(
-        Fountain(500, 500, color=Color("greenyellow")), Torch(600, 500), Faucet(700, 500),
+        Fountain(400, 300, color=Color("greenyellow")),
+        Torch(500, 300),
+        Faucet(600, 300),
     )
     # create player
     player = Character(100, 100)
@@ -266,21 +289,11 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-
-        left, middle, right = pygame.mouse.get_pressed()
-        if left:
-            x, y = pygame.mouse.get_pos()
-            for __ in range(50):
-                lighting2.add(
-                    Spark(
-                        x,
-                        y,
-                        u=random_float(-70, 70),
-                        v=random_float(-50, 50),
-                        radius=random_int(5, 30),
-                        color=(random_int(150, 255), random_int(150, 255), random_int(0, 255),),
-                    )
-                )
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                left, middle, right = pygame.mouse.get_pressed()
+                if left:
+                    x, y = pygame.mouse.get_pos()
+                    explosion(x, y, lighting2)
 
         for group in groups:
             group.update()
