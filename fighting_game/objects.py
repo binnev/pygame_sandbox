@@ -39,11 +39,11 @@ class Entity(Sprite):
 
     @property
     def x(self):
-        # todo: rethink this. Currently this clips off sub-pixel positions and speeds.
         return self.rect.centerx
 
     @x.setter
     def x(self, new_value):
+        new_value = round(new_value)
         self.rect.centerx = new_value
 
     @property
@@ -52,6 +52,7 @@ class Entity(Sprite):
 
     @y.setter
     def y(self, new_value):
+        new_value = round(new_value)
         self.rect.centery = new_value
 
     @property
