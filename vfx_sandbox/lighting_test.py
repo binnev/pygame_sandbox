@@ -376,14 +376,10 @@ def main():
     background = Group()
     midground = Group()
     foreground = Group()
-    lighting = Group()
-    lighting2 = Group()
     shadows = Group()
     groups = [
         background,
         midground,
-        lighting,
-        lighting2,
         foreground,
         shadows,
     ]
@@ -395,22 +391,22 @@ def main():
         Torch(900, 600),
         Fountain(400, 300, color=Color("greenyellow")),
     )
-    foreground.add(Block(450, 450, 333, 99, Color("dodgerblue4")),)
-    lighting.add(
+    midground.add(
         Glow(400, 400, radius=100, variance=20, period=360),
         Glow(400, 400, radius=80, variance=20, period=360),
         Glow(400, 400, radius=70, variance=20, period=360),
         Glow(350, 350, radius=50, variance=10, period=100),
         Glow(400, 340, radius=40, variance=5, period=50),
+        Character(100, 100),
         Torch(800, 750),
     )
-    lighting2.add(
-        Fire(500, 300), Faucet(600, 300), Torch(800, 600),
+    foreground.add(
+        Fire(500, 300),
+        Faucet(600, 300),
+        Torch(800, 600),
+        Block(450, 450, 333, 99, Color("dodgerblue4")),
     )
     shadows.add(Shadow(150, 150, radius=200))
-    # create player
-    player = Character(100, 100)
-    midground.add(player)
 
     run = True
     pygame.draw.rect(window, Color("cyan"), (30, 40, 100, 200))
