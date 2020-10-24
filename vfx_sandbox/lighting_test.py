@@ -304,10 +304,50 @@ def explosion(x, y, group):
                 v=random_float(-50, 0),
                 radius=random_int(5, 100),
                 color=[random_int(10, 80)] * 3,
-                gravity=0.7,
+                gravity=-0.2,
                 friction=0.2,
                 blit_flag=False,
                 decay=1.2,
+            )
+        )
+    for __ in range(20):
+        group.add(
+            Spark(
+                x,
+                y,
+                u=random_float(-5, 5),
+                v=-random_float(5, 10),
+                radius=random_int(30, 60),
+                color=(random_int(150, 175), random_int(60, 80), random_int(0, 30)),
+                gravity=-0.5,
+            )
+        )
+    for __ in range(2):
+        group.add(
+            Spark(
+                x=x + random_int(-5, 5),
+                y=y + random_int(-5, 5),
+                u=random_float(-5, 5),
+                v=random_float(-5, 5),
+                radius=random_int(100, 120),
+                color=(150, 150, 100),
+                gravity=0,
+                decay=20,
+                friction=1
+            )
+        )
+    for __ in range(10):
+        group.add(
+            Spark(
+                x=x + random_int(-5, 5),
+                y=y + random_int(-5, 5),
+                u=random_float(-50, 50),
+                v=random_float(-50, 50),
+                radius=random_int(2, 7),
+                color=(200, 200, 200),
+                gravity=0.1,
+                decay=0.1,
+                friction=0.1
             )
         )
 
@@ -361,6 +401,7 @@ def main():
     run = True
     pygame.draw.rect(window, Color("cyan"), (30, 40, 100, 200))
     max_num_entities = 0
+    screen_shake = 0
     while run:
         window.fill((0, 0, 0, 0))
 
@@ -377,6 +418,7 @@ def main():
                 if left:
                     x, y = pygame.mouse.get_pos()
                     explosion(x, y, midground)
+                    screen_shake = 10
 
         for group in groups:
             group.update()
@@ -387,8 +429,21 @@ def main():
             print(max_num_entities)
 
         # draw stuff
-        for group in groups:
-            group.draw(window)
+        if screen_shake:
+            temp_surf = Surface(window.get_size())
+            screen_shake -= 1
+            magnitude = 10
+            for group in groups:
+                group.draw(temp_surf)
+                dx = random.randrange(-magnitude, magnitude)
+                dy = random.randrange(-magnitude, magnitude)
+                rect = temp_surf.get_rect()
+                rect.centerx += dx
+                rect.centery += dy
+                window.blit(temp_surf, rect)
+        else:
+            for group in groups:
+                group.draw(window)
         pygame.display.update()
         clock.tick(60)
 
