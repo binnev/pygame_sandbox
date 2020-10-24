@@ -5,6 +5,7 @@ import numpy
 import pygame
 from pygame import Color, Surface
 from pygame.rect import Rect
+from pygame.sprite import Sprite
 
 from fighting_game.groups import Group
 from fighting_game.objects import Entity
@@ -294,62 +295,75 @@ def circle_surf(radius, color):
     return surf
 
 
-def explosion(x, y, group):
-    for __ in range(50):
-        group.add(
-            Spark(
-                x,
-                y,
-                u=random_float(-20, 20),
-                v=random_float(-50, 0),
-                radius=random_int(5, 100),
-                color=[random_int(10, 80)] * 3,
-                gravity=-0.2,
-                friction=0.2,
-                blit_flag=False,
-                decay=1.2,
+class Explosion(Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.particles = Group()
+        for __ in range(50):
+            self.particles.add(
+                Spark(
+                    x,
+                    y,
+                    u=random_float(-20, 20),
+                    v=random_float(-50, 0),
+                    radius=random_int(5, 100),
+                    color=[random_int(10, 80)] * 3,
+                    gravity=-0.2,
+                    friction=0.2,
+                    blit_flag=False,
+                    decay=1.2,
+                )
             )
-        )
-    for __ in range(20):
-        group.add(
-            Spark(
-                x,
-                y,
-                u=random_float(-5, 5),
-                v=-random_float(5, 10),
-                radius=random_int(30, 60),
-                color=(random_int(150, 175), random_int(60, 80), random_int(0, 30)),
-                gravity=-0.5,
+        for __ in range(20):
+            self.particles.add(
+                Spark(
+                    x,
+                    y,
+                    u=random_float(-5, 5),
+                    v=-random_float(5, 10),
+                    radius=random_int(30, 60),
+                    color=(random_int(150, 175), random_int(60, 80), random_int(0, 30)),
+                    gravity=-0.5,
+                )
             )
-        )
-    for __ in range(2):
-        group.add(
-            Spark(
-                x=x + random_int(-5, 5),
-                y=y + random_int(-5, 5),
-                u=random_float(-5, 5),
-                v=random_float(-5, 5),
-                radius=random_int(100, 120),
-                color=(150, 150, 100),
-                gravity=0,
-                decay=20,
-                friction=1
+        for __ in range(2):
+            self.particles.add(
+                Spark(
+                    x=x + random_int(-5, 5),
+                    y=y + random_int(-5, 5),
+                    u=random_float(-5, 5),
+                    v=random_float(-5, 5),
+                    radius=random_int(100, 120),
+                    color=(150, 150, 100),
+                    gravity=0,
+                    decay=20,
+                    friction=1,
+                )
             )
-        )
-    for __ in range(10):
-        group.add(
-            Spark(
-                x=x + random_int(-5, 5),
-                y=y + random_int(-5, 5),
-                u=random_float(-50, 50),
-                v=random_float(-50, 50),
-                radius=random_int(2, 7),
-                color=(200, 200, 200),
-                gravity=0.1,
-                decay=0.1,
-                friction=0.1
+        for __ in range(10):
+            self.particles.add(
+                Spark(
+                    x=x + random_int(-5, 5),
+                    y=y + random_int(-5, 5),
+                    u=random_float(-50, 50),
+                    v=random_float(-50, 50),
+                    radius=random_int(2, 7),
+                    color=(200, 200, 200),
+                    gravity=0.1,
+                    decay=0.1,
+                    friction=0.1,
+                )
             )
-        )
+
+    def update(self):
+        self.particles.update()
+        if not self.particles:
+            self.kill()
+
+    def draw(self, surface: Surface, debug: bool = False):
+        self.particles.draw(surface, debug)
 
 
 def main():
@@ -417,7 +431,7 @@ def main():
                 left, middle, right = pygame.mouse.get_pressed()
                 if left:
                     x, y = pygame.mouse.get_pos()
-                    explosion(x, y, midground)
+                    midground.add(Explosion(x, y))
                     screen_shake = 10
 
         for group in groups:
