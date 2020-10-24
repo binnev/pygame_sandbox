@@ -177,7 +177,7 @@ class Fire(Fountain):
                 u=random_float(-1, 1),
                 v=-random_float(0, 1),
                 radius=random_int(15, 50),
-                color=(random_int(150, 255), random_int(100, 150), random_int(0, 50)),
+                color=(random_int(150, 175), random_int(60, 80), random_int(0, 30)),
                 gravity=-0.3,
             )
         )
@@ -185,7 +185,7 @@ class Fire(Fountain):
 
 
 class Torch(Entity):
-    color = Color("orange")
+    color = Color("orangered3")
 
     def __init__(self, x, y, color=None):
         super().__init__()
