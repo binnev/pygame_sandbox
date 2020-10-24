@@ -9,6 +9,7 @@ from base.animation import SpriteDict, SpriteAnimation, ease_out
 from base.objects.entities import Entity, CollisionMixin, Hitbox
 from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
+from vfx_sandbox.lighting_test import Explosion
 from volleyball_game import conf
 from volleyball_game.inputs import GamecubeController
 from volleyball_game.sprites.particle_effects import explosion_sprites
@@ -1074,7 +1075,8 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
 
     def handle_hit(self, hitbox):
         self.last_touched_by = hitbox.owner
-        self.level.add(ParticleEffect(self.x, self.y), type="particle_effect")
+        self.level.add(Explosion(self.x, self.y), type="particle_effect")
+        # self.level.add(ParticleEffect(self.x, self.y), type="particle_effect")
         print(f"Ball hit by hitbox {id(hitbox)}")
 
     def enforce_screen_limits(self, screen_width, screen_height):

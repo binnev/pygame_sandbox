@@ -40,13 +40,13 @@ class VolleyballGame(Game):
         # input devices that are specific to this game
         self.keyboard0 = Keyboard0()
         self.keyboard1 = Keyboard1()
-        self.controller0 = GamecubeController(controller_id=0)
-        self.controller1 = GamecubeController(controller_id=1)
+        # self.controller0 = GamecubeController(controller_id=0)
+        # self.controller1 = GamecubeController(controller_id=1)
         self.input_devices += [
             self.keyboard0,
             self.keyboard1,
-            self.controller0,
-            self.controller1,
+            # self.controller0,
+            # self.controller1,
         ]
 
     def add_scene(self, scene):
@@ -141,10 +141,10 @@ class VolleyballMatch(Sprite):
         """ Stuff that can't go in the init method (probably because it refers to self.game
         before that property has been set. """
         self.player1 = Stickman(
-            *self.starting_positions[0], input=self.game.controller0, facing_right=True,
+            *self.starting_positions[0], input=self.game.keyboard0, facing_right=True,
         )
         self.player2 = Stickman(
-            *self.starting_positions[1], input=self.game.controller1, facing_right=False,
+            *self.starting_positions[1], input=self.game.keyboard1, facing_right=False,
         )
         self.level.add(self.player1, self.player2, type="character")
         self.state = self.match
