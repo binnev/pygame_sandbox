@@ -1,5 +1,7 @@
+from collections import deque
 from copy import copy
 
+import numpy
 from numpy.core._multiarray_umath import sign
 import pygame
 from pygame import Color, Surface
@@ -453,3 +455,56 @@ class Hitbox(Entity):
         return new_hitbox
 
 
+def handle_hitbox_collision(hitbox, object):
+    # todo: apply hitbox damage?
+    # here's where we calculate how far/fast the object gets knocked
+    magnitude = hitbox.knockback / object.mass
+    u = magnitude * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
+    v = -magnitude * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
+    object.u = u
+    object.v = v
+    object.x += u
+    object.y += v
+    object.handle_hit(hitbox)
+    hitbox.handle_hit(object)
+
+
+def handle_hits(hitboxes: [Hitbox], objects: [Entity]):
+    """
+    Manage the effects of hitboxes hitting other entities.
+
+    This function shouldn't know the details of how each object reacts to getting hit. That
+    is the responsibility of the object to define those methods. This function's
+    responsibility is to ensure no object instance is hit more than once by the same hitbox
+    instance.
+    """
+    handled = deque(maxlen=200)
+
+    for object in objects:
+        colliding_hitboxes = pygame.sprite.spritecollide(object, hitboxes, dokill=False)
+        for hitbox in colliding_hitboxes:
+            # hitboxes should never hit their owner
+            if hitbox.owner == object:
+                continue
+
+            # if these two instances have already met, don't repeat the interaction
+            if (hitbox, object) in handled:
+                continue
+
+            handle_hitbox_collision(hitbox, object)
+            handled.append((hitbox, object))
+            # if the hitbox has lower priority sibling hitboxes, add those to the handled list so
+            # that they don't also hit the object
+            if hitbox.lower_priority_sibling:
+                handled.append((hitbox.lower_priority_sibling, object))
+
+
+def get_lower_priority_siblings(hitbox: Hitbox) -> [Hitbox]:
+    # recursive case
+    if (sibling := hitbox.lower_priority_sibling):
+        return [sibling] + get_lower_priority_siblings(sibling)
+    else:
+        return []
+
+# h1 -> h2 -> h3
+# [h2, h3, h3]
