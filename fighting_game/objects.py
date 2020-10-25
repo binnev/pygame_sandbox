@@ -342,71 +342,50 @@ class Debugger(Character):
 
 class Hitbox(Entity):
     """
-    Things to work on:
-
-    - A target should never be hit twice by the same instance of the same hitbox. E.g. if Ranno
-    does a nair and the hitbox is colliding with the target for 2 frames, then target should only
-    take the damage and knockback once.
-
-    - Sweet/sour spots. If the target is hit by both, I want only one hitbox to apply.
-        - E.g. Marth's tipper hitboxes should only be active if none of his non-tipper hitboxes are
-        colliding with the target.
-        - E.g. Zetterburn's up-air: if the sweet spot connects, the sour spot should not connect.
-
+    A hitbox always has an owner. It follows its owner's x/y position. The x/y_offset attributes
+    allow us to position the hitbox relative to its owner.
     """
 
-    # if owner is not None, x and y are absolute positions
-    x: int
-    y: int
-    width: int
-    height: int
-    rotation: float
-    knockback: float = 0
-    knockback_angle: float = 0
-    damage: float = 0
     debug_color = (*Color("red")[:3], 150)
 
     def __init__(
         self,
-        x,
-        y,
-        width=None,
-        height=None,
-        rotation=None,
-        knockback=None,
-        knockback_angle=None,
-        damage=None,
-        owner=None,
-        higher_priority_sibling=None,
-        lower_priority_sibling=None,
+        owner: Entity,
+        width: int,
+        height: int,
+        x_offset: int = 0,
+        y_offset: int = 0,
+        rotation: float = 0,
+        knockback: float = 0,
+        knockback_angle: float = 0,
+        damage: float = 0,
+        higher_priority_sibling: Entity = None,
+        lower_priority_sibling: Entity = None,
     ):
         super().__init__()
-        # overwrite class parameters at instantiation, if any params are passed
+        self.x_offset = x_offset
+        self.y_offset = y_offset
         self.owner = owner
-        if width is not None:
-            self.width = width
-        if height is not None:
-            self.height = height
+        self.width = width
+        self.height = height
         self.rect = Rect(0, 0, self.width, self.height)
-        self.x = x
-        self.y = y
-        if rotation is not None:
-            self.rotation = rotation
-        if damage is not None:
-            self.damage = damage
-        if knockback is not None:
-            self.knockback = knockback
-        if knockback_angle is not None:
-            self.knockback_angle = knockback_angle
+        self.rotation = rotation
+        self.damage = damage
+        self.knockback = knockback
+        self.knockback_angle = knockback_angle
         self.higher_priority_sibling = higher_priority_sibling
         self.lower_priority_sibling = lower_priority_sibling
 
-        self.image = pygame.Surface((self.width, self.height)).convert_alpha()
-        self.image.fill((0, 0, 0, 0))
-        pygame.draw.ellipse(self.image, self.debug_color, (0, 0, self.width, self.height))
-        colorkey = self.image.get_at((0, 0))
-        self.image.set_colorkey(colorkey)
-        self.image = pygame.transform.rotate(self.image, self.rotation)
+    @property
+    def image(self) -> Surface:
+        # todo optimise this
+        image = pygame.Surface((self.width, self.height)).convert_alpha()
+        image.fill((0, 0, 0, 0))
+        pygame.draw.ellipse(image, self.debug_color, (0, 0, self.width, self.height))
+        colorkey = image.get_at((0, 0))  # todo
+        image.set_colorkey(colorkey)
+        image = pygame.transform.rotate(image, self.rotation)
+        return image
 
     def __repr__(self):
         return f"Hitbox with id {id(self)}"
@@ -418,31 +397,27 @@ class Hitbox(Entity):
         pass
 
     @property
-    def x(self):
-        return self.rect.centerx
+    def rect(self):
+        """If the hitbox has an owner, it will follow its owner's x and y (offset by x_offset
+        and y_offset)."""
+        self.align_to_owner()
+        return self._rect
 
-    @x.setter
-    def x(self, new_value):
-        new_value = round(new_value)
-        if self.owner:
-            new_value += self.owner.x
-        self.rect.centerx = new_value
+    @rect.setter
+    def rect(self, new_rect):
+        self._rect = new_rect
+        self.align_to_owner()
 
-    @property
-    def y(self):
-        return self.rect.centery
-
-    @y.setter
-    def y(self, new_value):
-        new_value = round(new_value)
-        if self.owner:
-            new_value += self.owner.y
-        self.rect.centery = new_value
+    def align_to_owner(self):
+        self._rect.center = (
+            self.owner.x + self.x_offset,
+            self.owner.y + self.y_offset,
+        )
 
     def draw(self, surface, debug=False):
         if debug:
             super().draw(surface, debug)
-            if self.rotation is not None:
+            if self.knockback_angle is not None:
                 draw_arrow(surface, self.rect.center, self.knockback_angle, color=self.debug_color)
 
     def flip_x(self):
@@ -450,6 +425,7 @@ class Hitbox(Entity):
         new_hitbox.knockback_angle = 180 - self.knockback_angle
         new_hitbox.rotation = 180 - self.rotation
         new_hitbox.x = -self.x
+        # todo; flip image?
         return new_hitbox
 
     @property
@@ -523,5 +499,6 @@ def handle_hits(hitboxes: [Hitbox], objects: [Entity]):
             handled.append((hitbox, object))
             # if the hitbox has lower priority sibling hitboxes, add those to the handled list so
             # that they don't also hit the object
-            if hitbox.lower_priority_sibling:
-                handled.append((hitbox.lower_priority_sibling, object))
+            siblings = hitbox.lower_priority_siblings
+            for sibling in siblings:
+                handled.append((sibling, object))
