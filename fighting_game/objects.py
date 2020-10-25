@@ -1,3 +1,5 @@
+from copy import copy
+
 from numpy.core._multiarray_umath import sign
 import pygame
 from pygame import Color, Surface
@@ -5,13 +7,14 @@ from pygame.rect import Rect
 from pygame.sprite import Sprite
 
 from base.animation import SpriteDict
+from base.utils import draw_arrow
 from fighting_game.groups import Level
 from fighting_game.inputs import FightingGameInput
 from fighting_game.sprites.stickman import stickman_sprites
 
 
 class Entity(Sprite):
-    image: Surface
+    image: Surface = None
     debug_color = Color("red")
     rect: Rect
     game_tick = 0  # number of game ticks elapsed in the current state
@@ -21,7 +24,7 @@ class Entity(Sprite):
         self.update_animation()
 
     def draw(self, surface: Surface, debug: bool = False):
-        if hasattr(self, "image"):
+        if self.image:
             surface.blit(self.image, self.image_rect)
         if debug:
             pygame.draw.rect(surface, self.debug_color, self.rect, 1)
@@ -247,6 +250,10 @@ class Character(Entity):
         if self.airborne:
             self.state = self.state_fall
 
+    class AttackMove:
+        def __init__(self):
+            pass
+
 
 class Debugger(Character):
     width = 50
@@ -329,3 +336,120 @@ class Debugger(Character):
                         self.rect.bottom = min([self.rect.bottom, plat.rect.top])
                 else:
                     self.rect.bottom = min([self.rect.bottom, plat.rect.top])
+
+
+class Hitbox(Entity):
+    """
+    Things to work on:
+
+    - A target should never be hit twice by the same instance of the same hitbox. E.g. if Ranno
+    does a nair and the hitbox is colliding with the target for 2 frames, then target should only
+    take the damage and knockback once.
+
+    - Sweet/sour spots. If the target is hit by both, I want only one hitbox to apply.
+        - E.g. Marth's tipper hitboxes should only be active if none of his non-tipper hitboxes are
+        colliding with the target.
+        - E.g. Zetterburn's up-air: if the sweet spot connects, the sour spot should not connect.
+
+    """
+
+    # if owner is not None, x and y are absolute positions
+    x: int = 0
+    y: int = 0
+    width: int
+    height: int
+    rotation: float
+    knockback: float = 0
+    knockback_angle: float = 0
+    damage: float = 0
+    debug_color = (*Color("red")[:3], 150)
+    owner: Entity = None
+    higher_priority_sibling = None
+    lower_priority_sibling = None
+
+    def __init__(
+        self,
+        x=None,
+        y=None,
+        width=None,
+        height=None,
+        rotation=None,
+        knockback=None,
+        knockback_angle=None,
+        damage=None,
+        owner=None,
+    ):
+        super().__init__()
+        # overwrite class parameters at instantiation, if any params are passed
+        if width is not None:
+            self.width = width
+        if height is not None:
+            self.height = height
+        self.rect = Rect(0, 0, self.width, self.height)
+        if x is not None:
+            self.x = x
+        if y is not None:
+            self.y = y
+        if rotation is not None:
+            self.rotation = rotation
+        if owner is not None:
+            self.owner = owner
+        if damage is not None:
+            self.damage = damage
+        if knockback is not None:
+            self.knockback = knockback
+        if knockback_angle is not None:
+            self.knockback_angle = knockback_angle
+
+        self.image = pygame.Surface((self.width, self.height)).convert_alpha()
+        self.image.fill((0, 0, 0, 0))
+        pygame.draw.ellipse(self.image, self.debug_color, (0, 0, self.width, self.height))
+        colorkey = self.image.get_at((0, 0))
+        self.image.set_colorkey(colorkey)
+        self.image = pygame.transform.rotate(self.image, self.rotation)
+
+    def __repr__(self):
+        return f"Hitbox with id {id(self)}"
+
+    def handle_hit(self, object):
+        """ Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
+        context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
+        electric """
+        pass
+
+    @property
+    def x(self):
+        return self.rect.centerx
+
+    @x.setter
+    def x(self, new_value):
+        new_value = round(new_value)
+        if self.owner:
+            new_value += self.owner.x
+        self.rect.centerx = new_value
+
+    @property
+    def y(self):
+        return self.rect.centery
+
+    @y.setter
+    def y(self, new_value):
+        new_value = round(new_value)
+        if self.owner:
+            new_value += self.owner.y
+        self.rect.centery = new_value
+
+    def draw(self, surface, debug=False):
+        if debug:
+            super().draw(surface, debug)
+            if self.rotation is not None:
+                draw_arrow(surface, self.rect.center, self.knockback_angle, color=self.debug_color)
+
+    def flip_x(self):
+        new_hitbox = copy(self)
+        new_hitbox.knockback_angle = 180 - self.knockback_angle
+        new_hitbox.rotation = 180 - self.rotation
+        new_hitbox.x = -self.x
+        return new_hitbox
+
+
