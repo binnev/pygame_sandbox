@@ -458,6 +458,10 @@ class Hitbox(Entity):
         sibling = self.higher_priority_sibling
         return {sibling} | sibling.higher_priority_siblings if sibling else set()
 
+    @property
+    def siblings(self):
+        return self.higher_priority_siblings | self.lower_priority_siblings
+
 
 def handle_hitbox_collision(hitbox, object):
     # todo: apply hitbox damage?
@@ -473,32 +477,40 @@ def handle_hitbox_collision(hitbox, object):
     hitbox.handle_hit(object)
 
 
-def handle_hits(hitboxes: [Hitbox], objects: [Entity]):
-    """
-    Manage the effects of hitboxes hitting other entities.
+class HitHandler:
+    def __init__(self):
+        # queue for storing
+        self.handled = deque(maxlen=200)
 
-    This function shouldn't know the details of how each object reacts to getting hit. That
-    is the responsibility of the object to define those methods. This function's
-    responsibility is to ensure no object instance is hit more than once by the same hitbox
-    instance.
-    """
-    handled = deque(maxlen=200)
+    def handle_hits(self, hitboxes: [Hitbox], objects: [Entity]):
+        """
+        Manage the effects of hitboxes hitting other entities.
 
-    for object in objects:
-        colliding_hitboxes = pygame.sprite.spritecollide(object, hitboxes, dokill=False)
-        for hitbox in colliding_hitboxes:
-            # hitboxes should never hit their owner
-            if hitbox.owner == object:
-                continue
+        This function shouldn't know the details of how each object reacts to getting hit. That
+        is the responsibility of the object to define those methods. This function's
+        responsibility is to ensure no object instance is hit more than once by the same hitbox
+        instance.
+        """
 
-            # if these two instances have already met, don't repeat the interaction
-            if (hitbox, object) in handled:
-                continue
+        for object in objects:
+            colliding_hitboxes = pygame.sprite.spritecollide(object, hitboxes, dokill=False)
+            for hitbox in colliding_hitboxes:
+                # hitboxes should never hit their owner
+                if hitbox.owner == object:
+                    continue
 
-            handle_hitbox_collision(hitbox, object)
-            handled.append((hitbox, object))
-            # if the hitbox has lower priority sibling hitboxes, add those to the handled list so
-            # that they don't also hit the object
-            siblings = hitbox.lower_priority_siblings
-            for sibling in siblings:
-                handled.append((sibling, object))
+                # if this hitbox has already affected the object, don't repeat the interaction
+                if (hitbox, object) in self.handled:
+                    continue
+
+                # if the hitbox has higher-priority siblings that are also colliding, skip and
+                # let the higher-priority hitbox collide instead
+                if any(s in colliding_hitboxes for s in hitbox.higher_priority_siblings):
+                    continue
+
+                handle_hitbox_collision(hitbox, object)
+                self.handled.append((hitbox, object))
+                # if the hitbox has lower priority sibling hitboxes, add those to the handled list so
+                # that they don't also hit the object
+                for sibling in hitbox.siblings:
+                    self.handled.append((sibling, object))
