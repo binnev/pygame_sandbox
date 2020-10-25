@@ -356,8 +356,8 @@ class Hitbox(Entity):
     """
 
     # if owner is not None, x and y are absolute positions
-    x: int = 0
-    y: int = 0
+    x: int
+    y: int
     width: int
     height: int
     rotation: float
@@ -365,14 +365,11 @@ class Hitbox(Entity):
     knockback_angle: float = 0
     damage: float = 0
     debug_color = (*Color("red")[:3], 150)
-    owner: Entity = None
-    higher_priority_sibling = None
-    lower_priority_sibling = None
 
     def __init__(
         self,
-        x=None,
-        y=None,
+        x,
+        y,
         width=None,
         height=None,
         rotation=None,
@@ -380,28 +377,29 @@ class Hitbox(Entity):
         knockback_angle=None,
         damage=None,
         owner=None,
+        higher_priority_sibling=None,
+        lower_priority_sibling=None,
     ):
         super().__init__()
         # overwrite class parameters at instantiation, if any params are passed
+        self.owner = owner
         if width is not None:
             self.width = width
         if height is not None:
             self.height = height
         self.rect = Rect(0, 0, self.width, self.height)
-        if x is not None:
-            self.x = x
-        if y is not None:
-            self.y = y
+        self.x = x
+        self.y = y
         if rotation is not None:
             self.rotation = rotation
-        if owner is not None:
-            self.owner = owner
         if damage is not None:
             self.damage = damage
         if knockback is not None:
             self.knockback = knockback
         if knockback_angle is not None:
             self.knockback_angle = knockback_angle
+        self.higher_priority_sibling = higher_priority_sibling
+        self.lower_priority_sibling = lower_priority_sibling
 
         self.image = pygame.Surface((self.width, self.height)).convert_alpha()
         self.image.fill((0, 0, 0, 0))
@@ -414,9 +412,9 @@ class Hitbox(Entity):
         return f"Hitbox with id {id(self)}"
 
     def handle_hit(self, object):
-        """ Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
+        """Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
         context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
-        electric """
+        electric"""
         pass
 
     @property
@@ -453,6 +451,36 @@ class Hitbox(Entity):
         new_hitbox.rotation = 180 - self.rotation
         new_hitbox.x = -self.x
         return new_hitbox
+
+    @property
+    def lower_priority_sibling(self):
+        return self._lower_priority_sibling
+
+    @lower_priority_sibling.setter
+    def lower_priority_sibling(self, hitbox):
+        self._lower_priority_sibling = hitbox
+        if hitbox:
+            hitbox._higher_priority_sibling = self
+
+    @property
+    def higher_priority_sibling(self):
+        return self._higher_priority_sibling
+
+    @higher_priority_sibling.setter
+    def higher_priority_sibling(self, hitbox):
+        self._higher_priority_sibling = hitbox
+        if hitbox:
+            hitbox._lower_priority_sibling = self
+
+    @property
+    def lower_priority_siblings(self) -> {"Hitbox"}:
+        sibling = self.lower_priority_sibling
+        return {sibling} | sibling.lower_priority_siblings if sibling else set()
+
+    @property
+    def higher_priority_siblings(self) -> {"Hitbox"}:
+        sibling = self.higher_priority_sibling
+        return {sibling} | sibling.higher_priority_siblings if sibling else set()
 
 
 def handle_hitbox_collision(hitbox, object):
@@ -497,14 +525,3 @@ def handle_hits(hitboxes: [Hitbox], objects: [Entity]):
             # that they don't also hit the object
             if hitbox.lower_priority_sibling:
                 handled.append((hitbox.lower_priority_sibling, object))
-
-
-def get_lower_priority_siblings(hitbox: Hitbox) -> [Hitbox]:
-    # recursive case
-    if (sibling := hitbox.lower_priority_sibling):
-        return [sibling] + get_lower_priority_siblings(sibling)
-    else:
-        return []
-
-# h1 -> h2 -> h3
-# [h2, h3, h3]

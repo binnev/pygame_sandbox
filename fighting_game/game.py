@@ -20,7 +20,6 @@ class FightingGame:
     font_size = 50
 
     def __init__(self):
-        pygame.init()
         pygame.font.init()
 
         self.font = pygame.font.Font(pygame.font.match_font(self.font_name), self.font_size)
