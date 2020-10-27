@@ -741,6 +741,7 @@ class Hitbox(Entity):
     def draw(self, surface, debug=False):
         if debug:
             self.draw_debug(surface)
+        self.draw_debug(surface)
 
     def flip_x(self):
         self.knockback_angle = 180 - self.knockback_angle

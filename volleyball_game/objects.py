@@ -354,11 +354,16 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if (input.is_pressed(input.B) and holding_back) or Cstick_back:
             self.state = self.BackAir(self)
 
-        if (input.is_pressed(input.B) and (holding_forward or not holding_back)) or Cstick_forward:
+        if (input.is_pressed(input.B) and (holding_forward)) or Cstick_forward:
             self.state = self.ForwardAir(self)
 
-        if input.is_pressed(input.C_DOWN):
+        if (input.is_pressed(input.B) and input.is_down(input.DOWN)) or input.is_pressed(
+            input.C_DOWN
+        ):
             self.state = self.DownAir(self)
+
+        if input.is_pressed(input.B) and not holding_forward and not holding_back:
+            self.state = self.NeutralAir(self)
 
         # double-jump
         if (
@@ -593,6 +598,57 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.hitbox_mapping = {
                 (1, 1): [sweet_spot, back_knee],
                 (2, 5): [sour_spot, back_knee],
+            }
+            super().__init__(instance)
+
+        def __call__(self):
+            super().__call__()
+            instance = self.instance
+            instance.enforce_max_fall_speed()
+            instance.allow_fastfall()
+            instance.allow_aerial_drift()
+            self.end_when_animation_ends(instance.state_fall)
+            if not instance.airborne:
+                instance.state = instance.state_stand
+
+    class NeutralAir(VolleyballMove):
+        sprite_animation_name = "flying_kick"
+
+        def __init__(self, instance):
+            hitbox1 = Hitbox(
+                owner=instance,
+                knockback=5,
+                knockback_angle=90 - 30,
+                angle=0,
+                x_offset=-20,
+                y_offset=-40,
+                width=60,
+                height=20,
+            )
+            hitbox2 = Hitbox(
+                owner=instance,
+                knockback=5,
+                knockback_angle=90+30,
+                angle=0,
+                x_offset=20,
+                y_offset=-40,
+                width=60,
+                height=20,
+            )
+            hitbox3 = Hitbox(
+                owner=instance,
+                knockback=15,
+                knockback_angle=90 - 30,
+                angle=0,
+                x_offset=-20,
+                y_offset=-40,
+                width=60,
+                height=10,
+            )
+            self.hitbox_mapping = {
+                1: [hitbox1],
+                2: [hitbox2],
+                3: [hitbox3],
             }
             super().__init__(instance)
 
