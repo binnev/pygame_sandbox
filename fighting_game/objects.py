@@ -93,6 +93,26 @@ class Platform(Entity):
         self.image.fill(self.color)
 
 
+class Move:
+    """ E.g. an attack """
+    hitbox_mapping: dict
+
+    def __init__(self, character: "Character"):
+        # todo flip hitboxes based on character orientation
+        self.character = character
+        self.hitbox_lookup = {
+            frame: hitboxes
+            for frames, hitboxes in self.hitbox_mapping.items()
+            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
+        }
+
+    def __call__(self, *args, **kwargs):
+        n = self.character.animation_frame
+        active_hitboxes = self.hitbox_lookup.get(n, [])
+        for hitbox in active_hitboxes:
+            self.character.level.add_hitbox(hitbox)
+
+
 class Character(Entity):
     width: int
     height: int
@@ -252,9 +272,34 @@ class Character(Entity):
         if self.airborne:
             self.state = self.state_fall
 
-    class AttackMove:
-        def __init__(self):
-            pass
+    class AttackMove(Move):
+
+        def __init__(self, character: "Character"):
+            super().__init__(character)
+
+            self.sweet_spot = sweet_spot = Hitbox(
+                owner=character,
+                width=50,
+                height=50,
+            )
+            self.sour_spot = sour_spot = Hitbox(
+                owner=character,
+                width=100,
+                height=100,
+                higher_priority_sibling=sweet_spot,
+            )
+            assert sour_spot.higher_priority_sibling is sweet_spot
+            assert sweet_spot.lower_priority_sibling is sour_spot
+            self.hitbox_mapping = {
+                10: [sweet_spot],
+                11: [sweet_spot],
+                12: [sweet_spot],
+                13: [sweet_spot],
+                14: [sweet_spot],
+                15: [sweet_spot],
+                (16, 30): [sweet_spot, sour_spot],
+                (31, 40): [sour_spot],
+            }
 
 
 class Debugger(Character):

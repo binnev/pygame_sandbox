@@ -58,7 +58,6 @@ class VolleyballMove:
 
     @staticmethod
     def map_hitboxes(hitbox_mapping):
-        # todo: allow some frames to have no hitboxes. How will I represent that?
         return {
             frame: hitboxes
             for frames, hitboxes in hitbox_mapping.items()

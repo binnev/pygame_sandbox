@@ -32,7 +32,6 @@ class FightingGame:
         self.input_devices = [self.keyboard]
 
         self.scenes = Group()
-        self.groups = [self.scenes]
 
     def update(self):
         for event in pygame.event.get():
@@ -49,9 +48,7 @@ class FightingGame:
         for device in self.input_devices:
             device.read_new_inputs()
 
-        for group in self.groups:
-            group.update()
-
+        self.scenes.update()
         self.clock.tick(self.fps)
         self.tick += 1
 
@@ -61,8 +58,7 @@ class FightingGame:
 
     def draw(self, surface, debug=False):
         self.window.fill((255, 255, 255))
-        for group in self.groups:
-            group.draw(surface, debug)
+        self.scenes.draw(surface, debug)
         pygame.display.update()
 
     def add_scene(self, scene):
@@ -70,9 +66,9 @@ class FightingGame:
         self.scenes.add(scene)
 
     def main(self):
-        """ This is the outermost game function which runs once. It contains the outermost game
-        loop. Here's where you should put your main event state machine. """
-        self.add_scene(SandBox())
+        """This is the outermost game function which runs once. It contains the outermost game
+        loop. Here's where you should put your main event state machine."""
+        self.add_scene(SandBox(game=self))
         self.debug = True
         self.tick = 0
         self.running = True
@@ -82,16 +78,9 @@ class FightingGame:
             self.draw(self.window, debug=self.debug)
 
 
-class SandBox(Sprite):
-    """ Sandbox scene to try stuff out """
-
-    game: FightingGame
-
-    def __init__(self):
-        super().__init__()
-        self.level = DefaultLevel()
-        self.groups = [self.level]
-        self.state = self.start
+class Scene(Sprite):
+    state: "method"
+    groups: list
 
     def update(self):
         self.state()
@@ -102,7 +91,15 @@ class SandBox(Sprite):
         for group in self.groups:
             group.draw(surface, debug)
 
-    def start(self):
+
+class SandBox(Scene):
+    """ Sandbox scene to try stuff out """
+
+    def __init__(self, game: FightingGame):
+        super().__init__()
+        self.game = game
+        self.level = DefaultLevel()
+        self.groups = [self.level]
         self.player1 = Debugger(500, 500, input=self.game.keyboard)
         self.level.add_character(self.player1)
         self.state = self.main
