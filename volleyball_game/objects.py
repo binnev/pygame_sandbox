@@ -29,51 +29,33 @@ class VolleyballMove:
 
     def __init__(self, instance):
         self.instance = instance
-        # at instantiation, create flipped hitboxes.
-        self.hitbox_mapping_flipped = {
-            key: self.flip_hitboxes(hitboxes) for key, hitboxes in self.hitbox_mapping.items()
+        # flip hitboxes at instantiation.
+        if not instance.facing_right:
+            self.hitbox_mapping = {
+                key: [h.flip_x() for h in hitboxes] for key, hitboxes in self.hitbox_mapping.items()
+            }
+        self.hitbox_lookup = {
+            frame: hitboxes
+            for frames, hitboxes in self.hitbox_mapping.items()
+            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
         }
-        self.hitboxes = self.map_hitboxes(self.hitbox_mapping)
-        self.hitboxes_flipped = self.map_hitboxes(self.hitbox_mapping_flipped)
-
-    def __call__(self):
-        """ This is the equivalent to the function states. """
-        # fixme: convert to frames
-        # flip sprite animation automatically
         name = self.sprite_animation_name + "_" + self.instance.facing
         self.sprite_animation = self.instance.sprites[name]
 
+    def __call__(self):
+        """ This is the equivalent to the function states. """
+        # update instance image
         animation_frame = self.instance.animation_frame
-        self.image = self.sprite_animation.get_frame(animation_frame)
+        self.instance.image = self.sprite_animation.get_frame(animation_frame)
 
-        # flip hitboxes automatically
-        self.active_hitboxes = self.get_active_hitboxes(
-            animation_frame, flip=not self.instance.facing_right
-        )
-
-        self.instance.image = self.image
-
-        for hitbox in self.active_hitboxes:
+        # add active hitboxes to level
+        active_hitboxes = self.hitbox_lookup.get(animation_frame, [])
+        for hitbox in active_hitboxes:
             self.instance.level.add_hitbox(hitbox)
-
-    @staticmethod
-    def map_hitboxes(hitbox_mapping):
-        return {
-            frame: hitboxes
-            for frames, hitboxes in hitbox_mapping.items()
-            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
-        }
-
-    def get_active_hitboxes(self, n, flip):
-        source = self.hitboxes if not flip else self.hitboxes_flipped
-        return source.get(n, [])
 
     def end_when_animation_ends(self, next_state):
         if not self.sprite_animation.get_frame(self.instance.animation_frame + 1):
             self.instance.state = next_state
-
-    def flip_hitboxes(self, hitboxes):
-        return [hitbox.flip_x() for hitbox in hitboxes]
 
 
 class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
@@ -580,16 +562,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         left_and_right_versions = True
 
         def __init__(self, instance):
-            self.back_knee = Hitbox(
-                owner=instance,
-                knockback=7,
-                knockback_angle=100,
-                angle=30,
-                x_offset=-20,
-                y_offset=-30,
-                width=40,
-                height=30,
-            )
             self.sweet_spot = Hitbox(
                 owner=instance,
                 knockback=20,
@@ -609,6 +581,16 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 y_offset=-40,
                 width=30,
                 height=10,
+            )
+            self.back_knee = Hitbox(
+                owner=instance,
+                knockback=7,
+                knockback_angle=100,
+                angle=30,
+                x_offset=-20,
+                y_offset=-30,
+                width=40,
+                height=30,
             )
             self.hitbox_mapping = {
                 (1, 1): [self.sweet_spot, self.back_knee],
@@ -1074,8 +1056,8 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
 
     def handle_hit(self, hitbox):
         self.last_touched_by = hitbox.owner
-        self.level.add(Explosion(self.x, self.y), type="particle_effect")
-        # self.level.add(ParticleEffect(self.x, self.y), type="particle_effect")
+        # self.level.add(Explosion(self.x, self.y), type="particle_effect")
+        self.level.add(ParticleEffect(self.x, self.y), type="particle_effect")
         print(f"Ball hit by hitbox {id(hitbox)}")
 
     def enforce_screen_limits(self, screen_width, screen_height):
