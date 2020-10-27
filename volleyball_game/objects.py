@@ -23,17 +23,15 @@ class VolleyballMove:
     sprite_animation_name: str
     sprite_animation: SpriteAnimation
     hitbox_mapping: dict  # mapping of frame keys to hitbox values
-    left_and_right_versions: bool
-    hitboxes: ["Hitbox"]
-    active_hitboxes: ["Hitbox"]
+    hitbox_lookup: dict
 
     def __init__(self, instance):
         self.instance = instance
         # flip hitboxes at instantiation.
         if not instance.facing_right:
-            self.hitbox_mapping = {
-                key: [h.flip_x() for h in hitboxes] for key, hitboxes in self.hitbox_mapping.items()
-            }
+            hitboxes = {h for frame, hitboxes in self.hitbox_mapping.items() for h in hitboxes}
+            for hitbox in hitboxes:
+                hitbox.flip_x()
         self.hitbox_lookup = {
             frame: hitboxes
             for frames, hitboxes in self.hitbox_mapping.items()
@@ -383,10 +381,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     class Dive(VolleyballMove):
         sprite_animation_name = "dive"
-        left_and_right_versions = True
 
         def __init__(self, instance):
-            self.sweet_spot = Hitbox(
+            sweet_spot = Hitbox(
                 owner=instance,
                 knockback=20,
                 knockback_angle=95,
@@ -397,7 +394,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 height=20,
             )
             self.hitbox_mapping = {
-                (0, 999): [self.sweet_spot],
+                (0, 999): [sweet_spot],
             }
             super().__init__(instance)
 
@@ -431,10 +428,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     class StandingDefense(VolleyballMove):
         sprite_animation_name = "standing_hit"
-        left_and_right_versions = True
 
         def __init__(self, instance):
-            self.sweet_spot = Hitbox(
+            sweet_spot = Hitbox(
                 owner=instance,
                 knockback=20,
                 knockback_angle=70,
@@ -444,7 +440,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 width=50,
                 height=20,
             )
-            self.sour_spot = Hitbox(
+            sour_spot = Hitbox(
                 owner=instance,
                 knockback=10,
                 knockback_angle=91,
@@ -453,11 +449,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 y_offset=-45,
                 width=30,
                 height=10,
+                higher_priority_sibling=sweet_spot,
             )
-            # todo: if key is None the hitbox should map to ALL frames.
             self.hitbox_mapping = {
-                (0, 1): [self.sweet_spot],
-                (2, 999): [self.sour_spot],
+                (0, 1): [sweet_spot],
+                (2, 999): [sour_spot],
             }
             super().__init__(instance)
 
@@ -470,10 +466,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     class WeirdHit(VolleyballMove):
         sprite_animation_name = "weird_hit"
-        left_and_right_versions = True
 
         def __init__(self, instance):
-            self.first_hitbox = Hitbox(
+            first_hitbox = Hitbox(
                 owner=instance,
                 knockback=20,
                 angle=10,
@@ -483,7 +478,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 width=40,
                 height=20,
             )
-            self.second_hitbox = Hitbox(
+            second_hitbox = Hitbox(
                 owner=instance,
                 knockback=20,
                 angle=-10,
@@ -492,8 +487,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 y_offset=-90,
                 width=50,
                 height=30,
+                higher_priority_sibling=first_hitbox,
             )
-            self.third_hitbox = Hitbox(
+            third_hitbox = Hitbox(
                 owner=instance,
                 knockback=20,
                 angle=10,
@@ -502,11 +498,12 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 y_offset=-90,
                 width=50,
                 height=30,
+                higher_priority_sibling=second_hitbox,
             )
             self.hitbox_mapping = {
-                (1, 2): [self.first_hitbox],
-                (2, 3): [self.second_hitbox],
-                (3, 6): [self.third_hitbox],
+                (1, 2): [first_hitbox],
+                (2, 3): [second_hitbox],
+                (3, 6): [third_hitbox],
             }
             super().__init__(instance)
 
@@ -516,10 +513,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     class AerialDefense(VolleyballMove):
         sprite_animation_name = "aerial_defense"
-        left_and_right_versions = True
 
         def __init__(self, instance):
-            self.sweet_spot = Hitbox(
+            sweet_spot = Hitbox(
                 owner=instance,
                 knockback=15,
                 knockback_angle=70,
@@ -529,7 +525,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 width=50,
                 height=20,
             )
-            self.sour_spot = Hitbox(
+            sour_spot = Hitbox(
                 owner=instance,
                 knockback=7,
                 knockback_angle=91,
@@ -538,10 +534,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 y_offset=-90,
                 width=30,
                 height=10,
+                higher_priority_sibling=sweet_spot,
             )
             self.hitbox_mapping = {
-                (0, 1): [self.sweet_spot],
-                (2, 999): [self.sour_spot],
+                (0, 1): [sweet_spot],
+                (2, 999): [sour_spot],
             }
             super().__init__(instance)
 
@@ -559,10 +556,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     class ForwardAir(VolleyballMove):
         sprite_animation_name = "flying_kick"
-        left_and_right_versions = True
 
         def __init__(self, instance):
-            self.sweet_spot = Hitbox(
+            sweet_spot = Hitbox(
                 owner=instance,
                 knockback=20,
                 knockback_angle=10,
@@ -572,7 +568,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 width=60,
                 height=20,
             )
-            self.sour_spot = Hitbox(
+            sour_spot = Hitbox(
                 owner=instance,
                 knockback=10,
                 knockback_angle=45,
@@ -581,8 +577,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 y_offset=-40,
                 width=30,
                 height=10,
+                higher_priority_sibling=sweet_spot,
             )
-            self.back_knee = Hitbox(
+            back_knee = Hitbox(
                 owner=instance,
                 knockback=7,
                 knockback_angle=100,
@@ -591,10 +588,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 y_offset=-30,
                 width=40,
                 height=30,
+                higher_priority_sibling=sour_spot,
             )
             self.hitbox_mapping = {
-                (1, 1): [self.sweet_spot, self.back_knee],
-                (2, 5): [self.sour_spot, self.back_knee],
+                (1, 1): [sweet_spot, back_knee],
+                (2, 5): [sour_spot, back_knee],
             }
             super().__init__(instance)
 
@@ -610,10 +608,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     class BackScoop(VolleyballMove):
         sprite_animation_name = "back_air"
-        left_and_right_versions = True
 
         def __init__(self, instance):
-            self.sweet_spot = Hitbox(
+            sweet_spot = Hitbox(
                 owner=instance,
                 knockback=20,
                 angle=-30,
@@ -623,7 +620,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 width=30,
                 height=50,
             )
-            self.sour_spot = Hitbox(
+            sour_spot = Hitbox(
                 owner=instance,
                 knockback=10,
                 angle=-30,
@@ -632,10 +629,11 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 y_offset=-80,
                 width=25,
                 height=45,
+                higher_priority_sibling=sweet_spot,
             )
             self.hitbox_mapping = {
-                (1, 2): [self.sweet_spot],
-                (3, 99): [self.sour_spot],
+                (1, 2): [sweet_spot],
+                (3, 99): [sour_spot],
             }
             super().__init__(instance)
 
@@ -651,30 +649,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     class BackAir(VolleyballMove):
         sprite_animation_name = "back_air2"
-        left_and_right_versions = True
 
         def __init__(self, instance):
-            self.sweet_spot = Hitbox(
-                owner=instance,
-                knockback=20,
-                angle=-30,
-                knockback_angle=170,
-                x_offset=-35,
-                y_offset=-55,
-                width=30,
-                height=30,
-            )
-            self.sour_spot = Hitbox(
-                owner=instance,
-                knockback=15,
-                angle=30,
-                knockback_angle=120,
-                x_offset=-20,
-                y_offset=-80,
-                width=40,
-                height=20,
-            )
-            self.overhead = Hitbox(
+            overhead = Hitbox(
                 owner=instance,
                 knockback=10,
                 angle=10,
@@ -684,9 +661,31 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 width=30,
                 height=20,
             )
+            sweet_spot = Hitbox(
+                owner=instance,
+                knockback=20,
+                angle=-30,
+                knockback_angle=170,
+                x_offset=-35,
+                y_offset=-55,
+                width=30,
+                height=30,
+                higher_priority_sibling=overhead,
+            )
+            sour_spot = Hitbox(
+                owner=instance,
+                knockback=15,
+                angle=30,
+                knockback_angle=120,
+                x_offset=-20,
+                y_offset=-80,
+                width=40,
+                height=20,
+                higher_priority_sibling=sweet_spot,
+            )
             self.hitbox_mapping = {
-                (1, 1): [self.overhead],
-                (2, 4): [self.sweet_spot, self.sour_spot],
+                (1, 1): [overhead],
+                (2, 4): [sweet_spot, sour_spot],
             }
             super().__init__(instance)
 
@@ -702,20 +701,9 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
     class DownAir(VolleyballMove):
         sprite_animation_name = "stomp"
-        left_and_right_versions = True
 
         def __init__(self, instance):
-            self.nipple_spike = Hitbox(
-                owner=instance,
-                knockback=20,
-                angle=0,
-                knockback_angle=280,
-                x_offset=0,
-                y_offset=-70,
-                width=60,
-                height=30,
-            )
-            self.feet = Hitbox(
+            feet = Hitbox(
                 owner=instance,
                 knockback=25,
                 angle=0,
@@ -725,8 +713,19 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 width=30,
                 height=60,
             )
+            nipple_spike = Hitbox(
+                owner=instance,
+                knockback=20,
+                angle=0,
+                knockback_angle=280,
+                x_offset=0,
+                y_offset=-70,
+                width=60,
+                height=30,
+                higher_priority_sibling=feet,
+            )
             self.hitbox_mapping = {
-                (3, 5): [self.feet, self.nipple_spike],
+                (3, 5): [feet, nipple_spike],
             }
             super().__init__(instance)
 
@@ -741,7 +740,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 instance.state = instance.state_stand
 
     class Taunt(VolleyballMove):
-        left_and_right_versions = True
         sprite_animation_name = "taunt"
 
         def __init__(self, instance):
@@ -919,7 +917,6 @@ class Runa(Stickman):
     dive_speed = 20
 
     class Taunt(VolleyballMove):
-        left_and_right_versions = True
         sprite_animation_name = "taunt"
 
         def __init__(self, instance):
@@ -1058,7 +1055,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         self.last_touched_by = hitbox.owner
         # self.level.add(Explosion(self.x, self.y), type="particle_effect")
         self.level.add(ParticleEffect(self.x, self.y), type="particle_effect")
-        print(f"Ball hit by hitbox {id(hitbox)}")
+        print(f"{self.game_tick}: Ball hit by hitbox {hitbox}")
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:
@@ -1093,12 +1090,26 @@ class Bowlingball(Ball):
     air_resistance = 0.01
 
 
+def handle_hitbox_collision(hitbox, object):
+    # todo: apply hitbox damage?
+    # here's where we calculate how far/fast the object gets knocked
+    magnitude = hitbox.knockback / object.mass
+    u = magnitude * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
+    v = -magnitude * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
+    object.u = u
+    object.v = v
+    object.x += u
+    object.y += v
+    object.handle_hit(hitbox)
+    hitbox.handle_hit(object)
+
+
 class HitHandler:
     def __init__(self):
         # queue for storing
-        self.queue = deque(maxlen=200)
+        self.handled = deque(maxlen=200)
 
-    def handle_hits(self, hitboxes, objects):
+    def handle_hits(self, hitboxes: [Hitbox], objects: [Entity]):
         """
         Manage the effects of hitboxes hitting other entities.
 
@@ -1115,32 +1126,21 @@ class HitHandler:
                 if hitbox.owner == object:
                     continue
 
-                # if these two instances have already met, don't repeat the interaction
-                if (hitbox, object) in self.queue:
+                # if this hitbox has already affected the object, don't repeat the interaction
+                if (hitbox, object) in self.handled:
                     continue
 
-                self.handle_hitbox_collision(hitbox, object)
-                self.add_completed_pair(hitbox, object)
+                # if the hitbox has higher-priority siblings that are also colliding, skip and
+                # let the higher-priority hitbox collide instead
+                if any(s in colliding_hitboxes for s in hitbox.higher_priority_siblings):
+                    continue
 
-        # todo: prevent duplicates
-        #  in order to do this, this function needs to maintain state. How?
-
-    @staticmethod
-    def handle_hitbox_collision(hitbox, object):
-        # todo: apply hitbox damage?
-        # here's where we calculate how far/fast the object gets knocked
-        magnitude = hitbox.knockback / object.mass
-        u = magnitude * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
-        v = -magnitude * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
-        object.u = u
-        object.v = v
-        object.x += u
-        object.y += v
-        object.handle_hit(hitbox)
-        hitbox.handle_hit(object)
-
-    def add_completed_pair(self, hitbox, object):
-        self.queue.append((hitbox, object))
+                handle_hitbox_collision(hitbox, object)
+                self.handled.append((hitbox, object))
+                # if the hitbox has lower priority sibling hitboxes, add those to the handled list so
+                # that they don't also hit the object
+                for sibling in hitbox.siblings:
+                    self.handled.append((sibling, object))
 
 
 class PersistentHitbox(ParticleEffect):

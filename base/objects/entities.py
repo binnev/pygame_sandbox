@@ -203,7 +203,8 @@ class Entity(Sprite):
 
     def debug_print(self):
         print(
-            f"x = {self.x}", f"y = {self.y}",
+            f"x = {self.x}",
+            f"y = {self.y}",
         )
 
 
@@ -672,7 +673,8 @@ class Hitbox(Entity):
         y=None,
         x_offset=None,
         y_offset=None,
-        **kwargs,
+        higher_priority_sibling: Entity = None,
+        lower_priority_sibling: Entity = None,
     ):
         # overwrite class parameters at instantiation, if any params are passed
         self.owner = owner if owner is not None else self.owner
@@ -688,7 +690,10 @@ class Hitbox(Entity):
         self.y = y if y is not None else self.y
 
         super().__init__(
-            x=x, y=y, width=width, height=height, **kwargs,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
         )
 
         self.image = pygame.Surface((self.width, self.height)).convert_alpha()
@@ -697,20 +702,22 @@ class Hitbox(Entity):
         colorkey = self.image.get_at((0, 0))
         self.image.set_colorkey(colorkey)
         self.image = pygame.transform.rotate(self.image, self.angle)
+        self.higher_priority_sibling = higher_priority_sibling
+        self.lower_priority_sibling = lower_priority_sibling
 
     def __repr__(self):
         return f"Hitbox with id {id(self)}"
 
     def handle_hit(self, object):
-        """ Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
+        """Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
         context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
-        electric """
+        electric"""
         pass
 
     @property
     def rect(self):
-        """ If the hitbox has an owner, it will follow its owner's x and y (offset by x_offset
-        and y_offset). """
+        """If the hitbox has an owner, it will follow its owner's x and y (offset by x_offset
+        and y_offset)."""
         self.align_to_owner()
         return self._rect
 
@@ -734,11 +741,42 @@ class Hitbox(Entity):
     def draw(self, surface, debug=False):
         if debug:
             self.draw_debug(surface)
-        # self.draw_debug(surface)
 
     def flip_x(self):
-        new_hitbox = copy(self)
-        new_hitbox.knockback_angle = 180 - self.knockback_angle
-        new_hitbox.angle = 180 - self.angle
-        new_hitbox.x_offset = -self.x_offset
-        return new_hitbox
+        self.knockback_angle = 180 - self.knockback_angle
+        self.angle = 180 - self.angle
+        self.x_offset = -self.x_offset
+
+    @property
+    def lower_priority_sibling(self):
+        return self._lower_priority_sibling
+
+    @lower_priority_sibling.setter
+    def lower_priority_sibling(self, hitbox):
+        self._lower_priority_sibling = hitbox
+        if hitbox:
+            hitbox._higher_priority_sibling = self
+
+    @property
+    def higher_priority_sibling(self):
+        return self._higher_priority_sibling
+
+    @higher_priority_sibling.setter
+    def higher_priority_sibling(self, hitbox):
+        self._higher_priority_sibling = hitbox
+        if hitbox:
+            hitbox._lower_priority_sibling = self
+
+    @property
+    def lower_priority_siblings(self) -> {"Hitbox"}:
+        sibling = self.lower_priority_sibling
+        return {sibling} | sibling.lower_priority_siblings if sibling else set()
+
+    @property
+    def higher_priority_siblings(self) -> {"Hitbox"}:
+        sibling = self.higher_priority_sibling
+        return {sibling} | sibling.higher_priority_siblings if sibling else set()
+
+    @property
+    def siblings(self):
+        return self.higher_priority_siblings | self.lower_priority_siblings

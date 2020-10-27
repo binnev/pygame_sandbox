@@ -170,8 +170,6 @@ class CollisionMixin:
         platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
         for platform in platforms:
             if platform.can_fall_through:
-                print("colliding with droppable platform")
                 self.collide_droppable_platform(platform)
             else:
-                print("colliding with platform")
                 self.collide_solid_platform(platform)
