@@ -351,18 +351,16 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if input.is_down(input.A):
             self.state = self.AerialDefense(self)
 
-        if (input.is_pressed(input.B) and holding_back) or Cstick_back:
-            self.state = self.BackAir(self)
-
-        if (input.is_pressed(input.B) and (holding_forward)) or Cstick_forward:
-            self.state = self.ForwardAir(self)
-
-        if (input.is_pressed(input.B) and input.is_down(input.DOWN)) or input.is_pressed(
-            input.C_DOWN
-        ):
+        if (input.is_pressed(input.B) and input.is_down(input.DOWN)):
             self.state = self.DownAir(self)
 
-        if input.is_pressed(input.B) and not holding_forward and not holding_back:
+        elif (input.is_pressed(input.B) and holding_back) or Cstick_back:
+            self.state = self.BackAir(self)
+
+        elif (input.is_pressed(input.B) and holding_forward) or Cstick_forward:
+            self.state = self.ForwardAir(self)
+
+        elif input.is_pressed(input.B) and not holding_forward and not holding_back:
             self.state = self.NeutralAir(self)
 
         # double-jump
