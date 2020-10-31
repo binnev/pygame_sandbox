@@ -82,10 +82,10 @@ class VolleyballGame(Game):
             for device in self.input_devices:
                 device.read_new_inputs()
 
+            self.frame_by_frame_mode()
             self.scenes.update()
             self.scenes.draw(self.window, debug=self.debug)
             pygame.display.update()
-            self.frame_by_frame_mode()
 
             self.clock.tick(self.fps)
             self.tick += 1
@@ -182,16 +182,12 @@ class VolleyballMatch(Sprite):
         if self.game.keyboard.is_pressed(pygame.K_BACKSPACE):
             self.reset_match()
 
-        # if self.game.keyboard.is_pressed(pygame.K_F2):
-        #     self.frame_by_frame = not self.frame_by_frame
-
         if self.game.keyboard.is_pressed(pygame.K_RETURN):
             self.game_started = not self.game_started
 
         self.tee_up()
         self.score_bouncing_balls()
         self.score_balls_out_of_play()
-        # self.score_balls_in_net()
         self.end_game()
 
         self.hit_handler.handle_hits(

@@ -938,18 +938,18 @@ class Stickman(Player):
     width = 80
     height = 70
     _state = None
-    ground_acceleration = 5  # 3
-    ground_speed = 9
-    air_acceleration = 2
+    ground_acceleration = 3
+    ground_speed = 6
+    air_acceleration = 0.8
     air_speed = ground_speed
-    dive_speed = 10
-    gravity = 1.5
-    _fall_speed = 5
+    dive_speed = 7
+    gravity = 0.75
+    _fall_speed = 2.5
     fastfall_multiplier = 3
     aerial_jumps = 1
-    jump_power = 20
-    shorthop_power = 11
-    jumpsquat_frames = 3
+    jump_power = 15
+    shorthop_power = 8
+    jumpsquat_frames = 5
     friction = 0.2
     air_resistance = 0.03
     crouch_height_multiplier = 0.7
@@ -1127,11 +1127,11 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
 
 
 class Volleyball(Ball):
-    mass = 1
+    mass = 1.5
     width = 40
     height = 40
     bounciness = 1
-    gravity = 0.5
+    gravity = 0.2
     air_resistance = 0.01
 
 
