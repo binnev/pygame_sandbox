@@ -54,10 +54,11 @@ class VolleyballGame(Game):
         self.scenes.add(scene)
 
     def main(self):
-        """ This is the outermost game function which runs once. It contains the outermost game
-        loop. Here's where you should put your main event state machine. """
+        """This is the outermost game function which runs once. It contains the outermost game
+        loop. Here's where you should put your main event state machine."""
         self.add_scene(MainMenu())
         self.debug = False
+        self.frame_by_frame = False
         self.tick = 0
         running = True
         while running:
@@ -73,27 +74,45 @@ class VolleyballGame(Game):
                         sys.exit()
                     if event.key == pygame.K_F1:
                         self.debug = not self.debug
+                    if event.key == pygame.K_F2:
+                        self.frame_by_frame = not self.frame_by_frame
 
             # input devices should be read once per tick in the main game loop.
             # That can be the single source of truth regarding inputs.
             for device in self.input_devices:
                 device.read_new_inputs()
 
-            # # frame-by-frame mode
-            # if self.frame_by_frame:
-            #     if not self.game.keyboard.is_pressed(pygame.K_F3):
-            #         return  # skip the rest of the actions
-            #     else:
-            #         print("advanced 1 frame")
-
             self.scenes.update()
             self.scenes.draw(self.window, debug=self.debug)
             pygame.display.update()
+            self.frame_by_frame_mode()
 
             self.clock.tick(self.fps)
             self.tick += 1
             if not self.scenes:
                 running = False
+
+    def frame_by_frame_mode(self):
+        # frame-by-frame mode
+        while self.frame_by_frame:
+            next_frame = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
+                    if event.key == pygame.K_F1:
+                        self.debug = not self.debug
+                    if event.key == pygame.K_F2:
+                        self.frame_by_frame = not self.frame_by_frame
+                    if event.key == pygame.K_F3:
+                        next_frame = True
+            if next_frame:
+                break
+            self.clock.tick(self.fps)
 
 
 class VolleyballMatch(Sprite):
@@ -138,13 +157,17 @@ class VolleyballMatch(Sprite):
         self.kill()
 
     def start_match(self):
-        """ Stuff that can't go in the init method (probably because it refers to self.game
-        before that property has been set. """
+        """Stuff that can't go in the init method (probably because it refers to self.game
+        before that property has been set."""
         self.player1 = Stickman(
-            *self.starting_positions[0], input=self.game.keyboard0, facing_right=True,
+            *self.starting_positions[0],
+            input=self.game.keyboard0,
+            facing_right=True,
         )
         self.player2 = Stickman(
-            *self.starting_positions[1], input=self.game.keyboard1, facing_right=False,
+            *self.starting_positions[1],
+            input=self.game.keyboard1,
+            facing_right=False,
         )
         self.level.add(self.player1, self.player2, type="character")
         self.state = self.match
@@ -270,13 +293,31 @@ class MainMenu(Menu):
         super().__init__()
         self.state = self.animate_in
         self.play_button = GuiButton(
-            -999, 200, 200, 50, text="PLAY!", text_color=Color("white"), color=(100, 0, 100),
+            -999,
+            200,
+            200,
+            50,
+            text="PLAY!",
+            text_color=Color("white"),
+            color=(100, 0, 100),
         )
         self.quit_button = GuiButton(
-            -999, 400, 200, 50, text="quit", text_color=Color("white"), color=(100, 0, 100),
+            -999,
+            400,
+            200,
+            50,
+            text="quit",
+            text_color=Color("white"),
+            color=(100, 0, 100),
         )
         self.settings_button = GuiButton(
-            -999, 300, 200, 50, text="settings", text_color=Color("white"), color=(100, 0, 100),
+            -999,
+            300,
+            200,
+            50,
+            text="settings",
+            text_color=Color("white"),
+            color=(100, 0, 100),
         )
         self.buttons.add(self.play_button, self.quit_button, self.settings_button)
         self.explosions = EntityGroup()
@@ -325,7 +366,13 @@ class SettingsMenu(Menu):
         super().__init__()
         self.state = self.animate_in
         self.back_button = GuiButton(
-            -999, 200, 200, 50, text="back", text_color=Color("white"), color=(100, 0, 100),
+            -999,
+            200,
+            200,
+            50,
+            text="back",
+            text_color=Color("white"),
+            color=(100, 0, 100),
         )
         self.buttons.add(self.back_button)
 
