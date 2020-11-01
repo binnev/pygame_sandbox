@@ -1,15 +1,11 @@
 import sys
 
 import pygame
-from pygame import Surface, Color
-from pygame.sprite import Sprite
 
-from fighting_game.groups import Group
 from fighting_game.inputs import KeyboardInput
-from fighting_game.levels import DefaultLevel
-from fighting_game.objects import Debugger
 
 
+# todo: subclass Scene here?
 class FightingGame:
     fps = 60
     window_width = 1600
@@ -78,31 +74,11 @@ class FightingGame:
             self.draw(self.window, debug=self.debug)
 
 
-class Scene(Sprite):
-    state: "method"
-    groups: list
-
-    def update(self):
-        self.state()
-        for group in self.groups:
-            group.update()
-
-    def draw(self, surface: Surface, debug=False):
-        for group in self.groups:
-            group.draw(surface, debug)
 
 
-class SandBox(Scene):
-    """ Sandbox scene to try stuff out """
 
-    def __init__(self, game: FightingGame):
-        super().__init__()
-        self.game = game
-        self.level = DefaultLevel()
-        self.groups = [self.level]
-        self.player1 = Debugger(500, 500, input=self.game.keyboard)
-        self.level.add_character(self.player1)
-        self.state = self.main
+from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
+from fighting_game.objects import Platform
 
-    def main(self):
-        pass
+
+

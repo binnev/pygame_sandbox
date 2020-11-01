@@ -195,7 +195,7 @@ class VolleyballMatch(Sprite):
         )
 
         # destroy hitboxes
-        self.level.hitboxes.kill()
+        self.level.hitboxes.empty()
 
     def reset_player_positions(self):
         self.player1.xy = self.starting_positions[0]

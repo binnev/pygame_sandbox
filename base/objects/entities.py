@@ -633,19 +633,6 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
 
 class Hitbox(Entity):
-    """
-    Things to work on:
-
-    - A target should never be hit twice by the same instance of the same hitbox. E.g. if Ranno
-    does a nair and the hitbox is colliding with the target for 2 frames, then target should only
-    take the damage and knockback once.
-
-    - Sweet/sour spots. If the target is hit by both, I want only one hitbox to apply.
-        - E.g. Marth's tipper hitboxes should only be active if none of his non-tipper hitboxes are
-        colliding with the target.
-        - E.g. Zetterburn's up-air: if the sweet spot connects, the sour spot should not connect.
-
-    """
 
     debug_color = (*pygame.color.THECOLORS["red"][:3], 150)
     owner: Entity = None

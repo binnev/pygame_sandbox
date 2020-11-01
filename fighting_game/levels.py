@@ -1,6 +1,5 @@
-from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
-from fighting_game.groups import Level
-from fighting_game.objects import Platform
+
+
 
 
 class DefaultLevel(Level):

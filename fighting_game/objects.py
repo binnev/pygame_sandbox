@@ -10,9 +10,10 @@ from pygame.sprite import Sprite
 
 from base.animation import SpriteDict
 from base.utils import draw_arrow
-from fighting_game.groups import Level
 from fighting_game.inputs import FightingGameInput
 from fighting_game.sprites.stickman import stickman_sprites
+
+
 
 
 class Entity(Sprite):
@@ -95,11 +96,16 @@ class Platform(Entity):
 
 class Move:
     """ E.g. an attack """
+
     hitbox_mapping: dict
 
     def __init__(self, character: "Character"):
-        # todo flip hitboxes based on character orientation
+        # todo: make a frame mapping similar to the hitbox mapping.
         self.character = character
+        if not character.facing_right:
+            hitboxes = {h for frame, hitboxes in self.hitbox_mapping.items() for h in hitboxes}
+            for hitbox in hitboxes:
+                hitbox.flip_x()
         self.hitbox_lookup = {
             frame: hitboxes
             for frames, hitboxes in self.hitbox_mapping.items()
@@ -271,35 +277,44 @@ class Character(Entity):
             self.state = self.state_fall
         if self.airborne:
             self.state = self.state_fall
+        if input.is_pressed(input.X):
+            self.state = self.AttackMove(self)
 
     class AttackMove(Move):
-
         def __init__(self, character: "Character"):
-            super().__init__(character)
-
-            self.sweet_spot = sweet_spot = Hitbox(
+            sweet_spot = Hitbox(
                 owner=character,
                 width=50,
                 height=50,
+                knockback=10,
+                knockback_angle=90,
+                knockback_growth=0,
+                damage=20,
             )
-            self.sour_spot = sour_spot = Hitbox(
+            sour_spot = Hitbox(
                 owner=character,
                 width=100,
                 height=100,
+                knockback=5,
+                knockback_angle=90,
+                knockback_growth=0,
+                damage=10,
                 higher_priority_sibling=sweet_spot,
             )
             assert sour_spot.higher_priority_sibling is sweet_spot
             assert sweet_spot.lower_priority_sibling is sour_spot
             self.hitbox_mapping = {
-                10: [sweet_spot],
-                11: [sweet_spot],
-                12: [sweet_spot],
-                13: [sweet_spot],
-                14: [sweet_spot],
-                15: [sweet_spot],
+                (1, 29): [sweet_spot],
                 (16, 30): [sweet_spot, sour_spot],
                 (31, 40): [sour_spot],
             }
+            super().__init__(character)
+
+        def __call__(self):
+            super().__call__()
+            character = self.character
+            if character.animation_frame == 41:
+                character.state = character.state_stand
 
 
 class Debugger(Character):
@@ -331,14 +346,17 @@ class Debugger(Character):
 
         colliding = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
         touching = [plat for plat in self.level.platforms if self.touching(plat)]
-
+        try:
+            state_name = self.state.__name__
+        except AttributeError:
+            state_name = self.state.__class__.__name__
         things_to_print = [
             f"u = {self.u}",
             f"v = {self.v}",
             f"airborne = {self.airborne}",
             f"touching: {touching}",
             f"colliding: {colliding}",
-            f"state: {self.state.__name__}",
+            f"state: {state_name}",
         ]
         line_spacing = 20
         for ii, thing in enumerate(things_to_print):
@@ -403,6 +421,7 @@ class Hitbox(Entity):
         rotation: float = 0,
         knockback: float = 0,
         knockback_angle: float = 0,
+        knockback_growth: float = 0,
         damage: float = 0,
         higher_priority_sibling: Entity = None,
         lower_priority_sibling: Entity = None,
@@ -418,6 +437,7 @@ class Hitbox(Entity):
         self.damage = damage
         self.knockback = knockback
         self.knockback_angle = knockback_angle
+        self.knockback_growth = knockback_growth
         self.higher_priority_sibling = higher_priority_sibling
         self.lower_priority_sibling = lower_priority_sibling
 
@@ -466,12 +486,10 @@ class Hitbox(Entity):
                 draw_arrow(surface, self.rect.center, self.knockback_angle, color=self.debug_color)
 
     def flip_x(self):
-        new_hitbox = copy(self)
-        new_hitbox.knockback_angle = 180 - self.knockback_angle
-        new_hitbox.rotation = 180 - self.rotation
-        new_hitbox.x = -self.x
         # todo; flip image?
-        return new_hitbox
+        self.knockback_angle = 180 - self.knockback_angle
+        self.angle = 180 - self.angle
+        self.x_offset = -self.x_offset
 
     @property
     def lower_priority_sibling(self):
