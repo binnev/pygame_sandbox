@@ -10,6 +10,7 @@ from pygame.sprite import Sprite
 
 from base.animation import SpriteDict
 from base.utils import draw_arrow
+from fighting_game.groups import Level
 from fighting_game.inputs import FightingGameInput
 from fighting_game.sprites.stickman import stickman_sprites
 

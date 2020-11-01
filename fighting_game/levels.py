@@ -1,10 +1,11 @@
-
-
+from fighting_game.groups import Level
+from fighting_game.objects import Platform
+from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class DefaultLevel(Level):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
         COURT_WIDTH = 1300
         NET_HEIGHT = 250 - 120
 
@@ -25,7 +26,7 @@ class DefaultLevel(Level):
         self.droppable3 = Platform(SCREEN_WIDTH * 3 // 4 - 120, 400, 100, 20, droppable=True)
         self.droppable4 = Platform(SCREEN_WIDTH * 3 // 4, 400, 100, 20, droppable=True)
 
-        self.add(
+        self.add_platform(
             self.ground,
             self.net,
             self.net2,
@@ -33,5 +34,4 @@ class DefaultLevel(Level):
             self.droppable2,
             self.droppable3,
             self.droppable4,
-            type="platform",
         )

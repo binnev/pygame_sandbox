@@ -59,7 +59,7 @@ class Scene(Sprite):
 class Level(Scene):
     """ A Scene representing a level of a game. """
 
-    parental_name = "scene"
+    parental_name = "level"
 
     def __init__(self):
         super().__init__()
@@ -80,22 +80,22 @@ class Level(Scene):
         self.state = self.main
 
     def add_background(self, *objects):
-        self.add_to_group(*objects, self.background)
+        self.add_to_group(*objects, group=self.background)
 
     def add_platform(self, *objects):
-        self.add_to_group(*objects, self.platforms)
+        self.add_to_group(*objects, group=self.platforms)
 
     def add_character(self, *objects):
-        self.add_to_group(*objects, self.characters)
+        self.add_to_group(*objects, group=self.characters)
 
     def add_projectile(self, *objects):
-        self.add_to_group(*objects, self.projectiles)
+        self.add_to_group(*objects, group=self.projectiles)
 
     def add_hitbox(self, *objects):
-        self.add_to_group(*objects, self.hitboxes)
+        self.add_to_group(*objects, group=self.hitboxes)
 
     def add_particle_effect(self, *objects):
-        self.add_to_group(*objects, self.particle_effects)
+        self.add_to_group(*objects, group=self.particle_effects)
 
     def main(self):
         pass

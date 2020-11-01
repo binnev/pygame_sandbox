@@ -1,23 +1,27 @@
-from fighting_game.groups import Group, Scene
+from fighting_game.groups import Scene, Group
+from fighting_game.levels import DefaultLevel
+from fighting_game.objects import Debugger
 
 
 class SandBox(Scene):
     """ Sandbox scene to try stuff out """
 
-    def __init__(self, game: FightingGame):
+    game: "FightingGame"  # parent scene
+
+    def __init__(self):
         super().__init__()
-        self.game = game
+        self.levels = Group()
+        self.gui_elements = Group()
+        self.groups = [self.levels, self.gui_elements]
+        self.state = self.setup
+
+    def setup(self):
         self.level = DefaultLevel()
-        self.groups = [self.level]
+        self.levels.add(self.level)  # didn't pass a ref to self.
         self.player1 = Debugger(500, 500, input=self.game.keyboard)
         self.level.add_character(self.player1)
-        self.state = self.main
-
-    def main(self):
-        pass
+        self.state = lambda: None
 
     def update(self):
         super().update()
         self.level.hitboxes.empty()
-
-
