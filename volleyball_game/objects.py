@@ -351,7 +351,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         if input.is_down(input.A):
             self.state = self.AerialDefense(self)
 
-        if (input.is_pressed(input.B) and input.is_down(input.DOWN)):
+        if input.is_pressed(input.B) and input.is_down(input.DOWN):
             self.state = self.DownAir(self)
 
         elif (input.is_pressed(input.B) and holding_back) or Cstick_back:
@@ -390,7 +390,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=20,
                 knockback_angle=95,
-                angle=0,
+                rotation=0,
                 x_offset=30,
                 y_offset=-45,
                 width=50,
@@ -437,7 +437,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=20,
                 knockback_angle=70,
-                angle=0,
+                rotation=0,
                 x_offset=15,
                 y_offset=-45,
                 width=50,
@@ -447,7 +447,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=10,
                 knockback_angle=91,
-                angle=0,
+                rotation=0,
                 x_offset=20,
                 y_offset=-45,
                 width=30,
@@ -474,7 +474,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             first_hitbox = Hitbox(
                 owner=instance,
                 knockback=20,
-                angle=10,
+                rotation=10,
                 knockback_angle=80,
                 x_offset=15,
                 y_offset=-55,
@@ -484,7 +484,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             second_hitbox = Hitbox(
                 owner=instance,
                 knockback=20,
-                angle=-10,
+                rotation=-10,
                 knockback_angle=120,
                 x_offset=5,
                 y_offset=-90,
@@ -495,7 +495,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             third_hitbox = Hitbox(
                 owner=instance,
                 knockback=20,
-                angle=10,
+                rotation=10,
                 knockback_angle=180,
                 x_offset=-15,
                 y_offset=-90,
@@ -522,7 +522,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=15,
                 knockback_angle=70,
-                angle=0,
+                rotation=0,
                 x_offset=0,
                 y_offset=-90,
                 width=50,
@@ -532,7 +532,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=7,
                 knockback_angle=91,
-                angle=0,
+                rotation=0,
                 x_offset=0,
                 y_offset=-90,
                 width=30,
@@ -565,7 +565,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=20,
                 knockback_angle=10,
-                angle=0,
+                rotation=0,
                 x_offset=20,
                 y_offset=-40,
                 width=60,
@@ -575,7 +575,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=10,
                 knockback_angle=45,
-                angle=0,
+                rotation=0,
                 x_offset=25,
                 y_offset=-40,
                 width=30,
@@ -586,7 +586,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=7,
                 knockback_angle=100,
-                angle=30,
+                rotation=30,
                 x_offset=-20,
                 y_offset=-30,
                 width=40,
@@ -617,7 +617,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=5,
                 knockback_angle=90 - 30,
-                angle=0,
+                rotation=0,
                 x_offset=-20,
                 y_offset=-40,
                 width=60,
@@ -626,8 +626,8 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             hitbox2 = Hitbox(
                 owner=instance,
                 knockback=5,
-                knockback_angle=90+30,
-                angle=0,
+                knockback_angle=90 + 30,
+                rotation=0,
                 x_offset=20,
                 y_offset=-40,
                 width=60,
@@ -637,7 +637,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 owner=instance,
                 knockback=15,
                 knockback_angle=90 - 30,
-                angle=0,
+                rotation=0,
                 x_offset=-20,
                 y_offset=-40,
                 width=60,
@@ -667,7 +667,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             sweet_spot = Hitbox(
                 owner=instance,
                 knockback=20,
-                angle=-30,
+                rotation=-30,
                 knockback_angle=120,
                 x_offset=20,
                 y_offset=-80,
@@ -677,7 +677,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             sour_spot = Hitbox(
                 owner=instance,
                 knockback=10,
-                angle=-30,
+                rotation=-30,
                 knockback_angle=120,
                 x_offset=20,
                 y_offset=-80,
@@ -708,7 +708,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             overhead = Hitbox(
                 owner=instance,
                 knockback=10,
-                angle=10,
+                rotation=10,
                 knockback_angle=120,
                 x_offset=0,
                 y_offset=-80,
@@ -718,7 +718,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             sweet_spot = Hitbox(
                 owner=instance,
                 knockback=20,
-                angle=-30,
+                rotation=-30,
                 knockback_angle=170,
                 x_offset=-35,
                 y_offset=-55,
@@ -729,7 +729,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             sour_spot = Hitbox(
                 owner=instance,
                 knockback=15,
-                angle=30,
+                rotation=30,
                 knockback_angle=120,
                 x_offset=-20,
                 y_offset=-80,
@@ -760,7 +760,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             feet = Hitbox(
                 owner=instance,
                 knockback=25,
-                angle=0,
+                rotation=0,
                 knockback_angle=270,
                 x_offset=5,
                 y_offset=-20,
@@ -770,7 +770,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             nipple_spike = Hitbox(
                 owner=instance,
                 knockback=20,
-                angle=0,
+                rotation=0,
                 knockback_angle=280,
                 x_offset=0,
                 y_offset=-70,
@@ -800,7 +800,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.hitbox = Hitbox(
                 owner=instance,
                 knockback=25,
-                angle=10,
+                rotation=10,
                 knockback_angle=50,
                 x_offset=0,
                 y_offset=-60,
@@ -810,7 +810,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.hitbox2 = Hitbox(
                 owner=instance,
                 knockback=15,
-                angle=-30,
+                rotation=-30,
                 knockback_angle=90,
                 x_offset=0,
                 y_offset=-35,
@@ -977,7 +977,7 @@ class Runa(Stickman):
             self.hitbox = Hitbox(
                 owner=instance,
                 knockback=100,
-                angle=10,
+                rotation=10,
                 knockback_angle=70,
                 x_offset=0,
                 y_offset=-60,
@@ -987,7 +987,7 @@ class Runa(Stickman):
             self.hitbox2 = Hitbox(
                 owner=instance,
                 knockback=15,
-                angle=-30,
+                rotation=-30,
                 knockback_angle=90,
                 x_offset=0,
                 y_offset=-35,
@@ -1201,7 +1201,7 @@ class PersistentHitbox(ParticleEffect):
     def __init__(self, x, y):
         super().__init__(x, y)
         self.hitbox = Hitbox(
-            knockback_angle=90, knockback=5, width=200, height=200, angle=0, x=x, y=y, owner=self
+            knockback_angle=90, knockback=5, width=200, height=200, rotation=0, x=x, y=y, owner=self
         )
 
     def update(self):

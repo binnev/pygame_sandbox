@@ -477,7 +477,7 @@ class Hitbox(Entity):
         if debug:
             image_rect = self.image.get_rect()
             image_rect.center = self.rect.center
-            surface.blit(self.image, self.image_rect, special_flags=pygame.BLEND_RGB_ADD)
+            surface.blit(self.image, image_rect, special_flags=pygame.BLEND_RGB_ADD)
             if self.knockback_angle is not None:
                 draw_arrow(surface, self.rect.center, self.knockback_angle, (255, 0, 0), 100)
 

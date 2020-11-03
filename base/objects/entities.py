@@ -634,7 +634,7 @@ class Character(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
 
 class Hitbox(Entity):
 
-    debug_color = (*pygame.color.THECOLORS["red"][:3], 150)
+    debug_color = (255, 0, 0)
     owner: Entity = None
     knockback: float
     knockback_angle: float
@@ -655,7 +655,7 @@ class Hitbox(Entity):
         height=None,
         damage=None,
         owner=None,
-        angle=None,
+        rotation=None,
         x=None,
         y=None,
         x_offset=None,
@@ -670,7 +670,7 @@ class Hitbox(Entity):
         self.knockback_angle = (
             knockback_angle if knockback_angle is not None else self.knockback_angle
         )
-        self.angle = angle if angle is not None else self.angle
+        self.rotation = rotation if rotation is not None else self.rotation
         self.x_offset = x_offset if x_offset is not None else self.x_offset
         self.y_offset = y_offset if y_offset is not None else self.y_offset
         self.x = x if x is not None else self.x
@@ -683,12 +683,11 @@ class Hitbox(Entity):
             height=height,
         )
 
-        self.image = pygame.Surface((self.width, self.height)).convert_alpha()
-        self.image.fill((0, 0, 0, 0))
+        self.image = pygame.Surface((self.width, self.height))
         pygame.draw.ellipse(self.image, self.debug_color, (0, 0, self.width, self.height))
-        colorkey = self.image.get_at((0, 0))
-        self.image.set_colorkey(colorkey)
-        self.image = pygame.transform.rotate(self.image, self.angle)
+        self.image.set_colorkey((0, 0, 0))
+        self.image = pygame.transform.rotate(self.image, self.rotation)
+
         self.higher_priority_sibling = higher_priority_sibling
         self.lower_priority_sibling = lower_priority_sibling
 
@@ -720,19 +719,17 @@ class Hitbox(Entity):
                 self.owner.y + self.y_offset,
             )
 
-    def draw_debug(self, surface):
-        self.draw_image(surface)
-        if self.angle is not None:
-            draw_arrow(surface, self.centroid, self.knockback_angle, color=self.debug_color)
-
     def draw(self, surface, debug=False):
         if debug:
-            self.draw_debug(surface)
-        # self.draw_debug(surface)
+            image_rect = self.image.get_rect()
+            image_rect.center = self.rect.center
+            surface.blit(self.image, image_rect)
+            if self.knockback_angle is not None:
+                draw_arrow(surface, self.rect.center, self.knockback_angle, (255, 0, 0), 100)
 
     def flip_x(self):
         self.knockback_angle = 180 - self.knockback_angle
-        self.angle = 180 - self.angle
+        self.rotation = 180 - self.rotation
         self.x_offset = -self.x_offset
 
     @property
