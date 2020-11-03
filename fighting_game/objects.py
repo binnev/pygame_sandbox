@@ -1,20 +1,17 @@
 from collections import deque
-from copy import copy
 
 import numpy
-from numpy.core._multiarray_umath import sign
 import pygame
+from numpy.core._multiarray_umath import sign
 from pygame import Color, Surface
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 
 from base.animation import SpriteDict
-from base.utils import draw_arrow
+from base.utils import rotation_matrix, arrow_coords, draw_arrow
 from fighting_game.groups import Level
 from fighting_game.inputs import FightingGameInput
 from fighting_game.sprites.stickman import stickman_sprites
-
-
 
 
 class Entity(Sprite):
@@ -285,19 +282,21 @@ class Character(Entity):
         def __init__(self, character: "Character"):
             sweet_spot = Hitbox(
                 owner=character,
-                width=50,
+                width=70,
                 height=50,
+                rotation=30,
                 knockback=10,
-                knockback_angle=90,
+                knockback_angle=-45,
                 knockback_growth=0,
                 damage=20,
             )
             sour_spot = Hitbox(
                 owner=character,
-                width=100,
+                width=150,
                 height=100,
+                rotation=45,
                 knockback=5,
-                knockback_angle=90,
+                knockback_angle=20,
                 knockback_growth=0,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
@@ -410,7 +409,7 @@ class Hitbox(Entity):
     allow us to position the hitbox relative to its owner.
     """
 
-    debug_color = (*Color("red")[:3], 150)
+    debug_color = (60, 0, 0)
 
     def __init__(
         self,
@@ -442,16 +441,10 @@ class Hitbox(Entity):
         self.higher_priority_sibling = higher_priority_sibling
         self.lower_priority_sibling = lower_priority_sibling
 
-    @property
-    def image(self) -> Surface:
-        # todo optimise this
-        image = pygame.Surface((self.width, self.height)).convert_alpha()
-        image.fill((0, 0, 0, 0))
-        pygame.draw.ellipse(image, self.debug_color, (0, 0, self.width, self.height))
-        colorkey = image.get_at((0, 0))  # todo
-        image.set_colorkey(colorkey)
-        image = pygame.transform.rotate(image, self.rotation)
-        return image
+        self.image = pygame.Surface((self.width, self.height))
+        pygame.draw.ellipse(self.image, self.debug_color, (0, 0, self.width, self.height))
+        self.image.set_colorkey((0, 0, 0))
+        self.image = pygame.transform.rotate(self.image, self.rotation)
 
     def __repr__(self):
         return f"Hitbox with id {id(self)}"
@@ -482,9 +475,11 @@ class Hitbox(Entity):
 
     def draw(self, surface, debug=False):
         if debug:
-            super().draw(surface, debug)
+            image_rect = self.image.get_rect()
+            image_rect.center = self.rect.center
+            surface.blit(self.image, self.image_rect, special_flags=pygame.BLEND_RGB_ADD)
             if self.knockback_angle is not None:
-                draw_arrow(surface, self.rect.center, self.knockback_angle, color=self.debug_color)
+                draw_arrow(surface, self.rect.center, self.knockback_angle, (255, 0, 0), 100)
 
     def flip_x(self):
         # todo; flip image?

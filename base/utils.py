@@ -21,7 +21,7 @@ def touching(entity1: "Entity", entity2: "Entity") -> bool:
 
     Also, I want to allow for the possibility of unequal touchbox buffer widths; in
     this case, the order *will* matter. The entity with the larger touchbox buffer will
-    "touch" the other entity, but not vice versa. """
+    "touch" the other entity, but not vice versa."""
     return entity1.touchbox.colliderect(entity2.rect)
 
 
@@ -94,10 +94,6 @@ def draw_arrow_between_points(surface, p1, p2, color=None):
     color = color if color else pygame.color.THECOLORS["red"]
     draw.line(surface, color, p1, p2, 10)
 
-    # font = pygame.font.Font(pygame.font.match_font("ubuntucondensed"), 30)
-    # text = font.render(f"dx={dx} dy={dy} angle={angle} ", True, color)
-    # surface.blit(text, (100, 100))
-
     arrowhead_width = 20
     arrowhead_length = 40
     arrowhead_image = pygame.Surface((arrowhead_length, arrowhead_width)).convert_alpha()
@@ -118,14 +114,13 @@ def draw_arrow_between_points(surface, p1, p2, color=None):
     surface.blit(arrowhead_image, image_rect)
 
 
-def draw_arrow(surface, origin, angle: "degrees", color=None, length=50):
+def draw_arrow(surface, origin, angle_deg, color=None, length=50):
     """ angle needs to be in degrees """
-    angle = numpy.deg2rad(angle)
-    dx = length * numpy.cos(angle)
-    dy = -length * numpy.sin(angle)  # dy needs to be flipped because pygame y downwards
-
-    p2 = numpy.array(origin) + (dx, dy)
-    draw_arrow_between_points(surface, origin, p2, color)
+    arrow_xy = arrow_coords(length, length//10, length//4)
+    r = rotation_matrix(angle_deg)
+    arrow_xy = arrow_xy.dot(r)
+    arrow_xy += numpy.array(origin)
+    pygame.draw.polygon(surface, color, arrow_xy, 2)
 
 
 def draw_rect(surface, color, rect, width=0):
@@ -139,3 +134,26 @@ def draw_rect(surface, color, rect, width=0):
 
     # todo: now generalise this so that it can do pygame's other draw utils. Can i make a
     #  decorator for pygame's draw functions? Or a wrapper around the whole pygame.draw module?
+
+
+def rotation_matrix(angle_deg):
+    angle_rad = numpy.deg2rad(angle_deg)
+    rotation_matrix = numpy.array(
+        [
+            (numpy.cos(angle_rad), -numpy.sin(angle_rad)),
+            (numpy.sin(angle_rad), numpy.cos(angle_rad)),
+        ]
+    )
+    return rotation_matrix
+
+
+def arrow_coords(length, width, head_length):
+    return numpy.array(
+        [
+            (0, 0),
+            (length, 0),
+            (length - head_length, width),
+            (length - head_length, -width),
+            (length, 0),
+        ]
+    )

@@ -24,4 +24,3 @@ class SandBox(Scene):
 
     def update(self):
         super().update()
-        self.level.hitboxes.empty()

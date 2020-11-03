@@ -98,4 +98,5 @@ class Level(Scene):
         self.add_to_group(*objects, group=self.particle_effects)
 
     def main(self):
+        # self.hitboxes.kill()
         pass
