@@ -636,7 +636,9 @@ class Hitbox(Entity):
 
     debug_color = (255, 0, 0)
     owner: Entity = None
-    knockback: float
+    base_knockback: int
+    fixed_knockback: int
+    knockback_growth: int
     knockback_angle: float
     damage: float = 0
     width: int
@@ -649,7 +651,9 @@ class Hitbox(Entity):
 
     def __init__(
         self,
-        knockback=None,
+        base_knockback=0,
+        fixed_knockback=0,
+        knockback_growth=0,
         knockback_angle=None,
         width=None,
         height=None,
@@ -666,7 +670,9 @@ class Hitbox(Entity):
         # overwrite class parameters at instantiation, if any params are passed
         self.owner = owner if owner is not None else self.owner
         self.damage = damage if damage is not None else self.damage
-        self.knockback = knockback if knockback is not None else self.knockback
+        self.base_knockback = base_knockback if base_knockback is not None else self.knockback
+        self.fixed_knockback = fixed_knockback if fixed_knockback is not None else self.knockback
+        self.knockback_growth = knockback_growth if knockback_growth is not None else self.knockback
         self.knockback_angle = (
             knockback_angle if knockback_angle is not None else self.knockback_angle
         )

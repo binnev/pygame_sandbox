@@ -79,6 +79,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     friction: float
     air_resistance: float
     crouch_height_multiplier: float
+    damage = 0
 
     # drawing
     sprites: SpriteDict
@@ -388,7 +389,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             sweet_spot = Hitbox(
                 owner=instance,
-                knockback=20,
+                base_knockback=20,
                 knockback_angle=95,
                 rotation=0,
                 x_offset=30,
@@ -435,23 +436,27 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             sweet_spot = Hitbox(
                 owner=instance,
-                knockback=20,
+                base_knockback=20,
+                knockback_growth=5,
                 knockback_angle=70,
                 rotation=0,
                 x_offset=15,
                 y_offset=-45,
                 width=50,
                 height=20,
+                damage=10
             )
             sour_spot = Hitbox(
                 owner=instance,
-                knockback=10,
+                base_knockback=10,
+                knockback_growth=1,
                 knockback_angle=91,
                 rotation=0,
                 x_offset=20,
                 y_offset=-45,
                 width=30,
                 height=10,
+                damage=1,
                 higher_priority_sibling=sweet_spot,
             )
             self.hitbox_mapping = {
@@ -473,7 +478,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             first_hitbox = Hitbox(
                 owner=instance,
-                knockback=20,
+                base_knockback=20,
                 rotation=10,
                 knockback_angle=80,
                 x_offset=15,
@@ -483,7 +488,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             )
             second_hitbox = Hitbox(
                 owner=instance,
-                knockback=20,
+                base_knockback=20,
                 rotation=-10,
                 knockback_angle=120,
                 x_offset=5,
@@ -494,7 +499,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             )
             third_hitbox = Hitbox(
                 owner=instance,
-                knockback=20,
+                base_knockback=20,
                 rotation=10,
                 knockback_angle=180,
                 x_offset=-15,
@@ -520,23 +525,27 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             sweet_spot = Hitbox(
                 owner=instance,
-                knockback=15,
+                base_knockback=15,
+                knockback_growth=10,
                 knockback_angle=70,
                 rotation=0,
                 x_offset=0,
                 y_offset=-90,
                 width=50,
                 height=20,
+                damage=10,
             )
             sour_spot = Hitbox(
                 owner=instance,
-                knockback=7,
+                base_knockback=7,
+                knockback_growth=10,
                 knockback_angle=91,
                 rotation=0,
                 x_offset=0,
                 y_offset=-90,
                 width=30,
                 height=10,
+                damage=5,
                 higher_priority_sibling=sweet_spot,
             )
             self.hitbox_mapping = {
@@ -563,34 +572,40 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             sweet_spot = Hitbox(
                 owner=instance,
-                knockback=20,
+                base_knockback=20,
+                knockback_growth=20,
                 knockback_angle=10,
                 rotation=0,
                 x_offset=20,
                 y_offset=-40,
                 width=60,
                 height=20,
+                damage=15,
             )
             sour_spot = Hitbox(
                 owner=instance,
-                knockback=10,
+                base_knockback=10,
+                knockback_growth=5,
                 knockback_angle=45,
                 rotation=0,
                 x_offset=25,
                 y_offset=-40,
                 width=30,
                 height=10,
+                damage=7,
                 higher_priority_sibling=sweet_spot,
             )
             back_knee = Hitbox(
                 owner=instance,
-                knockback=7,
+                base_knockback=7,
                 knockback_angle=100,
+                knockback_growth=0,
                 rotation=30,
                 x_offset=-20,
                 y_offset=-30,
                 width=40,
                 height=30,
+                damage=5,
                 higher_priority_sibling=sour_spot,
             )
             self.hitbox_mapping = {
@@ -615,33 +630,37 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             hitbox1 = Hitbox(
                 owner=instance,
-                knockback=5,
+                fixed_knockback=5,
                 knockback_angle=90 - 30,
                 rotation=0,
                 x_offset=-20,
                 y_offset=-40,
                 width=60,
                 height=20,
+                damage=2,
             )
             hitbox2 = Hitbox(
                 owner=instance,
-                knockback=5,
+                fixed_knockback=5,
                 knockback_angle=90 + 30,
                 rotation=0,
                 x_offset=20,
                 y_offset=-40,
                 width=60,
                 height=20,
+                damage=3,
             )
             hitbox3 = Hitbox(
                 owner=instance,
-                knockback=15,
+                base_knockback=15,
+                knockback_growth=7,
                 knockback_angle=90 - 30,
                 rotation=0,
                 x_offset=-20,
                 y_offset=-40,
                 width=60,
                 height=10,
+                damage=5,
             )
             self.hitbox_mapping = {
                 1: [hitbox1],
@@ -666,7 +685,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             sweet_spot = Hitbox(
                 owner=instance,
-                knockback=20,
+                base_knockback=20,
                 rotation=-30,
                 knockback_angle=120,
                 x_offset=20,
@@ -676,7 +695,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             )
             sour_spot = Hitbox(
                 owner=instance,
-                knockback=10,
+                base_knockback=10,
                 rotation=-30,
                 knockback_angle=120,
                 x_offset=20,
@@ -707,34 +726,40 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             overhead = Hitbox(
                 owner=instance,
-                knockback=10,
+                base_knockback=10,
+                knockback_growth=5,
                 rotation=10,
                 knockback_angle=120,
                 x_offset=0,
                 y_offset=-80,
                 width=30,
                 height=20,
+                damage=7,
             )
             sweet_spot = Hitbox(
                 owner=instance,
-                knockback=20,
+                base_knockback=20,
+                knockback_growth=15,
                 rotation=-30,
                 knockback_angle=170,
                 x_offset=-35,
                 y_offset=-55,
                 width=30,
                 height=30,
+                damage=15,
                 higher_priority_sibling=overhead,
             )
             sour_spot = Hitbox(
                 owner=instance,
-                knockback=15,
+                base_knockback=15,
+                knockback_growth=7,
                 rotation=30,
                 knockback_angle=120,
                 x_offset=-20,
                 y_offset=-80,
                 width=40,
                 height=20,
+                damage=7,
                 higher_priority_sibling=sweet_spot,
             )
             self.hitbox_mapping = {
@@ -759,7 +784,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             feet = Hitbox(
                 owner=instance,
-                knockback=25,
+                base_knockback=25,
                 rotation=0,
                 knockback_angle=270,
                 x_offset=5,
@@ -769,7 +794,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             )
             nipple_spike = Hitbox(
                 owner=instance,
-                knockback=20,
+                base_knockback=20,
                 rotation=0,
                 knockback_angle=280,
                 x_offset=0,
@@ -799,7 +824,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
         def __init__(self, instance):
             self.hitbox = Hitbox(
                 owner=instance,
-                knockback=25,
+                base_knockback=25,
                 rotation=10,
                 knockback_angle=50,
                 x_offset=0,
@@ -809,7 +834,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             )
             self.hitbox2 = Hitbox(
                 owner=instance,
-                knockback=15,
+                base_knockback=15,
                 rotation=-30,
                 knockback_angle=90,
                 x_offset=0,
@@ -976,7 +1001,7 @@ class Runa(Stickman):
         def __init__(self, instance):
             self.hitbox = Hitbox(
                 owner=instance,
-                knockback=100,
+                base_knockback=100,
                 rotation=10,
                 knockback_angle=70,
                 x_offset=0,
@@ -986,7 +1011,7 @@ class Runa(Stickman):
             )
             self.hitbox2 = Hitbox(
                 owner=instance,
-                knockback=15,
+                base_knockback=15,
                 rotation=-30,
                 knockback_angle=90,
                 x_offset=0,
@@ -1109,7 +1134,7 @@ class Ball(Entity, AnimationMixin, PhysicsMixin):
         self.last_touched_by = hitbox.owner
         # self.level.add(Explosion(self.x, self.y), type="particle_effect")
         self.level.add(ParticleEffect(self.x, self.y), type="particle_effect")
-        print(f"{self.game_tick}: Ball hit by hitbox {hitbox}")
+        print(f"{self.game_tick}: Ball hit by hitbox {hitbox}" f"\ndamage is now {self.damage}")
 
     def enforce_screen_limits(self, screen_width, screen_height):
         if self.rect.left < 0:
@@ -1133,6 +1158,7 @@ class Volleyball(Ball):
     bounciness = 1
     gravity = 0.2
     air_resistance = 0.01
+    damage = 0
 
 
 class Bowlingball(Ball):
@@ -1144,16 +1170,19 @@ class Bowlingball(Ball):
     air_resistance = 0.01
 
 
-def handle_hitbox_collision(hitbox, object):
-    # todo: apply hitbox damage?
+def handle_hitbox_collision(hitbox: Hitbox, object):
     # here's where we calculate how far/fast the object gets knocked
-    magnitude = hitbox.knockback / object.mass
-    u = magnitude * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
-    v = -magnitude * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
-    object.u = u
-    object.v = v
-    object.x += u
-    object.y += v
+    object.damage += hitbox.damage  # important for charged smashes
+    # fixed knockback is affected by nothing
+    fixed_knockback_term = hitbox.fixed_knockback
+    # base knockback and growing knockback are both affected by target weight
+    base_knockback_term = hitbox.base_knockback / object.mass
+    knockback_growth_term = hitbox.knockback_growth * object.damage / 50 / object.mass
+    knockback = fixed_knockback_term + base_knockback_term + knockback_growth_term
+    u = knockback * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
+    v = -knockback * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
+    object.u = round(u)
+    object.v = round(v)
     object.handle_hit(hitbox)
     hitbox.handle_hit(object)
 
@@ -1201,7 +1230,14 @@ class PersistentHitbox(ParticleEffect):
     def __init__(self, x, y):
         super().__init__(x, y)
         self.hitbox = Hitbox(
-            knockback_angle=90, knockback=5, width=200, height=200, rotation=0, x=x, y=y, owner=self
+            knockback_angle=90,
+            base_knockback=5,
+            width=200,
+            height=200,
+            rotation=0,
+            x=x,
+            y=y,
+            owner=self,
         )
 
     def update(self):
