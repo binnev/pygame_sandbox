@@ -288,7 +288,7 @@ class Character(Entity):
                 width=70,
                 height=50,
                 rotation=30,
-                knockback=10,
+                base_knockback=10,
                 knockback_angle=90,
                 knockback_growth=20,
                 damage=20,
@@ -298,7 +298,7 @@ class Character(Entity):
                 width=150,
                 height=100,
                 rotation=45,
-                knockback=5,
+                base_knockback=5,
                 knockback_angle=90,
                 knockback_growth=10,
                 damage=10,
@@ -320,11 +320,11 @@ class Character(Entity):
                 character.state = character.state_stand
 
     def handle_hit(self, hitbox):
-        self.damage += hitbox.damage
+        pass
 
 
 class Debugger(Character):
-    mass = 1
+    mass = 3
     width = 50
     height = 100
     color = Color("cyan")
@@ -389,9 +389,10 @@ class Hitbox(Entity):
         x_offset: int = 0,
         y_offset: int = 0,
         rotation: float = 0,
-        knockback: float = 0,
-        knockback_angle: float = 0,
+        base_knockback: float = 0,
+        fixed_knockback: float = 0,
         knockback_growth: float = 0,
+        knockback_angle: float = 0,
         damage: float = 0,
         higher_priority_sibling: Entity = None,
         lower_priority_sibling: Entity = None,
@@ -405,7 +406,8 @@ class Hitbox(Entity):
         self.rect = Rect(0, 0, self.width, self.height)
         self.rotation = rotation
         self.damage = damage
-        self.knockback = knockback
+        self.base_knockback = base_knockback
+        self.fixed_knockback = fixed_knockback
         self.knockback_angle = knockback_angle
         self.knockback_growth = knockback_growth
         self.higher_priority_sibling = higher_priority_sibling
@@ -494,13 +496,17 @@ class Hitbox(Entity):
 
 def handle_hitbox_collision(hitbox: Hitbox, object):
     # here's where we calculate how far/fast the object gets knocked
-    speed = hitbox.knockback + (hitbox.knockback_growth * object.damage / 100 / object.mass)
-    u = speed * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
-    v = -speed * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
-    object.u = u
-    object.v = v
-    object.x += u
-    object.y += v
+    object.damage += hitbox.damage  # important for charged smashes
+    # fixed knockback is affected by nothing
+    fixed_knockback_term = hitbox.fixed_knockback
+    # base knockback and growing knockback are both affected by target weight
+    base_knockback_term = hitbox.base_knockback / object.mass
+    knockback_growth_term = hitbox.knockback_growth * object.damage / 50 / object.mass
+    knockback = fixed_knockback_term + base_knockback_term + knockback_growth_term
+    u = knockback * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
+    v = -knockback * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
+    object.u = round(u)
+    object.v = round(v)
     object.handle_hit(hitbox)
     hitbox.handle_hit(object)
 
