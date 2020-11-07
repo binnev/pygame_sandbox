@@ -117,6 +117,8 @@ class Move:
 
 
 class Character(Entity):
+    mass: float
+    damage: int
     width: int
     height: int
     color: Color
@@ -287,8 +289,8 @@ class Character(Entity):
                 height=50,
                 rotation=30,
                 knockback=10,
-                knockback_angle=45,
-                knockback_growth=0,
+                knockback_angle=90,
+                knockback_growth=20,
                 damage=20,
             )
             sour_spot = Hitbox(
@@ -297,8 +299,8 @@ class Character(Entity):
                 height=100,
                 rotation=45,
                 knockback=5,
-                knockback_angle=20,
-                knockback_growth=0,
+                knockback_angle=90,
+                knockback_growth=10,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
@@ -318,7 +320,7 @@ class Character(Entity):
                 character.state = character.state_stand
 
     def handle_hit(self, hitbox):
-        pass
+        self.damage += hitbox.damage
 
 
 class Debugger(Character):
@@ -340,6 +342,7 @@ class Debugger(Character):
         super().__init__(x, y, input, facing_right)
         self.state = self.state_fall
         self.sprites = stickman_sprites()
+        self.damage = 0
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
@@ -366,6 +369,8 @@ class Debugger(Character):
         line_spacing = 20
         for ii, thing in enumerate(things_to_print):
             tprint(surface, 0, ii * line_spacing, thing)
+
+        tprint(surface, *self.rect.topleft, f"{self.damage}%")
 
 
 class Hitbox(Entity):
@@ -487,12 +492,11 @@ class Hitbox(Entity):
         return self.higher_priority_siblings | self.lower_priority_siblings
 
 
-def handle_hitbox_collision(hitbox, object):
-    # todo: apply hitbox damage?
+def handle_hitbox_collision(hitbox: Hitbox, object):
     # here's where we calculate how far/fast the object gets knocked
-    magnitude = hitbox.knockback / object.mass
-    u = magnitude * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
-    v = -magnitude * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
+    speed = hitbox.knockback + (hitbox.knockback_growth * object.damage / 100 / object.mass)
+    u = speed * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
+    v = -speed * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
     object.u = u
     object.v = v
     object.x += u
