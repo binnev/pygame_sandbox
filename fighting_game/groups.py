@@ -2,6 +2,8 @@ import pygame
 from pygame import Surface
 from pygame.sprite import Sprite
 
+from fighting_game.objects import HitHandler
+
 
 class Group(pygame.sprite.Group):
     """ Container for multiple sprite objects. """
@@ -78,6 +80,7 @@ class Level(Scene):
             self.hitboxes,
         ]
         self.state = self.main
+        self.hit_handler = HitHandler()
 
     def add_background(self, *objects):
         self.add_to_group(*objects, group=self.background)
@@ -98,5 +101,5 @@ class Level(Scene):
         self.add_to_group(*objects, group=self.particle_effects)
 
     def main(self):
-        # self.hitboxes.kill()
-        pass
+        self.hit_handler.handle_hits(self.hitboxes, [*self.characters, *self.projectiles])
+        self.hitboxes.kill()

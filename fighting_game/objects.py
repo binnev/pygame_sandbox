@@ -8,8 +8,7 @@ from pygame.rect import Rect
 from pygame.sprite import Sprite
 
 from base.animation import SpriteDict
-from base.utils import rotation_matrix, arrow_coords, draw_arrow
-from fighting_game.groups import Level
+from base.utils import draw_arrow
 from fighting_game.inputs import FightingGameInput
 from fighting_game.sprites.stickman import stickman_sprites
 
@@ -121,7 +120,7 @@ class Character(Entity):
     width: int
     height: int
     color: Color
-    level: Level
+    level: "Level"
     sprites: SpriteDict
     ground_acceleration: float
     ground_speed: float
@@ -260,6 +259,8 @@ class Character(Entity):
             self.v = -self.jump_power
         if not self.airborne:
             self.state = self.state_stand
+        if input.is_pressed(input.X):
+            self.state = self.AttackMove(self)
 
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
@@ -286,7 +287,7 @@ class Character(Entity):
                 height=50,
                 rotation=30,
                 knockback=10,
-                knockback_angle=-45,
+                knockback_angle=45,
                 knockback_growth=0,
                 damage=20,
             )
@@ -304,20 +305,24 @@ class Character(Entity):
             assert sour_spot.higher_priority_sibling is sweet_spot
             assert sweet_spot.lower_priority_sibling is sour_spot
             self.hitbox_mapping = {
-                (1, 29): [sweet_spot],
-                (16, 30): [sweet_spot, sour_spot],
-                (31, 40): [sour_spot],
+                (1, 3): [sweet_spot],
+                (4, 6): [sweet_spot, sour_spot],
+                (7, 10): [sour_spot],
             }
             super().__init__(character)
 
         def __call__(self):
             super().__call__()
             character = self.character
-            if character.animation_frame == 41:
+            if character.animation_frame == 11:
                 character.state = character.state_stand
+
+    def handle_hit(self, hitbox):
+        pass
 
 
 class Debugger(Character):
+    mass = 1
     width = 50
     height = 100
     color = Color("cyan")
@@ -361,46 +366,6 @@ class Debugger(Character):
         line_spacing = 20
         for ii, thing in enumerate(things_to_print):
             tprint(surface, 0, ii * line_spacing, thing)
-
-    def state_debug(self):
-        if self.input.is_down(self.input.LEFT):
-            self.x -= self.speed
-            platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
-            for plat in platforms:
-                if plat.droppable:
-                    pass
-                else:
-                    self.rect.left = max([self.rect.left, plat.rect.right])
-
-        if self.input.is_down(self.input.RIGHT):
-            self.x += self.speed
-            platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
-            for plat in platforms:
-                if plat.droppable:
-                    pass
-                else:
-                    self.rect.right = min([self.rect.right, plat.rect.left])
-
-        if self.input.is_down(self.input.UP):
-            self.y -= self.speed
-            platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
-            for plat in platforms:
-                if plat.droppable:
-                    pass
-                else:
-                    self.rect.top = max([self.rect.top, plat.rect.bottom])
-
-        if self.input.is_down(self.input.DOWN):
-            old_rect = Rect(self.rect)
-            self.y += self.speed
-            platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
-            for plat in platforms:
-                if plat.droppable:
-                    # if character was above the platform, don't fall through
-                    if old_rect.bottom <= plat.rect.top:
-                        self.rect.bottom = min([self.rect.bottom, plat.rect.top])
-                else:
-                    self.rect.bottom = min([self.rect.bottom, plat.rect.top])
 
 
 class Hitbox(Entity):
