@@ -324,7 +324,7 @@ class Character(Entity):
 
 
 class Debugger(Character):
-    mass = 3
+    mass = 5
     width = 50
     height = 100
     color = Color("cyan")
@@ -365,12 +365,20 @@ class Debugger(Character):
             f"touching: {touching}",
             f"colliding: {colliding}",
             f"state: {state_name}",
+            f"damage: {self.damage}%",
         ]
         line_spacing = 20
         for ii, thing in enumerate(things_to_print):
-            tprint(surface, 0, ii * line_spacing, thing)
+            tprint(
+                surface,
+                self.rect.left,
+                self.rect.top + ii * line_spacing - line_spacing * len(things_to_print),
+                thing,
+            )
 
-        tprint(surface, *self.rect.topleft, f"{self.damage}%")
+
+class Debugger2(Debugger):
+    mass = 10
 
 
 class Hitbox(Entity):
