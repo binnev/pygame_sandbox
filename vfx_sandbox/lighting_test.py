@@ -123,9 +123,8 @@ class Spark(Entity):
         self.radius = radius
 
     def update(self):
-
-        self.x = round(self.x + self.u)
-        self.y = round(self.y + self.v)
+        self.x = self.x + self.u
+        self.y = self.y + self.v
         self.v += self.gravity
         self.u *= 1 - self.friction
         self.v *= 1 - self.friction

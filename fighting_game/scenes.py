@@ -1,7 +1,5 @@
-from fighting_game.groups import Scene, Group
-from fighting_game.inputs import KeyboardInput
-from fighting_game.levels import DefaultLevel, Battlefield
-from fighting_game.objects import Debugger, Debugger2
+from fighting_game.levels import *
+from fighting_game.objects import *
 
 
 class SandBox(Scene):

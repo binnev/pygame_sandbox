@@ -1,10 +1,6 @@
 import sys
 
-import pygame
-
-from fighting_game.groups import Group, Scene
-from fighting_game.inputs import KeyboardInput
-from fighting_game.scenes import SandBox
+from fighting_game.scenes import *
 
 
 class FightingGame(Scene):
