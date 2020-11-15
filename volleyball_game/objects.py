@@ -1028,7 +1028,7 @@ class Runa(Stickman):
         def __call__(self):
             super().__call__()
 
-            if not self.image:
+            if not self.instance.image:
                 self.instance.image = self.sprite_animation.frames[-1]
 
             if self.instance.animation_frame == 10:
