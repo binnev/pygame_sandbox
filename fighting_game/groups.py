@@ -139,3 +139,4 @@ class Level(Scene):
                 object.kill()
                 # todo: logic for keeping track of stocks
                 # todo: add particle effect, screen shake, etc
+                self.screen_shake = 20
