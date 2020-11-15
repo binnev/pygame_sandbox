@@ -346,12 +346,9 @@ class Character(Entity):
 
     def state_jumpsquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
-
         if self.game_tick == self.jumpsquat_frames:
-            # if still holding jump, do a fullhop
             if self.input.is_down(self.input.Y):
                 self.jump()
-            # else do a shorthop
             else:
                 self.shorthop()
 
