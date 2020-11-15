@@ -65,7 +65,7 @@ class Level(Scene):
 
     parental_name = "level"
     screen_shake: int
-    blastzone: BlastZone
+    blast_zone: BlastZone
 
     def __init__(self):
         super().__init__()
@@ -112,6 +112,7 @@ class Level(Scene):
 
     def main(self):
         self.hit_handler.handle_hits(self.hitboxes, [*self.characters, *self.projectiles])
+        self.handle_blast_zone_collisions()
         self.hitboxes.kill()
         if self.screen_shake:
             self.screen_shake -= 1
@@ -129,3 +130,12 @@ class Level(Scene):
         else:
             surface.fill((150, 150, 150))  # overwrite previous stuff on screen
             super().draw(surface, debug)
+
+
+    def handle_blast_zone_collisions(self):
+        objects = [*self.characters, *self.projectiles]
+        for object in objects:
+            if not pygame.sprite.collide_rect(self.blast_zone, object):
+                object.kill()
+                # todo: logic for keeping track of stocks
+                # todo: add particle effect, screen shake, etc
