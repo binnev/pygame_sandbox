@@ -130,7 +130,7 @@ class Debugger(Character):
             super().__call__()
             character = self.character
             if character.animation_frame == 11:
-                character.state = character.state_stand
+                character.state = character.state_fall
 
     class BackAir(Move):
         def __init__(self, character: Character):
@@ -170,7 +170,7 @@ class Debugger(Character):
             super().__call__()
             character = self.character
             if character.animation_frame == 11:
-                character.state = character.state_stand
+                character.state = character.state_fall
 
     class UpAir(Move):
         def __init__(self, character: Character):
@@ -210,7 +210,7 @@ class Debugger(Character):
             super().__call__()
             character = self.character
             if character.animation_frame == 11:
-                character.state = character.state_stand
+                character.state = character.state_fall
 
     class DownAir(Move):
         def __init__(self, character: Character):
@@ -250,7 +250,7 @@ class Debugger(Character):
             super().__call__()
             character = self.character
             if character.animation_frame == 11:
-                character.state = character.state_stand
+                character.state = character.state_fall
 
     class NeutralAir(Move):
         def __init__(self, character: Character):
@@ -290,7 +290,7 @@ class Debugger(Character):
             super().__call__()
             character = self.character
             if character.animation_frame == 11:
-                character.state = character.state_stand
+                character.state = character.state_fall
 
 class Debugger2(Debugger):
     mass = 8

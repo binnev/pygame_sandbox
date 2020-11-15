@@ -128,6 +128,13 @@ class Character(Entity):
     UpAir: "Move"
     DownAir: "Move"
     NeutralAir: "Move"
+    UpSmash: "Move"
+    DownSmash: "Move"
+    ForwardSmash: "Move"
+    UpTilt: "Move"
+    DownTilt: "Move"
+    ForwardTilt: "Move"
+    Jab: "Move"
 
     def __init__(self, x, y, input: GamecubeController, facing_right=True):
         super().__init__()
