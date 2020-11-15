@@ -100,33 +100,8 @@ class BlastZone(Entity):
         self.rect.center = (x, y)
 
 
-class Move:
-    """ E.g. an attack """
-
-    hitbox_mapping: dict
-
-    def __init__(self, character: "Character"):
-        # todo: make a frame mapping similar to the hitbox mapping.
-        self.character = character
-        if not character.facing_right:
-            hitboxes = {h for frame, hitboxes in self.hitbox_mapping.items() for h in hitboxes}
-            for hitbox in hitboxes:
-                hitbox.flip_x()
-        self.hitbox_lookup = {
-            frame: hitboxes
-            for frames, hitboxes in self.hitbox_mapping.items()
-            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
-        }
-
-    def __call__(self, *args, **kwargs):
-        n = self.character.animation_frame
-        active_hitboxes = self.hitbox_lookup.get(n, [])
-        for hitbox in active_hitboxes:
-            self.character.level.add_hitbox(hitbox)
-
-
 class Character(Entity):
-    mass: float
+    mass: float  # 10 is average
     damage: int
     width: int
     height: int
@@ -146,6 +121,13 @@ class Character(Entity):
 
     touch_box_margin = 2
     frame_duration = 3
+
+    AttackMove: "Move"
+    ForwardAir: "Move"
+    BackAir: "Move"
+    UpAir: "Move"
+    DownAir: "Move"
+    NeutralAir: "Move"
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__()
@@ -262,6 +244,14 @@ class Character(Entity):
     def state_fall(self):
         self.image = self.sprites["jump_" + self.facing].get_frame(self.animation_frame)
         input = self.input
+
+        holding_back = (self.facing_right and input.is_down(input.LEFT)) or (
+            not self.facing_right and input.is_down(input.RIGHT)
+        )
+        holding_forward = (self.facing_right and input.is_down(input.RIGHT)) or (
+            not self.facing_right and input.is_down(input.LEFT)
+        )
+
         if input.is_down(input.LEFT):
             self.u -= self.air_acceleration
         if input.is_down(input.RIGHT):
@@ -270,8 +260,19 @@ class Character(Entity):
             self.v = -self.jump_power
         if not self.airborne:
             self.state = self.state_stand
-        if input.is_pressed(input.X):
+        if input.is_pressed(input.B):
             self.state = self.AttackMove(self)
+        if input.is_pressed(input.A):
+            if holding_back:
+                self.state = self.BackAir(self)
+            elif holding_forward:
+                self.state = self.ForwardAir(self)
+            elif input.is_down(input.UP):
+                self.state = self.UpAir(self)
+            elif input.is_down(input.DOWN):
+                self.state = self.DownAir(self)
+            else:
+                self.state = self.NeutralAir(self)
 
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
@@ -290,46 +291,34 @@ class Character(Entity):
         if input.is_pressed(input.X):
             self.state = self.AttackMove(self)
 
-    class AttackMove(Move):
-        def __init__(self, character: "Character"):
-            sweet_spot = Hitbox(
-                owner=character,
-                width=70,
-                height=50,
-                rotation=30,
-                base_knockback=10,
-                knockback_angle=90,
-                knockback_growth=20,
-                damage=20,
-            )
-            sour_spot = Hitbox(
-                owner=character,
-                width=150,
-                height=100,
-                rotation=45,
-                base_knockback=5,
-                knockback_angle=90,
-                knockback_growth=10,
-                damage=10,
-                higher_priority_sibling=sweet_spot,
-            )
-            assert sour_spot.higher_priority_sibling is sweet_spot
-            assert sweet_spot.lower_priority_sibling is sour_spot
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
-            super().__init__(character)
-
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 11:
-                character.state = character.state_stand
-
     def handle_hit(self, hitbox):
-        self.level.screen_shake = 10
+        pass
+
+
+class Move:
+    """ E.g. an attack """
+
+    hitbox_mapping: dict
+    character: Character
+
+    def __init__(self, character: Character):
+        # todo: make a frame mapping similar to the hitbox mapping.
+        self.character = character
+        if not character.facing_right:
+            hitboxes = {h for frame, hitboxes in self.hitbox_mapping.items() for h in hitboxes}
+            for hitbox in hitboxes:
+                hitbox.flip_x()
+        self.hitbox_lookup = {
+            frame: hitboxes
+            for frames, hitboxes in self.hitbox_mapping.items()
+            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
+        }
+
+    def __call__(self, *args, **kwargs):
+        n = self.character.animation_frame
+        active_hitboxes = self.hitbox_lookup.get(n, [])
+        for hitbox in active_hitboxes:
+            self.character.level.add_hitbox(hitbox)
 
 
 class Hitbox(Entity):
@@ -384,7 +373,7 @@ class Hitbox(Entity):
         """Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
         context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
         electric"""
-        pass
+        self.level.screen_shake += 10
 
     @property
     def rect(self):

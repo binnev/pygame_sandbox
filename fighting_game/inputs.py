@@ -26,3 +26,6 @@ class KeyboardInput(FightingGameInput, KeyboardInputQueue):
     X = pygame.K_o
     Y = pygame.K_SPACE
     START = pygame.K_p
+
+
+# todo: maybe put the calculations for "is someone pressing down on the c stick, and not right" here
