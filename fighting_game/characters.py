@@ -95,7 +95,9 @@ class Debugger(Character):
             if character.animation_frame == 11:
                 character.state = character.state_stand
 
-    class ForwardAir(Move):
+    class ForwardAir(AerialMove):
+        landing_lag = 5
+
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -135,7 +137,9 @@ class Debugger(Character):
             if character.animation_frame == 11:
                 character.state = character.state_fall
 
-    class BackAir(Move):
+    class BackAir(AerialMove):
+        landing_lag = 5
+
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -175,7 +179,9 @@ class Debugger(Character):
             if character.animation_frame == 11:
                 character.state = character.state_fall
 
-    class UpAir(Move):
+    class UpAir(AerialMove):
+        landing_lag = 5
+
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -215,7 +221,8 @@ class Debugger(Character):
             if character.animation_frame == 11:
                 character.state = character.state_fall
 
-    class DownAir(Move):
+    class DownAir(AerialMove):
+        landing_lag = 10
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -255,7 +262,8 @@ class Debugger(Character):
             if character.animation_frame == 11:
                 character.state = character.state_fall
 
-    class NeutralAir(Move):
+    class NeutralAir(AerialMove):
+        landing_lag = 5
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,

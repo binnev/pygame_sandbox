@@ -387,6 +387,12 @@ class Character(Entity):
         if abs(self.u) > self.air_speed:
             self.u = sign(self.u) * self.air_speed
 
+    def landing_lag(self, ticks):
+        def func():
+            self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+            if self.game_tick == ticks:
+                self.state = self.state_stand
+        return func
 
 class Move:
     """ E.g. an attack """
@@ -412,6 +418,17 @@ class Move:
         active_hitboxes = self.hitbox_lookup.get(n, [])
         for hitbox in active_hitboxes:
             self.character.level.add_hitbox(hitbox)
+
+
+class AerialMove(Move):
+    landing_lag: int
+
+    def __call__(self, *args, **kwargs):
+        super().__call__(*args, **kwargs)
+        self.character.allow_fastfall()
+        self.character.allow_aerial_drift()
+        if not self.character.airborne:
+            self.character.state = self.character.landing_lag(self.landing_lag)
 
 
 class Hitbox(Entity):
