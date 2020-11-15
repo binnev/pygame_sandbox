@@ -320,7 +320,7 @@ class Character(Entity):
                 character.state = character.state_stand
 
     def handle_hit(self, hitbox):
-        pass
+        self.level.screen_shake = 10
 
 
 class Debugger(Character):
@@ -552,7 +552,7 @@ class HitHandler:
 
                 handle_hitbox_collision(hitbox, object)
                 self.handled.append((hitbox, object))
-                # if the hitbox has lower priority sibling hitboxes, add those to the handled list so
-                # that they don't also hit the object
+                # if the hitbox has lower priority sibling hitboxes, add those to the handled
+                # list so that they don't also hit the object
                 for sibling in hitbox.siblings:
                     self.handled.append((sibling, object))

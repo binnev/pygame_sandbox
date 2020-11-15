@@ -1,3 +1,5 @@
+import random
+
 import pygame
 from pygame import Surface
 from pygame.sprite import Sprite
@@ -62,6 +64,7 @@ class Level(Scene):
     """ A Scene representing a level of a game. """
 
     parental_name = "level"
+    screen_shake: int
 
     def __init__(self):
         super().__init__()
@@ -81,6 +84,7 @@ class Level(Scene):
         ]
         self.state = self.main
         self.hit_handler = HitHandler()
+        self.screen_shake = 0
 
     def add_background(self, *objects):
         self.add_to_group(*objects, group=self.background)
@@ -103,3 +107,19 @@ class Level(Scene):
     def main(self):
         self.hit_handler.handle_hits(self.hitboxes, [*self.characters, *self.projectiles])
         self.hitboxes.kill()
+        if self.screen_shake:
+            self.screen_shake -= 1
+
+    def draw(self, surface: Surface, debug=False):
+        if self.screen_shake:
+            temp_surf = Surface(surface.get_size())
+            temp_surf.fill((150, 150, 150))  # overwrite previous stuff on screen
+            magnitude = 10
+            rect = temp_surf.get_rect()
+            rect.centerx += random.randrange(-magnitude, magnitude)
+            rect.centery += random.randrange(-magnitude, magnitude)
+            super().draw(temp_surf, debug)
+            surface.blit(temp_surf, rect)
+        else:
+            surface.fill((150, 150, 150))  # overwrite previous stuff on screen
+            super().draw(surface, debug)

@@ -413,7 +413,6 @@ def main():
     max_num_entities = 0
     screen_shake = 0
     while run:
-        window.fill((0, 0, 0, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -440,18 +439,20 @@ def main():
 
         # draw stuff
         if screen_shake:
-            temp_surf = Surface(window.get_size())
+            temp_surf = Surface(window.get_size())#.convert_alpha()
+            temp_surf.fill((50, 50, 50))
             screen_shake -= 1
             magnitude = 10
+            dx = random.randrange(-magnitude, magnitude)
+            dy = random.randrange(-magnitude, magnitude)
+            rect = temp_surf.get_rect()
+            rect.centerx += dx
+            rect.centery += dy
             for group in groups:
                 group.draw(temp_surf)
-                dx = random.randrange(-magnitude, magnitude)
-                dy = random.randrange(-magnitude, magnitude)
-                rect = temp_surf.get_rect()
-                rect.centerx += dx
-                rect.centery += dy
-                window.blit(temp_surf, rect)
+            window.blit(temp_surf, rect)
         else:
+            window.fill((50, 50, 50))
             for group in groups:
                 group.draw(window)
         pygame.display.update()

@@ -74,6 +74,5 @@ class FightingGame(Scene):
             self.running = False
 
     def draw(self, surface, debug=False):
-        self.window.fill((150, 150, 150))  # overwrite previous stuff on screen
         super().draw(surface, debug)
         pygame.display.update()  # print to screen
