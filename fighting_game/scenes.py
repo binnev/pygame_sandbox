@@ -1,6 +1,5 @@
 from fighting_game.levels import *
-from fighting_game.objects import *
-
+from fighting_game.characters import *
 
 class SandBox(Scene):
     """ Sandbox scene to try stuff out """

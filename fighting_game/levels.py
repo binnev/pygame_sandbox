@@ -1,6 +1,5 @@
 from fighting_game.conf import *
-from fighting_game.objects import *
-
+from fighting_game.particles import *
 
 class Level(Scene):
     """ A Scene representing a level of a game. """
