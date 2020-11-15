@@ -438,7 +438,7 @@ def main():
 
         # draw stuff
         if screen_shake:
-            temp_surf = Surface(window.get_size())#.convert_alpha()
+            temp_surf = Surface(window.get_size())
             temp_surf.fill((50, 50, 50))
             screen_shake -= 1
             magnitude = 10

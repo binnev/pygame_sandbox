@@ -1,12 +1,12 @@
 import sys
 
 from fighting_game.scenes import *
-
+from fighting_game.conf import *
 
 class FightingGame(Scene):
-    fps = 60
-    window_width = 1600
-    window_height = 900
+    fps = FPS
+    window_width = SCREEN_WIDTH
+    window_height = SCREEN_HEIGHT
     window_caption = "FIGHTING GAME"
     frame_duration = 3
     font_name = "ubuntu"
