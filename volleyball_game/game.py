@@ -40,13 +40,13 @@ class VolleyballGame(Game):
         # input devices that are specific to this game
         self.keyboard0 = Keyboard0()
         self.keyboard1 = Keyboard1()
-        # self.controller0 = GamecubeController(controller_id=0)
-        # self.controller1 = GamecubeController(controller_id=1)
+        self.controller0 = GamecubeController(controller_id=0)
+        self.controller1 = GamecubeController(controller_id=1)
         self.input_devices += [
             self.keyboard0,
             self.keyboard1,
-            # self.controller0,
-            # self.controller1,
+            self.controller0,
+            self.controller1,
         ]
 
     def add_scene(self, scene):

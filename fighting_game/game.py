@@ -1,7 +1,9 @@
 import sys
 
-from fighting_game.scenes import *
+from fighting_game.groups import *
+from fighting_game.inputs import *
 from fighting_game.conf import *
+
 
 class FightingGame(Scene):
     fps = FPS
@@ -15,6 +17,7 @@ class FightingGame(Scene):
 
     def __init__(self):
         super().__init__()
+        pygame.init()
 
         self.scenes = Group()
         self.groups = [self.scenes]
@@ -28,12 +31,21 @@ class FightingGame(Scene):
         # input devices
         # todo; should input devices be entities too?! All they need is an .update() method and a
         #  self.draw() that does nothing...
-        self.keyboard = KeyboardInput()
-        self.input_devices = [self.keyboard]
+        self.keyboard0 = Keyboard0()
+        self.keyboard1 = Keyboard1()
+        self.controller0 = GamecubeController(controller_id=0)
+        self.controller1 = GamecubeController(controller_id=1)
+        self.input_devices = [
+            self.keyboard0,
+            self.keyboard1,
+            self.controller0,
+            self.controller1,
+        ]
 
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
+        from fighting_game.scenes import SandBox
         self.add_scene(SandBox())
         self.debug = True
         self.tick = 0

@@ -129,7 +129,7 @@ class Character(Entity):
     DownAir: "Move"
     NeutralAir: "Move"
 
-    def __init__(self, x, y, input=FightingGameInput, facing_right=True):
+    def __init__(self, x, y, input: GamecubeController, facing_right=True):
         super().__init__()
 
         self.rect = Rect(0, 0, self.width, self.height)
@@ -251,6 +251,32 @@ class Character(Entity):
         holding_forward = (self.facing_right and input.is_down(input.RIGHT)) or (
             not self.facing_right and input.is_down(input.LEFT)
         )
+        Cstick_left = (
+            input.is_pressed(input.C_LEFT)
+            and not input.is_pressed(input.C_UP)
+            and not input.is_pressed(input.C_DOWN)
+        )
+        Cstick_right = (
+            input.is_pressed(input.C_RIGHT)
+            and not input.is_pressed(input.C_UP)
+            and not input.is_pressed(input.C_DOWN)
+        )
+        Cstick_up = (
+            input.is_pressed(input.C_UP)
+            and not input.is_pressed(input.C_LEFT)
+            and not input.is_pressed(input.C_RIGHT)
+        )
+        Cstick_down = (
+            input.is_pressed(input.C_DOWN)
+            and not input.is_pressed(input.C_LEFT)
+            and not input.is_pressed(input.C_RIGHT)
+        )
+        Cstick_back = (self.facing_right and Cstick_left) or (
+            not self.facing_right and Cstick_right
+        )
+        Cstick_forward = (self.facing_right and Cstick_right) or (
+            not self.facing_right and Cstick_left
+        )
 
         if input.is_down(input.LEFT):
             self.u -= self.air_acceleration
@@ -262,6 +288,8 @@ class Character(Entity):
             self.state = self.state_stand
         if input.is_pressed(input.B):
             self.state = self.AttackMove(self)
+
+        # A-button inputs
         if input.is_pressed(input.A):
             if holding_back:
                 self.state = self.BackAir(self)
@@ -273,6 +301,16 @@ class Character(Entity):
                 self.state = self.DownAir(self)
             else:
                 self.state = self.NeutralAir(self)
+
+        # C-stick inputs
+        if Cstick_up:
+            self.state = self.UpAir(self)
+        if Cstick_down:
+            self.state = self.DownAir(self)
+        if Cstick_forward:
+            self.state = self.ForwardAir(self)
+        if Cstick_back:
+            self.state = self.BackAir(self)
 
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
