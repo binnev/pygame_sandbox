@@ -112,12 +112,15 @@ class Character(Entity):
     ground_speed: float
     air_acceleration: float
     air_speed: float
-    jump_power: float
+    jump_speed: float
+    shorthop_speed: float
     gravity: float
     friction: float
     air_resistance: float
     fall_speed: float
     fast_fall_speed: float
+    fast_fall: bool
+    jumpsquat_frames: int
 
     touch_box_margin = 2
     frame_duration = 3
@@ -151,6 +154,7 @@ class Character(Entity):
         self.v = 0
         self.input = input
         self.facing_right = facing_right
+        self.fast_fall = False
 
     def update(self):
         super().update()
@@ -291,17 +295,6 @@ class Character(Entity):
             not self.facing_right and Cstick_left
         )
 
-        if input.is_down(input.LEFT):
-            self.u -= self.air_acceleration
-        if input.is_down(input.RIGHT):
-            self.u += self.air_acceleration
-        if input.is_pressed(input.UP):
-            self.v = -self.jump_power
-        if not self.airborne:
-            self.state = self.state_stand
-        if input.is_pressed(input.B):
-            self.state = self.AttackMove(self)
-
         # A-button inputs
         if input.is_pressed(input.A):
             if holding_back:
@@ -325,6 +318,16 @@ class Character(Entity):
         if Cstick_back:
             self.state = self.BackAir(self)
 
+        if input.is_pressed(input.Y):
+            self.v = -self.jump_speed
+            self.fast_fall = False
+        if not self.airborne:
+            self.state = self.state_stand
+            self.fast_fall = False
+
+        self.allow_aerial_drift()
+        self.allow_fastfall()
+
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
         input = self.input
@@ -334,16 +337,58 @@ class Character(Entity):
             self.u -= self.ground_acceleration
         if input.is_down(input.RIGHT):
             self.u += self.ground_acceleration
-        if input.is_pressed(input.UP):
-            self.v = -self.jump_power
-            self.state = self.state_fall
+        if input.is_pressed(input.Y):
+            self.state = self.state_jumpsquat
         if self.airborne:
             self.state = self.state_fall
         if input.is_pressed(input.X):
             self.state = self.AttackMove(self)
 
+    def state_jumpsquat(self):
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+
+        if self.game_tick == self.jumpsquat_frames:
+            # if still holding jump, do a fullhop
+            if self.input.is_down(self.input.Y):
+                self.jump()
+            # else do a shorthop
+            else:
+                self.shorthop()
+
+    def jump(self):
+        self.v = -self.jump_speed
+        self.state = self.state_fall
+        self.fastfall = False
+
+    def shorthop(self):
+        self.v = -self.shorthop_speed
+        self.state = self.state_fall
+        self.fastfall = False
+
     def handle_hit(self, hitbox):
         pass
+
+    def allow_fastfall(self):
+        input = self.input
+        if input.is_down(input.DOWN) and self.v > 0 and not self.fast_fall:
+            # self.level.add_particle_effect(JumpRing(*self.rect.midbottom, color=Color("orange")))
+            self.fast_fall = True
+            self.v = self.fall_speed
+
+    def enforce_max_fall_speed(self):
+        if self.v > 0 and abs(self.v) > self.fall_speed:
+            self.v = self.fall_speed
+
+    def allow_aerial_drift(self):
+        input = self.input
+        # update horizontal position
+        if input.is_down(input.LEFT):
+            self.u -= self.air_acceleration
+        if input.is_down(input.RIGHT):
+            self.u += self.air_acceleration
+        # limit horizontal speed
+        if abs(self.u) > self.air_speed:
+            self.u = sign(self.u) * self.air_speed
 
 
 class Move:

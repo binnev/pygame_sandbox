@@ -10,10 +10,12 @@ class Debugger(Character):
     air_acceleration = 0.75
     air_speed = 5
     gravity = 0.3
-    jump_power = 10
+    jump_speed = 10
+    shorthop_speed = 3
     air_resistance = 0.1
     friction = 1
     fall_speed = 7
+    jumpsquat_frames = 5
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__(x, y, input, facing_right)
@@ -43,6 +45,7 @@ class Debugger(Character):
             f"colliding: {colliding}",
             f"state: {state_name}",
             f"damage: {self.damage}%",
+            f"fast_fall: {self.fast_fall}",
         ]
         line_spacing = 20
         for ii, thing in enumerate(things_to_print):
