@@ -135,6 +135,12 @@ class Character(Entity):
     DownTilt: "Move"
     ForwardTilt: "Move"
     Jab: "Move"
+    GroundedSideB: "Move"
+    GroundedUpB: "Move"
+    GroundedDownB: "Move"
+    AerialSideB: "Move"
+    AerialUpB: "Move"
+    AerialDownB: "Move"
 
     def __init__(self, x, y, input: GamecubeController, facing_right=True):
         super().__init__()
