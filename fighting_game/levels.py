@@ -1,6 +1,6 @@
-from fighting_game.groups import Level
-from fighting_game.objects import Platform
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
+from fighting_game.groups import Level
+from fighting_game.objects import Platform, BlastZone
 
 
 class DefaultLevel(Level):
@@ -35,3 +35,36 @@ class DefaultLevel(Level):
             self.droppable3,
             self.droppable4,
         )
+
+
+class Battlefield(Level):
+    def __init__(self):
+        super().__init__()
+
+        ground = Platform(0, 0, 800, 1000)
+        ground.x = SCREEN_WIDTH // 2
+        ground.rect.top = SCREEN_HEIGHT - 150
+
+        left_platform = Platform(0, 0, 100, 20, droppable=True)
+        left_platform.x = ground.x - 200
+        left_platform.y = ground.rect.top - 100
+
+        right_platform = Platform(0, 0, 100, 20, droppable=True)
+        right_platform.x = ground.x + 200
+        right_platform.y = ground.rect.top - 100
+
+        top_platform = Platform(0, 0, 100, 20, droppable=True)
+        top_platform.x = ground.x
+        top_platform.y = ground.rect.top - 200
+
+        self.add_platform(
+            ground,
+            left_platform,
+            right_platform,
+            top_platform,
+        )
+
+        self.blast_zone = BlastZone(0, 0, 1200, 800)
+        self.blast_zone.x = ground.x
+        self.blast_zone.y = ground.rect.top - 300
+        self.add_invisible_element(self.blast_zone)

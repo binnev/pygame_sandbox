@@ -4,7 +4,7 @@ import pygame
 from pygame import Surface
 from pygame.sprite import Sprite
 
-from fighting_game.objects import HitHandler
+from fighting_game.objects import HitHandler, BlastZone
 
 
 class Group(pygame.sprite.Group):
@@ -65,6 +65,7 @@ class Level(Scene):
 
     parental_name = "level"
     screen_shake: int
+    blastzone: BlastZone
 
     def __init__(self):
         super().__init__()
@@ -74,6 +75,7 @@ class Level(Scene):
         self.projectiles = Group()
         self.particle_effects = Group()
         self.hitboxes = Group()
+        self.invisible_elements = Group()
         self.groups = [
             self.background,
             self.platforms,
@@ -81,6 +83,7 @@ class Level(Scene):
             self.projectiles,
             self.particle_effects,
             self.hitboxes,
+            self.invisible_elements,
         ]
         self.state = self.main
         self.hit_handler = HitHandler()
@@ -103,6 +106,9 @@ class Level(Scene):
 
     def add_particle_effect(self, *objects):
         self.add_to_group(*objects, group=self.particle_effects)
+
+    def add_invisible_element(self, *objects):
+        self.add_to_group(*objects, group=self.invisible_elements)
 
     def main(self):
         self.hit_handler.handle_hits(self.hitboxes, [*self.characters, *self.projectiles])
