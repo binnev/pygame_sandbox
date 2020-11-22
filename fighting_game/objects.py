@@ -8,6 +8,7 @@ from pygame.rect import Rect
 
 from base.animation import SpriteDict
 from base.utils import draw_arrow
+from fighting_game.conf import BOUNCE_LOSS, HITPAUSE_CONSTANT, HITSTUN_CONSTANT
 from fighting_game.groups import *
 from fighting_game.inputs import *
 from fighting_game.sprites.stickman import stickman_sprites
@@ -165,7 +166,6 @@ class Character(Entity):
             return
         super().update()
         self.state()
-        self.update_physics()
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
@@ -191,78 +191,6 @@ class Character(Entity):
             if self.touching(plat) and self.rect.bottom <= plat.rect.top:
                 return False
         return True
-
-    def update_physics(self):
-        # modify speeds
-        if self.airborne:
-            # vertical
-            self.v += self.gravity
-            if self.v > self.fall_speed:
-                self.v = self.fall_speed
-            # horizontal
-            magnitude = abs(self.u)
-            direction = sign(self.u)
-            speed = magnitude - self.air_resistance
-            speed = max([0, speed])
-            self.u = speed * direction
-            if self.u > self.air_speed:
-                self.u = self.air_speed
-            if self.u < -self.air_speed:
-                self.u = -self.air_speed
-        else:
-            magnitude = abs(self.u)
-            direction = sign(self.u)
-            speed = magnitude - self.friction
-            speed = speed if speed > 0 else 0
-            self.u = speed * direction
-            if self.u > self.ground_speed:
-                self.u = self.ground_speed
-            if self.u < -self.ground_speed:
-                self.u = -self.ground_speed
-
-        # modify position
-        # update horizontal position and handle platform collisions
-        self.x += self.u
-        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
-        moving_right = self.u > 0
-        for plat in platforms:
-            if plat.droppable:
-                pass  # you can move horizontally through droppable platforms
-            else:
-                if moving_right:
-                    self.rect.right = min([self.rect.right, plat.rect.left])
-                else:
-                    self.rect.left = max([self.rect.left, plat.rect.right])
-                self.u = 0
-
-        # update vertical position and handle platform collisions
-        old_rect = Rect(self.rect)  # remember previous position
-        self.y += self.v
-        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
-        moving_down = self.v > 0
-        for plat in platforms:
-            # droppable platforms
-            if plat.droppable:
-                if moving_down:
-                    # if character was already inside the platform, or player is holding down
-                    if (old_rect.bottom > plat.rect.top) or self.input.is_down(self.input.DOWN):
-                        pass
-                    # if character was above the platform and not holding down
-                    else:
-                        # don't go through the platform
-                        self.rect.bottom = min([self.rect.bottom, plat.rect.top])
-                        self.v = 0
-                else:  # if travelling up
-                    pass  # you can go upwards through droppable platforms
-
-            # solid platforms
-            else:
-                if moving_down:
-                    self.rect.bottom = min([self.rect.bottom, plat.rect.top])
-                    self.v = 0
-                else:
-                    self.rect.top = max([self.rect.top, plat.rect.bottom])
-                    self.v = 0
 
     def state_fall(self):
         self.image = self.sprites["jump_" + self.facing].get_frame(self.animation_frame)
@@ -333,6 +261,134 @@ class Character(Entity):
 
         self.allow_aerial_drift()
         self.allow_fastfall()
+        self.airborne_physics()
+
+    def airborne_physics(self):
+        speed_limit = self.fast_fall_speed if self.fast_fall else self.fall_speed
+        if self.v + self.gravity <= speed_limit:
+            self.v += self.gravity
+        else:
+            difference = speed_limit - self.v
+            if difference > 0:
+                self.v += difference
+
+        magnitude = abs(self.u)
+        direction = sign(self.u)
+        speed = magnitude - self.air_resistance
+        speed = max([0, speed])
+        self.u = speed * direction
+
+        # update horizontal position and handle platform collisions
+        self.x += self.u
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        moving_right = self.u > 0
+        for plat in platforms:
+            if plat.droppable:
+                pass  # you can move horizontally through droppable platforms
+            else:
+                if moving_right:
+                    self.rect.right = min([self.rect.right, plat.rect.left])
+                else:
+                    self.rect.left = max([self.rect.left, plat.rect.right])
+                self.u = 0
+
+        # update vertical position and handle platform collisions
+        old_rect = Rect(self.rect)  # remember previous position
+        self.y += self.v
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        moving_down = self.v > 0
+        for plat in platforms:
+            # droppable platforms
+            if plat.droppable:
+                if moving_down:
+                    # if character was already inside the platform, or player is holding down
+                    if (old_rect.bottom > plat.rect.top) or self.input.is_down(self.input.DOWN):
+                        pass
+                    # if character was above the platform and not holding down
+                    else:
+                        # don't go through the platform
+                        self.rect.bottom = min([self.rect.bottom, plat.rect.top])
+                        self.v = 0
+                else:  # if travelling up
+                    pass  # you can go upwards through droppable platforms
+
+            # solid platforms
+            else:
+                if moving_down:
+                    self.rect.bottom = min([self.rect.bottom, plat.rect.top])
+                    self.v = 0
+                else:
+                    self.rect.top = max([self.rect.top, plat.rect.bottom])
+                    self.v = 0
+
+    def grounded_physics(self):
+        magnitude = abs(self.u)
+        direction = sign(self.u)
+        speed = magnitude - self.friction
+        speed = speed if speed > 0 else 0
+        self.u = speed * direction
+        if self.u > self.ground_speed:
+            self.u = self.ground_speed
+        if self.u < -self.ground_speed:
+            self.u = -self.ground_speed
+        self.x += self.u
+
+    def hit_physics(self):
+        if self.v + self.gravity <= self.fall_speed:
+            self.v += self.gravity
+        else:
+            difference = self.fall_speed - self.v
+            if difference > 0:
+                self.v += difference
+
+        magnitude = abs(self.u)
+        direction = sign(self.u)
+        speed = magnitude - self.air_resistance
+        speed = max([0, speed])
+        self.u = speed * direction
+
+        # update horizontal position and handle platform collisions
+        self.x += self.u
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        moving_right = self.u > 0
+        for plat in platforms:
+            if plat.droppable:
+                pass  # you can move horizontally through droppable platforms
+            else:
+                if moving_right:
+                    self.rect.right = min([self.rect.right, plat.rect.left])
+                else:
+                    self.rect.left = max([self.rect.left, plat.rect.right])
+                self.u = 0
+
+        # update vertical position and handle platform collisions
+        old_rect = Rect(self.rect)  # remember previous position
+        self.y += self.v
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        moving_down = self.v > 0
+        for plat in platforms:
+            # droppable platforms
+            if plat.droppable:
+                if moving_down:
+                    # if character was already inside the platform
+                    if old_rect.bottom > plat.rect.top:
+                        pass
+                    # if character was above the platform
+                    else:
+                        # don't go through the platform
+                        self.rect.bottom = min([self.rect.bottom, plat.rect.top])
+                        self.v = -self.v * (1 - BOUNCE_LOSS)
+                else:  # if travelling up
+                    pass  # you can go upwards through droppable platforms
+
+            # solid platforms
+            else:
+                if moving_down:
+                    self.rect.bottom = min([self.rect.bottom, plat.rect.top])
+                    self.v = -self.v * (1 - BOUNCE_LOSS)
+                else:
+                    self.rect.top = max([self.rect.top, plat.rect.bottom])
+                    self.v = -self.v * (1 - BOUNCE_LOSS)
 
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
@@ -351,6 +407,8 @@ class Character(Entity):
             self.state = self.AttackMove(self)
         if input.is_down(input.UP) and input.is_pressed(input.A):
             self.state = self.UpTilt(self)
+
+        self.grounded_physics()
 
     def state_jumpsquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
@@ -412,7 +470,7 @@ class Character(Entity):
             self.hitstun_duration -= 1
         if not self.airborne:
             self.state = self.state_stand
-        # self.state_fall()  # do the same thing as falling.
+        self.hit_physics()
 
 
 class Move:
@@ -450,6 +508,8 @@ class AerialMove(Move):
         self.character.allow_aerial_drift()
         if not self.character.airborne:
             self.character.state = self.character.landing_lag(self.landing_lag)
+
+        self.character.airborne_physics()
 
 
 class Hitbox(Entity):
@@ -500,23 +560,24 @@ class Hitbox(Entity):
     def __repr__(self):
         return f"Hitbox with id {id(self)}"
 
-    def handle_hit(self, object):
+    def handle_hit(self, object, knockback):
         """Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
         context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
         electric"""
         self.level.screen_shake += 10
         self.owner.hitpause_duration = self.hitpause_duration
         object.hitpause_duration = self.hitpause_duration
-        object.hitstun_duration = self.hitstun_duration
+        object.hitstun_duration = self.hitstun_duration(knockback)
         object.y -= 1
 
     @property
     def hitpause_duration(self):
-        return 10
+        return round(
+            (self.fixed_knockback + self.base_knockback + self.knockback_growth) * HITPAUSE_CONSTANT
+        )
 
-    @property
-    def hitstun_duration(self):
-        return 40
+    def hitstun_duration(self, knockback):
+        return round(knockback * HITSTUN_CONSTANT)
 
     @property
     def rect(self):
@@ -601,7 +662,7 @@ def handle_hitbox_collision(hitbox: Hitbox, object):
 
     # object-specific effects
     object.handle_hit(hitbox)
-    hitbox.handle_hit(object)
+    hitbox.handle_hit(object, knockback)
 
 
 class HitHandler:

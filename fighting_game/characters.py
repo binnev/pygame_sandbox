@@ -12,9 +12,10 @@ class Debugger(Character):
     gravity = 0.3
     jump_speed = 10
     shorthop_speed = 5
-    air_resistance = 0.1
+    air_resistance = 0.01
     friction = 1
     fall_speed = 7
+    fast_fall_speed = 12
     jumpsquat_frames = 5
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
