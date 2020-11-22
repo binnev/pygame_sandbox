@@ -1,17 +1,17 @@
 from fighting_game.objects import *
 
 class Debugger(Character):
-    mass = 10  # 10 is average
+    mass = 10
     width = 50
     height = 100
     color = Color("cyan")
     ground_acceleration = 99
-    ground_speed = 7
+    ground_speed = 5
     air_acceleration = 0.75
     air_speed = 5
     gravity = 0.3
     jump_speed = 10
-    shorthop_speed = 3
+    shorthop_speed = 5
     air_resistance = 0.1
     friction = 1
     fall_speed = 7
@@ -106,7 +106,7 @@ class Debugger(Character):
                 height=30,
                 rotation=0,
                 base_knockback=10,
-                knockback_angle=1,
+                knockback_angle=30,
                 knockback_growth=20,
                 damage=20,
             )
@@ -117,7 +117,7 @@ class Debugger(Character):
                 height=20,
                 rotation=0,
                 base_knockback=5,
-                knockback_angle=1,
+                knockback_angle=45,
                 knockback_growth=10,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
@@ -148,7 +148,7 @@ class Debugger(Character):
                 height=30,
                 rotation=0,
                 base_knockback=10,
-                knockback_angle=180,
+                knockback_angle=150,
                 knockback_growth=20,
                 damage=20,
             )
@@ -159,7 +159,7 @@ class Debugger(Character):
                 height=20,
                 rotation=0,
                 base_knockback=5,
-                knockback_angle=180,
+                knockback_angle=135,
                 knockback_growth=10,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
@@ -302,6 +302,30 @@ class Debugger(Character):
             character = self.character
             if character.animation_frame == 11:
                 character.state = character.state_fall
+
+    class UpTilt(Move):
+        def __init__(self, character: Character):
+            sweet_spot = Hitbox(
+                owner=character,
+                y_offset=-30,
+                width=60,
+                height=60,
+                rotation=0,
+                base_knockback=30,
+                knockback_angle=80,
+                knockback_growth=5,
+                damage=10,
+            )
+            self.hitbox_mapping = {
+                (1, 3): [sweet_spot],
+            }
+            super().__init__(character)
+
+        def __call__(self):
+            super().__call__()
+            character = self.character
+            if character.animation_frame == 4:
+                character.state = character.state_stand
 
 class Debugger2(Debugger):
     mass = 8

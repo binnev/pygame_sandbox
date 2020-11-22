@@ -14,6 +14,7 @@ from fighting_game.sprites.stickman import stickman_sprites
 
 
 class Entity(Sprite):
+    level: "Level"
     image: Surface = None
     debug_color = Color("red")
     rect: Rect
@@ -106,7 +107,6 @@ class Character(Entity):
     width: int
     height: int
     color: Color
-    level: "Level"
     sprites: SpriteDict
     ground_acceleration: float
     ground_speed: float
@@ -121,6 +121,9 @@ class Character(Entity):
     fast_fall_speed: float
     fast_fall: bool
     jumpsquat_frames: int
+
+    hitstun_duration: int = 0
+    hitpause_duration: int = 0
 
     touch_box_margin = 2
     frame_duration = 3
@@ -157,6 +160,9 @@ class Character(Entity):
         self.fast_fall = False
 
     def update(self):
+        if self.hitpause_duration:
+            self.hitpause_duration -= 1
+            return
         super().update()
         self.state()
         self.update_physics()
@@ -343,6 +349,8 @@ class Character(Entity):
             self.state = self.state_fall
         if input.is_pressed(input.X):
             self.state = self.AttackMove(self)
+        if input.is_down(input.UP) and input.is_pressed(input.A):
+            self.state = self.UpTilt(self)
 
     def state_jumpsquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
@@ -363,7 +371,7 @@ class Character(Entity):
         self.fastfall = False
 
     def handle_hit(self, hitbox):
-        pass
+        self.state = self.state_hit_aerial
 
     def allow_fastfall(self):
         input = self.input
@@ -392,7 +400,20 @@ class Character(Entity):
             self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
             if self.game_tick == ticks:
                 self.state = self.state_stand
+
         return func
+
+    def state_hit_aerial(self):
+        self.image = Surface((50, 50))
+        self.image.fill(Color("red"))
+        if self.hitstun_duration == 0:
+            self.state = self.state_fall
+        else:
+            self.hitstun_duration -= 1
+        if not self.airborne:
+            self.state = self.state_stand
+        # self.state_fall()  # do the same thing as falling.
+
 
 class Move:
     """ E.g. an attack """
@@ -484,6 +505,18 @@ class Hitbox(Entity):
         context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
         electric"""
         self.level.screen_shake += 10
+        self.owner.hitpause_duration = self.hitpause_duration
+        object.hitpause_duration = self.hitpause_duration
+        object.hitstun_duration = self.hitstun_duration
+        object.y -= 1
+
+    @property
+    def hitpause_duration(self):
+        return 10
+
+    @property
+    def hitstun_duration(self):
+        return 40
 
     @property
     def rect(self):
@@ -559,12 +592,14 @@ def handle_hitbox_collision(hitbox: Hitbox, object):
     fixed_knockback_term = hitbox.fixed_knockback
     # base knockback and growing knockback are both affected by target weight
     base_knockback_term = hitbox.base_knockback / object.mass
-    knockback_growth_term = hitbox.knockback_growth * object.damage / 20 / object.mass
+    knockback_growth_term = hitbox.knockback_growth * object.damage / object.mass / 10
     knockback = fixed_knockback_term + base_knockback_term + knockback_growth_term
     u = knockback * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
     v = -knockback * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
     object.u = round(u)
     object.v = round(v)
+
+    # object-specific effects
     object.handle_hit(hitbox)
     hitbox.handle_hit(object)
 
