@@ -359,7 +359,7 @@ class Character(Entity):
                     self.rect.right = min([self.rect.right, plat.rect.left])
                 else:
                     self.rect.left = max([self.rect.left, plat.rect.right])
-                self.u = 0
+                self.u = -self.u * (1 - BOUNCE_LOSS)
 
         # update vertical position and handle platform collisions
         old_rect = Rect(self.rect)  # remember previous position

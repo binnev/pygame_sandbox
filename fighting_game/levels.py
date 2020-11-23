@@ -105,6 +105,10 @@ class Battlefield(Level):
         ground.x = SCREEN_WIDTH // 2
         ground.rect.top = SCREEN_HEIGHT - 150
 
+        wall = Platform(0, 0, 20, 300)
+        wall.x = SCREEN_WIDTH // 2
+        wall.rect.bottom = SCREEN_HEIGHT - 150
+
         left_platform = Platform(0, 0, 100, 20, droppable=True)
         left_platform.x = ground.x - 200
         left_platform.y = ground.rect.top - 100
@@ -122,6 +126,7 @@ class Battlefield(Level):
             left_platform,
             right_platform,
             top_platform,
+            wall
         )
 
         self.blast_zone = BlastZone(0, 0, 1200, 800)
