@@ -5,7 +5,7 @@ class Debugger(Character):
     width = 50
     height = 100
     color = Color("cyan")
-    ground_acceleration = 99
+    ground_acceleration = 5
     ground_speed = 5
     air_acceleration = 0.75
     air_speed = 5
@@ -13,7 +13,7 @@ class Debugger(Character):
     jump_speed = 10
     shorthop_speed = 5
     air_resistance = 0.01
-    friction = 1
+    friction = 0.3
     fall_speed = 7
     fast_fall_speed = 12
     jumpsquat_frames = 5

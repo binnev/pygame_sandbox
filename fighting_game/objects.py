@@ -327,11 +327,8 @@ class Character(Entity):
         speed = magnitude - self.friction
         speed = speed if speed > 0 else 0
         self.u = speed * direction
-        if self.u > self.ground_speed:
-            self.u = self.ground_speed
-        if self.u < -self.ground_speed:
-            self.u = -self.ground_speed
         self.x += self.u
+        # self.y += self.v  # fixme
 
     def hit_physics(self):
         if self.v + self.gravity <= self.fall_speed:
@@ -396,9 +393,21 @@ class Character(Entity):
         if input.is_down(input.DOWN):
             self.v = 1  # need this to drop through platforms
         if input.is_down(input.LEFT):
-            self.u -= self.ground_acceleration
+            if self.u - self.ground_acceleration >= -self.ground_speed:
+                self.u -= self.ground_acceleration
+            else:
+                difference = -self.ground_speed - self.u
+                if difference < 0:
+                    self.u += difference
+
         if input.is_down(input.RIGHT):
-            self.u += self.ground_acceleration
+            if self.u + self.ground_acceleration <= self.ground_speed:
+                self.u += self.ground_acceleration
+            else:
+                difference = self.ground_speed - self.u
+                if difference > 0:
+                    self.u += difference
+
         if input.is_pressed(input.Y):
             self.state = self.state_jumpsquat
         if self.airborne:
