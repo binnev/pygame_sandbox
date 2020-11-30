@@ -184,11 +184,13 @@ class Character(Entity):
     def touching(self, entity: Entity):
         return self.touch_box.colliderect(entity.rect)
 
+    def standing_on_platform(self, platform):
+        return self.touching(platform) and self.rect.bottom <= platform.rect.top
+
     @property
     def airborne(self):
-        for plat in self.level.platforms:
-            # if standing on top of platform
-            if self.touching(plat) and self.rect.bottom <= plat.rect.top:
+        for platform in self.level.platforms:
+            if self.standing_on_platform(platform):
                 return False
         return True
 
@@ -255,15 +257,17 @@ class Character(Entity):
         if input.is_pressed(input.Y):
             self.v = -self.jump_speed
             self.fast_fall = False
-        if not self.airborne:
-            self.state = self.state_stand
-            self.fast_fall = False
 
         self.allow_aerial_drift()
         self.allow_fastfall()
         self.airborne_physics()
 
     def airborne_physics(self):
+        def _land():
+            self.v = 0
+            self.state = self.state_stand
+            self.fast_fall = False
+
         speed_limit = self.fast_fall_speed if self.fast_fall else self.fall_speed
         if self.v + self.gravity <= speed_limit:
             self.v += self.gravity
@@ -308,7 +312,7 @@ class Character(Entity):
                     else:
                         # don't go through the platform
                         self.rect.bottom = min([self.rect.bottom, plat.rect.top])
-                        self.v = 0
+                        _land()
                 else:  # if travelling up
                     pass  # you can go upwards through droppable platforms
 
@@ -316,7 +320,7 @@ class Character(Entity):
             else:
                 if moving_down:
                     self.rect.bottom = min([self.rect.bottom, plat.rect.top])
-                    self.v = 0
+                    _land()
                 else:
                     self.rect.top = max([self.rect.top, plat.rect.bottom])
                     self.v = 0
@@ -328,7 +332,7 @@ class Character(Entity):
         speed = speed if speed > 0 else 0
         self.u = speed * direction
         self.x += self.u
-        # self.y += self.v  # fixme
+        self.y += self.v
 
     def hit_physics(self):
         if self.v + self.gravity <= self.fall_speed:
@@ -390,8 +394,14 @@ class Character(Entity):
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
         input = self.input
+
         if input.is_down(input.DOWN):
-            self.v = 1  # need this to drop through platforms
+            platforms = list(filter(self.standing_on_platform, self.level.platforms))
+            if all(platform.droppable for platform in platforms):
+                self.y += 1  # need this to drop through platforms
+            else:
+                self.state = self.state_crouch
+
         if input.is_down(input.LEFT):
             if self.u - self.ground_acceleration >= -self.ground_speed:
                 self.u -= self.ground_acceleration
@@ -426,6 +436,16 @@ class Character(Entity):
                 self.jump()
             else:
                 self.shorthop()
+
+    def state_crouch(self):
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+        input = self.input
+        if self.airborne:
+            self.state = self.state_fall
+        if input.is_pressed(input.Y):
+            self.jump()
+        if not input.is_down(input.DOWN):
+            self.state = self.state_stand
 
     def jump(self):
         self.v = -self.jump_speed
