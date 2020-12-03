@@ -16,6 +16,8 @@ class FightingGameInput:
     X: int
     Y: int
     START: int
+    L: int
+    R: int
 
 
 class KeyboardInput(FightingGameInput, KeyboardInputQueue):
@@ -28,9 +30,13 @@ class KeyboardInput(FightingGameInput, KeyboardInputQueue):
     X = pygame.K_o
     Y = pygame.K_SPACE
     START = pygame.K_p
+    L = pygame.K_ESCAPE
+    R = pygame.K_ESCAPE
 
 
 class GamecubeController(GamecubeControllerInputQueue):
+    # todo: rethink this. This class should be deciding if a button was just pressed (or if a
+    #  user drops through a platform or crouches on the platform). Not the reader class.
 
     # key mapping
     LEFT = gamecube.GREY_STICK_LEFT
@@ -47,6 +53,8 @@ class GamecubeController(GamecubeControllerInputQueue):
     C_RIGHT = gamecube.YELLOW_STICK_RIGHT
     START = pygame.K_RETURN
     D_PAD_UP = gamecube.D_PAD_UP
+    L = gamecube.L_AXIS
+    R = gamecube.R_AXIS
 
     def __init__(self, controller_id, queue_length=5):
         controller = GamecubeControllerReader(controller_id)
@@ -68,6 +76,8 @@ class Keyboard0(KeyboardInputQueue):
     C_RIGHT = pygame.K_ESCAPE  # fixme
     START = pygame.K_RETURN
     D_PAD_UP = pygame.K_ESCAPE  # fixme
+    L = pygame.K_ESCAPE  # fixme
+    R = pygame.K_ESCAPE  # fixme
 
 
 class Keyboard1(Keyboard0):
@@ -85,6 +95,7 @@ class Keyboard1(Keyboard0):
     C_RIGHT = pygame.K_ESCAPE  # fixme
     START = pygame.K_RETURN
     D_PAD_UP = pygame.K_ESCAPE  # fixme
-
+    L = pygame.K_ESCAPE  # fixme
+    R = pygame.K_ESCAPE  # fixme
 
 # todo: maybe put the calculations for "is someone pressing down on the c stick, and not right" here

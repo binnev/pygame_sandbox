@@ -105,9 +105,9 @@ class Debugger(Character):
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
-                x_offset=130,
-                width=100,
-                height=10,
+                x_offset=30,
+                width=30,
+                height=30,
                 rotation=45,
                 base_knockback=10,
                 knockback_angle=30,

@@ -114,6 +114,8 @@ class Character(Entity):
     run_speed: float
     initial_dash_duration: int
     run_turnaround_duration: int
+    air_dodge_duration: int = 30
+    air_dodge_speed: float = 20
     air_acceleration: float
     air_speed: float
     jump_speed: float
@@ -261,17 +263,42 @@ class Character(Entity):
             self.v = -self.jump_speed
             self.fast_fall = False
 
+        # air dodge
+        if input.is_pressed(input.R) or input.is_pressed(input.L):
+            self.air_dodge()
+
         self.allow_aerial_drift()
         self.allow_fastfall()
         self.fall_physics()
 
-    def apply_gravity(self, speed_limit):
-        if self.v + self.gravity <= speed_limit:
-            self.v += self.gravity
+    def air_dodge(self):
+        input = self.input
+        x = input.is_down(input.RIGHT) - input.is_down(input.LEFT)
+        y = input.is_down(input.DOWN) - input.is_down(input.UP)
+
+        # get unit vector
+        v = numpy.array([x, y])
+        magnitude = numpy.linalg.norm(v)
+        if magnitude == 0:
+            self.u = 0
+            self.v = 0
         else:
-            difference = speed_limit - self.v
-            if difference > 0:
-                self.v += difference
+            unit = v / magnitude
+            self.u, self.v = unit * self.air_dodge_speed
+
+        self.state = self.state_air_dodge
+
+    def state_air_dodge(self):
+        decay = 0.1
+        self.u *= 1 - decay
+        self.v *= 1 - decay
+        self.x += self.u
+        self.y += self.v
+        if self.game_tick == self.air_dodge_duration:
+            self.state = self.state_fall
+
+    def apply_gravity(self, speed_limit):
+        self. v += self.acceleration_to_apply(self.v, self.gravity, speed_limit)
 
     def apply_air_resistance(self):
         magnitude = abs(self.u)
@@ -558,7 +585,7 @@ class Character(Entity):
         if input.is_down(input.DOWN) and self.v > 0 and not self.fast_fall:
             # self.level.add_particle_effect(JumpRing(*self.rect.midbottom, color=Color("orange")))
             self.fast_fall = True
-            self.v = self.fall_speed
+            self.v = self.fast_fall_speed
 
     def enforce_max_fall_speed(self):
         if self.v > 0 and abs(self.v) > self.fall_speed:
@@ -566,14 +593,10 @@ class Character(Entity):
 
     def allow_aerial_drift(self):
         input = self.input
-        # update horizontal position
         if input.is_down(input.LEFT):
-            self.u -= self.air_acceleration
+            self.u -= self.acceleration_to_apply(-self.u, self.air_acceleration, self.air_speed)
         if input.is_down(input.RIGHT):
-            self.u += self.air_acceleration
-        # limit horizontal speed
-        if abs(self.u) > self.air_speed:
-            self.u = sign(self.u) * self.air_speed
+            self.u += self.acceleration_to_apply(self.u, self.air_acceleration, self.air_speed)
 
     def landing_lag(self, ticks):
         def func():
@@ -593,6 +616,17 @@ class Character(Entity):
         if not self.airborne:
             self.state = self.state_stand
         self.hit_physics()
+
+    @staticmethod
+    def acceleration_to_apply(speed, acceleration, speed_limit):
+        """ everything must be > 0 """
+        if speed + acceleration <= speed_limit:
+            return acceleration
+        else:
+            difference = speed_limit - speed
+            if difference > 0:
+                return difference
+        return 0
 
 
 class Move:
@@ -791,7 +825,6 @@ class Hitbox(Entity):
         self.rotation = 180 - self.rotation
         self.x_offset = -self.x_offset
         self.image = self.create_image()
-
 
     @property
     def lower_priority_sibling(self):
