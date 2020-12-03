@@ -729,10 +729,14 @@ class Hitbox(Entity):
         self.higher_priority_sibling = higher_priority_sibling
         self.lower_priority_sibling = lower_priority_sibling
 
-        self.image = pygame.Surface((self.width, self.height))
-        pygame.draw.ellipse(self.image, self.debug_color, (0, 0, self.width, self.height))
-        self.image.set_colorkey((0, 0, 0))
-        self.image = pygame.transform.rotate(self.image, self.rotation)
+        self.image = self.create_image()
+
+    def create_image(self):
+        image = pygame.Surface((self.width, self.height))
+        pygame.draw.ellipse(image, self.debug_color, (0, 0, self.width, self.height))
+        image.set_colorkey((0, 0, 0))
+        image = pygame.transform.rotate(image, self.rotation)
+        return image
 
     def __repr__(self):
         return f"Hitbox with id {id(self)}"
@@ -783,10 +787,11 @@ class Hitbox(Entity):
                 draw_arrow(surface, self.rect.center, self.knockback_angle, (255, 0, 0), 100)
 
     def flip_x(self):
-        # todo; flip image?
         self.knockback_angle = 180 - self.knockback_angle
-        self.angle = 180 - self.angle
+        self.rotation = 180 - self.rotation
         self.x_offset = -self.x_offset
+        self.image = self.create_image()
+
 
     @property
     def lower_priority_sibling(self):

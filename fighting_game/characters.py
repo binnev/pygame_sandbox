@@ -105,10 +105,10 @@ class Debugger(Character):
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
-                x_offset=30,
-                width=30,
-                height=30,
-                rotation=0,
+                x_offset=130,
+                width=100,
+                height=10,
+                rotation=45,
                 base_knockback=10,
                 knockback_angle=30,
                 knockback_growth=20,
@@ -330,6 +330,3 @@ class Debugger(Character):
             character = self.character
             if character.animation_frame == 4:
                 character.state = character.state_stand
-
-class Debugger2(Debugger):
-    mass = 8
