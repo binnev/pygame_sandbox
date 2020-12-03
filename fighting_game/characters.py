@@ -6,7 +6,10 @@ class Debugger(Character):
     height = 100
     color = Color("cyan")
     ground_acceleration = 5
-    ground_speed = 5
+    walk_speed = 5
+    run_speed = 9
+    initial_dash_duration = 20
+    run_turnaround_duration = 20
     air_acceleration = 0.75
     air_speed = 5
     gravity = 0.3

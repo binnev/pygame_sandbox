@@ -110,7 +110,10 @@ class Character(Entity):
     color: Color
     sprites: SpriteDict
     ground_acceleration: float
-    ground_speed: float
+    walk_speed: float
+    run_speed: float
+    initial_dash_duration: int
+    run_turnaround_duration: int
     air_acceleration: float
     air_speed: float
     jump_speed: float
@@ -428,21 +431,8 @@ class Character(Entity):
             else:
                 self.state = self.state_crouch
 
-        if input.is_down(input.LEFT):
-            if self.u - self.ground_acceleration >= -self.ground_speed:
-                self.u -= self.ground_acceleration
-            else:
-                difference = -self.ground_speed - self.u
-                if difference < 0:
-                    self.u += difference
-
-        if input.is_down(input.RIGHT):
-            if self.u + self.ground_acceleration <= self.ground_speed:
-                self.u += self.ground_acceleration
-            else:
-                difference = self.ground_speed - self.u
-                if difference > 0:
-                    self.u += difference
+        if input.is_down(input.LEFT) or input.is_down(input.RIGHT):
+            self.state = self.state_initial_dash
 
         if input.is_pressed(input.Y):
             self.state = self.state_jumpsquat
@@ -455,6 +445,80 @@ class Character(Entity):
 
         self.grounded_physics()
 
+    def state_initial_dash(self):
+        self.image = self.sprites["run_" + self.facing].get_frame(0)
+        input = self.input
+        if input.is_down(input.LEFT):
+            if self.facing_right:
+                self.game_tick = 0  # reset state counter
+            self.facing_right = False
+            self.u = -self.run_speed
+        if input.is_down(input.RIGHT):
+            if not self.facing_right:
+                self.game_tick = 0
+            self.facing_right = True
+            self.u = self.run_speed
+        if input.is_pressed(input.Y):
+            self.state = self.state_jumpsquat
+        if input.is_down(input.DOWN):
+            self.state = self.state_crouch
+        if self.airborne:  # e.g. by walking off the edge of a platform
+            self.state = self.state_fall
+        if self.game_tick == self.initial_dash_duration:
+            self.state = self.state_run
+        self.grounded_physics()
+
+    def state_run(self):
+        self.image = self.sprites["run_" + self.facing].get_frame(self.animation_frame)
+        input = self.input
+        if not input.is_down(input.LEFT) and not input.is_down(input.RIGHT):
+            self.state = self.state_run_end
+        if input.is_down(input.LEFT):
+            if self.facing_right:
+                self.state = self.state_run_turnaround
+            else:
+                self.u = -self.run_speed
+            self.facing_right = False
+        if input.is_down(input.RIGHT):
+            if not self.facing_right:
+                self.state = self.state_run_turnaround
+            else:
+                self.u = self.run_speed
+            self.facing_right = True
+        if input.is_pressed(input.Y):
+            self.state = self.state_jumpsquat
+        if input.is_down(input.DOWN):
+            self.state = self.state_crouch
+        if self.airborne:  # e.g. by walking off the edge of a platform
+            self.state = self.state_fall
+        self.grounded_physics()
+
+    def state_run_turnaround(self):
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+        input = self.input
+        if input.is_pressed(input.Y):
+            self.state = self.state_jumpsquat
+        if input.is_down(input.DOWN):
+            self.state = self.state_crouch
+        if self.airborne:  # e.g. by walking off the edge of a platform
+            self.state = self.state_fall
+        if self.game_tick == self.run_turnaround_duration:
+            self.state = self.state_stand
+        self.grounded_physics()
+
+    def state_run_end(self):
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+        input = self.input
+        if input.is_pressed(input.Y):
+            self.state = self.state_jumpsquat
+        if input.is_down(input.DOWN):
+            self.state = self.state_crouch
+        if self.airborne:  # e.g. by walking off the edge of a platform
+            self.state = self.state_fall
+        if self.game_tick == self.run_turnaround_duration:
+            self.state = self.state_stand
+        self.grounded_physics()
+
     def state_jumpsquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
         if self.game_tick == self.jumpsquat_frames:
@@ -462,6 +526,8 @@ class Character(Entity):
                 self.jump()
             else:
                 self.shorthop()
+
+        self.grounded_physics()
 
     def state_crouch(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
@@ -472,6 +538,7 @@ class Character(Entity):
             self.jump()
         if not input.is_down(input.DOWN):
             self.state = self.state_stand
+        self.grounded_physics()
 
     def jump(self):
         self.v = -self.jump_speed
