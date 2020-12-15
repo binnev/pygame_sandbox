@@ -166,7 +166,7 @@ class VolleyballMatch(Sprite):
         )
         self.player2 = Stickman(
             *self.starting_positions[1],
-            input=self.game.keyboard1,
+            input=self.game.controller0,
             facing_right=False,
         )
         self.level.add(self.player1, self.player2, type="character")

@@ -21,14 +21,14 @@ class SandBox(Scene):
         self.level = Battlefield()
         self.levels.add(self.level)  # didn't pass a ref to self.
         self.players.add(Debugger(500, 500, input=self.game.controller0))
-        self.enemies.add(Debugger(600, 500, input=Keyboard0()))
+        self.enemies.add(Debugger(700, 500, input=Keyboard0()))
         self.level.add_character(*self.players, *self.enemies)
         self.state = lambda: None
 
     def update(self):
         super().update()
         if not self.enemies:
-            self.enemies.add(Debugger(600, 500, input=Keyboard0()))
+            self.enemies.add(Debugger(700, 500, input=Keyboard0()))
             self.level.add_character(*self.enemies)
         if not self.players:
             self.players.add(Debugger(500, 500, input=self.game.controller0))

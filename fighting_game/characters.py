@@ -50,6 +50,7 @@ class Debugger(Character):
             f"state: {state_name}",
             f"damage: {self.damage}%",
             f"fast_fall: {self.fast_fall}",
+            f"hitpause_duration: {self.hitpause_duration}",
         ]
         line_spacing = 20
         for ii, thing in enumerate(things_to_print):

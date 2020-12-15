@@ -166,9 +166,6 @@ class Character(Entity):
         self.fast_fall = False
 
     def update(self):
-        if self.hitpause_duration:
-            self.hitpause_duration -= 1
-            return
         super().update()
         self.state()
 
@@ -298,7 +295,7 @@ class Character(Entity):
             self.state = self.state_fall
 
     def apply_gravity(self, speed_limit):
-        self. v += self.acceleration_to_apply(self.v, self.gravity, speed_limit)
+        self.v += self.acceleration_to_apply(self.v, self.gravity, speed_limit)
 
     def apply_air_resistance(self):
         magnitude = abs(self.u)
@@ -472,6 +469,21 @@ class Character(Entity):
 
         self.grounded_physics()
 
+    def enter_hitpause(self):
+        """ Using a closure to store this state. This is a good idea because it still allows easy
+        access to the self variable, unlike class-based states. """
+        return_state = self.state
+        return_tick = self.game_tick
+
+        def hitpause():
+            if self.hitpause_duration == 0:
+                self.state = return_state
+                self.game_tick = return_tick
+            else:
+                self.hitpause_duration -= 1
+
+        self.state = hitpause
+
     def state_initial_dash(self):
         self.image = self.sprites["run_" + self.facing].get_frame(0)
         input = self.input
@@ -587,6 +599,12 @@ class Character(Entity):
             self.fast_fall = True
             self.v = self.fast_fall_speed
 
+    def allow_hitfall(self):
+        input = self.input
+        if input.is_down(input.DOWN) and self.hitpause_duration > 0:
+            self.fast_fall = True
+            self.v = self.fast_fall_speed
+
     def enforce_max_fall_speed(self):
         if self.v > 0 and abs(self.v) > self.fall_speed:
             self.v = self.fall_speed
@@ -662,6 +680,7 @@ class AerialMove(Move):
         super().__call__(*args, **kwargs)
         self.character.allow_fastfall()
         self.character.allow_aerial_drift()
+        self.character.allow_hitfall()
         if not self.character.airborne:
             self.character.state = self.character.landing_lag(self.landing_lag)
 
@@ -781,6 +800,7 @@ class Hitbox(Entity):
         electric"""
         self.level.screen_shake += 10
         self.owner.hitpause_duration = self.hitpause_duration
+        self.owner.enter_hitpause()
         object.hitpause_duration = self.hitpause_duration
         object.hitstun_duration = self.hitstun_duration(knockback)
         object.y -= 1
