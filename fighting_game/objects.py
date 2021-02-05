@@ -289,8 +289,35 @@ class Character(Entity):
         decay = 0.1
         self.u *= 1 - decay
         self.v *= 1 - decay
+        """ 
+        todo: here do platform collision 
+        horizontal collision: 
+            droppable: pass through
+            solid: set velocity to 0 but stay in airdodge state
+        vertical collision: 
+            set vertical velocity to 0 but maintain horizontal velocity!
+            
+        later: build in a buffer so you can be slightly below the top of a platform. 
+        """
+        # update horizontal position and handle platform collisions
         self.x += self.u
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        for platform in platforms:
+            if platform.droppable:
+                self.horizontal_collide_droppable_platform(self, platform)
+            else:
+                self.horizontal_collide_solid_platform(self, platform)
+
+        # update vertical position and handle platform collisions
+        old_rect = Rect(self.rect)  # remember previous position
         self.y += self.v
+        platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
+        for platform in platforms:
+            if platform.droppable:
+                self.vertical_collide_droppable_platform(self, platform, old_rect)
+            else:
+                self.vertical_collide_solid_platform(self, platform)
+
         if self.game_tick == self.air_dodge_duration:
             self.state = self.state_fall
 
@@ -448,12 +475,13 @@ class Character(Entity):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
         input = self.input
 
-        if input.is_down(input.DOWN):
+        if input.is_pressed(input.DOWN):
             platforms = list(filter(self.standing_on_platform, self.level.platforms))
             if all(platform.droppable for platform in platforms):
                 self.y += 1  # need this to drop through platforms
-            else:
-                self.state = self.state_crouch
+
+        if input.is_down(input.DOWN):
+            self.state = self.state_crouch
 
         if input.is_down(input.LEFT) or input.is_down(input.RIGHT):
             self.state = self.state_initial_dash
@@ -594,7 +622,7 @@ class Character(Entity):
 
     def allow_fastfall(self):
         input = self.input
-        if input.is_down(input.DOWN) and self.v > 0 and not self.fast_fall:
+        if input.is_pressed(input.DOWN) and self.v > 0 and not self.fast_fall:
             # self.level.add_particle_effect(JumpRing(*self.rect.midbottom, color=Color("orange")))
             self.fast_fall = True
             self.v = self.fast_fall_speed
