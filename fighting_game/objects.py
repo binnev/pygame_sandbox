@@ -303,10 +303,8 @@ class Character(Entity):
         self.x += self.u
         platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
         for platform in platforms:
-            if platform.droppable:
-                self.horizontal_collide_droppable_platform(self, platform)
-            else:
-                self.horizontal_collide_solid_platform(self, platform)
+            if not platform.droppable:
+                self.bump_horizontally(platform)
 
         # update vertical position and handle platform collisions
         old_rect = Rect(self.rect)  # remember previous position
@@ -331,21 +329,59 @@ class Character(Entity):
         speed = max([0, speed])
         self.u = speed * direction
 
+    def bump_horizontally(self, platform):
+        moving_right = self.u > 0
+        self.u = 0
+        if moving_right:
+            self.rect.right = platform.rect.left
+        else:
+            self.rect.left = platform.rect.right
+
+    def bump_vertically(self, platform):
+        moving_down = self.v > 0
+        self.v = 0
+        if moving_down:
+            self.rect.bottom = platform.rect.top
+        else:
+            self.rect.top = platform.rect.bottom
+
+    def bounce_horizontally(self, platform):
+        moving_right = self.u > 0
+        if not platform.droppable:
+            pass  # you can move horizontally through droppable platforms
+        else:
+            if moving_right:
+                self.rect.right = platform.rect.left
+            else:
+                self.rect.left = platform.rect.right
+            self.u = -self.u * (1 - BOUNCE_LOSS)
+
+    def bounce_vertically(self, platform):
+        moving_down = self.v > 0
+        if moving_down:
+            self.rect.bottom = platform.rect.top
+        else:
+            self.rect.top = platform.rect.bottom
+        self.v = -self.v * (1 - BOUNCE_LOSS)
+
+
     @staticmethod
     def horizontal_collide_droppable_platform(self, platform):
         pass  # you can move horizontally through droppable platforms
 
     @staticmethod
     def horizontal_collide_solid_platform(self, platform):
-        moving_right = self.u > 0
-        if moving_right:
-            self.rect.right = min([self.rect.right, platform.rect.left])
-        else:
-            self.rect.left = max([self.rect.left, platform.rect.right])
-        self.u = 0
+        return self.bump_horizontally(platform)
 
-    @staticmethod
-    def vertical_collide_droppable_platform(self, platform, old_rect: Rect):
+    def horizontal_collide_platform(self, platform):
+        if platform.droppable:
+            return None
+        else:
+            return self.bump_horizontally(platform)
+
+    def vertical_collide_platform(
+        self, platform, old_rect: Rect, allow_fall_through, next_state=None
+    ):
         moving_down = self.v > 0
         if moving_down:
             # if character was already inside the platform, or player is holding down
@@ -356,8 +392,28 @@ class Character(Entity):
             # if character was above the platform and not holding down
             else:
                 # don't go through the platform
-                self.rect.bottom = min([self.rect.bottom, platform.rect.top])
-                self.v = 0
+                self.bump_vertically(platform)
+                self.state = self.state_stand
+                self.fast_fall = False
+        else:  # if travelling up
+            pass  # you can go upwards through droppable platforms
+
+
+    @staticmethod
+    def vertical_collide_droppable_platform(self, platform, old_rect: Rect):
+        # todo: add optional param next_state
+        # todo: add param allow_fall_through and merge this with
+        moving_down = self.v > 0
+        if moving_down:
+            # if character was already inside the platform, or player is holding down
+            if (old_rect.bottom > platform.rect.top) or (
+                self.input.is_down(self.input.DOWN) and self.state == self.state_fall
+            ):
+                pass
+            # if character was above the platform and not holding down
+            else:
+                # don't go through the platform
+                self.bump_vertically(platform)
                 self.state = self.state_stand
                 self.fast_fall = False
         else:  # if travelling up
@@ -399,6 +455,7 @@ class Character(Entity):
         self.x += self.u
         platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
         for platform in platforms:
+            # todo: what I want here is a function called self.fall_into_platform oid
             if platform.droppable:
                 horizontal_collide_droppable_platform(self, platform)
             else:
@@ -498,8 +555,8 @@ class Character(Entity):
         self.grounded_physics()
 
     def enter_hitpause(self):
-        """ Using a closure to store this state. This is a good idea because it still allows easy
-        access to the self variable, unlike class-based states. """
+        """Using a closure to store this state. This is a good idea because it still allows easy
+        access to the self variable, unlike class-based states."""
         return_state = self.state
         return_tick = self.game_tick
 
