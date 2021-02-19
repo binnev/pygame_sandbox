@@ -365,7 +365,6 @@ class Character(Entity):
             self.rect.top = platform.rect.bottom
         self.v = -self.v * (1 - BOUNCE_LOSS)
 
-
     @staticmethod
     def horizontal_collide_droppable_platform(self, platform):
         pass  # you can move horizontally through droppable platforms
@@ -398,7 +397,6 @@ class Character(Entity):
                 self.fast_fall = False
         else:  # if travelling up
             pass  # you can go upwards through droppable platforms
-
 
     @staticmethod
     def vertical_collide_droppable_platform(self, platform, old_rect: Rect):
@@ -752,6 +750,7 @@ class Move:
             for frames, hitboxes in self.hitbox_mapping.items()
             for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
         }
+        sounds.captain_falcon.swing.play()
 
     def __call__(self, *args, **kwargs):
         n = self.character.animation_frame

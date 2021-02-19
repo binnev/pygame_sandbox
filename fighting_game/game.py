@@ -70,7 +70,7 @@ class FightingGame(Scene):
                 if event.key == pygame.K_F1:
                     self.debug = not self.debug
                 if event.key == pygame.K_s:
-                    sounds.testing.play()
+                    sounds.announcement.play()
 
         for device in self.input_devices:
             device.read_new_inputs()

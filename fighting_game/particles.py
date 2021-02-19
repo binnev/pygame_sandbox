@@ -84,6 +84,8 @@ class Plume(Sprite):
         x_unit = numpy.cos(numpy.deg2rad(angle_deg))
         y_unit = -numpy.sin(numpy.deg2rad(angle_deg))
 
+        sounds.death_plume.play()
+
         for __ in range(25):
             self.particles.add(
                 Circle(
