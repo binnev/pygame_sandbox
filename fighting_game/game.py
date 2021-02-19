@@ -1,8 +1,9 @@
 import sys
 
+from fighting_game import sounds
+from fighting_game.conf import *
 from fighting_game.groups import *
 from fighting_game.inputs import *
-from fighting_game.conf import *
 
 
 class FightingGame(Scene):
@@ -68,6 +69,8 @@ class FightingGame(Scene):
                     sys.exit()
                 if event.key == pygame.K_F1:
                     self.debug = not self.debug
+                if event.key == pygame.K_s:
+                    sounds.hit.play()
 
         for device in self.input_devices:
             device.read_new_inputs()

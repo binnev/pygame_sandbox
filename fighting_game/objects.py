@@ -8,6 +8,7 @@ from pygame.rect import Rect
 
 from base.animation import SpriteDict
 from base.utils import draw_arrow
+from fighting_game import sounds
 from fighting_game.conf import BOUNCE_LOSS, HITPAUSE_CONSTANT, HITSTUN_CONSTANT
 from fighting_game.groups import *
 from fighting_game.inputs import *
@@ -676,6 +677,7 @@ class Character(Entity):
 
     def handle_hit(self, hitbox):
         self.state = self.state_hit_aerial
+        sounds.hit.play()
 
     def allow_fastfall(self):
         input = self.input
