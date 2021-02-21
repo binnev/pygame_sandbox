@@ -531,6 +531,9 @@ class Character(Entity):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
         input = self.input
 
+        if input.is_pressed(input.A):
+            self.state = self.Jab(self)
+
         if input.is_pressed(input.DOWN):
             platforms = list(filter(self.standing_on_platform, self.level.platforms))
             if all(platform.droppable for platform in platforms):
@@ -675,7 +678,6 @@ class Character(Entity):
 
     def handle_hit(self, hitbox):
         self.state = self.state_hit_aerial
-        sounds.hit.play()
 
     def allow_fastfall(self):
         input = self.input
@@ -733,10 +735,9 @@ class Character(Entity):
 
 
 class Move:
-    """ E.g. an attack """
-
     hitbox_mapping: dict
     character: Character
+    sound = sounds.swing5
 
     def __init__(self, character: Character):
         # todo: make a frame mapping similar to the hitbox mapping.
@@ -750,7 +751,7 @@ class Move:
             for frames, hitboxes in self.hitbox_mapping.items()
             for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
         }
-        sounds.captain_falcon.swing.play()
+        self.sound.play()
 
     def __call__(self, *args, **kwargs):
         n = self.character.animation_frame
@@ -835,6 +836,7 @@ class Hitbox(Entity):
     """
 
     debug_color = (60, 0, 0)
+    sound = sounds.hit
 
     def __init__(
         self,
@@ -851,6 +853,7 @@ class Hitbox(Entity):
         damage: float = 0,
         higher_priority_sibling: Entity = None,
         lower_priority_sibling: Entity = None,
+        sound=None,
     ):
         super().__init__()
         self.x_offset = x_offset
@@ -867,6 +870,8 @@ class Hitbox(Entity):
         self.knockback_growth = knockback_growth
         self.higher_priority_sibling = higher_priority_sibling
         self.lower_priority_sibling = lower_priority_sibling
+        if sound:
+            self.sound = sound
 
         self.image = self.create_image()
 
@@ -885,6 +890,7 @@ class Hitbox(Entity):
         context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
         electric"""
         self.level.screen_shake += 10
+        self.sound.play()
         self.owner.hitpause_duration = self.hitpause_duration
         self.owner.enter_hitpause()
         object.hitpause_duration = self.hitpause_duration

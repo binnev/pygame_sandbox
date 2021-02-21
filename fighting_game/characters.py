@@ -1,5 +1,6 @@
 from fighting_game.objects import *
 
+
 class Debugger(Character):
     mass = 10
     width = 50
@@ -61,7 +62,6 @@ class Debugger(Character):
                 thing,
             )
 
-
     class AttackMove(Move):
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -102,6 +102,7 @@ class Debugger(Character):
 
     class ForwardAir(AerialMove):
         landing_lag = 5
+        sound = sounds.sword_swing
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -114,6 +115,7 @@ class Debugger(Character):
                 knockback_angle=30,
                 knockback_growth=20,
                 damage=20,
+                sound=sounds.sword_hit,
             )
             sour_spot = Hitbox(
                 owner=character,
@@ -126,6 +128,7 @@ class Debugger(Character):
                 knockback_growth=10,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
+                sound=sounds.sword_hit2,
             )
             assert sour_spot.higher_priority_sibling is sweet_spot
             assert sweet_spot.lower_priority_sibling is sour_spot
@@ -228,6 +231,7 @@ class Debugger(Character):
 
     class DownAir(AerialMove):
         landing_lag = 10
+
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -239,6 +243,7 @@ class Debugger(Character):
                 knockback_angle=270,
                 knockback_growth=20,
                 damage=20,
+                sound=sounds.bighit,
             )
             sour_spot = Hitbox(
                 owner=character,
@@ -269,6 +274,7 @@ class Debugger(Character):
 
     class NeutralAir(AerialMove):
         landing_lag = 5
+
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -330,4 +336,32 @@ class Debugger(Character):
             super().__call__()
             character = self.character
             if character.animation_frame == 4:
+                character.state = character.state_stand
+
+    class Jab(Move):
+        sound = sounds.swing3
+
+        def __init__(self, character: Character):
+            sweet_spot = Hitbox(
+                owner=character,
+                x_offset=10,
+                y_offset=0,
+                width=60,
+                height=60,
+                rotation=0,
+                base_knockback=30,
+                knockback_angle=45,
+                knockback_growth=1,
+                damage=10,
+                sound=sounds.smack3,
+            )
+            self.hitbox_mapping = {
+                (0, 2): [sweet_spot],
+            }
+            super().__init__(character)
+
+        def __call__(self):
+            super().__call__()
+            character = self.character
+            if character.animation_frame == 3:
                 character.state = character.state_stand
