@@ -743,7 +743,7 @@ class Move:
         # todo: make a frame mapping similar to the hitbox mapping.
         self.character = character
         if not character.facing_right:
-            hitboxes = {h for frame, hitboxes in self.hitbox_mapping.items() for h in hitboxes}
+            hitboxes = {h for hitboxes in self.hitbox_mapping.values() for h in hitboxes}
             for hitbox in hitboxes:
                 hitbox.flip_x()
         self.hitbox_lookup = {
