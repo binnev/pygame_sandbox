@@ -126,7 +126,7 @@ class Battlefield(Level):
             left_platform,
             right_platform,
             top_platform,
-            wall
+            # wall
         )
 
         self.blast_zone = BlastZone(0, 0, 1200, 800)

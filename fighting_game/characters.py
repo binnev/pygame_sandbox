@@ -30,6 +30,8 @@ class Debugger(Character):
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
+        if not debug:
+            return
 
         def tprint(surface, x, y, textString):
             font = pygame.font.Font(None, 30)
