@@ -103,7 +103,7 @@ class Battlefield(Level):
 
         ground = Platform(0, 0, 800, 1000)
         ground.x = SCREEN_WIDTH // 2
-        ground.rect.top = SCREEN_HEIGHT - 150
+        ground.rect.top = SCREEN_HEIGHT - 300
 
         wall = Platform(0, 0, 20, 300)
         wall.x = SCREEN_WIDTH // 2
@@ -129,7 +129,7 @@ class Battlefield(Level):
             # wall
         )
 
-        self.blast_zone = BlastZone(0, 0, 1200, 800)
-        self.blast_zone.x = ground.x
-        self.blast_zone.y = ground.rect.top - 300
+        self.blast_zone = BlastZone(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.blast_zone.x = SCREEN_WIDTH // 2
+        self.blast_zone.y = SCREEN_HEIGHT // 2
         self.add_invisible_element(self.blast_zone)
