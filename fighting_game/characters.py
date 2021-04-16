@@ -236,42 +236,45 @@ class Debugger(Character):
         landing_lag = 5
 
         def __init__(self, character: Character):
-            sweet_spot = Hitbox(
+            initial_hit = Hitbox(
                 owner=character,
-                y_offset=30,
-                width=30,
-                height=30,
+                width=50,
+                height=50,
                 rotation=0,
-                base_knockback=10,
+                base_knockback=40,
                 knockback_angle=80,
-                knockback_growth=10,
-                damage=20,
+                damage=5,
             )
-            sour_spot = Hitbox(
+            second_hit = Hitbox(
                 owner=character,
-                y_offset=30,
-                width=20,
-                height=20,
+                width=50,
+                height=50,
+                rotation=0,
+                base_knockback=40,
+                knockback_angle=80,
+                damage=5,
+            )
+            final_hit = Hitbox(
+                owner=character,
+                width=50,
+                height=50,
                 rotation=0,
                 base_knockback=5,
                 knockback_angle=80,
                 knockback_growth=5,
                 damage=10,
-                higher_priority_sibling=sweet_spot,
             )
-            assert sour_spot.higher_priority_sibling is sweet_spot
-            assert sweet_spot.lower_priority_sibling is sour_spot
             self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
+                (1, 2): [initial_hit],
+                (4, 5): [second_hit],
+                (7, 8): [final_hit],
             }
             super().__init__(character)
 
         def __call__(self):
             super().__call__()
             character = self.character
-            if character.animation_frame == 11:
+            if character.animation_frame == 10:
                 character.state = character.state_fall
 
     class UpTilt(Move):
