@@ -64,44 +64,6 @@ class Debugger(Character):
                 thing,
             )
 
-    class AttackMove(Move):
-        def __init__(self, character: Character):
-            sweet_spot = Hitbox(
-                owner=character,
-                width=70,
-                height=50,
-                rotation=30,
-                base_knockback=10,
-                knockback_angle=90,
-                knockback_growth=20,
-                damage=20,
-            )
-            sour_spot = Hitbox(
-                owner=character,
-                width=150,
-                height=100,
-                rotation=45,
-                base_knockback=5,
-                knockback_angle=90,
-                knockback_growth=10,
-                damage=10,
-                higher_priority_sibling=sweet_spot,
-            )
-            assert sour_spot.higher_priority_sibling is sweet_spot
-            assert sweet_spot.lower_priority_sibling is sour_spot
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
-            super().__init__(character)
-
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 11:
-                character.state = character.state_stand
-
     class ForwardAir(AerialMove):
         landing_lag = 5
         sound = sounds.sword_swing
@@ -132,8 +94,6 @@ class Debugger(Character):
                 higher_priority_sibling=sweet_spot,
                 sound=sounds.sword_hit2,
             )
-            assert sour_spot.higher_priority_sibling is sweet_spot
-            assert sweet_spot.lower_priority_sibling is sour_spot
             self.hitbox_mapping = {
                 (1, 3): [sweet_spot],
                 (4, 6): [sweet_spot, sour_spot],
@@ -216,8 +176,6 @@ class Debugger(Character):
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
-            assert sour_spot.higher_priority_sibling is sweet_spot
-            assert sweet_spot.lower_priority_sibling is sour_spot
             self.hitbox_mapping = {
                 (1, 3): [sweet_spot],
                 (4, 6): [sweet_spot, sour_spot],
@@ -366,4 +324,121 @@ class Debugger(Character):
             super().__call__()
             character = self.character
             if character.animation_frame == 3:
+                character.state = character.state_stand
+
+    class DownSmash(Move):
+        def __init__(self, character: Character):
+            sweet_spot = Hitbox(
+                owner=character,
+                y_offset=30,
+                width=30,
+                height=30,
+                rotation=0,
+                base_knockback=10,
+                knockback_angle=270,
+                knockback_growth=20,
+                damage=20,
+                sound=sounds.bighit,
+            )
+            sour_spot = Hitbox(
+                owner=character,
+                y_offset=30,
+                width=20,
+                height=20,
+                rotation=0,
+                base_knockback=5,
+                knockback_angle=270,
+                knockback_growth=10,
+                damage=10,
+                higher_priority_sibling=sweet_spot,
+            )
+            self.hitbox_mapping = {
+                (1, 3): [sweet_spot],
+                (4, 6): [sweet_spot, sour_spot],
+                (7, 10): [sour_spot],
+            }
+            super().__init__(character)
+
+        def __call__(self):
+            super().__call__()
+            character = self.character
+            if character.animation_frame == 5:
+                character.state = character.state_stand
+
+    class UpSmash(Move):
+        def __init__(self, character: Character):
+            sweet_spot = Hitbox(
+                owner=character,
+                y_offset=-30,
+                width=30,
+                height=30,
+                rotation=0,
+                base_knockback=10,
+                knockback_angle=90,
+                knockback_growth=20,
+                damage=20,
+            )
+            sour_spot = Hitbox(
+                owner=character,
+                y_offset=-30,
+                width=20,
+                height=20,
+                rotation=0,
+                base_knockback=5,
+                knockback_angle=90,
+                knockback_growth=10,
+                damage=10,
+                higher_priority_sibling=sweet_spot,
+            )
+            self.hitbox_mapping = {
+                (1, 3): [sweet_spot],
+                (4, 6): [sweet_spot, sour_spot],
+                (7, 10): [sour_spot],
+            }
+            super().__init__(character)
+
+        def __call__(self):
+            super().__call__()
+            character = self.character
+            if character.animation_frame == 5:
+                character.state = character.state_stand
+
+    class ForwardSmash(Move):
+        def __init__(self, character: Character):
+            sweet_spot = Hitbox(
+                owner=character,
+                x_offset=30,
+                width=30,
+                height=30,
+                rotation=45,
+                base_knockback=10,
+                knockback_angle=30,
+                knockback_growth=20,
+                damage=20,
+                sound=sounds.sword_hit,
+            )
+            sour_spot = Hitbox(
+                owner=character,
+                x_offset=30,
+                width=20,
+                height=20,
+                rotation=0,
+                base_knockback=5,
+                knockback_angle=45,
+                knockback_growth=10,
+                damage=10,
+                higher_priority_sibling=sweet_spot,
+                sound=sounds.sword_hit2,
+            )
+            self.hitbox_mapping = {
+                (1, 3): [sweet_spot],
+                (4, 6): [sweet_spot, sour_spot],
+                (7, 10): [sour_spot],
+            }
+            super().__init__(character)
+
+        def __call__(self):
+            super().__call__()
+            character = self.character
+            if character.animation_frame == 5:
                 character.state = character.state_stand
