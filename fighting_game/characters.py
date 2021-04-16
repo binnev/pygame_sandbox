@@ -200,7 +200,7 @@ class Debugger(Character):
                 height=30,
                 rotation=0,
                 base_knockback=10,
-                knockback_angle=270,
+                knockback_angle=280,
                 knockback_growth=20,
                 damage=20,
                 sound=sounds.bighit,
@@ -212,7 +212,7 @@ class Debugger(Character):
                 height=20,
                 rotation=0,
                 base_knockback=5,
-                knockback_angle=270,
+                knockback_angle=280,
                 knockback_growth=10,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
@@ -331,11 +331,11 @@ class Debugger(Character):
             sweet_spot = Hitbox(
                 owner=character,
                 y_offset=30,
-                width=30,
-                height=30,
+                width=60,
+                height=60,
                 rotation=0,
                 base_knockback=10,
-                knockback_angle=270,
+                knockback_angle=290,
                 knockback_growth=20,
                 damage=20,
                 sound=sounds.bighit,
@@ -343,11 +343,11 @@ class Debugger(Character):
             sour_spot = Hitbox(
                 owner=character,
                 y_offset=30,
-                width=20,
-                height=20,
+                width=100,
+                height=100,
                 rotation=0,
                 base_knockback=5,
-                knockback_angle=270,
+                knockback_angle=290,
                 knockback_growth=10,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
@@ -370,8 +370,8 @@ class Debugger(Character):
             sweet_spot = Hitbox(
                 owner=character,
                 y_offset=-30,
-                width=30,
-                height=30,
+                width=60,
+                height=60,
                 rotation=0,
                 base_knockback=10,
                 knockback_angle=90,
@@ -381,8 +381,8 @@ class Debugger(Character):
             sour_spot = Hitbox(
                 owner=character,
                 y_offset=-30,
-                width=20,
-                height=20,
+                width=100,
+                height=100,
                 rotation=0,
                 base_knockback=5,
                 knockback_angle=90,
@@ -408,8 +408,8 @@ class Debugger(Character):
             sweet_spot = Hitbox(
                 owner=character,
                 x_offset=30,
-                width=30,
-                height=30,
+                width=60,
+                height=60,
                 rotation=45,
                 base_knockback=10,
                 knockback_angle=30,
@@ -420,8 +420,8 @@ class Debugger(Character):
             sour_spot = Hitbox(
                 owner=character,
                 x_offset=30,
-                width=20,
-                height=20,
+                width=100,
+                height=100,
                 rotation=0,
                 base_knockback=5,
                 knockback_angle=45,
@@ -442,3 +442,124 @@ class Debugger(Character):
             character = self.character
             if character.animation_frame == 5:
                 character.state = character.state_stand
+
+    class DashAttack(Move):
+        def __init__(self, character: Character):
+            sweet_spot = Hitbox(
+                owner=character,
+                x_offset=30,
+                width=30,
+                height=30,
+                rotation=45,
+                base_knockback=70,
+                knockback_angle=80,
+                # knockback_growth=20,
+                damage=20,
+                sound=sounds.sword_hit,
+            )
+            sour_spot = Hitbox(
+                owner=character,
+                x_offset=30,
+                width=20,
+                height=20,
+                rotation=0,
+                base_knockback=30,
+                knockback_angle=45,
+                # knockback_growth=10,
+                damage=10,
+                higher_priority_sibling=sweet_spot,
+                sound=sounds.sword_hit2,
+            )
+            self.hitbox_mapping = {
+                (1, 3): [sweet_spot],
+                (4, 6): [sweet_spot, sour_spot],
+                (7, 10): [sour_spot],
+            }
+            super().__init__(character)
+
+        def __call__(self):
+            super().__call__()
+            character = self.character
+            if character.animation_frame == 10:
+                character.state = character.state_stand
+
+
+    class DownTilt(Move):
+        def __init__(self, character: Character):
+            sweet_spot = Hitbox(
+                owner=character,
+                x_offset=30,
+                y_offset=30,
+                width=20,
+                height=20,
+                rotation=0,
+                base_knockback=10,
+                knockback_angle=-10,
+                knockback_growth=8,
+                damage=20,
+            )
+            sour_spot = Hitbox(
+                owner=character,
+                x_offset=10,
+                y_offset=30,
+                width=30,
+                height=30,
+                rotation=0,
+                base_knockback=5,
+                knockback_angle=-10,
+                knockback_growth=8,
+                damage=10,
+                higher_priority_sibling=sweet_spot,
+            )
+            self.hitbox_mapping = {
+                (1, 3): [sweet_spot],
+                (4, 6): [sweet_spot, sour_spot],
+            }
+            super().__init__(character)
+
+        def __call__(self):
+            super().__call__()
+            character = self.character
+            if character.animation_frame == 5:
+                character.state = character.state_stand
+
+
+    class ForwardTilt(Move):
+        def __init__(self, character: Character):
+            sweet_spot = Hitbox(
+                owner=character,
+                x_offset=30,
+                y_offset=0,
+                width=20,
+                height=20,
+                rotation=0,
+                base_knockback=10,
+                knockback_angle=45,
+                knockback_growth=8,
+                damage=20,
+            )
+            sour_spot = Hitbox(
+                owner=character,
+                x_offset=10,
+                y_offset=0,
+                width=30,
+                height=30,
+                rotation=0,
+                base_knockback=5,
+                knockback_angle=45,
+                knockback_growth=8,
+                damage=10,
+                higher_priority_sibling=sweet_spot,
+            )
+            self.hitbox_mapping = {
+                (1, 3): [sweet_spot],
+                (4, 6): [sweet_spot, sour_spot],
+            }
+            super().__init__(character)
+
+        def __call__(self):
+            super().__call__()
+            character = self.character
+            if character.animation_frame == 5:
+                character.state = character.state_stand
+

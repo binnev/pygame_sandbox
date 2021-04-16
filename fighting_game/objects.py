@@ -143,6 +143,7 @@ class Character(Entity):
     UpSmash: "Move"
     DownSmash: "Move"
     ForwardSmash: "Move"
+    DashAttack: "Move"
     UpTilt: "Move"
     DownTilt: "Move"
     ForwardTilt: "Move"
@@ -195,6 +196,60 @@ class Character(Entity):
             if self.standing_on_platform(platform):
                 return False
         return True
+
+    def state_stand(self):
+        self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
+
+        self.allow_platform_drop()
+        self.allow_jump()
+        self.allow_crouch()
+        self.allow_dash()
+
+        self.allow_jab()
+
+        self.allow_up_tilt()
+        self.allow_down_tilt()
+        self.allow_forward_tilt()
+
+        self.allow_down_smash()
+        self.allow_up_smash()
+        self.allow_forward_smash()
+
+        if self.airborne:
+            self.state = self.state_fall
+
+        self.grounded_physics()
+
+    def state_run(self):
+        self.image = self.sprites["run_" + self.facing].get_frame(self.animation_frame)
+        input = self.input
+        if not input.is_down(input.LEFT) and not input.is_down(input.RIGHT):
+            self.state = self.state_run_end
+        if input.is_down(input.LEFT):
+            if self.facing_right:
+                self.state = self.state_run_turnaround
+            else:
+                self.u = -self.run_speed
+            self.facing_right = False
+        if input.is_down(input.RIGHT):
+            if not self.facing_right:
+                self.state = self.state_run_turnaround
+            else:
+                self.u = self.run_speed
+            self.facing_right = True
+        if input.is_pressed(input.Y):
+            self.state = self.state_jumpsquat
+        if input.is_down(input.DOWN):
+            self.state = self.state_crouch
+        if self.airborne:  # e.g. by walking off the edge of a platform
+            self.state = self.state_fall
+
+        self.allow_up_smash()
+        self.allow_down_smash()
+        self.allow_forward_smash()
+        self.allow_dash_attack()
+
+        self.grounded_physics()
 
     def state_fall(self):
         self.image = self.sprites["jump_" + self.facing].get_frame(self.animation_frame)
@@ -268,29 +323,6 @@ class Character(Entity):
         self.allow_fastfall()
         self.fall_physics()
 
-    def state_stand(self):
-        self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
-
-        self.allow_platform_drop()
-        self.allow_jump()
-        self.allow_crouch()
-        self.allow_dash()
-
-        self.allow_jab()
-
-        self.allow_up_tilt()
-        self.allow_down_tilt()
-        self.allow_forward_tilt()
-
-        self.allow_down_smash()
-        self.allow_up_smash()
-        self.allow_forward_smash()
-
-        if self.airborne:
-            self.state = self.state_fall
-
-        self.grounded_physics()
-
     def state_air_dodge(self):
         decay = 0.1
         self.u *= 1 - decay
@@ -361,36 +393,7 @@ class Character(Entity):
         self.allow_up_smash()
         self.allow_down_smash()
         self.allow_forward_smash()
-
-        self.grounded_physics()
-
-    def state_run(self):
-        self.image = self.sprites["run_" + self.facing].get_frame(self.animation_frame)
-        input = self.input
-        if not input.is_down(input.LEFT) and not input.is_down(input.RIGHT):
-            self.state = self.state_run_end
-        if input.is_down(input.LEFT):
-            if self.facing_right:
-                self.state = self.state_run_turnaround
-            else:
-                self.u = -self.run_speed
-            self.facing_right = False
-        if input.is_down(input.RIGHT):
-            if not self.facing_right:
-                self.state = self.state_run_turnaround
-            else:
-                self.u = self.run_speed
-            self.facing_right = True
-        if input.is_pressed(input.Y):
-            self.state = self.state_jumpsquat
-        if input.is_down(input.DOWN):
-            self.state = self.state_crouch
-        if self.airborne:  # e.g. by walking off the edge of a platform
-            self.state = self.state_fall
-
-        self.allow_up_smash()
-        self.allow_down_smash()
-        self.allow_forward_smash()
+        self.allow_dash_attack()
 
         self.grounded_physics()
 
@@ -729,7 +732,16 @@ class Character(Entity):
     def allow_forward_smash(self):
         input = self.input
         if input.is_pressed(input.C_LEFT) or input.is_pressed(input.C_RIGHT):
+            if input.is_down(input.C_RIGHT):
+                self.facing_right = True
+            if input.is_down(input.C_LEFT):
+                self.facing_right = False
             self.do_move(self.ForwardSmash)
+
+    def allow_dash_attack(self):
+        input = self.input
+        if (input.is_down(input.LEFT) or input.is_down(input.RIGHT)) and input.is_pressed(input.A):
+            self.do_move(self.DashAttack)
 
     def allow_up_tilt(self):
         input = self.input
@@ -744,6 +756,10 @@ class Character(Entity):
     def allow_forward_tilt(self):
         input = self.input
         if (input.is_down(input.LEFT) or input.is_down(input.LEFT)) and input.is_pressed(input.A):
+            if input.is_down(input.RIGHT):
+                self.facing_right = True
+            if input.is_down(input.LEFT):
+                self.facing_right = False
             self.do_move(self.ForwardTilt)
 
     def allow_platform_drop(self):
@@ -834,6 +850,10 @@ class Move:
         for hitbox in active_hitboxes:
             self.character.level.add_hitbox(hitbox)
 
+        # only handle grounded physics; AerialMove will handle airborne physics
+        if not self.character.airborne:
+            self.character.grounded_physics()
+
 
 class AerialMove(Move):
     landing_lag: int
@@ -852,6 +872,9 @@ class AerialMove(Move):
             vertical_collide_droppable_platform=self.vertical_collide_droppable_platform,
             vertical_collide_solid_platform=self.vertical_collide_solid_platform,
         )
+
+    # todo: move these (and the responsibility for choosing which to use) onto Character. Then
+    #  merge AerialMove and Move.
 
     @classmethod
     def horizontal_collide_droppable_platform(cls, character, platform):
