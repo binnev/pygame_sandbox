@@ -829,6 +829,7 @@ class Move:
     hitbox_mapping: dict
     character: Character
     sound = sounds.swing5
+    sprite_name: str = ""
 
     def __init__(self, character: Character):
         # todo: make a frame mapping similar to the hitbox mapping.
@@ -849,6 +850,11 @@ class Move:
         active_hitboxes = self.hitbox_lookup.get(n, [])
         for hitbox in active_hitboxes:
             self.character.level.add_hitbox(hitbox)
+
+        if self.sprite_name:
+            self.character.image = self.character.sprites[
+                self.sprite_name + "_" + self.character.facing
+            ].get_frame(n)
 
         # only handle grounded physics; AerialMove will handle airborne physics
         if not self.character.airborne:

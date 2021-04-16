@@ -67,6 +67,7 @@ class Debugger(Character):
     class ForwardAir(AerialMove):
         landing_lag = 5
         sound = sounds.sword_swing
+        sprite_name = "flying_kick"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -109,6 +110,7 @@ class Debugger(Character):
 
     class BackAir(AerialMove):
         landing_lag = 5
+        sprite_name = "back_air2"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -151,6 +153,7 @@ class Debugger(Character):
 
     class UpAir(AerialMove):
         landing_lag = 5
+        sprite_name = "aerial_defense"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -191,6 +194,7 @@ class Debugger(Character):
 
     class DownAir(AerialMove):
         landing_lag = 10
+        sprite_name = "stomp"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -407,6 +411,8 @@ class Debugger(Character):
                 character.state = character.state_stand
 
     class ForwardSmash(Move):
+        sprite_name = "standing_hit"
+
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -447,6 +453,8 @@ class Debugger(Character):
                 character.state = character.state_stand
 
     class DashAttack(Move):
+        sprite_name = "dive"
+
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -485,7 +493,6 @@ class Debugger(Character):
             character = self.character
             if character.animation_frame == 10:
                 character.state = character.state_stand
-
 
     class DownTilt(Move):
         def __init__(self, character: Character):
@@ -526,7 +533,6 @@ class Debugger(Character):
             if character.animation_frame == 5:
                 character.state = character.state_stand
 
-
     class ForwardTilt(Move):
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -565,4 +571,3 @@ class Debugger(Character):
             character = self.character
             if character.animation_frame == 5:
                 character.state = character.state_stand
-

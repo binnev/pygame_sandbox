@@ -84,7 +84,7 @@ class GamecubeControllerReader:
     # input ranges. Use these to set minimum (i.e. dead zone) and maximum input values
     GREY_STICK_INPUT_RANGE = (0.1, 0.86)
     YELLOW_STICK_INPUT_RANGE = (0.1, 0.86)
-    TRIGGER_INPUT_RANGE = (-0.7, 1)
+    TRIGGER_INPUT_RANGE = (-0.5, 1)
 
     def __init__(self, joystick_id: int):
         self.joystick = pygame.joystick.Joystick(joystick_id)  # get the joystick from pygame
