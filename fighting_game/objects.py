@@ -751,11 +751,15 @@ class Character(Entity):
     def allow_down_tilt(self):
         input = self.input
         if input.is_down(input.DOWN) and input.is_pressed(input.A):
+            if input.is_down(input.RIGHT):
+                self.facing_right = True
+            if input.is_down(input.LEFT):
+                self.facing_right = False
             self.do_move(self.DownTilt)
 
     def allow_forward_tilt(self):
         input = self.input
-        if (input.is_down(input.LEFT) or input.is_down(input.LEFT)) and input.is_pressed(input.A):
+        if (input.is_down(input.LEFT) or input.is_down(input.RIGHT)) and input.is_pressed(input.A):
             if input.is_down(input.RIGHT):
                 self.facing_right = True
             if input.is_down(input.LEFT):
@@ -771,7 +775,13 @@ class Character(Entity):
 
     def allow_jab(self):
         input = self.input
-        if input.is_pressed(input.A):
+        if (
+            input.is_pressed(input.A)
+            and not input.is_down(input.LEFT)
+            and not input.is_down(input.RIGHT)
+            and not input.is_down(input.UP)
+            and not input.is_down(input.DOWN)
+        ):
             self.do_move(self.Jab)
 
     def allow_jump(self):
@@ -786,7 +796,7 @@ class Character(Entity):
 
     def allow_dash(self):
         input = self.input
-        if input.is_down(input.LEFT) or input.is_down(input.RIGHT):
+        if input.is_pressed(input.LEFT) or input.is_pressed(input.RIGHT):
             self.state = self.state_initial_dash
 
     def allow_crouch(self):
@@ -830,35 +840,38 @@ class Move:
     character: Character
     sound = sounds.swing5
     sprite_name: str = ""
+    frame_mapping: list
 
     def __init__(self, character: Character):
-        # todo: make a frame mapping similar to the hitbox mapping.
         self.character = character
         if not character.facing_right:
-            hitboxes = {h for hitboxes in self.hitbox_mapping.values() for h in hitboxes}
+            # This needs to be a set because we want to flip each hitbox exactly once
+            hitboxes = {h for item in self.frame_mapping for h in item.get("hitboxes", [])}
             for hitbox in hitboxes:
                 hitbox.flip_x()
-        self.hitbox_lookup = {
-            frame: hitboxes
-            for frames, hitboxes in self.hitbox_mapping.items()
-            for frame in ([frames] if isinstance(frames, int) else range(frames[0], frames[-1] + 1))
-        }
         self.sound.play()
 
     def __call__(self, *args, **kwargs):
         n = self.character.animation_frame
-        active_hitboxes = self.hitbox_lookup.get(n, [])
+        try:
+            frame_data = self.frame_mapping[n]
+        except IndexError:
+            return self.end()
+
+        image = frame_data.get("image")
+        if image:
+            self.character.image = image
+        active_hitboxes = frame_data.get("hitboxes", [])
         for hitbox in active_hitboxes:
             self.character.level.add_hitbox(hitbox)
-
-        if self.sprite_name:
-            self.character.image = self.character.sprites[
-                self.sprite_name + "_" + self.character.facing
-            ].get_frame(n)
 
         # only handle grounded physics; AerialMove will handle airborne physics
         if not self.character.airborne:
             self.character.grounded_physics()
+
+    def end(self):
+        self.character.state = self.character.state_stand
+        return self.character.state()  # execute the state
 
 
 class AerialMove(Move):
@@ -878,6 +891,10 @@ class AerialMove(Move):
             vertical_collide_droppable_platform=self.vertical_collide_droppable_platform,
             vertical_collide_solid_platform=self.vertical_collide_solid_platform,
         )
+
+    def end(self):
+        self.character.state = self.character.state_fall
+        return self.character.state()  # execute the state
 
     # todo: move these (and the responsibility for choosing which to use) onto Character. Then
     #  merge AerialMove and Move.

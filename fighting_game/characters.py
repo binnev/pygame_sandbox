@@ -1,3 +1,5 @@
+from copy import copy
+
 from fighting_game.objects import *
 
 
@@ -67,7 +69,6 @@ class Debugger(Character):
     class ForwardAir(AerialMove):
         landing_lag = 5
         sound = sounds.sword_swing
-        sprite_name = "flying_kick"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -95,22 +96,24 @@ class Debugger(Character):
                 higher_priority_sibling=sweet_spot,
                 sound=sounds.sword_hit2,
             )
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"flying_kick_{character.facing}"]
+            images = sprite.frames
+            image_windup = images[0]
+            image_hit = images[2]
+            image_endlag = images[6]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 11:
-                character.state = character.state_fall
+            self.frame_mapping = [
+                {"image": image_windup},
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_hit, "hitboxes": [sour_spot]},
+                {"image": image_hit, "hitboxes": [sour_spot]},
+                {"image": image_endlag},
+            ]
+            super().__init__(character)
 
     class BackAir(AerialMove):
         landing_lag = 5
-        sprite_name = "back_air2"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -136,24 +139,26 @@ class Debugger(Character):
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
-            assert sour_spot.higher_priority_sibling is sweet_spot
-            assert sweet_spot.lower_priority_sibling is sour_spot
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"back_air2_{character.facing}"]
+            images = sprite.frames
+            image_windup = images[0]
+            image_windup2 = images[1]
+            image_hit = images[2]
+            image_hit2 = images[3]
+            image_endlag = images[4]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 11:
-                character.state = character.state_fall
+            self.frame_mapping = [
+                {"image": image_windup},
+                {"image": image_windup2},
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_hit2, "hitboxes": [sour_spot]},
+                {"image": image_hit2, "hitboxes": [sour_spot]},
+                {"image": image_endlag},
+            ]
+            super().__init__(character)
 
     class UpAir(AerialMove):
         landing_lag = 5
-        sprite_name = "aerial_defense"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -179,29 +184,29 @@ class Debugger(Character):
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"aerial_defense_{character.facing}"]
+            images = sprite.frames
+            image_hit = images[0]
+            image_endlag = images[1]
+            image_endlag2 = images[2]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 11:
-                character.state = character.state_fall
+            self.frame_mapping = [
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_endlag, "hitboxes": [sour_spot]},
+                {"image": image_endlag, "hitboxes": [sour_spot]},
+                {"image": image_endlag2},
+            ]
+            super().__init__(character)
 
     class DownAir(AerialMove):
         landing_lag = 10
-        sprite_name = "stomp"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
                 y_offset=30,
-                width=30,
-                height=30,
+                width=40,
+                height=40,
                 rotation=0,
                 base_knockback=10,
                 knockback_angle=280,
@@ -211,9 +216,9 @@ class Debugger(Character):
             )
             sour_spot = Hitbox(
                 owner=character,
-                y_offset=30,
-                width=20,
-                height=20,
+                y_offset=0,
+                width=60,
+                height=60,
                 rotation=0,
                 base_knockback=5,
                 knockback_angle=280,
@@ -221,20 +226,25 @@ class Debugger(Character):
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
-            assert sour_spot.higher_priority_sibling is sweet_spot
-            assert sweet_spot.lower_priority_sibling is sour_spot
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"stomp_{character.facing}"]
+            images = sprite.frames
+            image_windup = images[1]
+            image_hit = images[3]
+            image_endlag = images[5]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 11:
-                character.state = character.state_fall
+            self.frame_mapping = [
+                {"image": image_windup},
+                {"image": image_windup},
+                {"image": image_windup},
+                {"image": image_hit},
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
+                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
+                {"image": image_hit, "hitboxes": [sour_spot]},
+                {"image": image_endlag},
+                {"image": image_endlag},
+            ]
+            super().__init__(character)
 
     class NeutralAir(AerialMove):
         landing_lag = 5
@@ -268,18 +278,24 @@ class Debugger(Character):
                 knockback_growth=5,
                 damage=10,
             )
-            self.hitbox_mapping = {
-                (1, 2): [initial_hit],
-                (4, 5): [second_hit],
-                (7, 8): [final_hit],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"stomp_{character.facing}"]
+            images = sprite.frames
+            image = images[1]
+            sprite2 = character.sprites[f"back_air2_{character.facing}"]
+            image_hit2 = sprite2.frames[3]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 10:
-                character.state = character.state_fall
+            self.frame_mapping = [
+                {"image": image_hit2, "hitboxes": [initial_hit]},
+                {"image": image},
+                {"image": image},
+                {"image": image_hit2, "hitboxes": [second_hit]},
+                {"image": image},
+                {"image": image},
+                {"image": image_hit2, "hitboxes": [final_hit]},
+                {"image": image},
+                {"image": image},
+            ]
+            super().__init__(character)
 
     class UpTilt(Move):
         def __init__(self, character: Character):
@@ -294,16 +310,20 @@ class Debugger(Character):
                 knockback_growth=5,
                 damage=10,
             )
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"weird_hit_{character.facing}"]
+            images = sprite.frames
+            image_windup = images[1]
+            image_hit = images[3]
+            image_endlag = images[4]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 4:
-                character.state = character.state_stand
+            self.frame_mapping = [
+                {"image": image_windup},
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_endlag},
+                {"image": image_endlag},
+                {"image": image_endlag},
+            ]
+            super().__init__(character)
 
     class Jab(Move):
         sound = sounds.swing3
@@ -322,55 +342,73 @@ class Debugger(Character):
                 damage=10,
                 sound=sounds.smack3,
             )
-            self.hitbox_mapping = {
-                (0, 2): [sweet_spot],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"weird_hit_{character.facing}"]
+            images = sprite.frames
+            image_hit = images[1]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 3:
-                character.state = character.state_stand
+            self.frame_mapping = [
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_hit},
+                {"image": image_hit},
+            ]
+            super().__init__(character)
 
     class DownSmash(Move):
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
                 y_offset=30,
-                width=60,
-                height=60,
+                width=100,
+                height=100,
                 rotation=0,
                 base_knockback=10,
-                knockback_angle=290,
+                knockback_angle=295,
                 knockback_growth=20,
-                damage=20,
+                damage=10,
                 sound=sounds.bighit,
             )
             sour_spot = Hitbox(
                 owner=character,
                 y_offset=30,
-                width=100,
-                height=100,
+                width=60,
+                height=60,
                 rotation=0,
-                base_knockback=5,
-                knockback_angle=290,
-                knockback_growth=10,
-                damage=10,
-                higher_priority_sibling=sweet_spot,
+                base_knockback=25,
+                knockback_angle=280,
+                damage=5,
             )
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
-            super().__init__(character)
+            sour_spot2 = copy(sour_spot)
+            sour_spot3 = copy(sour_spot)
+            sprite = character.sprites[f"dive_getup_{character.facing}"]
+            images = sprite.frames
+            image_hit = images[3]
+            image_hit2 = images[5]
+            image_getup1 = images[6]
+            image_getup2 = images[7]
+            image_getup3 = images[8]
+            image_getup4 = images[9]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 5:
-                character.state = character.state_stand
+            self.frame_mapping = [
+                {"image": image_getup4},
+                {"image": image_hit, "hitboxes": [sour_spot]},
+                {"image": image_hit2},
+                {"image": image_hit2},
+                {"image": image_hit, "hitboxes": [sour_spot2]},
+                {"image": image_hit2},
+                {"image": image_hit2},
+                {"image": image_hit, "hitboxes": [sour_spot3]},
+                {"image": image_hit2},
+                {"image": image_hit2},
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_hit2},
+                {"image": image_hit2},
+                {"image": image_getup1},
+                {"image": image_getup2},
+                {"image": image_getup3},
+                {"image": image_getup4},
+            ]
+
+            super().__init__(character)
 
     class UpSmash(Move):
         def __init__(self, character: Character):
@@ -397,21 +435,25 @@ class Debugger(Character):
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
+            sprite = character.sprites[f"taunt_{character.facing}"]
+            images = sprite.frames
+            image_windup = images[1]
+            image_windup2 = images[2]
+            image_hit = images[3]
+            image_hit2 = images[4]
+
+            self.frame_mapping = [
+                {"image": image_windup},
+                {"image": image_windup2},
+                {"image": image_hit, "hitboxes": [sour_spot]},
+                {"image": image_hit2, "hitboxes": [sweet_spot]},
+                {"image": image_hit},
+                {"image": image_windup2},
+                {"image": image_windup},
+            ]
             super().__init__(character)
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 5:
-                character.state = character.state_stand
-
     class ForwardSmash(Move):
-        sprite_name = "standing_hit"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -439,21 +481,27 @@ class Debugger(Character):
                 higher_priority_sibling=sweet_spot,
                 sound=sounds.sword_hit2,
             )
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
+            sprite = character.sprites[f"standing_hit_{character.facing}"]
+            images = sprite.frames
+            image_hit = images[0]
+
+            self.frame_mapping = [
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_hit, "hitboxes": [sour_spot]},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+            ]
             super().__init__(character)
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 5:
-                character.state = character.state_stand
-
     class DashAttack(Move):
-        sprite_name = "dive"
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
@@ -481,18 +529,19 @@ class Debugger(Character):
                 higher_priority_sibling=sweet_spot,
                 sound=sounds.sword_hit2,
             )
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-                (7, 10): [sour_spot],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"dive_{character.facing}"]
+            images = sprite.frames
+            image_hit = images[0]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 10:
-                character.state = character.state_stand
+            self.frame_mapping = [
+                {"image": image_hit, "hitboxes": [sweet_spot]},
+                {"image": image_hit, "hitboxes": [sour_spot]},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+            ]
+            super().__init__(character)
 
     class DownTilt(Move):
         def __init__(self, character: Character):
@@ -521,17 +570,17 @@ class Debugger(Character):
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"dive_getup_{character.facing}"]
+            images = sprite.frames
+            image_hit = images[6]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 5:
-                character.state = character.state_stand
+            self.frame_mapping = [
+                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
+                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
+                {"image": image_hit},
+                {"image": image_hit},
+            ]
+            super().__init__(character)
 
     class ForwardTilt(Move):
         def __init__(self, character: Character):
@@ -560,14 +609,14 @@ class Debugger(Character):
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
-            self.hitbox_mapping = {
-                (1, 3): [sweet_spot],
-                (4, 6): [sweet_spot, sour_spot],
-            }
-            super().__init__(character)
+            sprite = character.sprites[f"run_{character.facing}"]
+            images = sprite.frames
+            image_hit = images[1]
 
-        def __call__(self):
-            super().__call__()
-            character = self.character
-            if character.animation_frame == 5:
-                character.state = character.state_stand
+            self.frame_mapping = [
+                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
+                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
+                {"image": image_hit},
+                {"image": image_hit},
+            ]
+            super().__init__(character)
