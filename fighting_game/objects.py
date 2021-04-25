@@ -1,30 +1,118 @@
-import random
 from collections import deque
 
 import numpy
 from numpy.core._multiarray_umath import sign
 from pygame import Color
+from pygame import Surface
 from pygame.rect import Rect
+from pygame.sprite import Sprite
 
 from base.animation import SpriteDict
 from base.utils import draw_arrow
 from fighting_game import sounds
 from fighting_game.conf import BOUNCE_LOSS, HITPAUSE_CONSTANT, HITSTUN_CONSTANT
-from fighting_game.groups import *
 from fighting_game.inputs import *
-from fighting_game.sprites.stickman import stickman_sprites
+
+
+class Group(pygame.sprite.Group):
+    """ Container for multiple sprite objects. """
+
+    def update(self, *args):
+        super().update(*args)
+
+    def draw(self, surface, debug=False):
+        """ Draws all of the member sprites onto the given surface. """
+        sprites = self.sprites()
+        for sprite in sprites:
+            sprite.draw(surface, debug)
+        self.lostsprites = []
+
+    def kill(self):
+        """Kill all the sprites in this group. This is different from .empty().
+        empty() does not kill the sprites in other groups."""
+        for sprite in self:
+            sprite.kill()
 
 
 class Entity(Sprite):
-    level: "Level"
+    """
+    Finite State Machine:
+    - self.tick is incremented every time the main game loop executes
+    - self.state is executed every tick
+    - when self.state changes, self.tick is set to 0
+
+    Hierarchical structure:
+    - Entities can be added to Groups to create a hierarchical structure
+    - The order of groups in the .groups attribute determines the draw order; it's basically the
+    layers
+    """
+
+    _state: "method" = lambda *args, **kwargs: None
+    child_groups: list = []  # groups of child Entities belonging to this entity
+    parent_groups: list  # groups of which this Entity is a member
+    tick: int = 0  # iterations of the main game loop
+    parental_name = "parent"
+
+    def update(self):
+        self.state()
+        for group in self.child_groups:
+            group.update()
+        self.tick += 1
+
+    def draw(self, surface: Surface, debug: bool = False):
+        for group in self.child_groups:
+            group.draw(surface, debug)
+
+    def kill(self):
+        """ Removes self from all groups it is a member of. """
+        for group in self.child_groups:
+            group.kill()
+        super().kill()
+
+    def add_to_group(self, *objects, group: Group):
+        """
+        Add an object to one of self.child_groups and give the object a reference to self as parent.
+        This method is intended to be used by more specific methods e.g.:
+        def add_particle(*objects):
+            self.add_to_group(*objects, self.particles)
+        """
+        group.add(*objects)
+        # give the object a reference to this scene
+        for obj in objects:
+            setattr(obj, self.parental_name, self)
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, new_state):
+        """Reset self.tick when state changes so we know how long we've been in the current
+        state."""
+        self._state = new_state
+        self.tick = 0
+
+    @property
+    def parent_groups(self):
+        return super().groups()
+
+    @property
+    def groups(self):
+        raise Exception("NO")
+
+
+class PhysicalEntity(Entity):
+    """
+    attributes:
+    - rect: used for collision detection and positioning
+    - image: used for blitting to screen
+    """
+
+    level: Entity  # parent Entity
     image: Surface = None
     debug_color = Color("red")
     rect: Rect
-    game_tick = 0  # number of game ticks elapsed in the current state
     frame_duration: int  # higher = slower animation framerate
-
-    def update(self):
-        self.update_animation()
 
     def draw(self, surface: Surface, debug: bool = False):
         if self.image:
@@ -32,6 +120,7 @@ class Entity(Sprite):
         if debug:
             pygame.draw.rect(surface, self.debug_color, self.rect, 1)
             pygame.draw.circle(surface, self.debug_color, self.rect.center, 2, 1)
+        super().draw(surface, debug)
 
     @property
     def image_rect(self):
@@ -62,25 +151,12 @@ class Entity(Sprite):
         self.rect.centery = new_value
 
     @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, new_state):
-        """ Reset animation counter when state changes """
-        self._state = new_state
-        self.game_tick = 0
-
-    @property
     def animation_frame(self):
         """ Convert game ticks to animation frames. """
-        return self.game_tick // self.frame_duration
-
-    def update_animation(self):
-        self.game_tick += 1
+        return self.tick // self.frame_duration
 
 
-class Platform(Entity):
+class Platform(PhysicalEntity):
     color = Color("gray")
 
     def __init__(self, x, y, width, height, droppable=False):
@@ -94,7 +170,7 @@ class Platform(Entity):
         self.image.fill(self.color)
 
 
-class BlastZone(Entity):
+class BlastZone(PhysicalEntity):
     debug_color = Color("blue")
 
     def __init__(self, x, y, width, height):
@@ -103,7 +179,7 @@ class BlastZone(Entity):
         self.rect.center = (x, y)
 
 
-class Character(Entity):
+class Character(PhysicalEntity):
     mass: float  # 10 is average
     damage: int
     width: int
@@ -166,14 +242,10 @@ class Character(Entity):
         self.facing_right = facing_right
         self.fast_fall = False
 
-    def update(self):
-        super().update()
-        self.state()
-
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
+        # draw touchbox
         if debug:
-            # draw touchbox
             pygame.draw.rect(surface, Color("goldenrod"), self.touch_box, 1)
 
     @property
@@ -184,7 +256,7 @@ class Character(Entity):
     def touch_box(self):
         return self.rect.inflate(self.touch_box_margin, self.touch_box_margin)
 
-    def touching(self, entity: Entity):
+    def touching(self, entity: PhysicalEntity):
         return self.touch_box.colliderect(entity.rect)
 
     def standing_on_platform(self, platform):
@@ -354,7 +426,7 @@ class Character(Entity):
             else:
                 self.vertical_collide_solid_platform(self, platform)
 
-        if self.game_tick == self.air_dodge_duration:
+        if self.tick == self.air_dodge_duration:
             self.state = self.state_fall
 
     def state_hit_aerial(self):
@@ -373,12 +445,12 @@ class Character(Entity):
         input = self.input
         if input.is_down(input.LEFT):
             if self.facing_right:
-                self.game_tick = 0  # reset state counter
+                self.tick = 0  # reset state counter
             self.facing_right = False
             self.u = -self.run_speed
         if input.is_down(input.RIGHT):
             if not self.facing_right:
-                self.game_tick = 0
+                self.tick = 0
             self.facing_right = True
             self.u = self.run_speed
         if input.is_pressed(input.Y):
@@ -387,7 +459,7 @@ class Character(Entity):
             self.state = self.state_crouch
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.state_fall
-        if self.game_tick == self.initial_dash_duration:
+        if self.tick == self.initial_dash_duration:
             self.state = self.state_run
 
         self.allow_up_smash()
@@ -406,7 +478,7 @@ class Character(Entity):
             self.state = self.state_crouch
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.state_fall
-        if self.game_tick == self.run_turnaround_duration:
+        if self.tick == self.run_turnaround_duration:
             self.state = self.state_stand
         self.grounded_physics()
 
@@ -419,13 +491,13 @@ class Character(Entity):
             self.state = self.state_crouch
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.state_fall
-        if self.game_tick == self.run_turnaround_duration:
+        if self.tick == self.run_turnaround_duration:
             self.state = self.state_stand
         self.grounded_physics()
 
     def state_jumpsquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
-        if self.game_tick == self.jumpsquat_frames:
+        if self.tick == self.jumpsquat_frames:
             if self.input.is_down(self.input.Y):
                 self.jump()
             else:
@@ -682,12 +754,12 @@ class Character(Entity):
         """Using a closure to store this state. This is a good idea because it still allows easy
         access to the self variable, unlike class-based states."""
         return_state = self.state
-        return_tick = self.game_tick
+        return_tick = self.tick
 
         def hitpause():
             if self.hitpause_duration == 0:
                 self.state = return_state
-                self.game_tick = return_tick
+                self.tick = return_tick
             else:
                 self.hitpause_duration -= 1
 
@@ -818,7 +890,7 @@ class Character(Entity):
     def landing_lag(self, ticks):
         def func():
             self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
-            if self.game_tick == ticks:
+            if self.tick == ticks:
                 self.state = self.state_stand
 
         return func
@@ -950,7 +1022,7 @@ class AerialMove(Move):
             character.v = 0
 
 
-class Hitbox(Entity):
+class Hitbox(PhysicalEntity):
     """
     A hitbox always has an owner. It follows its owner's x/y position. The x/y_offset attributes
     allow us to position the hitbox relative to its owner.
@@ -961,7 +1033,7 @@ class Hitbox(Entity):
 
     def __init__(
         self,
-        owner: Entity,
+        owner: PhysicalEntity,
         width: int,
         height: int,
         x_offset: int = 0,
@@ -972,8 +1044,8 @@ class Hitbox(Entity):
         knockback_growth: float = 0,
         knockback_angle: float = 0,
         damage: float = 0,
-        higher_priority_sibling: Entity = None,
-        lower_priority_sibling: Entity = None,
+        higher_priority_sibling: PhysicalEntity = None,
+        lower_priority_sibling: PhysicalEntity = None,
         sound=None,
     ):
         super().__init__()

@@ -2,11 +2,11 @@ import sys
 
 from fighting_game import sounds
 from fighting_game.conf import *
-from fighting_game.groups import *
 from fighting_game.inputs import *
+from fighting_game.objects import *
 
 
-class FightingGame(Scene):
+class FightingGame(Entity):
     fps = FPS
     window_width = SCREEN_WIDTH
     window_height = SCREEN_HEIGHT
@@ -21,7 +21,7 @@ class FightingGame(Scene):
         pygame.init()
 
         self.scenes = Group()
-        self.groups = [self.scenes]
+        self.child_groups = [self.scenes]
 
         pygame.font.init()
         self.font = pygame.font.Font(pygame.font.match_font(self.font_name), self.font_size)
@@ -49,7 +49,6 @@ class FightingGame(Scene):
         from fighting_game.scenes import SandBox
         self.add_scene(SandBox())
         self.debug = True
-        self.tick = 0
         self.running = True
         while self.running:
             self.update()
@@ -59,6 +58,7 @@ class FightingGame(Scene):
         self.add_to_group(*objects, group=self.scenes)
 
     def update(self):
+        # read inputs first
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -72,18 +72,18 @@ class FightingGame(Scene):
                 if event.key == pygame.K_s:
                     sounds.announcement.play()
 
+        # todo: this should just be self.inputs.update which super().update() will take care of.
+        #   (make sure that inputs is the first group so that inputs are read at the start of tick)
         for device in self.input_devices:
             device.read_new_inputs()
 
-        for group in self.groups:
-            group.update()
+        super().update()
         self.clock.tick(self.fps)
-        self.tick += 1
 
         # if there are no scenes to play, exit
         if not self.scenes:
             self.running = False
 
-    def draw(self, surface, debug=False):
+    def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
         pygame.display.update()  # print to screen

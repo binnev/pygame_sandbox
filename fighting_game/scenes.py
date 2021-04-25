@@ -3,7 +3,7 @@ from fighting_game.characters import *
 from fighting_game.game import *
 
 
-class SandBox(Scene):
+class SandBox(Entity):
     """ Sandbox scene to try stuff out """
 
     game: FightingGame  # parent scene
@@ -14,7 +14,7 @@ class SandBox(Scene):
         self.gui_elements = Group()
         self.enemies = Group()
         self.players = Group()
-        self.groups = [self.levels, self.gui_elements]
+        self.child_groups = [self.levels, self.gui_elements]
         self.state = self.setup
 
     def setup(self):

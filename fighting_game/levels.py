@@ -2,7 +2,7 @@ from fighting_game.conf import *
 from fighting_game.particles import *
 
 
-class Level(Scene):
+class Level(Entity):
     """ A Scene representing a level of a game. """
 
     parental_name = "level"
@@ -18,7 +18,7 @@ class Level(Scene):
         self.particle_effects = Group()
         self.hitboxes = Group()
         self.invisible_elements = Group()
-        self.groups = [
+        self.child_groups = [
             self.background,
             self.platforms,
             self.characters,

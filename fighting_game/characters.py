@@ -1,6 +1,7 @@
 from copy import copy
 
 from fighting_game.objects import *
+from fighting_game.sprites.stickman import stickman_sprites
 
 
 class Debugger(Character):

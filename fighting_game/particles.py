@@ -1,3 +1,5 @@
+import random
+
 from fighting_game.objects import *
 
 def circle_surf(radius, color):
@@ -19,7 +21,7 @@ def random_int(min, max):
     return int(random_float(min, max))
 
 
-class Circle(Entity):
+class Circle(PhysicalEntity):
     blit_flag = pygame.BLEND_RGB_ADD
     gravity: float
     friction: float
