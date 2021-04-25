@@ -1,6 +1,13 @@
 import random
 
-from fighting_game.objects import *
+import numpy
+import pygame
+from pygame import Color, Surface
+from pygame.rect import Rect
+
+from fighting_game import sounds
+from fighting_game.objects.base import Group, Entity, PhysicalEntity
+
 
 def circle_surf(radius, color):
     radius = int(radius)

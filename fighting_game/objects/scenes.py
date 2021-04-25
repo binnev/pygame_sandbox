@@ -1,6 +1,7 @@
-from fighting_game.levels import *
-from fighting_game.characters import *
-from fighting_game.game import *
+from fighting_game.game import FightingGame
+from fighting_game.objects.base import Entity, Group
+from fighting_game.objects.characters import Debugger
+from fighting_game.objects.levels import Battlefield
 
 
 class SandBox(Entity):

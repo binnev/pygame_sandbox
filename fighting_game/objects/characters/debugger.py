@@ -1,6 +1,13 @@
 from copy import copy
-
-from fighting_game.objects import *
+from numpy import sign
+import numpy
+import pygame
+from pygame import Color, Surface
+from pygame.rect import Rect
+from fighting_game import sounds
+from fighting_game.inputs import FightingGameInput
+from fighting_game.objects.characters import Character, AerialMove, Move
+from fighting_game.objects.hitbox import Hitbox
 from fighting_game.sprites.stickman import stickman_sprites
 
 

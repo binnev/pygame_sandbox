@@ -1,5 +1,14 @@
-from fighting_game.conf import *
-from fighting_game.particles import *
+import random
+
+import pygame
+from pygame import Color, Surface
+from pygame.rect import Rect
+
+from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
+from fighting_game.objects.base import Group, Entity, PhysicalEntity
+from fighting_game.objects.characters import Platform
+from fighting_game.objects.hitbox import HitHandler
+from fighting_game.objects.particles import Plume
 
 
 class BlastZone(PhysicalEntity):

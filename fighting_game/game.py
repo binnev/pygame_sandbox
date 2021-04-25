@@ -1,9 +1,12 @@
 import sys
 
+import pygame
+from pygame import Surface
+
 from fighting_game import sounds
 from fighting_game.conf import *
-from fighting_game.inputs import *
-from fighting_game.objects import *
+from fighting_game.inputs import Keyboard0, Keyboard1, GamecubeController
+from fighting_game.objects.base import Entity, Group
 
 
 class FightingGame(Entity):
@@ -46,7 +49,8 @@ class FightingGame(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
-        from fighting_game.scenes import SandBox
+        from fighting_game.objects.scenes import SandBox
+
         self.add_scene(SandBox())
         self.debug = True
         self.running = True
