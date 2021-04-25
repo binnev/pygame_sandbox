@@ -7,7 +7,7 @@ from pygame.rect import Rect
 from base.utils import draw_arrow
 from fighting_game import sounds
 from fighting_game.conf import HITSTUN_CONSTANT, HITPAUSE_CONSTANT
-from fighting_game.objects.base import PhysicalEntity, Entity
+from fighting_game.objects import PhysicalEntity
 
 
 class Hitbox(PhysicalEntity):
@@ -178,7 +178,7 @@ class HitHandler:
         # queue for storing
         self.handled = deque(maxlen=200)
 
-    def handle_hits(self, hitboxes: [Hitbox], objects: [Entity]):
+    def handle_hits(self, hitboxes: [Hitbox], objects: [PhysicalEntity]):
         """
         Manage the effects of hitboxes hitting other entities.
 

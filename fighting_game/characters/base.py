@@ -8,21 +8,8 @@ from base.animation import SpriteDict
 from fighting_game import sounds
 from fighting_game.conf import BOUNCE_LOSS
 from fighting_game.inputs import GamecubeController
-from fighting_game.objects.base import PhysicalEntity
-
-
-class Platform(PhysicalEntity):
-    color = Color("gray")
-
-    def __init__(self, x, y, width, height, droppable=False):
-        super().__init__()
-
-        self.rect = Rect(0, 0, width, height)
-        self.rect.center = (x, y)
-        self.droppable = droppable
-        self.color = Color("green") if droppable else self.color
-        self.image = Surface((width, height))
-        self.image.fill(self.color)
+from fighting_game.objects import PhysicalEntity
+from fighting_game.platforms import Platform
 
 
 class Character(PhysicalEntity):
@@ -866,4 +853,3 @@ class AerialMove(Move):
         else:
             character.rect.top = max([character.rect.top, platform.rect.bottom])
             character.v = 0
-
