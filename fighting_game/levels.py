@@ -92,15 +92,16 @@ class Level(Entity):
             super().draw(surface, debug)
 
     def handle_blast_zone_collisions(self):
-        objects = [*self.characters, *self.projectiles]
-        for object in objects:
+        for object in self.characters:
             if not pygame.sprite.collide_rect(self.blast_zone, object):
                 object.kill()
                 # todo: logic for keeping track of stocks
-                # todo: add particle effect, screen shake, etc
                 self.screen_shake = 20
                 angle = self.calculate_plume_angle(object)
                 self.add_particle_effect(Plume(object.x, object.y, angle))
+        for object in self.projectiles:
+            if not pygame.sprite.collide_rect(self.blast_zone, object):
+                object.kill()
 
     def calculate_plume_angle(self, object):
         """ Object has just entered the blastzone """

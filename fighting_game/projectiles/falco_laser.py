@@ -28,6 +28,9 @@ class FalcoLaser(Projectile):
             )
             for x_offset in [-75, 0, 75]
         ]
+        if not facing_right:
+            for hitbox in self.active_hitboxes:
+                hitbox.flip_x()
 
     def handle_get_hit(self, hitbox):
         pass  # falco lasers can't be hit
