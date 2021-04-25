@@ -7,6 +7,7 @@ from fighting_game import sounds
 from fighting_game.characters import Character, AerialMove, Move
 from fighting_game.hitboxes import Hitbox
 from fighting_game.inputs import FightingGameInput
+from fighting_game.projectiles.falco_laser import FalcoLaser
 from fighting_game.sprites.stickman import stickman_sprites
 
 
@@ -461,7 +462,6 @@ class Debugger(Character):
             super().__init__(character)
 
     class ForwardSmash(Move):
-
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -509,7 +509,6 @@ class Debugger(Character):
             super().__init__(character)
 
     class DashAttack(Move):
-
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
@@ -626,4 +625,28 @@ class Debugger(Character):
                 {"image": image_hit},
                 {"image": image_hit},
             ]
+            super().__init__(character)
+
+    class AerialNeutralB(AerialMove):
+        landing_lag = 0
+
+        def __init__(self, character: Character):
+            sprite = character.sprites[f"run_{character.facing}"]
+            images = sprite.frames
+            image_hit = images[1]
+
+            self.frame_mapping = [
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+            ]
+            character.level.add_projectile(
+                FalcoLaser(
+                    x=character.x,
+                    y=character.y,
+                    facing_right=character.facing_right,
+                    owner=character,
+                )
+            )
             super().__init__(character)

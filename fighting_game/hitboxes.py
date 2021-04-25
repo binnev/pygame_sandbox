@@ -8,6 +8,7 @@ from base.utils import draw_arrow
 from fighting_game import sounds
 from fighting_game.conf import HITSTUN_CONSTANT, HITPAUSE_CONSTANT
 from fighting_game.objects import PhysicalEntity
+from fighting_game.projectiles import Projectile
 
 
 class Hitbox(PhysicalEntity):
@@ -155,6 +156,9 @@ class Hitbox(PhysicalEntity):
 
 
 def handle_hitbox_collision(hitbox: Hitbox, object):
+
+    # todo: this code assumes that object is a Character and has mass, damage, etc. This should
+    #  go in the handle_hit method of Character.
     # here's where we calculate how far/fast the object gets knocked
     object.damage += hitbox.damage  # important for charged smashes
     # fixed knockback is affected by nothing
@@ -193,6 +197,9 @@ class HitHandler:
             for hitbox in colliding_hitboxes:
                 # hitboxes should never hit their owner
                 if hitbox.owner == object:
+                    continue
+
+                if isinstance(hitbox.owner, Projectile) and hitbox.owner.owner == object:
                     continue
 
                 # if this hitbox has already affected the object, don't repeat the interaction

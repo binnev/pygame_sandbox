@@ -57,9 +57,11 @@ class Character(PhysicalEntity):
     DownTilt: "Move"
     ForwardTilt: "Move"
     Jab: "Move"
+    GroundedNeutralB: "Move"
     GroundedSideB: "Move"
     GroundedUpB: "Move"
     GroundedDownB: "Move"
+    AerialNeutralB: "Move"
     AerialSideB: "Move"
     AerialUpB: "Move"
     AerialDownB: "Move"
@@ -205,6 +207,10 @@ class Character(PhysicalEntity):
                 self.state = self.DownAir(self)
             else:
                 self.state = self.NeutralAir(self)
+
+        # B-button inputs
+        if input.is_pressed(input.B):
+            self.state = self.AerialNeutralB(self)
 
         # C-stick inputs
         if Cstick_up:
@@ -723,7 +729,7 @@ class Character(PhysicalEntity):
     def landing_lag(self, ticks):
         def func():
             self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
-            if self.tick == ticks:
+            if (self.tick == ticks) or (ticks == 0):
                 self.state = self.state_stand
 
         return func
