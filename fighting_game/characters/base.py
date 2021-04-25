@@ -615,7 +615,7 @@ class Character(PhysicalEntity):
         self.state = self.state_fall
         self.fastfall = False
 
-    def handle_hit(self, hitbox):
+    def handle_get_hit(self, hitbox):
         """ What to do when self gets hit by a hitbox. """
         # here's where we calculate how far/fast the object gets knocked
         self.damage += hitbox.damage  # important for charged smashes
@@ -633,6 +633,10 @@ class Character(PhysicalEntity):
         self.hitstun_duration = hitbox.hitstun_duration(knockback)
         self.y -= 1
         self.state = self.state_hit_aerial
+        self.enter_hitpause()
+
+    def handle_land_hit(self, hitbox):
+        self.hitpause_duration = hitbox.hitpause_duration
         self.enter_hitpause()
 
     def allow_fastfall(self):
@@ -791,8 +795,7 @@ class Move:
         if image:
             self.character.image = image
         active_hitboxes = frame_data.get("hitboxes", [])
-        for hitbox in active_hitboxes:
-            self.character.level.add_hitbox(hitbox)
+        self.character.level.add_hitbox(*active_hitboxes)
 
         # only handle grounded physics; AerialMove will handle airborne physics
         if not self.character.airborne:

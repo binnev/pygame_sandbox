@@ -73,8 +73,7 @@ class Hitbox(PhysicalEntity):
         electric"""
         self.level.screen_shake += 10
         self.sound.play()
-        self.owner.hitpause_duration = self.hitpause_duration
-        self.owner.enter_hitpause()
+        self.owner.handle_land_hit(hitbox=self)
 
     @property
     def hitpause_duration(self):
@@ -186,7 +185,7 @@ class HitHandler:
                 if any(s in colliding_hitboxes for s in hitbox.higher_priority_siblings):
                     continue
 
-                object.handle_hit(hitbox)
+                object.handle_get_hit(hitbox)
                 hitbox.handle_hit(object)
                 self.handled.append((hitbox, object))
                 # if the hitbox has lower priority sibling hitboxes, add those to the handled

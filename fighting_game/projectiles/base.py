@@ -26,8 +26,13 @@ class Projectile(PhysicalEntity):
         self.y += self.v
 
         # add hitboxes every tick
-        for hitbox in self.active_hitboxes:
-            self.level.add_hitbox(hitbox)
+        self.level.add_hitbox(*self.active_hitboxes)
 
     def enter_hitpause(self):
+        pass
+
+    def handle_get_hit(self):
+        pass
+
+    def handle_land_hit(self):
         pass

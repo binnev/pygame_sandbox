@@ -5,12 +5,6 @@ from fighting_game.hitboxes import Hitbox
 from fighting_game.projectiles.base import Projectile
 
 
-class FalcoLaserHitbox(Hitbox):
-    def handle_hit(self, object):
-        super().handle_hit(object)
-        self.owner.kill()  # delete on hit
-
-
 class FalcoLaser(Projectile):
     width = 150
     height = 10
@@ -22,7 +16,7 @@ class FalcoLaser(Projectile):
         self.image = Surface((150, 10))
         self.image.fill(Color("red"))
         self.active_hitboxes = [
-            FalcoLaserHitbox(
+            Hitbox(
                 owner=self,
                 x_offset=x_offset,
                 width=30,
@@ -35,5 +29,8 @@ class FalcoLaser(Projectile):
             for x_offset in [-75, 0, 75]
         ]
 
-    def handle_hit(self, hitbox):
-        self.kill()
+    def handle_get_hit(self, hitbox):
+        pass  # falco lasers can't be hit
+
+    def handle_land_hit(self, hitbox):
+        self.kill()  # falco lasers disappear on hit
