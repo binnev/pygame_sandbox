@@ -2,6 +2,15 @@ from fighting_game.conf import *
 from fighting_game.particles import *
 
 
+class BlastZone(PhysicalEntity):
+    debug_color = Color("blue")
+
+    def __init__(self, x, y, width, height):
+        super().__init__()
+        self.rect = Rect(0, 0, width, height)
+        self.rect.center = (x, y)
+
+
 class Level(Entity):
     """ A Scene representing a level of a game. """
 

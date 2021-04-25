@@ -170,15 +170,6 @@ class Platform(PhysicalEntity):
         self.image.fill(self.color)
 
 
-class BlastZone(PhysicalEntity):
-    debug_color = Color("blue")
-
-    def __init__(self, x, y, width, height):
-        super().__init__()
-        self.rect = Rect(0, 0, width, height)
-        self.rect.center = (x, y)
-
-
 class Character(PhysicalEntity):
     mass: float  # 10 is average
     damage: int
