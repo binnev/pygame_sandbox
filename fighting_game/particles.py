@@ -21,7 +21,7 @@ def random_int(min, max):
     return int(random_float(min, max))
 
 
-class Circle(PhysicalEntity):
+class Particle(PhysicalEntity):
     blit_flag = pygame.BLEND_RGB_ADD
     gravity: float
     friction: float
@@ -76,12 +76,14 @@ class Circle(PhysicalEntity):
         return self.radius <= 0
 
 
-class Plume(Sprite):
+class Plume(Entity):
     def __init__(self, x, y, angle_deg):
         super().__init__()
+        self.state = self.state_main
         self.x = x
         self.y = y
         self.particles = Group()
+        self.child_groups = [self.particles]
         # grey clouds
         x_unit = numpy.cos(numpy.deg2rad(angle_deg))
         y_unit = -numpy.sin(numpy.deg2rad(angle_deg))
@@ -89,9 +91,9 @@ class Plume(Sprite):
         sounds.death_plume.play()
         sounds.crowd_ohh.play()
 
-        for __ in range(25):
+        for _ in range(25):
             self.particles.add(
-                Circle(
+                Particle(
                     x,
                     y,
                     u=30 * x_unit + random_float(-10, 10),
@@ -105,9 +107,9 @@ class Plume(Sprite):
                 )
             )
         # flames
-        for __ in range(15):
+        for _ in range(15):
             self.particles.add(
-                Circle(
+                Particle(
                     x,
                     y,
                     u=30 * x_unit + random_float(-5, 5),
@@ -120,9 +122,9 @@ class Plume(Sprite):
                 )
             )
         # white flashes
-        for __ in range(2):
+        for _ in range(2):
             self.particles.add(
-                Circle(
+                Particle(
                     x=x + random_int(-5, 5),
                     y=y + random_int(-5, 5),
                     u=random_float(-5, 5),
@@ -135,9 +137,9 @@ class Plume(Sprite):
                 )
             )
         # sparks
-        for __ in range(20):
+        for _ in range(20):
             self.particles.add(
-                Circle(
+                Particle(
                     x=x + random_int(-5, 5),
                     y=y + random_int(-5, 5),
                     u=40 * x_unit + random_float(-15, 15),
@@ -150,10 +152,6 @@ class Plume(Sprite):
                 )
             )
 
-    def update(self):
-        self.particles.update()
+    def state_main(self):
         if not self.particles:
             self.kill()
-
-    def draw(self, surface: Surface, debug: bool = False):
-        self.particles.draw(surface, debug)
