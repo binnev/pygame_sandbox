@@ -270,13 +270,11 @@ class Character(PhysicalEntity):
 
     def state_hit_aerial(self):
         self.image = Surface((50, 50))
-        self.image.fill(Color("red"))
+        self.image.fill(Color("orange"))
         if self.hitstun_duration == 0:
             self.state = self.state_fall
         else:
             self.hitstun_duration -= 1
-        if not self.airborne:
-            self.state = self.state_stand
         self.hit_physics()
 
     def state_initial_dash(self):
@@ -596,6 +594,9 @@ class Character(PhysicalEntity):
         return_tick = self.tick
 
         def hitpause():
+            self.image = Surface((50, 50))
+            self.image.fill(Color("red"))
+
             if self.hitpause_duration == 0:
                 self.state = return_state
                 self.tick = return_tick
@@ -615,7 +616,24 @@ class Character(PhysicalEntity):
         self.fastfall = False
 
     def handle_hit(self, hitbox):
+        """ What to do when self gets hit by a hitbox. """
+        # here's where we calculate how far/fast the object gets knocked
+        self.damage += hitbox.damage  # important for charged smashes
+        # fixed knockback is affected by nothing
+        fixed_knockback_term = hitbox.fixed_knockback
+        # base knockback and growing knockback are both affected by target mass
+        base_knockback_term = hitbox.base_knockback / self.mass
+        knockback_growth_term = hitbox.knockback_growth * self.damage / self.mass / 10
+        knockback = fixed_knockback_term + base_knockback_term + knockback_growth_term
+        u = knockback * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
+        v = -knockback * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
+        self.u = round(u)
+        self.v = round(v)
+        self.hitpause_duration = hitbox.hitpause_duration
+        self.hitstun_duration = hitbox.hitstun_duration(knockback)
+        self.y -= 1
         self.state = self.state_hit_aerial
+        self.enter_hitpause()
 
     def allow_fastfall(self):
         input = self.input

@@ -67,7 +67,7 @@ class Hitbox(PhysicalEntity):
     def __repr__(self):
         return f"Hitbox with id {id(self)}"
 
-    def handle_hit(self, object, knockback):
+    def handle_hit(self, object):
         """Object is the entity hit by this hitbox. I've passed it here so that hitboxes can do
         context specific stuff e.g. trigger the object's "electrocute" animation if the hitbox is
         electric"""
@@ -75,9 +75,6 @@ class Hitbox(PhysicalEntity):
         self.sound.play()
         self.owner.hitpause_duration = self.hitpause_duration
         self.owner.enter_hitpause()
-        object.hitpause_duration = self.hitpause_duration
-        object.hitstun_duration = self.hitstun_duration(knockback)
-        object.y -= 1
 
     @property
     def hitpause_duration(self):
@@ -155,28 +152,6 @@ class Hitbox(PhysicalEntity):
         return self.higher_priority_siblings | self.lower_priority_siblings
 
 
-def handle_hitbox_collision(hitbox: Hitbox, object):
-
-    # todo: this code assumes that object is a Character and has mass, damage, etc. This should
-    #  go in the handle_hit method of Character.
-    # here's where we calculate how far/fast the object gets knocked
-    object.damage += hitbox.damage  # important for charged smashes
-    # fixed knockback is affected by nothing
-    fixed_knockback_term = hitbox.fixed_knockback
-    # base knockback and growing knockback are both affected by target weight
-    base_knockback_term = hitbox.base_knockback / object.mass
-    knockback_growth_term = hitbox.knockback_growth * object.damage / object.mass / 10
-    knockback = fixed_knockback_term + base_knockback_term + knockback_growth_term
-    u = knockback * numpy.cos(numpy.deg2rad(hitbox.knockback_angle))
-    v = -knockback * numpy.sin(numpy.deg2rad(hitbox.knockback_angle))
-    object.u = round(u)
-    object.v = round(v)
-
-    # object-specific effects
-    object.handle_hit(hitbox)
-    hitbox.handle_hit(object, knockback)
-
-
 class HitHandler:
     def __init__(self):
         # queue for storing
@@ -211,7 +186,8 @@ class HitHandler:
                 if any(s in colliding_hitboxes for s in hitbox.higher_priority_siblings):
                     continue
 
-                handle_hitbox_collision(hitbox, object)
+                object.handle_hit(hitbox)
+                hitbox.handle_hit(object)
                 self.handled.append((hitbox, object))
                 # if the hitbox has lower priority sibling hitboxes, add those to the handled
                 # list so that they don't also hit the object

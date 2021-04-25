@@ -6,17 +6,18 @@ from fighting_game.projectiles.base import Projectile
 
 
 class FalcoLaserHitbox(Hitbox):
-    def handle_hit(self, object, knockback):
-        super().handle_hit(object, knockback)
+    def handle_hit(self, object):
+        super().handle_hit(object)
         self.owner.kill()  # delete on hit
 
 
 class FalcoLaser(Projectile):
     width = 150
     height = 10
+    speed = 20
 
     def __init__(self, x, y, facing_right, owner):
-        u = 10 if facing_right else -10
+        u = self.speed if facing_right else -self.speed
         super().__init__(x=x, y=y, u=u, v=0, owner=owner)
         self.image = Surface((150, 10))
         self.image.fill(Color("red"))
