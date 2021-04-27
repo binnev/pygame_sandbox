@@ -37,8 +37,12 @@ class Character(PhysicalEntity):
     fast_fall_speed: float
     fast_fall: bool
     jumpsquat_frames: int
-    air_dodges: int = 1
-    wall_jumps: int = 1
+    max_aerial_jumps: int = 1  # how many aerial jumps can the character possibly do
+    aerial_jumps = max_aerial_jumps  # how many aerial jumps do they have left
+    max_air_dodges: int = 1
+    air_dodges = max_air_dodges
+    max_wall_jumps: int = 1
+    wall_jumps = max_wall_jumps
 
     hitstun_duration: int = 0
     hitpause_duration: int = 0
@@ -113,6 +117,23 @@ class Character(PhysicalEntity):
 
     def state_stand(self):
         self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
+        self.aerial_jumps = self.max_aerial_jumps
+        self.air_dodges = self.max_air_dodges
+        self.wall_jumps = self.max_wall_jumps
+
+        # B-button inputs
+        input = self.input
+        if input.is_pressed(input.B):
+            if input.is_down(input.UP):
+                self.state = self.AerialUpB(self)
+            elif input.is_down(input.LEFT):
+                self.facing_right = False
+                self.state = self.AerialNeutralB(self)
+            elif input.is_down(input.RIGHT):
+                self.facing_right = True
+                self.state = self.AerialNeutralB(self)
+            else:
+                self.state = self.AerialNeutralB(self)
 
         self.allow_platform_drop()
         self.allow_jump()
@@ -219,6 +240,12 @@ class Character(PhysicalEntity):
         if input.is_pressed(input.B):
             if input.is_down(input.UP):
                 self.state = self.AerialUpB(self)
+            elif input.is_down(input.LEFT):
+                self.facing_right = False
+                self.state = self.AerialNeutralB(self)
+            elif input.is_down(input.RIGHT):
+                self.facing_right = True
+                self.state = self.AerialNeutralB(self)
             else:
                 self.state = self.AerialNeutralB(self)
 
@@ -233,8 +260,10 @@ class Character(PhysicalEntity):
             self.state = self.BackAir(self)
 
         if input.is_pressed(input.Y):
-            self.v = -self.jump_speed
-            self.fast_fall = False
+            if self.aerial_jumps:
+                self.v = -self.jump_speed
+                self.fast_fall = False
+                self.aerial_jumps -= 1
 
         # air dodge
         if input.is_pressed(input.R) or input.is_pressed(input.L):

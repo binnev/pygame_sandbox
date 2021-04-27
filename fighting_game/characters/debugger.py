@@ -88,8 +88,8 @@ class Debugger(Character):
                 rotation=45,
                 base_knockback=10,
                 knockback_angle=30,
-                knockback_growth=20,
-                damage=20,
+                knockback_growth=10,
+                damage=10,
                 sound=sounds.sword_hit,
             )
             sour_spot = Hitbox(
@@ -100,8 +100,8 @@ class Debugger(Character):
                 rotation=0,
                 base_knockback=5,
                 knockback_angle=45,
-                knockback_growth=10,
-                damage=10,
+                knockback_growth=5,
+                damage=5,
                 higher_priority_sibling=sweet_spot,
                 sound=sounds.sword_hit2,
             )
@@ -133,8 +133,8 @@ class Debugger(Character):
                 rotation=0,
                 base_knockback=10,
                 knockback_angle=150,
-                knockback_growth=20,
-                damage=20,
+                knockback_growth=10,
+                damage=10,
             )
             sour_spot = Hitbox(
                 owner=character,
@@ -144,8 +144,8 @@ class Debugger(Character):
                 rotation=0,
                 base_knockback=5,
                 knockback_angle=135,
-                knockback_growth=10,
-                damage=10,
+                knockback_growth=5,
+                damage=5,
                 higher_priority_sibling=sweet_spot,
             )
             sprite = character.sprites[f"back_air2_{character.facing}"]
@@ -178,8 +178,8 @@ class Debugger(Character):
                 rotation=0,
                 base_knockback=10,
                 knockback_angle=90,
-                knockback_growth=20,
-                damage=20,
+                knockback_growth=10,
+                damage=10,
             )
             sour_spot = Hitbox(
                 owner=character,
@@ -189,8 +189,8 @@ class Debugger(Character):
                 rotation=0,
                 base_knockback=5,
                 knockback_angle=90,
-                knockback_growth=10,
-                damage=10,
+                knockback_growth=5,
+                damage=5,
                 higher_priority_sibling=sweet_spot,
             )
             sprite = character.sprites[f"aerial_defense_{character.facing}"]
@@ -219,7 +219,7 @@ class Debugger(Character):
                 rotation=0,
                 base_knockback=10,
                 knockback_angle=280,
-                knockback_growth=20,
+                knockback_growth=15,
                 damage=20,
                 sound=sounds.bighit,
             )
@@ -231,7 +231,7 @@ class Debugger(Character):
                 rotation=0,
                 base_knockback=5,
                 knockback_angle=280,
-                knockback_growth=10,
+                knockback_growth=7,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
