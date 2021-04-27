@@ -37,6 +37,8 @@ class Character(PhysicalEntity):
     fast_fall_speed: float
     fast_fall: bool
     jumpsquat_frames: int
+    air_dodges: int = 1
+    wall_jumps: int = 1
 
     hitstun_duration: int = 0
     hitpause_duration: int = 0
@@ -96,6 +98,11 @@ class Character(PhysicalEntity):
 
     def standing_on_platform(self, platform):
         return self.touching(platform) and self.rect.bottom <= platform.rect.top
+
+    def touching_side_of_platform(self, platform):
+        return self.touching(platform) and (
+            self.rect.right <= platform.rect.left or self.rect.left >= platform.rect.right
+        )
 
     @property
     def airborne(self):
@@ -240,12 +247,14 @@ class Character(PhysicalEntity):
     def state_special_fall(self):
         self.image = self.sprites["stomp_" + self.facing].get_frame(2)
         self.allow_aerial_drift()
+        self.allow_wall_jump()
         self.fall_physics()
 
     def state_air_dodge(self):
         decay = 0.1
         self.u *= 1 - decay
         self.v *= 1 - decay
+        self.image = self.sprites["back_air2_" + self.facing].get_frame(1)
         """ 
         todo: here do platform collision 
         horizontal collision: 
@@ -349,6 +358,14 @@ class Character(PhysicalEntity):
                 self.shorthop()
 
         self.grounded_physics()
+
+    def state_wall_jumpsquat(self):
+        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+        if self.tick == self.jumpsquat_frames:
+            self.u = 5 if self.facing_right else -5
+            self.v = -self.jump_speed
+            self.fastfall = False
+            self.state = self.state_fall
 
     def state_crouch(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
@@ -623,6 +640,10 @@ class Character(PhysicalEntity):
         self.state = self.state_fall
         self.fastfall = False
 
+    def wall_jump(self):
+        self.v = 0
+        self.state = self.state_wall_jumpsquat
+
     def handle_get_hit(self, hitbox):
         """ What to do when self gets hit by a hitbox. """
         # here's where we calculate how far/fast the object gets knocked
@@ -734,6 +755,21 @@ class Character(PhysicalEntity):
                     self.fast_fall = False
             else:
                 self.state = self.state_jumpsquat
+
+    def allow_wall_jump(self):
+        input = self.input
+        platforms = [
+            platform
+            for platform in self.level.platforms
+            if self.touching_side_of_platform(platform)
+        ]
+        if (input.is_pressed(input.Y) or input.is_pressed(input.X)) and any(platforms):
+            # if the platform is to the left, face right (jumping away from wall)
+            if platforms[0].rect.centerx < self.x:
+                self.facing_right = True
+            else:
+                self.facing_right = False
+            self.wall_jump()
 
     def allow_dash(self):
         input = self.input
