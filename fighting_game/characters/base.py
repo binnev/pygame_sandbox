@@ -210,7 +210,10 @@ class Character(PhysicalEntity):
 
         # B-button inputs
         if input.is_pressed(input.B):
-            self.state = self.AerialNeutralB(self)
+            if input.is_down(input.UP):
+                self.state = self.AerialUpB(self)
+            else:
+                self.state = self.AerialNeutralB(self)
 
         # C-stick inputs
         if Cstick_up:
@@ -232,6 +235,11 @@ class Character(PhysicalEntity):
 
         self.allow_aerial_drift()
         self.allow_fastfall()
+        self.fall_physics()
+
+    def state_special_fall(self):
+        self.image = self.sprites["stomp_" + self.facing].get_frame(2)
+        self.allow_aerial_drift()
         self.fall_physics()
 
     def state_air_dodge(self):
@@ -791,26 +799,36 @@ class Move:
         except IndexError:
             return self.end()
 
+        self.update_image(frame_data)
+        self.update_hitboxes(frame_data)
+        self.handle_physics()
+
+    def handle_physics(self):
+        """ handle grounded physics by default"""
+        self.character.grounded_physics()
+
+    def update_image(self, frame_data):
         image = frame_data.get("image")
         if image:
             self.character.image = image
+
+    def update_hitboxes(self, frame_data):
         active_hitboxes = frame_data.get("hitboxes", [])
         self.character.level.add_hitbox(*active_hitboxes)
 
-        # only handle grounded physics; AerialMove will handle airborne physics
-        if not self.character.airborne:
-            self.character.grounded_physics()
+    def get_next_state(self):
+        """ This needs to be a method because we might need to instantiate a class-based state. """
+        return self.character.state_stand
 
     def end(self):
-        self.character.state = self.character.state_stand
+        self.character.state = self.get_next_state()
         return self.character.state()  # execute the state
 
 
 class AerialMove(Move):
     landing_lag: int
 
-    def __call__(self, *args, **kwargs):
-        super().__call__(*args, **kwargs)
+    def handle_physics(self):
         self.character.allow_fastfall()
         self.character.allow_aerial_drift()
         self.character.allow_hitfall()
@@ -824,9 +842,8 @@ class AerialMove(Move):
             vertical_collide_solid_platform=self.vertical_collide_solid_platform,
         )
 
-    def end(self):
-        self.character.state = self.character.state_fall
-        return self.character.state()  # execute the state
+    def get_next_state(self):
+        return self.character.state_fall
 
     # todo: move these (and the responsibility for choosing which to use) onto Character. Then
     #  merge AerialMove and Move.

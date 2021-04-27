@@ -519,7 +519,7 @@ class Debugger(Character):
                 rotation=45,
                 base_knockback=70,
                 knockback_angle=80,
-                # knockback_growth=20,
+                knockback_growth=0,
                 damage=20,
                 sound=sounds.sword_hit,
             )
@@ -531,14 +531,14 @@ class Debugger(Character):
                 rotation=0,
                 base_knockback=30,
                 knockback_angle=45,
-                # knockback_growth=10,
+                knockback_growth=0,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
                 sound=sounds.sword_hit2,
             )
-            sprite = character.sprites[f"dive_{character.facing}"]
+            sprite = character.sprites[f"flying_kick_{character.facing}"]
             images = sprite.frames
-            image_hit = images[0]
+            image_hit = images[1]
 
             self.frame_mapping = [
                 {"image": image_hit, "hitboxes": [sweet_spot]},
@@ -651,3 +651,62 @@ class Debugger(Character):
                 )
             )
             super().__init__(character)
+
+    class AerialUpB(AerialMove):
+        landing_lag = 0
+
+        def __init__(self, character: Character):
+            sweet_spot = Hitbox(
+                owner=character,
+                x_offset=30,
+                width=50,
+                height=30,
+                rotation=45,
+                base_knockback=50,
+                knockback_angle=10,
+                knockback_growth=20,
+                damage=15,
+                sound=sounds.sword_hit,
+            )
+            sour_spot = Hitbox(
+                owner=character,
+                x_offset=10,
+                y_offset=-30,
+                width=40,
+                height=80,
+                rotation=0,
+                base_knockback=30,
+                knockback_angle=45,
+                knockback_growth=5,
+                damage=5,
+                higher_priority_sibling=sweet_spot,
+                sound=sounds.sword_hit2,
+            )
+            sprite = character.sprites[f"back_air_{character.facing}"]
+            images = sprite.frames
+            image = images[2]
+            image2 = character.sprites[f"crouch_{character.facing}"].frames[0]
+
+            self.frame_mapping = [
+                {"image": image2},
+                {"image": image2},
+                {"image": image, "hitboxes": [sweet_spot]},
+                {"image": image, "hitboxes": [sweet_spot]},
+                {"image": image, "hitboxes": [sour_spot]},
+                {"image": image, "hitboxes": [sour_spot]},
+                {"image": image, "hitboxes": [sour_spot]},
+                {"image": image, "hitboxes": [sour_spot]},
+                {"image": image, "hitboxes": [sour_spot]},
+                {"image": image},
+                {"image": image},
+                {"image": image},
+                {"image": image},
+                {"image": image},
+                {"image": image},
+            ]
+            character.v = -13
+            character.u += 5 if character.facing_right else -5
+            super().__init__(character)
+
+        def get_next_state(self):
+            return self.character.state_special_fall
