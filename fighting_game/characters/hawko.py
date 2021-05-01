@@ -546,9 +546,10 @@ class Hawko(Character):
             sweet_spot = Hitbox(
                 owner=character,
                 x_offset=30,
-                width=30,
+                y_offset=20,
+                width=60,
                 height=30,
-                rotation=45,
+                rotation=0,
                 base_knockback=70,
                 knockback_angle=80,
                 knockback_growth=0,
@@ -558,8 +559,9 @@ class Hawko(Character):
             sour_spot = Hitbox(
                 owner=character,
                 x_offset=30,
-                width=20,
-                height=20,
+                y_offset=20,
+                width=60,
+                height=30,
                 rotation=0,
                 base_knockback=30,
                 knockback_angle=45,
@@ -629,37 +631,37 @@ class Hawko(Character):
             sweet_spot = Hitbox(
                 owner=character,
                 x_offset=30,
-                y_offset=0,
-                width=20,
-                height=20,
+                y_offset=15,
+                width=60,
+                height=30,
                 rotation=0,
                 base_knockback=10,
-                knockback_angle=45,
+                knockback_angle=10,
                 knockback_growth=8,
                 damage=20,
             )
             sour_spot = Hitbox(
                 owner=character,
-                x_offset=10,
-                y_offset=0,
-                width=30,
+                x_offset=30,
+                y_offset=15,
+                width=60,
                 height=30,
                 rotation=0,
                 base_knockback=5,
-                knockback_angle=45,
+                knockback_angle=10,
                 knockback_growth=8,
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
-            sprite = character.sprites[f"run_{character.facing}"]
+            sprite = character.sprites[f"ftilt_{character.facing}"]
             images = sprite.frames
-            image_hit = images[1]
 
             self.frame_mapping = [
-                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
-                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
-                {"image": image_hit},
-                {"image": image_hit},
+                {"image": images[0], "hitboxes": []},
+                {"image": images[1], "hitboxes": [sweet_spot]},
+                {"image": images[2], "hitboxes": [sour_spot]},
+                {"image": images[3], "hitboxes": []},
+                {"image": images[4], "hitboxes": []},
             ]
             super().__init__(character)
 
@@ -693,7 +695,7 @@ class Hawko(Character):
                 character.level.add_projectile(
                     FalcoLaser(
                         x=character.x,
-                        y=character.y+10,
+                        y=character.y + 10,
                         facing_right=character.facing_right,
                         owner=character,
                     )
