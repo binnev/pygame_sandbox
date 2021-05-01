@@ -18,8 +18,8 @@ class Hawko(Character):
     color = Color("cyan")
     ground_acceleration = 5
     walk_speed = 5
-    run_speed = 9
-    initial_dash_duration = 20
+    run_speed = 7.5
+    initial_dash_duration = 14
     run_turnaround_duration = 20
     air_acceleration = 0.75
     air_speed = 5
@@ -28,7 +28,7 @@ class Hawko(Character):
     aerial_jump_speed = 20
     shorthop_speed = 8
     air_resistance = 0.01
-    friction = 0.3
+    friction = 0.7
     fall_speed = 10
     fast_fall_speed = 14
     jumpsquat_frames = 5
@@ -134,7 +134,8 @@ class Hawko(Character):
             sweet_spot = Hitbox(
                 owner=character,
                 x_offset=-30,
-                width=30,
+                y_offset=10,
+                width=40,
                 height=30,
                 rotation=0,
                 base_knockback=10,
@@ -145,8 +146,9 @@ class Hawko(Character):
             sour_spot = Hitbox(
                 owner=character,
                 x_offset=-30,
-                width=20,
-                height=20,
+                y_offset=10,
+                width=40,
+                height=30,
                 rotation=0,
                 base_knockback=5,
                 knockback_angle=135,
@@ -154,21 +156,31 @@ class Hawko(Character):
                 damage=5,
                 higher_priority_sibling=sweet_spot,
             )
-            sprite = character.sprites[f"back_air2_{character.facing}"]
+            weak_front = Hitbox(
+                owner=character,
+                x_offset=30,
+                y_offset=30,
+                width=40,
+                height=20,
+                rotation=-30,
+                base_knockback=3,
+                knockback_angle=45,
+                knockback_growth=2,
+                damage=5,
+                higher_priority_sibling=sour_spot,
+            )
+            sprite = character.sprites[f"bair_{character.facing}"]
             images = sprite.frames
-            image_windup = images[0]
-            image_windup2 = images[1]
-            image_hit = images[2]
-            image_hit2 = images[3]
-            image_endlag = images[4]
 
             self.frame_mapping = [
-                {"image": image_windup},
-                {"image": image_windup2},
-                {"image": image_hit, "hitboxes": [sweet_spot]},
-                {"image": image_hit2, "hitboxes": [sour_spot]},
-                {"image": image_hit2, "hitboxes": [sour_spot]},
-                {"image": image_endlag},
+                {"image": images[0], "hitboxes": [sweet_spot, weak_front]},
+                {"image": images[0], "hitboxes": [sweet_spot, weak_front]},
+                {"image": images[0], "hitboxes": [sweet_spot, weak_front]},
+                {"image": images[0], "hitboxes": [sour_spot, weak_front]},
+                {"image": images[0], "hitboxes": [sour_spot, weak_front]},
+                {"image": images[0], "hitboxes": [sour_spot, weak_front]},
+                {"image": images[0], "hitboxes": [sour_spot, weak_front]},
+                {"image": images[0], "hitboxes": [sour_spot, weak_front]},
             ]
             super().__init__(character)
 
@@ -241,23 +253,22 @@ class Hawko(Character):
                 damage=10,
                 higher_priority_sibling=sweet_spot,
             )
-            sprite = character.sprites[f"stomp_{character.facing}"]
+            sprite = character.sprites[f"dair_{character.facing}"]
             images = sprite.frames
-            image_windup = images[1]
-            image_hit = images[3]
-            image_endlag = images[5]
 
             self.frame_mapping = [
-                {"image": image_windup},
-                {"image": image_windup},
-                {"image": image_windup},
-                {"image": image_hit},
-                {"image": image_hit, "hitboxes": [sweet_spot]},
-                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
-                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
-                {"image": image_hit, "hitboxes": [sour_spot]},
-                {"image": image_endlag},
-                {"image": image_endlag},
+                {"image": images[0], "hitboxes": [sweet_spot]},
+                {"image": images[1], "hitboxes": [sweet_spot]},
+                {"image": images[2], "hitboxes": [sweet_spot]},
+                {"image": images[3], "hitboxes": [sweet_spot]},
+                {"image": images[0], "hitboxes": [sour_spot]},
+                {"image": images[1], "hitboxes": [sour_spot]},
+                {"image": images[2], "hitboxes": [sour_spot]},
+                {"image": images[3], "hitboxes": [sour_spot]},
+                {"image": images[0], "hitboxes": []},
+                {"image": images[1], "hitboxes": []},
+                {"image": images[2], "hitboxes": []},
+                {"image": images[3], "hitboxes": []},
             ]
             super().__init__(character)
 
@@ -547,9 +558,9 @@ class Hawko(Character):
                 higher_priority_sibling=sweet_spot,
                 sound=sounds.sword_hit2,
             )
-            sprite = character.sprites[f"flying_kick_{character.facing}"]
+            sprite = character.sprites[f"dash_attack_{character.facing}"]
             images = sprite.frames
-            image_hit = images[1]
+            image_hit = images[0]
 
             self.frame_mapping = [
                 {"image": image_hit, "hitboxes": [sweet_spot]},
@@ -566,14 +577,15 @@ class Hawko(Character):
             sweet_spot = Hitbox(
                 owner=character,
                 x_offset=30,
-                y_offset=30,
-                width=20,
+                y_offset=40,
+                width=30,
                 height=20,
                 rotation=0,
                 base_knockback=10,
-                knockback_angle=-10,
-                knockback_growth=8,
-                damage=20,
+                knockback_angle=80,
+                knockback_growth=13,
+                damage=10,
+                sound=sounds.sword_hit
             )
             sour_spot = Hitbox(
                 owner=character,
@@ -583,20 +595,21 @@ class Hawko(Character):
                 height=30,
                 rotation=0,
                 base_knockback=5,
-                knockback_angle=-10,
+                knockback_angle=80,
                 knockback_growth=8,
-                damage=10,
+                damage=4,
                 higher_priority_sibling=sweet_spot,
+                sound=sounds.sword_hit2
             )
-            sprite = character.sprites[f"dive_getup_{character.facing}"]
+            sprite = character.sprites[f"dtilt_{character.facing}"]
             images = sprite.frames
-            image_hit = images[6]
 
             self.frame_mapping = [
-                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
-                {"image": image_hit, "hitboxes": [sweet_spot, sour_spot]},
-                {"image": image_hit},
-                {"image": image_hit},
+                {"image": images[0]},
+                {"image": images[1]},
+                {"image": images[3], "hitboxes": [sweet_spot, sour_spot]},
+                {"image": images[4], "hitboxes": [sweet_spot, sour_spot]},
+                {"image": images[5]},
             ]
             super().__init__(character)
 
@@ -643,25 +656,32 @@ class Hawko(Character):
         landing_lag = 0
 
         def __init__(self, character: Character):
-            sprite = character.sprites[f"run_{character.facing}"]
+            sprite = character.sprites[f"aerial_laser_{character.facing}"]
             images = sprite.frames
-            image_hit = images[1]
+            image_hit = images[0]
 
             self.frame_mapping = [
                 {"image": image_hit},
                 {"image": image_hit},
                 {"image": image_hit},
                 {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
             ]
-            character.level.add_projectile(
-                FalcoLaser(
-                    x=character.x,
-                    y=character.y,
-                    facing_right=character.facing_right,
-                    owner=character,
-                )
-            )
             super().__init__(character)
+        def __call__(self):
+            super().__call__()
+
+            character = self.character
+            if character.tick == 8:
+                character.level.add_projectile(
+                    FalcoLaser(
+                        x=character.x,
+                        y=character.y,
+                        facing_right=character.facing_right,
+                        owner=character,
+                    )
+                )
 
     class AerialUpB(AerialMove):
         landing_lag = 0

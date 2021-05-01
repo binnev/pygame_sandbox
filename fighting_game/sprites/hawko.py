@@ -13,8 +13,18 @@ def hawko_sprites():
     fall = SpriteSheet(filename=folder / "hawko_fall.png")
     special_fall = SpriteSheet(filename=folder / "hawko_special_fall.png")
     air_dodge = SpriteSheet(filename=folder / "hawko_air_dodge.png")
+
     nair = SpriteSheet(filename=folder / "hawko_nair.png")
+    dair = SpriteSheet(filename=folder / "hawko_dair.png")
+    bair = SpriteSheet(filename=folder / "hawko_bair.png")
+    # fair = SpriteSheet(filename=folder / "hawko_fair.png")
+    # uair = SpriteSheet(filename=folder / "hawko_uair.png")
+
+    dash_attack = SpriteSheet(filename=folder / "hawko_nair.png")
     jab = SpriteSheet(filename=folder / "hawko_jab.png")
+    dtilt = SpriteSheet(filename=folder / "hawko_dtilt.png")
+
+    aerial_laser = SpriteSheet(filename=folder / "hawko_aerial_laser.png")
 
     # describe the animations -- do they loop, etc -- once here
     animations = dict(
@@ -27,7 +37,18 @@ def hawko_sprites():
         ),
         air_dodge=SpriteAnimation(air_dodge.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         nair=SpriteAnimation(nair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        dair=SpriteAnimation(dair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        bair=SpriteAnimation(bair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        # fair=SpriteAnimation(fair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        # uair=SpriteAnimation(uair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         jab=SpriteAnimation(jab.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        dtilt=SpriteAnimation(dtilt.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        dash_attack=SpriteAnimation(
+            dash_attack.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
+        ),
+        aerial_laser=SpriteAnimation(
+            aerial_laser.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
+        ),
     )
 
     # automatically create flipped versions
