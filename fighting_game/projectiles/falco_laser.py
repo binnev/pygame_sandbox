@@ -24,7 +24,7 @@ class FalcoLaser(Projectile):
                 base_knockback=20,
                 knockback_angle=30,
                 damage=3,
-                sound=sounds.hit_electric2,
+                sound=sounds.tap4,
             )
             for x_offset in [-75, 0, 75]
         ]

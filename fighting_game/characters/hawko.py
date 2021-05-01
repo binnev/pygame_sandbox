@@ -18,7 +18,7 @@ class Hawko(Character):
     color = Color("cyan")
     ground_acceleration = 5
     walk_speed = 5
-    run_speed = 7.5
+    run_speed = 7.8
     initial_dash_duration = 14
     run_turnaround_duration = 20
     air_acceleration = 0.75
@@ -30,7 +30,7 @@ class Hawko(Character):
     air_resistance = 0.01
     friction = 0.7
     fall_speed = 10
-    fast_fall_speed = 14
+    fast_fall_speed = 18
     jumpsquat_frames = 5
     max_aerial_jumps = 1
     max_air_dodges = 1
@@ -188,40 +188,38 @@ class Hawko(Character):
         landing_lag = 5
 
         def __init__(self, character: Character):
-            sweet_spot = Hitbox(
+            first_hit = Hitbox(
                 owner=character,
                 y_offset=-30,
-                width=30,
-                height=30,
+                width=50,
+                height=70,
+                rotation=0,
+                base_knockback=10,
+                knockback_angle=90,
+                knockback_growth=5,
+                damage=5,
+                sound=None,
+            )
+            second_hit = Hitbox(
+                owner=character,
+                y_offset=-30,
+                width=50,
+                height=70,
                 rotation=0,
                 base_knockback=10,
                 knockback_angle=90,
                 knockback_growth=10,
                 damage=10,
             )
-            sour_spot = Hitbox(
-                owner=character,
-                y_offset=-30,
-                width=20,
-                height=20,
-                rotation=0,
-                base_knockback=5,
-                knockback_angle=90,
-                knockback_growth=5,
-                damage=5,
-                higher_priority_sibling=sweet_spot,
-            )
-            sprite = character.sprites[f"aerial_defense_{character.facing}"]
+            sprite = character.sprites[f"uair_{character.facing}"]
             images = sprite.frames
-            image_hit = images[0]
-            image_endlag = images[1]
-            image_endlag2 = images[2]
 
             self.frame_mapping = [
-                {"image": image_hit, "hitboxes": [sweet_spot]},
-                {"image": image_endlag, "hitboxes": [sour_spot]},
-                {"image": image_endlag, "hitboxes": [sour_spot]},
-                {"image": image_endlag2},
+                {"image": images[0], "hitboxes": []},
+                {"image": images[1], "hitboxes": [first_hit]},
+                {"image": images[2], "hitboxes": [second_hit]},
+                {"image": images[3], "hitboxes": []},
+                {"image": images[4], "hitboxes": []},
             ]
             super().__init__(character)
 
@@ -570,13 +568,14 @@ class Hawko(Character):
                 {"image": image_hit},
                 {"image": image_hit},
             ]
+            character.u = 13 if character.facing_right else -13
             super().__init__(character)
 
     class DownTilt(Move):
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
-                x_offset=30,
+                x_offset=50,
                 y_offset=40,
                 width=30,
                 height=20,
@@ -585,7 +584,7 @@ class Hawko(Character):
                 knockback_angle=80,
                 knockback_growth=13,
                 damage=10,
-                sound=sounds.sword_hit
+                sound=sounds.sword_hit,
             )
             sour_spot = Hitbox(
                 owner=character,
@@ -599,7 +598,7 @@ class Hawko(Character):
                 knockback_growth=8,
                 damage=4,
                 higher_priority_sibling=sweet_spot,
-                sound=sounds.sword_hit2
+                sound=sounds.sword_hit2,
             )
             sprite = character.sprites[f"dtilt_{character.facing}"]
             images = sprite.frames
@@ -667,21 +666,27 @@ class Hawko(Character):
                 {"image": image_hit},
                 {"image": image_hit},
                 {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
+                {"image": image_hit},
             ]
+            sounds.falco.gun.play()
             super().__init__(character)
+
         def __call__(self):
             super().__call__()
 
             character = self.character
-            if character.tick == 8:
+            if character.tick == 6:
                 character.level.add_projectile(
                     FalcoLaser(
                         x=character.x,
-                        y=character.y,
+                        y=character.y+10,
                         facing_right=character.facing_right,
                         owner=character,
                     )
                 )
+                sounds.falco.laser.play()
 
     class AerialUpB(AerialMove):
         landing_lag = 0

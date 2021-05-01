@@ -6,3 +6,6 @@ def _(name):
 
 
 death = _("death")
+gun = _("gun")
+laser = _("laser")
+airdodge = _("airdodge")

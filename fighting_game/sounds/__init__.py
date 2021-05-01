@@ -49,6 +49,7 @@ smack3 = _("smack3")
 smack2 = _("smack2")
 smack = _("smack")
 
+tap4 = _("tap4")
 
 from . import captain_falcon
 from . import falco

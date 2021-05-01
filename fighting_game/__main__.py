@@ -7,7 +7,10 @@ from fighting_game.game import FightingGame
 
 def main():
     game = FightingGame()
-    game.main()
+    try:
+        game.main()
+    except Exception:
+        main()
     pygame.quit()
     sys.exit()
 
