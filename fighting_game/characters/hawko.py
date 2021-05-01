@@ -19,8 +19,8 @@ class Hawko(Character):
     ground_acceleration = 5
     walk_speed = 5
     run_speed = 7.8
-    initial_dash_duration = 14
-    run_turnaround_duration = 20
+    initial_dash_duration = 16
+    run_turnaround_duration = 10
     air_acceleration = 0.75
     air_speed = 5
     gravity = 0.7
@@ -224,7 +224,7 @@ class Hawko(Character):
             super().__init__(character)
 
     class DownAir(AerialMove):
-        landing_lag = 10
+        landing_lag = 5
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
