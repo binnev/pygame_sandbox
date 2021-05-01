@@ -105,7 +105,11 @@ class Character(PhysicalEntity):
         return self.touch_box.colliderect(entity.rect)
 
     def standing_on_platform(self, platform):
-        return self.touching(platform) and self.rect.bottom <= platform.rect.top
+        return (
+            self.touching(platform)
+            and self.rect.bottom <= platform.rect.top
+            and self.v >= 0  # don't snap to platforms when jumping through them
+        )
 
     def touching_side_of_platform(self, platform):
         return self.touching(platform) and (

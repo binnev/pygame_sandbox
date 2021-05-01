@@ -26,7 +26,7 @@ class Hawko(Character):
     gravity = 0.7
     jump_speed = 15
     aerial_jump_speed = 20
-    shorthop_speed = 8
+    shorthop_speed = 7.5
     air_resistance = 0.01
     friction = 0.7
     fall_speed = 10
@@ -635,7 +635,7 @@ class Hawko(Character):
                 width=60,
                 height=30,
                 rotation=0,
-                base_knockback=10,
+                base_knockback=8,
                 knockback_angle=10,
                 knockback_growth=8,
                 damage=20,
@@ -647,7 +647,7 @@ class Hawko(Character):
                 width=60,
                 height=30,
                 rotation=0,
-                base_knockback=5,
+                base_knockback=4,
                 knockback_angle=10,
                 knockback_growth=8,
                 damage=10,
@@ -691,7 +691,7 @@ class Hawko(Character):
             super().__call__()
 
             character = self.character
-            if character.tick == 6:
+            if character.tick == 5:
                 character.level.add_projectile(
                     FalcoLaser(
                         x=character.x,
