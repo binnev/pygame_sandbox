@@ -720,7 +720,7 @@ class Debugger(Character):
                 pass
             elif character.animation_frame == 2:
                 character.v = -13
-                character.u += 5 if character.facing_right else -5
+                character.u += 2 if character.facing_right else -2
             else:
                 super().handle_physics()
 
