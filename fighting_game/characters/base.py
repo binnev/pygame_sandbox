@@ -38,12 +38,12 @@ class Character(PhysicalEntity):
     fast_fall_speed: float
     fast_fall: bool
     jumpsquat_frames: int
-    max_aerial_jumps: int = 1  # how many aerial jumps can the character possibly do
-    aerial_jumps = max_aerial_jumps  # how many aerial jumps do they have left
+    max_aerial_jumps: int = 1  # how many aerial jumps can the character do
     max_air_dodges: int = 1
-    air_dodges = max_air_dodges
     max_wall_jumps: int = 1
-    wall_jumps = max_wall_jumps
+    aerial_jumps: int  # how many aerial jumps does the character have left
+    air_dodges: int
+    wall_jumps: int
 
     hitstun_duration: int = 0
     hitpause_duration: int = 0
@@ -83,6 +83,9 @@ class Character(PhysicalEntity):
         self.input = input
         self.facing_right = facing_right
         self.fast_fall = False
+        self.aerial_jumps = self.max_aerial_jumps
+        self.air_dodges = self.max_air_dodges
+        self.wall_jumps = self.max_wall_jumps
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
@@ -122,11 +125,15 @@ class Character(PhysicalEntity):
         self.air_dodges = self.max_air_dodges
         self.wall_jumps = self.max_wall_jumps
 
+        if self.airborne:
+            self.state = self.state_fall
+
         # B-button inputs
         input = self.input
         if input.is_pressed(input.B):
             if input.is_down(input.UP):
-                self.state = self.AerialUpB(self)
+                self.y -= 1
+                self.allow_aerial_up_b()
             elif input.is_down(input.LEFT):
                 self.facing_right = False
                 self.state = self.AerialNeutralB(self)
@@ -150,9 +157,6 @@ class Character(PhysicalEntity):
         self.allow_down_smash()
         self.allow_up_smash()
         self.allow_forward_smash()
-
-        if self.airborne:
-            self.state = self.state_fall
 
         self.grounded_physics()
 
@@ -240,7 +244,7 @@ class Character(PhysicalEntity):
         # B-button inputs
         if input.is_pressed(input.B):
             if input.is_down(input.UP):
-                self.state = self.AerialUpB(self)
+                self.allow_aerial_up_b()
             elif input.is_down(input.LEFT):
                 self.facing_right = False
                 self.state = self.AerialNeutralB(self)
@@ -260,11 +264,13 @@ class Character(PhysicalEntity):
         if Cstick_back:
             self.state = self.BackAir(self)
 
-        self.allow_aerial_jump()
         self.allow_air_dodge()
         self.allow_aerial_drift()
         self.allow_fastfall()
         self.fall_physics()
+        did_wall_jump = self.allow_wall_jump()
+        if not did_wall_jump:
+            self.allow_aerial_jump()
 
     def state_special_fall(self):
         self.image = self.sprites["stomp_" + self.facing].get_frame(2)
@@ -655,11 +661,6 @@ class Character(PhysicalEntity):
         self.state = self.state_fall
         self.fastfall = False
 
-    def aerial_jump(self):
-        self.v = -self.aerial_jump_speed
-        self.fast_fall = False
-        self.aerial_jumps -= 1
-
     def shorthop(self):
         self.v = -self.shorthop_speed
         self.state = self.state_fall
@@ -813,6 +814,7 @@ class Character(PhysicalEntity):
                 self.facing_right = False
             self.v = 0
             self.state = self.state_wall_jumpsquat
+            return True
 
     def allow_air_dodge(self):
         input = self.input
@@ -829,16 +831,17 @@ class Character(PhysicalEntity):
         if input.is_down(input.DOWN):
             self.state = self.state_crouch
 
-    def enforce_max_fall_speed(self):
-        if self.v > 0 and abs(self.v) > self.fall_speed:
-            self.v = self.fall_speed
-
     def allow_aerial_drift(self):
         input = self.input
         if input.is_down(input.LEFT):
             self.u -= self.acceleration_to_apply(-self.u, self.air_acceleration, self.air_speed)
         if input.is_down(input.RIGHT):
             self.u += self.acceleration_to_apply(self.u, self.air_acceleration, self.air_speed)
+
+    def allow_aerial_up_b(self):
+        input = self.input
+        if input.is_pressed(input.B) and input.is_down(input.UP):
+            self.do_move(self.AerialUpB)
 
     def landing_lag(self, ticks):
         def func():
@@ -847,6 +850,10 @@ class Character(PhysicalEntity):
                 self.state = self.state_stand
 
         return func
+
+    def enforce_max_fall_speed(self):
+        if self.v > 0 and abs(self.v) > self.fall_speed:
+            self.v = self.fall_speed
 
     @staticmethod
     def acceleration_to_apply(speed, acceleration, speed_limit):

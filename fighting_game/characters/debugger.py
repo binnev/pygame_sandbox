@@ -67,8 +67,10 @@ class Debugger(Character):
             f"state: {state_name}",
             f"damage: {self.damage}%",
             f"fast_fall: {self.fast_fall}",
-            f"hitpause_duration: {self.hitpause_duration}",
-            f"hitstun_duration: {self.hitstun_duration}",
+            f"aerial_jumps: {self.aerial_jumps}",
+            f"wall_jumps: {self.wall_jumps}",
+            # f"hitpause_duration: {self.hitpause_duration}",
+            # f"hitstun_duration: {self.hitstun_duration}",
         ]
         line_spacing = 20
         for ii, thing in enumerate(things_to_print):
@@ -708,9 +710,19 @@ class Debugger(Character):
                 {"image": image},
                 {"image": image},
             ]
-            character.v = -13
-            character.u += 5 if character.facing_right else -5
+            character.u = 0
+            character.v = 0
             super().__init__(character)
+
+        def handle_physics(self):
+            character = self.character
+            if character.animation_frame < 2:
+                pass
+            elif character.animation_frame == 2:
+                character.v = -13
+                character.u += 5 if character.facing_right else -5
+            else:
+                super().handle_physics()
 
         def get_next_state(self):
             return self.character.state_special_fall
