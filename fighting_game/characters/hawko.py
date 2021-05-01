@@ -328,29 +328,43 @@ class Hawko(Character):
 
     class UpTilt(Move):
         def __init__(self, character: Character):
-            sweet_spot = Hitbox(
+            low = Hitbox(
                 owner=character,
-                y_offset=-30,
+                x_offset=-15,
+                y_offset=10,
                 width=60,
+                height=40,
+                rotation=-30,
+                base_knockback=15,
+                knockback_angle=95,
+                knockback_growth=8,
+                damage=8,
+            )
+            high = Hitbox(
+                owner=character,
+                x_offset=0,
+                y_offset=-15,
+                width=50,
                 height=60,
                 rotation=0,
-                base_knockback=30,
-                knockback_angle=80,
-                knockback_growth=5,
-                damage=10,
+                base_knockback=15,
+                knockback_angle=95,
+                knockback_growth=8,
+                damage=8,
+                higher_priority_sibling=low,
             )
-            sprite = character.sprites[f"weird_hit_{character.facing}"]
+            sprite = character.sprites[f"utilt_{character.facing}"]
             images = sprite.frames
-            image_windup = images[1]
-            image_hit = images[3]
-            image_endlag = images[4]
 
             self.frame_mapping = [
-                {"image": image_windup},
-                {"image": image_hit, "hitboxes": [sweet_spot]},
-                {"image": image_endlag},
-                {"image": image_endlag},
-                {"image": image_endlag},
+                {"image": images[0], "hitboxes": []},
+                # {"image": images[1], "hitboxes": []},
+                {"image": images[2], "hitboxes": [low]},
+                # {"image": images[3], "hitboxes": []},
+                {"image": images[4], "hitboxes": [high]},
+                {"image": images[5], "hitboxes": []},
+                {"image": images[6], "hitboxes": []},
+                {"image": images[7], "hitboxes": []},
             ]
             super().__init__(character)
 

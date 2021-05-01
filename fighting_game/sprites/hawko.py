@@ -23,6 +23,7 @@ def hawko_sprites():
     dash_attack = SpriteSheet(filename=folder / "hawko_nair.png")
     jab = SpriteSheet(filename=folder / "hawko_jab.png")
     dtilt = SpriteSheet(filename=folder / "hawko_dtilt.png")
+    utilt = SpriteSheet(filename=folder / "hawko_utilt.png")
 
     aerial_laser = SpriteSheet(filename=folder / "hawko_aerial_laser.png")
 
@@ -43,6 +44,7 @@ def hawko_sprites():
         uair=SpriteAnimation(uair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         jab=SpriteAnimation(jab.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         dtilt=SpriteAnimation(dtilt.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        utilt=SpriteAnimation(utilt.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         dash_attack=SpriteAnimation(
             dash_attack.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
         ),
