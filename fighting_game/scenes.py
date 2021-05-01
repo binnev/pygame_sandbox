@@ -1,3 +1,4 @@
+from fighting_game.characters.hawko import Hawko
 from fighting_game.game import FightingGame
 from fighting_game.objects import Entity, Group
 from fighting_game.characters.debugger import Debugger
@@ -21,7 +22,7 @@ class SandBox(Entity):
     def setup(self):
         self.level = Battlefield()
         self.levels.add(self.level)  # didn't pass a ref to self.
-        self.players.add(Debugger(600, 500, input=self.game.controller0))
+        self.players.add(Hawko(600, 500, input=self.game.controller0))
         self.enemies.add(Debugger(1000, 500, facing_right=False, input=self.game.controller1))
         self.level.add_character(*self.players, *self.enemies)
         self.state = lambda: None
@@ -32,6 +33,6 @@ class SandBox(Entity):
             self.enemies.add(Debugger(1000, 500, facing_right=False, input=self.game.controller1))
             self.level.add_character(*self.enemies)
         if not self.players:
-            self.players.add(Debugger(600, 500, input=self.game.controller0))
+            self.players.add(Hawko(600, 500, input=self.game.controller0))
             self.level.add_character(*self.players)
 

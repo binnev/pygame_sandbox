@@ -52,7 +52,7 @@ class FightingGame(Entity):
         from fighting_game.scenes import SandBox
 
         self.add_scene(SandBox())
-        self.debug = True
+        self.debug = False
         self.running = True
         while self.running:
             self.update()

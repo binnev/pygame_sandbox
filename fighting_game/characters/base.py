@@ -192,7 +192,7 @@ class Character(PhysicalEntity):
         self.grounded_physics()
 
     def state_fall(self):
-        self.image = self.sprites["jump_" + self.facing].get_frame(self.animation_frame)
+        self.image = self.sprites["fall_" + self.facing].get_frame(self.animation_frame)
         input = self.input
 
         holding_back = (self.facing_right and input.is_down(input.LEFT)) or (
@@ -282,7 +282,7 @@ class Character(PhysicalEntity):
         decay = 0.1
         self.u *= 1 - decay
         self.v *= 1 - decay
-        self.image = self.sprites["back_air2_" + self.facing].get_frame(1)
+        self.image = self.sprites["air_dodge_" + self.facing].get_frame(1)
         """ 
         todo: here do platform collision 
         horizontal collision: 
