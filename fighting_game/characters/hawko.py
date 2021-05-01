@@ -83,47 +83,47 @@ class Hawko(Character):
 
     class ForwardAir(AerialMove):
         landing_lag = 5
-        sound = sounds.sword_swing
 
         def __init__(self, character: Character):
             sweet_spot = Hitbox(
                 owner=character,
-                x_offset=30,
-                width=30,
-                height=30,
-                rotation=45,
+                x_offset=20,
+                width=80,
+                height=40,
+                rotation=30,
                 base_knockback=10,
                 knockback_angle=30,
                 knockback_growth=10,
                 damage=10,
-                sound=sounds.sword_hit,
             )
             sour_spot = Hitbox(
                 owner=character,
-                x_offset=30,
-                width=20,
-                height=20,
-                rotation=0,
+                x_offset=20,
+                width=80,
+                height=40,
+                rotation=30,
                 base_knockback=5,
                 knockback_angle=45,
                 knockback_growth=5,
                 damage=5,
-                higher_priority_sibling=sweet_spot,
-                sound=sounds.sword_hit2,
             )
-            sprite = character.sprites[f"flying_kick_{character.facing}"]
+            sour_spot2 = copy(sour_spot)
+            sprite = character.sprites[f"fair_{character.facing}"]
             images = sprite.frames
-            image_windup = images[0]
-            image_hit = images[2]
-            image_endlag = images[6]
 
             self.frame_mapping = [
-                {"image": image_windup},
-                {"image": image_hit, "hitboxes": [sweet_spot]},
-                {"image": image_hit, "hitboxes": [sweet_spot]},
-                {"image": image_hit, "hitboxes": [sour_spot]},
-                {"image": image_hit, "hitboxes": [sour_spot]},
-                {"image": image_endlag},
+                {"image": images[0], "hitboxes": [sour_spot]},
+                {"image": images[0], "hitboxes": [sour_spot]},
+                {"image": images[1], "hitboxes": []},
+                {"image": images[1], "hitboxes": []},
+                {"image": images[0], "hitboxes": [sour_spot2]},
+                {"image": images[0], "hitboxes": [sour_spot2]},
+                {"image": images[1], "hitboxes": []},
+                {"image": images[1], "hitboxes": []},
+                {"image": images[0], "hitboxes": [sweet_spot]},
+                {"image": images[0], "hitboxes": [sweet_spot]},
+                {"image": images[1], "hitboxes": []},
+                {"image": images[1], "hitboxes": []},
             ]
             super().__init__(character)
 

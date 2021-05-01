@@ -17,7 +17,7 @@ def hawko_sprites():
     nair = SpriteSheet(filename=folder / "hawko_nair.png")
     dair = SpriteSheet(filename=folder / "hawko_dair.png")
     bair = SpriteSheet(filename=folder / "hawko_bair.png")
-    # fair = SpriteSheet(filename=folder / "hawko_fair.png")
+    fair = SpriteSheet(filename=folder / "hawko_fair.png")
     uair = SpriteSheet(filename=folder / "hawko_uair.png")
 
     dash_attack = SpriteSheet(filename=folder / "hawko_nair.png")
@@ -39,7 +39,7 @@ def hawko_sprites():
         nair=SpriteAnimation(nair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         dair=SpriteAnimation(dair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         bair=SpriteAnimation(bair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        # fair=SpriteAnimation(fair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        fair=SpriteAnimation(fair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         uair=SpriteAnimation(uair.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         jab=SpriteAnimation(jab.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         dtilt=SpriteAnimation(dtilt.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
