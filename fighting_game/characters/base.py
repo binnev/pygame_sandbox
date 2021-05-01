@@ -279,20 +279,11 @@ class Character(PhysicalEntity):
         self.fall_physics()
 
     def state_air_dodge(self):
+        # todo: build in a buffer so you can be slightly below the top of a platform.
         decay = 0.1
         self.u *= 1 - decay
         self.v *= 1 - decay
         self.image = self.sprites["air_dodge_" + self.facing].get_frame(1)
-        """ 
-        todo: here do platform collision 
-        horizontal collision: 
-            droppable: pass through
-            solid: set velocity to 0 but stay in airdodge state
-        vertical collision: 
-            set vertical velocity to 0 but maintain horizontal velocity!
-
-        later: build in a buffer so you can be slightly below the top of a platform. 
-        """
         # update horizontal position and handle platform collisions
         self.x += self.u
         platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
