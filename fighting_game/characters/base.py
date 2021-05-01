@@ -29,6 +29,7 @@ class Character(PhysicalEntity):
     air_acceleration: float
     air_speed: float
     jump_speed: float
+    aerial_jump_speed: float
     shorthop_speed: float
     gravity: float
     friction: float
@@ -136,7 +137,7 @@ class Character(PhysicalEntity):
                 self.state = self.AerialNeutralB(self)
 
         self.allow_platform_drop()
-        self.allow_jump()
+        self.allow_grounded_jump()
         self.allow_crouch()
         self.allow_dash()
 
@@ -259,16 +260,8 @@ class Character(PhysicalEntity):
         if Cstick_back:
             self.state = self.BackAir(self)
 
-        if input.is_pressed(input.Y):
-            if self.aerial_jumps:
-                self.v = -self.jump_speed
-                self.fast_fall = False
-                self.aerial_jumps -= 1
-
-        # air dodge
-        if input.is_pressed(input.R) or input.is_pressed(input.L):
-            self.air_dodge()
-
+        self.allow_aerial_jump()
+        self.allow_air_dodge()
         self.allow_aerial_drift()
         self.allow_fastfall()
         self.fall_physics()
@@ -382,7 +375,7 @@ class Character(PhysicalEntity):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
         if self.tick == self.jumpsquat_frames:
             if self.input.is_down(self.input.Y):
-                self.jump()
+                self.grounded_jump()
             else:
                 self.shorthop()
 
@@ -391,10 +384,7 @@ class Character(PhysicalEntity):
     def state_wall_jumpsquat(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
         if self.tick == self.jumpsquat_frames:
-            self.u = 5 if self.facing_right else -5
-            self.v = -self.jump_speed
-            self.fastfall = False
-            self.state = self.state_fall
+            self.wall_jump()
 
     def state_crouch(self):
         self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
@@ -404,7 +394,7 @@ class Character(PhysicalEntity):
         if not input.is_down(input.DOWN):
             self.state = self.state_stand
 
-        self.allow_jump()
+        self.allow_grounded_jump()
 
         self.allow_down_tilt()
 
@@ -430,6 +420,7 @@ class Character(PhysicalEntity):
             self.u, self.v = unit * self.air_dodge_speed
 
         self.state = self.state_air_dodge
+        self.air_dodges -= 1
 
     def apply_gravity(self, speed_limit):
         self.v += self.acceleration_to_apply(self.v, self.gravity, speed_limit)
@@ -659,10 +650,15 @@ class Character(PhysicalEntity):
 
         self.state = hitpause
 
-    def jump(self):
+    def grounded_jump(self):
         self.v = -self.jump_speed
         self.state = self.state_fall
         self.fastfall = False
+
+    def aerial_jump(self):
+        self.v = -self.aerial_jump_speed
+        self.fast_fall = False
+        self.aerial_jumps -= 1
 
     def shorthop(self):
         self.v = -self.shorthop_speed
@@ -670,8 +666,17 @@ class Character(PhysicalEntity):
         self.fastfall = False
 
     def wall_jump(self):
-        self.v = 0
-        self.state = self.state_wall_jumpsquat
+        self.u = 5 if self.facing_right else -5
+        self.v = -self.jump_speed
+        self.fastfall = False
+        self.state = self.state_fall
+        self.wall_jumps -= 1
+
+    def aerial_jump(self):
+        self.v = -self.aerial_jump_speed
+        self.state = self.state_fall
+        self.fastfall = False
+        self.aerial_jumps -= 1
 
     def handle_get_hit(self, hitbox):
         """ What to do when self gets hit by a hitbox. """
@@ -775,15 +780,19 @@ class Character(PhysicalEntity):
         ):
             self.do_move(self.Jab)
 
-    def allow_jump(self):
+    def allow_grounded_jump(self):
         input = self.input
-        if input.is_pressed(input.Y) or input.is_pressed(input.X):
-            if self.airborne:
-                if input.is_pressed(input.Y):
-                    self.v = -self.jump_speed
-                    self.fast_fall = False
-            else:
-                self.state = self.state_jumpsquat
+        if not self.airborne and (input.is_pressed(input.Y) or input.is_pressed(input.X)):
+            self.state = self.state_jumpsquat
+
+    def allow_aerial_jump(self):
+        input = self.input
+        if (
+            self.airborne
+            and self.aerial_jumps > 0
+            and (input.is_pressed(input.Y) or input.is_pressed(input.X))
+        ):
+            self.aerial_jump()
 
     def allow_wall_jump(self):
         input = self.input
@@ -792,13 +801,23 @@ class Character(PhysicalEntity):
             for platform in self.level.platforms
             if self.touching_side_of_platform(platform)
         ]
-        if (input.is_pressed(input.Y) or input.is_pressed(input.X)) and any(platforms):
+        if (
+            (input.is_pressed(input.Y) or input.is_pressed(input.X))
+            and self.wall_jumps > 0
+            and any(platforms)
+        ):
             # if the platform is to the left, face right (jumping away from wall)
             if platforms[0].rect.centerx < self.x:
                 self.facing_right = True
             else:
                 self.facing_right = False
-            self.wall_jump()
+            self.v = 0
+            self.state = self.state_wall_jumpsquat
+
+    def allow_air_dodge(self):
+        input = self.input
+        if (input.is_pressed(input.R) or input.is_pressed(input.L)) and self.air_dodges > 0:
+            self.air_dodge()
 
     def allow_dash(self):
         input = self.input

@@ -25,12 +25,16 @@ class Debugger(Character):
     air_speed = 5
     gravity = 0.3
     jump_speed = 10
+    aerial_jump_speed = 8
     shorthop_speed = 5
     air_resistance = 0.01
     friction = 0.3
     fall_speed = 7
     fast_fall_speed = 12
     jumpsquat_frames = 5
+    max_aerial_jumps = 2
+    max_air_dodges = 2
+    max_wall_jumps = 2
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__(x, y, input, facing_right)
