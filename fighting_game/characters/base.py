@@ -124,7 +124,7 @@ class Character(PhysicalEntity):
         return True
 
     def state_stand(self):
-        self.image = self.sprites["stand_" + self.facing].get_frame(self.animation_frame)
+        self.image = self.sprites["stand_" + self.facing].loop(self.animation_frame)
         self.aerial_jumps = self.max_aerial_jumps
         self.air_dodges = self.max_air_dodges
         self.wall_jumps = self.max_wall_jumps
@@ -165,7 +165,7 @@ class Character(PhysicalEntity):
         self.grounded_physics()
 
     def state_run(self):
-        self.image = self.sprites["run_" + self.facing].get_frame(self.animation_frame)
+        self.image = self.sprites["run_" + self.facing].loop(self.animation_frame)
         input = self.input
         if not input.is_down(input.LEFT) and not input.is_down(input.RIGHT):
             self.state = self.state_run_end
@@ -196,7 +196,7 @@ class Character(PhysicalEntity):
         self.grounded_physics()
 
     def state_fall(self):
-        self.image = self.sprites["fall_" + self.facing].get_frame(self.animation_frame)
+        self.image = self.sprites["fall_" + self.facing].loop(self.animation_frame)
         input = self.input
 
         holding_back = (self.facing_right and input.is_down(input.LEFT)) or (
@@ -277,7 +277,7 @@ class Character(PhysicalEntity):
             self.allow_aerial_jump()
 
     def state_special_fall(self):
-        self.image = self.sprites["stomp_" + self.facing].get_frame(2)
+        self.image = self.sprites["stomp_" + self.facing].play(2)
         self.allow_aerial_drift()
         self.allow_wall_jump()
         self.fall_physics()
@@ -287,7 +287,7 @@ class Character(PhysicalEntity):
         decay = 0.1
         self.u *= 1 - decay
         self.v *= 1 - decay
-        self.image = self.sprites["air_dodge_" + self.facing].get_frame(1)
+        self.image = self.sprites["air_dodge_" + self.facing].play(0)
         # update horizontal position and handle platform collisions
         self.x += self.u
         platforms = pygame.sprite.spritecollide(self, self.level.platforms, dokill=False)
@@ -318,7 +318,7 @@ class Character(PhysicalEntity):
         self.hit_physics()
 
     def state_initial_dash(self):
-        self.image = self.sprites["run_" + self.facing].get_frame(0)
+        self.image = self.sprites["run_" + self.facing].play(0)
         input = self.input
         if input.is_down(input.LEFT):
             if self.facing_right:
@@ -347,7 +347,7 @@ class Character(PhysicalEntity):
         self.grounded_physics()
 
     def state_run_turnaround(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+        self.image = self.sprites["crouch_" + self.facing].loop(self.animation_frame)
         input = self.input
         if input.is_pressed(input.Y):
             self.state = self.state_jumpsquat
@@ -360,7 +360,7 @@ class Character(PhysicalEntity):
         self.grounded_physics()
 
     def state_run_end(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+        self.image = self.sprites["crouch_" + self.facing].loop(self.animation_frame)
         input = self.input
         if input.is_pressed(input.Y):
             self.state = self.state_jumpsquat
@@ -373,7 +373,7 @@ class Character(PhysicalEntity):
         self.grounded_physics()
 
     def state_jumpsquat(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+        self.image = self.sprites["crouch_" + self.facing].loop(self.animation_frame)
         if self.tick == self.jumpsquat_frames:
             if self.input.is_down(self.input.Y):
                 self.grounded_jump()
@@ -383,12 +383,12 @@ class Character(PhysicalEntity):
         self.grounded_physics()
 
     def state_wall_jumpsquat(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+        self.image = self.sprites["crouch_" + self.facing].loop(self.animation_frame)
         if self.tick == self.jumpsquat_frames:
             self.wall_jump()
 
     def state_crouch(self):
-        self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+        self.image = self.sprites["crouch_" + self.facing].loop(self.animation_frame)
         input = self.input
         if self.airborne:
             self.state = self.state_fall
@@ -840,7 +840,7 @@ class Character(PhysicalEntity):
 
     def landing_lag(self, ticks):
         def func():
-            self.image = self.sprites["crouch_" + self.facing].get_frame(self.animation_frame)
+            self.image = self.sprites["crouch_" + self.facing].loop(self.animation_frame)
             if (self.tick == ticks) or (ticks == 0):
                 self.state = self.state_stand
 

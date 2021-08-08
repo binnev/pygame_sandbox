@@ -109,7 +109,7 @@ class Hawko(Character):
             )
             sour_spot2 = copy(sour_spot)
             sprite = character.sprites[f"fair_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
 
             self.frame_mapping = [
                 {"image": images[0], "hitboxes": [sour_spot]},
@@ -170,7 +170,7 @@ class Hawko(Character):
                 higher_priority_sibling=sour_spot,
             )
             sprite = character.sprites[f"bair_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
 
             self.frame_mapping = [
                 {"image": images[0], "hitboxes": [sweet_spot, weak_front]},
@@ -212,7 +212,7 @@ class Hawko(Character):
                 damage=10,
             )
             sprite = character.sprites[f"uair_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
 
             self.frame_mapping = [
                 {"image": images[0], "hitboxes": []},
@@ -252,7 +252,7 @@ class Hawko(Character):
                 higher_priority_sibling=sweet_spot,
             )
             sprite = character.sprites[f"dair_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
 
             self.frame_mapping = [
                 {"image": images[0], "hitboxes": [sweet_spot]},
@@ -313,7 +313,7 @@ class Hawko(Character):
                 higher_priority_sibling=sour_spot,
             )
             sprite = character.sprites[f"nair_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
             image = images[0]
 
             self.frame_mapping = [
@@ -354,7 +354,7 @@ class Hawko(Character):
                 higher_priority_sibling=low,
             )
             sprite = character.sprites[f"utilt_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
 
             self.frame_mapping = [
                 {"image": images[0], "hitboxes": []},
@@ -384,7 +384,7 @@ class Hawko(Character):
                 sound=sounds.smack3,
             )
             sprite = character.sprites[f"jab_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
             image_hit = images[0]
 
             self.frame_mapping = [
@@ -421,7 +421,7 @@ class Hawko(Character):
             sour_spot2 = copy(sour_spot)
             sour_spot3 = copy(sour_spot)
             sprite = character.sprites[f"dive_getup_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
             image_hit = images[3]
             image_hit2 = images[5]
             image_getup1 = images[6]
@@ -477,7 +477,7 @@ class Hawko(Character):
                 higher_priority_sibling=sweet_spot,
             )
             sprite = character.sprites[f"taunt_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
             image_windup = images[1]
             image_windup2 = images[2]
             image_hit = images[3]
@@ -522,7 +522,7 @@ class Hawko(Character):
                 sound=sounds.sword_hit2,
             )
             sprite = character.sprites[f"standing_hit_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
             image_hit = images[0]
 
             self.frame_mapping = [
@@ -571,7 +571,7 @@ class Hawko(Character):
                 sound=sounds.sword_hit2,
             )
             sprite = character.sprites[f"dash_attack_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
             image_hit = images[0]
 
             self.frame_mapping = [
@@ -615,7 +615,7 @@ class Hawko(Character):
                 sound=sounds.sword_hit2,
             )
             sprite = character.sprites[f"dtilt_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
 
             self.frame_mapping = [
                 {"image": images[0]},
@@ -654,7 +654,7 @@ class Hawko(Character):
                 higher_priority_sibling=sweet_spot,
             )
             sprite = character.sprites[f"ftilt_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
 
             self.frame_mapping = [
                 {"image": images[0], "hitboxes": []},
@@ -670,7 +670,7 @@ class Hawko(Character):
 
         def __init__(self, character: Character):
             sprite = character.sprites[f"aerial_laser_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
             image_hit = images[0]
 
             self.frame_mapping = [
@@ -733,7 +733,7 @@ class Hawko(Character):
                 sound=sounds.sword_hit2,
             )
             sprite = character.sprites[f"back_air_{character.facing}"]
-            images = sprite.frames
+            images = sprite.images
             image = images[2]
             image2 = character.sprites[f"crouch_{character.facing}"].frames[0]
 

@@ -32,16 +32,12 @@ def stickman_sprites():
         run=SpriteAnimation(run.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         crouch=SpriteAnimation(crouch.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         jump=SpriteAnimation(jump.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        back_air=SpriteAnimation(
-            back_air.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES, looping=False
-        ),
-        back_air2=SpriteAnimation(
-            back_air2.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES, looping=False
-        ),
+        back_air=SpriteAnimation(back_air.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        back_air2=SpriteAnimation(back_air2.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         fall=SpriteAnimation(fall.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         dive=SpriteAnimation(dive.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         dive_getup=SpriteAnimation(
-            dive_getup.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES, looping=False
+            dive_getup.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
         ),
         aerial_defense=SpriteAnimation(
             aerial_defense.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
@@ -49,17 +45,11 @@ def stickman_sprites():
         standing_hit=SpriteAnimation(
             standing_hit.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
         ),
-        weird_hit=SpriteAnimation(
-            weird_hit.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES, looping=False
-        ),
-        taunt=SpriteAnimation(
-            taunt.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES, looping=False
-        ),
-        stomp=SpriteAnimation(
-            stomp.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES, looping=False
-        ),
+        weird_hit=SpriteAnimation(weird_hit.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        taunt=SpriteAnimation(taunt.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
+        stomp=SpriteAnimation(stomp.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
         flying_kick=SpriteAnimation(
-            flying_kick.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES, looping=False
+            flying_kick.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
         ),
     )
 

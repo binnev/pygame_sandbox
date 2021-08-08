@@ -5,9 +5,9 @@ import pygame
 
 
 def not_empty(surface: pygame.Surface):
-    """ Check if a surface has any non-zero pixels. `Surface.get_bounding_rect()` returns the
+    """Check if a surface has any non-zero pixels. `Surface.get_bounding_rect()` returns the
     smallest rectangle on the surface containing data. If the surface is empty, it will return
-    Rect(0, 0, 0, 0), for which `any` returns False """
+    Rect(0, 0, 0, 0), for which `any` returns False"""
     return any(surface.get_bounding_rect())
 
 
@@ -62,7 +62,7 @@ def recolor_image(surface, color_mapping: dict):
 class SpriteSheet:
     """Handles importing spritesheets and dividing into individual frame images."""
 
-    sheet: pygame.Surface
+    sheet: pygame.Surface  # contains all the images of the animation in a grid
 
     def __init__(self, filename, colorkey=None):
         filename = Path(filename).as_posix()
@@ -83,9 +83,14 @@ class SpriteSheet:
                 self.colorkey = self.sheet.get_at((0, 0))
             self.sheet.set_colorkey(self.colorkey, pygame.RLEACCEL)
 
-    def get_images(self, size: (int, int), num_images: int = None, **kwargs,) -> [pygame.Surface]:
-        """ This is the main interface for the rest of the code. Split the spritesheet into
-        images, scale/flip/recolor them, and return a list of images.  """
+    def get_images(
+        self,
+        size: (int, int),
+        num_images: int = None,
+        **kwargs,
+    ) -> [pygame.Surface]:
+        """This is the main interface for the rest of the code. Split the spritesheet into
+        images, scale/flip/recolor them, and return a list of images."""
         width, height = size
         num_horizontal = self.sheet.get_rect().width // width
         num_vertical = self.sheet.get_rect().height // height
@@ -112,44 +117,53 @@ class SpriteAnimation:
     def __init__(
         self,
         images: [pygame.Surface],
-        looping=True,
+        scale: float = None,
+        flip_x: bool = False,
+        flip_y: bool = False,
+        colormap: dict = None,
+    ):
+        self.images = images
+        if scale:
+            self.scale(scale)
+        if flip_x or flip_y:
+            self.flip(flip_x, flip_y)
+        if colormap:
+            self.recolor(colormap)
+
+    def play(self, n: int):
+        """
+        Fetch frame with index n. This is used in the game loop (where n is the iteration
+        counter) to animate the sprite. Return False when we've run out of frames.
+        """
+        try:
+            return self.images[n]
+        except IndexError:
+            return False
+
+    def loop(self, n: int):
+        """ If n is greater than the number of frames, start again at the beginning. """
+        return self.play(n % len(self.images))
+
+    def flip(self, flip_x: bool, flip_y: bool):
+        self.images = [flip_image(image, flip_x, flip_y) for image in self.images]
+
+    def recolor(self, colormap: dict):
+        self.images = [recolor_image(image, colormap) for image in self.images]
+
+    def scale(self, scale: float):
+        self.images = [scale_image(image, scale) for image in self.images]
+
+    def __len__(self):
+        return len(self.images)
+
+    def copy(
+        self,
         scale: float = None,
         flip_x=False,
         flip_y=False,
         colormap: dict = None,
-        **kwargs,
     ):
-        self.looping = looping
-        if scale:
-            images = [scale_image(image, scale) for image in images]
-        if flip_x or flip_y:
-            images = [flip_image(image, flip_x, flip_y) for image in images]
-        if colormap:
-            images = [recolor_image(image, colormap) for image in images]
-
-        self.frames = images
-
-    def get_frame(self, n: int):
-        """
-        Animate the sprite. Given an integer `n` representing how many iterations the game has
-        performed, return a sprite frame. Handles looping through a finite list of frames.
-        """
-        if self.looping:
-            return self.frames[n % len(self.frames)]
-        else:
-            # return False when we've run out of frames.
-            try:
-                return self.frames[n]
-            except IndexError:
-                return False
-
-    def __len__(self):
-        return len(self.frames)
-
-    def copy(
-        self, scale: float = None, flip_x=False, flip_y=False, colormap: dict = None,
-    ):
-        return self.__class__(self.frames, self.looping, scale, flip_x, flip_y, colormap)
+        return self.__class__(self.images, scale, flip_x, flip_y, colormap)
 
 
 class SpriteDict(dict):
