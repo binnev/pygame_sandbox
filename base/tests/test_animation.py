@@ -16,3 +16,4 @@ def test_spritesheet_load_image():
     pygame.init()
     pygame.display.set_mode((5, 5))
     sprite_sheet.load()
+    pygame.quit()
