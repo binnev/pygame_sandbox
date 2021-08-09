@@ -140,12 +140,12 @@ class Character(PhysicalEntity):
                 self.allow_aerial_up_b()
             elif input.is_down(input.LEFT):
                 self.facing_right = False
-                self.state = self.AerialNeutralB(self)
+                self.do_move(self.AerialNeutralB)
             elif input.is_down(input.RIGHT):
                 self.facing_right = True
-                self.state = self.AerialNeutralB(self)
+                self.do_move(self.AerialNeutralB)
             else:
-                self.state = self.AerialNeutralB(self)
+                self.do_move(self.AerialNeutralB)
 
         self.allow_platform_drop()
         self.allow_grounded_jump()
@@ -235,15 +235,15 @@ class Character(PhysicalEntity):
         # A-button inputs
         if input.is_pressed(input.A):
             if holding_back:
-                self.state = self.BackAir(self)
+                self.do_move(self.BackAir)
             elif holding_forward:
-                self.state = self.ForwardAir(self)
+                self.do_move(self.ForwardAir)
             elif input.is_down(input.UP):
-                self.state = self.UpAir(self)
+                self.do_move(self.UpAir)
             elif input.is_down(input.DOWN):
-                self.state = self.DownAir(self)
+                self.do_move(self.DownAir)
             else:
-                self.state = self.NeutralAir(self)
+                self.do_move(self.NeutralAir)
 
         # B-button inputs
         if input.is_pressed(input.B):
@@ -251,22 +251,22 @@ class Character(PhysicalEntity):
                 self.allow_aerial_up_b()
             elif input.is_down(input.LEFT):
                 self.facing_right = False
-                self.state = self.AerialNeutralB(self)
+                self.do_move(self.AerialNeutralB)
             elif input.is_down(input.RIGHT):
                 self.facing_right = True
-                self.state = self.AerialNeutralB(self)
+                self.do_move(self.AerialNeutralB)
             else:
-                self.state = self.AerialNeutralB(self)
+                self.do_move(self.AerialNeutralB)
 
         # C-stick inputs
         if Cstick_up:
-            self.state = self.UpAir(self)
+            self.do_move(self.UpAir)
         if Cstick_down:
-            self.state = self.DownAir(self)
+            self.do_move(self.DownAir)
         if Cstick_forward:
-            self.state = self.ForwardAir(self)
+            self.do_move(self.ForwardAir)
         if Cstick_back:
-            self.state = self.BackAir(self)
+            self.do_move(self.BackAir)
 
         self.allow_air_dodge()
         self.allow_aerial_drift()
