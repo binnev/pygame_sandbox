@@ -1,6 +1,7 @@
 class SingletonInitError(Exception):
     pass
 
+
 class Singleton:
     instance = None
 

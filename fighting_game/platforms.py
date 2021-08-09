@@ -16,4 +16,3 @@ class Platform(PhysicalEntity):
         self.color = Color("green") if droppable else self.color
         self.image = Surface((width, height))
         self.image.fill(self.color)
-

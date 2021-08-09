@@ -28,8 +28,8 @@ class Game:
         self.input_devices = [self.keyboard]
 
     def main(self):
-        """ This is the outermost game function which runs once. It contains the outermost game
-        loop. Here's where you should put your main event state machine. """
+        """This is the outermost game function which runs once. It contains the outermost game
+        loop. Here's where you should put your main event state machine."""
         self.tick = 0
         run = True
         while run:

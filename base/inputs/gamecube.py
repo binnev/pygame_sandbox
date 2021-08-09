@@ -38,8 +38,8 @@ D_PAD_DOWN = 21
 
 
 def linear_map(input_value, input_range, output_range, limit_output=True):
-    """ Linearly map a set of inputs to a set of outputs. If limit_output==True, don't output any
-    values outside the output range. Will still allow inputs outside the input range. """
+    """Linearly map a set of inputs to a set of outputs. If limit_output==True, don't output any
+    values outside the output range. Will still allow inputs outside the input range."""
     input_min, input_max = input_range
     output_min, output_max = output_range
 
@@ -59,8 +59,8 @@ def linear_map(input_value, input_range, output_range, limit_output=True):
 
 
 def create_mapping(input_range, output_range, limit_output=True):
-    """ Partially execute the linear_map function to store the input/output ranges so we don't
-    have to input them every time. """
+    """Partially execute the linear_map function to store the input/output ranges so we don't
+    have to input them every time."""
 
     def wrapper(input_value):
         return linear_map(input_value, input_range, output_range, limit_output)
@@ -69,7 +69,7 @@ def create_mapping(input_range, output_range, limit_output=True):
 
 
 class GamecubeControllerReader:
-    """ Class to read the inputs of a GameCube controller plugged into the Mayflash "GameCube
+    """Class to read the inputs of a GameCube controller plugged into the Mayflash "GameCube
     Controller Adapter for Wii U & PC USB"
 
     This class
@@ -91,8 +91,8 @@ class GamecubeControllerReader:
         self.joystick.init()  # turn on the joystick
 
     def get_values(self):
-        """ Get the current state of all the inputs. This is intended to be equivalent to
-        pygame.key.get_pressed so that the inputs can be processed in the same way. """
+        """Get the current state of all the inputs. This is intended to be equivalent to
+        pygame.key.get_pressed so that the inputs can be processed in the same way."""
         # todo: the d-pad properties each access the d-pad values when they are called. So we're
         #  checking the status of the d-pad 4 times per tick when once would do. If the inputs
         #  ever get slow, maybe look at this.

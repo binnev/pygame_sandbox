@@ -13,9 +13,9 @@ class Canvas(pygame.Surface, Singleton):
     # todo: I don't think this should be a singleton. What if I want to have several canvases;
     #  one for the background, one for the foreground, etc?
     def __init__(self):
-        """ This method is used by Singleton to create an instance of pygame.Surface which is
+        """This method is used by Singleton to create an instance of pygame.Surface which is
         stored as Canvas.instance. This surface has the same dimensions as the game
-        window """
+        window"""
         display = pygame.display.get_surface()
         width = display.get_width()
         height = display.get_height()
@@ -24,9 +24,9 @@ class Canvas(pygame.Surface, Singleton):
 
     @classmethod
     def initialise(cls, *args, **kwargs):
-        """ Need to wrap Singleton.initialise because we need to do some setup that involves
+        """Need to wrap Singleton.initialise because we need to do some setup that involves
         mutating the instance object. Perhaps this is an indication that my current singleton
-        implementation is not optimal... """
+        implementation is not optimal..."""
         super().initialise(*args, **kwargs)
         # this is not possible inside Canvas.__init__
         cls.instance = cls.instance.convert_alpha()

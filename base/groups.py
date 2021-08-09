@@ -24,7 +24,7 @@ class EntityGroup(pygame.sprite.Group):
 class Level(EntityGroup):
     """The Level class holds sprite lists of all the platforms, characters, etc---all
     the game objects that are currently "in play". Create a subclass to create a
-    specific level e.g. one with platforms in certain positions. """
+    specific level e.g. one with platforms in certain positions."""
 
     def __init__(self, *args, game=None, **kwargs):
         super().__init__(*args, **kwargs)

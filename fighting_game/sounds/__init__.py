@@ -2,8 +2,10 @@ import pygame
 
 from .utils import load_sound
 
+
 def _(name):
     return load_sound(f"general/{name}")
+
 
 pygame.mixer.pre_init(32000, -16, 2, 512)
 pygame.mixer.init()

@@ -98,4 +98,5 @@ class Keyboard1(Keyboard0):
     L = pygame.K_ESCAPE  # fixme
     R = pygame.K_ESCAPE  # fixme
 
+
 # todo: maybe put the calculations for "is someone pressing down on the c stick, and not right" here

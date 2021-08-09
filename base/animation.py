@@ -2,9 +2,25 @@ from pathlib import Path
 
 import numpy
 import pygame
+from pygame import Surface
 
 
-def not_empty(surface: pygame.Surface):
+def load_image(filename, colorkey=None) -> Surface:
+    try:
+        image = pygame.image.load(filename).convert_alpha()
+    except pygame.error:
+        print("Unable to load image:", filename)
+        raise
+
+    if colorkey is not None:
+        if colorkey is -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey, pygame.RLEACCEL)
+
+    return image
+
+
+def not_empty(surface: Surface):
     """Check if a surface has any non-zero pixels. `Surface.get_bounding_rect()` returns the
     smallest rectangle on the surface containing data. If the surface is empty, it will return
     Rect(0, 0, 0, 0), for which `any` returns False"""
@@ -25,7 +41,7 @@ def pad_alpha(colour_tuple):
         raise Exception("bogus colour, man")
 
 
-def scale_image(image: pygame.Surface, scale: int):
+def scale_image(image: Surface, scale: int):
     x_scale = image.get_rect().width * scale
     y_scale = image.get_rect().height * scale
     image = pygame.transform.scale(image, (x_scale, y_scale))
@@ -60,38 +76,42 @@ def recolor_image(surface, color_mapping: dict):
 
 
 class SpriteSheet:
-    """Handles importing spritesheets and dividing into individual frame images."""
+    """Handles importing spritesheets and dividing into individual frame images. Implements lazy
+    loading to allow this class to be instantiated before pygame.display.set_mode is called."""
 
-    sheet: pygame.Surface  # contains all the images of the animation in a grid
+    sheet: Surface = None  # contains all the images of the animation in a grid
+    _images: [Surface] = None  # cached list of images
 
-    def __init__(self, filename, colorkey=None):
+    def __init__(
+        self,
+        filename: str,
+        image_size: (int, int),
+        colorkey=None,
+        num_images: int = 0,
+    ):
+        """
+        :param filename: complete path to the spritesheet image file
+        :param image_size: size of each individual sprite
+        :param colorkey:
+        :param num_images: can be used to limit the set of images loaded from the spritesheet
+        """
         filename = Path(filename).as_posix()
         self.filename = filename
+        self.image_size = image_size
         self.colorkey = colorkey
-        self.load_image_file()
+        self.num_images = num_images
 
-    def load_image_file(self):
+    def load(self):
         """ Load the image file. Don't call this until pygame.display has been initiated. """
-        try:
-            self.sheet = pygame.image.load(self.filename).convert_alpha()
-        except pygame.error as message:
-            print("Unable to load spritesheet image:", self.filename)
-            raise Exception(message)
+        filename = Path(self.filename).as_posix()
+        self.sheet = load_image(filename, self.colorkey)
 
-        if self.colorkey is not None:
-            if self.colorkey is -1:
-                self.colorkey = self.sheet.get_at((0, 0))
-            self.sheet.set_colorkey(self.colorkey, pygame.RLEACCEL)
-
-    def get_images(
-        self,
-        size: (int, int),
-        num_images: int = None,
-        **kwargs,
-    ) -> [pygame.Surface]:
+    def sample(self) -> [Surface]:
         """This is the main interface for the rest of the code. Split the spritesheet into
-        images, scale/flip/recolor them, and return a list of images."""
-        width, height = size
+        images and return a list of images."""
+        if not self.sheet:
+            self.load()
+        width, height = self.image_size
         num_horizontal = self.sheet.get_rect().width // width
         num_vertical = self.sheet.get_rect().height // height
         rects = [
@@ -102,26 +122,40 @@ class SpriteSheet:
 
         images = [self.sheet.subsurface(rect) for rect in rects]
         images = list(filter(not_empty, images))
-        if num_images:
-            images = images[:num_images]
-        return images
+        if self.num_images:
+            images = images[: self.num_images]
+        self._images = images
+
+    @property
+    def images(self):
+        """Lazy loading to allow this class to be instantiated before pygame.display.set_mode is
+        called."""
+        if not self._images:
+            self.sample()
+        return self._images
 
 
 class SpriteAnimation:
     """
-    Handles the animating of a collection of frames.
-    TODO:
-      - allow resampling (showing frames more than once with a mapping)
+    Animates a sequence of images.
+    Can scale, flip, and recolor itself.
     """
 
     def __init__(
         self,
-        images: [pygame.Surface],
+        images: [Surface],
         scale: float = None,
         flip_x: bool = False,
         flip_y: bool = False,
         colormap: dict = None,
     ):
+        """
+        :param images: list of loaded images
+        :param scale:
+        :param flip_x:
+        :param flip_y:
+        :param colormap:
+        """
         self.images = images
         if scale:
             self.scale(scale)
@@ -156,49 +190,65 @@ class SpriteAnimation:
     def __len__(self):
         return len(self.images)
 
-    def copy(
-        self,
-        scale: float = None,
-        flip_x=False,
-        flip_y=False,
-        colormap: dict = None,
-    ):
-        return self.__class__(self.images, scale, flip_x, flip_y, colormap)
-
 
 class SpriteDict(dict):
     """
-    Manages all the sprites for an entity---e.g. "stand", "run", etc.
-    Should offer a method for easy recoloring of all sprites.
+    Manages a collection of sprite animations.
+    Takes a folder and list of files as input, and handles the creation of SpriteSheets and
+    SpriteAnimations.
+    Lazy loading to allow this class to be instantiated before pygame display is initialised.
     """
+
+    _loaded: bool = False  # have the images been loaded yet
 
     def __init__(
         self,
+        folder: str,
         size: (int, int) = None,
         file_mapping: dict = None,
         scale: int = 1,
         colormap: dict = None,
+        create_flipped_versions: bool = False,
     ):
         """
-        Default parameters (size, scale, etc) will be used for all sprites, unless the
-        individual entry in file_mapping contains alternate values for the same
-        parameters; in that case, the specific params override the general ones.
+        Create SpriteSheet for each file, but don't trigger .load() yet.
         """
         super().__init__()
+        self.scale = scale
+        self.colormap = colormap
+        self.create_flipped_versions = create_flipped_versions
+        folder = Path(folder)
 
-        for sprite_name, sprite_info in file_mapping.items():
+        self.sprite_sheets = dict()
+        for name, filename in file_mapping.items():
+            self.sprite_sheets[name] = SpriteSheet(folder / filename, image_size=size)
 
-            defaults = {
-                "size": size,
-                "scale": scale,
-            }
-            defaults.update(sprite_info)
+    def load(self):
+        for name, sprite_sheet in self.sprite_sheets.items():
+            if self.create_flipped_versions:
+                self[f"{name}_right"] = SpriteAnimation(
+                    sprite_sheet.images,
+                    scale=self.scale,
+                    colormap=self.colormap,
+                )
+                self[f"{name}_left"] = SpriteAnimation(
+                    sprite_sheet.images,
+                    scale=self.scale,
+                    colormap=self.colormap,
+                    flip_x=True,
+                )
+            else:
+                self[name] = SpriteAnimation(
+                    sprite_sheet.images,
+                    scale=self.scale,
+                    colormap=self.colormap,
+                )
+        self._loaded = True
 
-            sprite_sheet = SpriteSheet(sprite_info["filename"], colormap)
-            frames_list = sprite_sheet.get_images(**defaults)
-            sprite_animation = SpriteAnimation(frames_list, **defaults)
-
-            self[sprite_name] = sprite_animation
+    def __getitem__(self, item):
+        if not self._loaded:
+            self.load()
+        return super().__getitem__(item)
 
 
 def ease(start, stop, num, function):

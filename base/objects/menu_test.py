@@ -45,8 +45,8 @@ class Menu(Sprite, AnimationMixin):
             element.click = mouse_clicking(element)
 
     def animate_to(self, animation_function, next_scene_callable):
-        """ Partial execution. State functions are called without any arguments, so if I want the
-        animation function to know what state is next, I need to create this wrapper """
+        """Partial execution. State functions are called without any arguments, so if I want the
+        animation function to know what state is next, I need to create this wrapper"""
 
         def wrapped():
             return animation_function(next_scene_callable)
@@ -68,10 +68,22 @@ class MainMenu(Menu):
             color=(100, 0, 100),
         )
         self.quit_button = GuiButton(
-            -999, 400, 200, 50, text="quit", text_color=Color("white"), color=(100, 0, 100),
+            -999,
+            400,
+            200,
+            50,
+            text="quit",
+            text_color=Color("white"),
+            color=(100, 0, 100),
         )
         self.settings_button = GuiButton(
-            -999, 300, 200, 50, text="settings", text_color=Color("white"), color=(100, 0, 100),
+            -999,
+            300,
+            200,
+            50,
+            text="settings",
+            text_color=Color("white"),
+            color=(100, 0, 100),
         )
         self.buttons.add(self.explosion_button, self.quit_button, self.settings_button)
         self.explosions = EntityGroup()
@@ -114,7 +126,13 @@ class SettingsMenu(Menu):
         super().__init__()
         self.state = self.animate_in
         self.back_button = GuiButton(
-            -999, 200, 200, 50, text="back", text_color=Color("white"), color=(100, 0, 100),
+            -999,
+            200,
+            200,
+            50,
+            text="back",
+            text_color=Color("white"),
+            color=(100, 0, 100),
         )
         self.buttons.add(self.back_button)
 

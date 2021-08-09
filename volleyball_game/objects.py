@@ -444,7 +444,7 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
                 y_offset=-45,
                 width=50,
                 height=20,
-                damage=10
+                damage=10,
             )
             sour_spot = Hitbox(
                 owner=instance,

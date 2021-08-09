@@ -116,7 +116,7 @@ def draw_arrow_between_points(surface, p1, p2, color=None):
 
 def draw_arrow(surface, origin, angle_deg, color=None, length=50):
     """ angle needs to be in degrees """
-    arrow_xy = arrow_coords(length, length//10, length//4)
+    arrow_xy = arrow_coords(length, length // 10, length // 4)
     r = rotation_matrix(angle_deg)
     arrow_xy = arrow_xy.dot(r)
     arrow_xy += numpy.array(origin)

@@ -42,7 +42,10 @@ blob_file_mapping = {
         "num_images": 3,
         "flip_horizontal": True,
     },
-    "crouch": {"filename": folder / "blob_crouch.png", "looping": False,},
+    "crouch": {
+        "filename": folder / "blob_crouch.png",
+        "looping": False,
+    },
     "run_right": {"filename": folder / "blob_run_right.png", "num_images": 8},
     "run_left": {
         "filename": folder / "blob_run_right.png",

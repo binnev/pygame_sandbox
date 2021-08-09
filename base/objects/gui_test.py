@@ -25,7 +25,10 @@ def mouse_clicking(element):
 
 
 button_params = dict(
-    width=200, height=100, color=pygame.color.THECOLORS["red"], text_color=(255, 255, 255, 255),
+    width=200,
+    height=100,
+    color=pygame.color.THECOLORS["red"],
+    text_color=(255, 255, 255, 255),
 )
 
 

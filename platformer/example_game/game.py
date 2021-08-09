@@ -48,7 +48,8 @@ class ExampleGame(Game):
                 debug = not debug
             level.update()
             level.draw(
-                self.window, debug=debug,
+                self.window,
+                debug=debug,
             )
             pygame.display.flip()
             self.clock.tick(self.fps)

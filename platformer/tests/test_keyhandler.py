@@ -11,7 +11,7 @@ key_numbers = {value for key, value in constants.__dict__.items() if key.startsw
 def test_empty_keyhandler(key_number):
     """When the keyhandler is empty (i.e. no ticks of the game have elapsed) then it
     should always return an Empty object. The Empty object spoofs the "keys" tuple,
-    but always returns zero no matter the index supplied. """
+    but always returns zero no matter the index supplied."""
 
     kh = KeyHandler()
 

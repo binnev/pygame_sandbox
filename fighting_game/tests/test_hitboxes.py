@@ -396,4 +396,3 @@ def test_handle_hitbox_collision_knockback_growth():
     assert abs(second_bowser_kb) < abs(second_dk_kb)
     assert abs(first_dk_kb) < abs(second_dk_kb)
     assert abs(first_bowser_kb) < abs(second_bowser_kb)
-

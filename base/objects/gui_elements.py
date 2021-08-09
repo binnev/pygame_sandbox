@@ -73,8 +73,8 @@ class GuiButton(Entity):
         super().update()
 
     def _own_on_focus(self):
-        """ The button's own logic that is executed when the button has focus. Not to be confused
-        with self.on_focus which will be a callback passed by the creator of the button. """
+        """The button's own logic that is executed when the button has focus. Not to be confused
+        with self.on_focus which will be a callback passed by the creator of the button."""
         self.highlight = True
 
     def _own_on_click(self):

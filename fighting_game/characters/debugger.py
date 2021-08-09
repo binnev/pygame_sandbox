@@ -35,11 +35,11 @@ class Debugger(Character):
     max_aerial_jumps = 2
     max_air_dodges = 2
     max_wall_jumps = 2
+    sprites = stickman_sprites
 
     def __init__(self, x, y, input=FightingGameInput, facing_right=True):
         super().__init__(x, y, input, facing_right)
         self.state = self.state_fall
-        self.sprites = stickman_sprites()
         self.damage = 0
 
     def draw(self, surface: Surface, debug: bool = False):

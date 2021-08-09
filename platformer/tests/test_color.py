@@ -35,7 +35,13 @@ def simple_game_loop(func):
 
 
 @pytest.mark.parametrize(
-    "bogus_colour", ((), (0,), (0, 0), (0, 0, 0, 0, 0),),
+    "bogus_colour",
+    (
+        (),
+        (0,),
+        (0, 0),
+        (0, 0, 0, 0, 0),
+    ),
 )
 def test_pad_alpha(bogus_colour):
     with pytest.raises(Exception):

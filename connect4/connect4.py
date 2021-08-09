@@ -146,7 +146,10 @@ def main():
             # draw current colour above board
             color = COLOURS[player]
             pygame.draw.circle(
-                screen, color, (int(mouse_x), int(SQUARESIZE / 2)), RADIUS,
+                screen,
+                color,
+                (int(mouse_x), int(SQUARESIZE / 2)),
+                RADIUS,
             )
 
             print_board(board)

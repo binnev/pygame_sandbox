@@ -9,4 +9,8 @@ file_mapping = {
 
 
 def volleyball_sprites():
-    return SpriteDict(size=(32, 32), scale=conf.SCALE_SPRITES, file_mapping=file_mapping,)
+    return SpriteDict(
+        size=(32, 32),
+        scale=conf.SCALE_SPRITES,
+        file_mapping=file_mapping,
+    )

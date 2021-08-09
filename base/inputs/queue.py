@@ -24,8 +24,8 @@ class InputQueue(deque):
         super().__init__(maxlen=queue_length)
 
     def get_new_values(self):
-        """ Subclasses should implement this. It should be something like
-        pygame.key.get_pressed() """
+        """Subclasses should implement this. It should be something like
+        pygame.key.get_pressed()"""
         raise NotImplementedError
 
     def read_new_inputs(self):
@@ -36,8 +36,8 @@ class InputQueue(deque):
         return self[-1] if len(self) > 0 else Empty()
 
     def get_pressed(self):
-        """ Return the keys that have just been pressed---i.e. those that are down this tick but
-        not the previous tick """
+        """Return the keys that have just been pressed---i.e. those that are down this tick but
+        not the previous tick"""
         try:
             current = self[-1]
             previous = self[-2]
@@ -46,8 +46,8 @@ class InputQueue(deque):
             return Empty()
 
     def get_released(self):
-        """ Return the keys that have just been released---i.e. those that are not down this
-        tick, but were down the previous tick """
+        """Return the keys that have just been released---i.e. those that are not down this
+        tick, but were down the previous tick"""
         try:
             current = self[-1]
             previous = self[-2]

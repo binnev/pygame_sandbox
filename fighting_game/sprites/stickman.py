@@ -1,65 +1,28 @@
-from base.animation import SpriteDict, relative_folder, SpriteSheet, SpriteAnimation
-from volleyball_game import conf
+from base.animation import SpriteDict, relative_folder
+from fighting_game import conf
 
 folder = relative_folder(__file__, "stickman")
 
-SPRITE_SIZE = (32, 32)
-
-
-def stickman_sprites():
-    """I need to use a closure here because otherwise pygame kicks up a fuss about initialization"""
-
-    # instantiate the spritesheets here
-    crouch = SpriteSheet(filename=folder / "stick_crouch.png")
-    flying_kick = SpriteSheet(filename=folder / "stick_flying_kick.png")
-    run = SpriteSheet(filename=folder / "stick_run.png")
-    stand = SpriteSheet(filename=folder / "stick_stand.png")
-    jump = SpriteSheet(filename=folder / "stick_jump.png")
-    back_air = SpriteSheet(filename=folder / "stick_back_air.png")
-    back_air2 = SpriteSheet(filename=folder / "stick_back_air2.png")
-    fall = SpriteSheet(filename=folder / "stick_jump.png")
-    dive = SpriteSheet(filename=folder / "stick_dive.png")
-    dive_getup = SpriteSheet(filename=folder / "stick_dive_getup.png")
-    aerial_defense = SpriteSheet(filename=folder / "stick_aerial_defense.png")
-    standing_hit = SpriteSheet(filename=folder / "stick_standing_hit.png")
-    weird_hit = SpriteSheet(filename=folder / "stick_weird_hit.png")
-    taunt = SpriteSheet(filename=folder / "stick_taunt.png")
-    stomp = SpriteSheet(filename=folder / "stick_stomp.png")
-
-    # describe the animations -- do they loop, etc -- once here
-    animations = dict(
-        stand=SpriteAnimation(stand.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        run=SpriteAnimation(run.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        crouch=SpriteAnimation(crouch.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        jump=SpriteAnimation(jump.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        back_air=SpriteAnimation(back_air.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        back_air2=SpriteAnimation(back_air2.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        fall=SpriteAnimation(fall.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        dive=SpriteAnimation(dive.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        dive_getup=SpriteAnimation(
-            dive_getup.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
-        ),
-        aerial_defense=SpriteAnimation(
-            aerial_defense.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
-        ),
-        standing_hit=SpriteAnimation(
-            standing_hit.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
-        ),
-        weird_hit=SpriteAnimation(weird_hit.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        taunt=SpriteAnimation(taunt.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        stomp=SpriteAnimation(stomp.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES),
-        flying_kick=SpriteAnimation(
-            flying_kick.get_images(size=SPRITE_SIZE), scale=conf.SCALE_SPRITES
-        ),
-    )
-
-    # automatically create flipped versions
-    two_sided_animations = {}
-    for name, animation in animations.items():
-        two_sided_animations[name + "_right"] = animation
-        two_sided_animations[name + "_left"] = animation.copy(flip_x=True)
-
-    sprite_dict = SpriteDict(file_mapping={})
-    sprite_dict.update(two_sided_animations)
-
-    return sprite_dict
+stickman_sprites = SpriteDict(
+    folder=folder,
+    size=conf.SPRITE_SIZE,
+    scale=conf.SCALE_SPRITES,
+    create_flipped_versions=True,
+    file_mapping=dict(
+        crouch="stick_crouch.png",
+        flying_kick="stick_flying_kick.png",
+        run="stick_run.png",
+        stand="stick_stand.png",
+        jump="stick_jump.png",
+        back_air="stick_back_air.png",
+        back_air2="stick_back_air2.png",
+        fall="stick_jump.png",
+        dive="stick_dive.png",
+        dive_getup="stick_dive_getup.png",
+        aerial_defense="stick_aerial_defense.png",
+        standing_hit="stick_standing_hit.png",
+        weird_hit="stick_weird_hit.png",
+        taunt="stick_taunt.png",
+        stomp="stick_stomp.png",
+    ),
+)

@@ -17,8 +17,8 @@ class Group(pygame.sprite.Group):
         self.lostsprites = []
 
     def kill(self):
-        """ Kill all the sprites in this group. This is different from .empty().
-        empty() does not kill the sprites in other groups. """
+        """Kill all the sprites in this group. This is different from .empty().
+        empty() does not kill the sprites in other groups."""
         for sprite in self:
             sprite.kill()
 

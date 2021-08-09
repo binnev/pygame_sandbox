@@ -35,4 +35,3 @@ class SandBox(Entity):
         if not self.players:
             self.players.add(Hawko(600, 500, input=self.game.controller0))
             self.level.add_character(*self.players)
-

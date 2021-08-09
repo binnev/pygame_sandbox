@@ -6,7 +6,7 @@ from base.inputs.keyboard import KeyboardInputQueue
 
 
 class GamecubeController(GamecubeControllerInputQueue):
-    """ VolleyballGame objects will receive this as their `input` parameter.
+    """VolleyballGame objects will receive this as their `input` parameter.
     They will do stuff like:
     ```
     input = self.input  # "input" = the instance of this class
