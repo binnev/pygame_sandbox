@@ -64,29 +64,8 @@ class SingleInput:
 
 
 class GamecubeController(GamecubeControllerInputQueue):
-    # todo: rethink this. This class should be deciding if a button was just pressed (or if a
-    #  user drops through a platform or crouches on the platform). Not the reader class.
 
-    # # key mapping
-    # LEFT = gamecube.GREY_STICK_LEFT
-    # RIGHT = gamecube.GREY_STICK_RIGHT
-    # UP = gamecube.GREY_STICK_UP
-    # DOWN = gamecube.GREY_STICK_DOWN
-    # A = gamecube.A
-    # B = gamecube.B
-    # X = gamecube.X
-    # Y = gamecube.Y
-    # C_UP = gamecube.YELLOW_STICK_UP
-    # C_DOWN = gamecube.YELLOW_STICK_DOWN
-    # C_LEFT = gamecube.YELLOW_STICK_LEFT
-    # C_RIGHT = gamecube.YELLOW_STICK_RIGHT
-    # START = pygame.K_RETURN
-    # D_PAD_UP = gamecube.D_PAD_UP
-    # L = gamecube.L_AXIS
-    # R = gamecube.R_AXIS
     # input channels in CAPITALS to differentiate them from other methods
-    A = SingleInput(gamecube.A)
-    B = SingleInput(gamecube.B)
     LEFT = SingleInput(gamecube.GREY_STICK_LEFT)
     RIGHT = SingleInput(gamecube.GREY_STICK_RIGHT)
     UP = SingleInput(gamecube.GREY_STICK_UP)
@@ -108,6 +87,7 @@ class GamecubeController(GamecubeControllerInputQueue):
         controller = GamecubeControllerReader(controller_id)
         self.controller_id = controller_id
         super().__init__(controller, queue_length=queue_length)
+
         # for each parentless SingleInput declared on the class, create a new SingleInput
         # instance with self as parent.
         for name, attr in self.__class__.__dict__.items():
