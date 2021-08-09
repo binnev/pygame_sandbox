@@ -3,6 +3,7 @@ import pygame
 from base.inputs import gamecube
 from base.inputs.gamecube import GamecubeControllerReader, GamecubeControllerInputQueue
 from base.inputs.keyboard import KeyboardInputQueue
+from base.inputs.queue import InputQueue
 
 
 class FightingGameInput:
@@ -35,7 +36,7 @@ class KeyboardInput(FightingGameInput, KeyboardInputQueue):
 
 
 class SingleInput:
-    def __init__(self, id: int, parent=None):
+    def __init__(self, id: int, parent: InputQueue = None):
         """
         Class to describe a single input channel on a joystick/controller -- e.g. the "A" button
         on a gamecube controller. Implements methods which check with the parent input device
@@ -59,9 +60,26 @@ class SingleInput:
     def is_released(self):
         return self.parent.is_released(self.id)
 
+    @property
+    def value(self):
+        """Does the same thing as is_down but makes some parts of the code more readable,
+        especially for analog inputs that can be between 0-1."""
+        return self.is_down
+
+    def __sub__(self, other):
+        return self.value - (other.value if isinstance(other, SingleInput) else other)
+
+    def __add__(self, other):
+        return self.value + (other.value if isinstance(other, SingleInput) else other)
+
+    def __bool__(self):
+        """ This allows us to do `if input.UP` instead of `if input.UP.is_down` """
+        return bool(self.value)
+
 
 class GamecubeController(GamecubeControllerInputQueue):
 
+    # todo: this is generic enough to go on the GamecubeControllerInputQueue.
     # input channels in CAPITALS to differentiate them from other methods
     LEFT = SingleInput(gamecube.GREY_STICK_LEFT)
     RIGHT = SingleInput(gamecube.GREY_STICK_RIGHT)

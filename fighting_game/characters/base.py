@@ -135,13 +135,13 @@ class Character(PhysicalEntity):
         # B-button inputs
         input = self.input
         if input.B.is_pressed:
-            if input.UP.is_down:
+            if input.UP:
                 self.y -= 1
                 self.allow_aerial_up_b()
-            elif input.LEFT.is_down:
+            elif input.LEFT:
                 self.facing_right = False
                 self.do_move(self.AerialNeutralB)
-            elif input.RIGHT.is_down:
+            elif input.RIGHT:
                 self.facing_right = True
                 self.do_move(self.AerialNeutralB)
             else:
@@ -167,15 +167,15 @@ class Character(PhysicalEntity):
     def state_run(self):
         self.image = self.sprites["run_" + self.facing].loop(self.animation_frame)
         input = self.input
-        if not input.LEFT.is_down and not input.RIGHT.is_down:
+        if not input.LEFT and not input.RIGHT:
             self.state = self.state_run_end
-        if input.LEFT.is_down:
+        if input.LEFT:
             if self.facing_right:
                 self.state = self.state_run_turnaround
             else:
                 self.u = -self.run_speed
             self.facing_right = False
-        if input.RIGHT.is_down:
+        if input.RIGHT:
             if not self.facing_right:
                 self.state = self.state_run_turnaround
             else:
@@ -183,7 +183,7 @@ class Character(PhysicalEntity):
             self.facing_right = True
         if input.Y.is_pressed:
             self.state = self.state_jumpsquat
-        if input.DOWN.is_down:
+        if input.DOWN:
             self.state = self.state_crouch
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.state_fall
@@ -198,12 +198,10 @@ class Character(PhysicalEntity):
     def state_fall(self):
         self.image = self.sprites["fall_" + self.facing].loop(self.animation_frame)
         input = self.input
-        holding_back = (self.facing_right and input.LEFT.is_down) or (
-            not self.facing_right and input.RIGHT.is_down
-        )
+        holding_back = (self.facing_right and input.LEFT) or (not self.facing_right and input.RIGHT)
 
-        holding_forward = (self.facing_right and input.RIGHT.is_down) or (
-            not self.facing_right and input.LEFT.is_down
+        holding_forward = (self.facing_right and input.RIGHT) or (
+            not self.facing_right and input.LEFT
         )
 
         Cstick_left = (
@@ -231,21 +229,21 @@ class Character(PhysicalEntity):
                 self.do_move(self.BackAir)
             elif holding_forward:
                 self.do_move(self.ForwardAir)
-            elif input.UP.is_down:
+            elif input.UP:
                 self.do_move(self.UpAir)
-            elif input.DOWN.is_down:
+            elif input.DOWN:
                 self.do_move(self.DownAir)
             else:
                 self.do_move(self.NeutralAir)
 
         # B-button inputs
         if input.B.is_pressed:
-            if input.UP.is_down:
+            if input.UP:
                 self.allow_aerial_up_b()
-            elif input.LEFT.is_down:
+            elif input.LEFT:
                 self.facing_right = False
                 self.do_move(self.AerialNeutralB)
-            elif input.RIGHT.is_down:
+            elif input.RIGHT:
                 self.facing_right = True
                 self.do_move(self.AerialNeutralB)
             else:
@@ -313,19 +311,19 @@ class Character(PhysicalEntity):
     def state_initial_dash(self):
         self.image = self.sprites["run_" + self.facing].play(0)
         input = self.input
-        if input.LEFT.is_down:
+        if input.LEFT:
             if self.facing_right:
                 self.tick = 0  # reset state counter
             self.facing_right = False
             self.u = -self.run_speed
-        if input.RIGHT.is_down:
+        if input.RIGHT:
             if not self.facing_right:
                 self.tick = 0
             self.facing_right = True
             self.u = self.run_speed
         if input.Y.is_pressed:
             self.state = self.state_jumpsquat
-        if input.DOWN.is_down:
+        if input.DOWN:
             self.state = self.state_crouch
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.state_fall
@@ -344,7 +342,7 @@ class Character(PhysicalEntity):
         input = self.input
         if input.Y.is_pressed:
             self.state = self.state_jumpsquat
-        if input.DOWN.is_down:
+        if input.DOWN:
             self.state = self.state_crouch
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.state_fall
@@ -357,7 +355,7 @@ class Character(PhysicalEntity):
         input = self.input
         if input.Y.is_pressed:
             self.state = self.state_jumpsquat
-        if input.DOWN.is_down:
+        if input.DOWN:
             self.state = self.state_crouch
         if self.airborne:  # e.g. by walking off the edge of a platform
             self.state = self.state_fall
@@ -368,7 +366,7 @@ class Character(PhysicalEntity):
     def state_jumpsquat(self):
         self.image = self.sprites["crouch_" + self.facing].loop(self.animation_frame)
         if self.tick == self.jumpsquat_frames:
-            if self.input.Y.is_down:
+            if self.input.Y:
                 self.grounded_jump()
             else:
                 self.shorthop()
@@ -385,7 +383,7 @@ class Character(PhysicalEntity):
         input = self.input
         if self.airborne:
             self.state = self.state_fall
-        if not input.DOWN.is_down:
+        if not input.DOWN:
             self.state = self.state_stand
 
         self.allow_grounded_jump()
@@ -400,8 +398,8 @@ class Character(PhysicalEntity):
 
     def air_dodge(self):
         input = self.input
-        x = input.RIGHT.is_down - input.LEFT.is_down
-        y = input.DOWN.is_down - input.UP.is_down
+        x = input.RIGHT - input.LEFT
+        y = input.DOWN - input.UP
 
         # get unit vector
         v = numpy.array([x, y])
@@ -482,7 +480,7 @@ class Character(PhysicalEntity):
         if moving_down:
             # if character was already inside the platform, or player is holding down
             if (old_rect.bottom > platform.rect.top) or (
-                self.input.DOWN.is_down and self.state == self.state_fall
+                self.input.DOWN and self.state == self.state_fall
             ):
                 pass
             # if character was above the platform and not holding down
@@ -502,7 +500,7 @@ class Character(PhysicalEntity):
         if moving_down:
             # if character was already inside the platform, or player is holding down
             if (old_rect.bottom > platform.rect.top) or (
-                self.input.DOWN.is_down and self.state == self.state_fall
+                self.input.DOWN and self.state == self.state_fall
             ):
                 pass
             # if character was above the platform and not holding down
@@ -700,7 +698,7 @@ class Character(PhysicalEntity):
 
     def allow_hitfall(self):
         input = self.input
-        if input.DOWN.is_down and self.hitpause_duration > 0:
+        if input.DOWN and self.hitpause_duration > 0:
             self.fast_fall = True
             self.v = self.fast_fall_speed
 
@@ -717,37 +715,37 @@ class Character(PhysicalEntity):
     def allow_forward_smash(self):
         input = self.input
         if input.C_LEFT.is_pressed or input.C_RIGHT.is_pressed:
-            if input.C_RIGHT.is_down:
+            if input.C_RIGHT:
                 self.facing_right = True
-            if input.C_LEFT.is_down:
+            if input.C_LEFT:
                 self.facing_right = False
             self.do_move(self.ForwardSmash)
 
     def allow_dash_attack(self):
         input = self.input
-        if (input.LEFT.is_down or input.RIGHT.is_down) and input.A.is_pressed:
+        if (input.LEFT or input.RIGHT) and input.A.is_pressed:
             self.do_move(self.DashAttack)
 
     def allow_up_tilt(self):
         input = self.input
-        if input.UP.is_down and input.A.is_pressed:
+        if input.UP and input.A.is_pressed:
             self.do_move(self.UpTilt)
 
     def allow_down_tilt(self):
         input = self.input
-        if input.DOWN.is_down and input.A.is_pressed:
-            if input.RIGHT.is_down:
+        if input.DOWN and input.A.is_pressed:
+            if input.RIGHT:
                 self.facing_right = True
-            if input.LEFT.is_down:
+            if input.LEFT:
                 self.facing_right = False
             self.do_move(self.DownTilt)
 
     def allow_forward_tilt(self):
         input = self.input
-        if (input.LEFT.is_down or input.RIGHT.is_down) and input.A.is_pressed:
-            if input.RIGHT.is_down:
+        if (input.LEFT or input.RIGHT) and input.A.is_pressed:
+            if input.RIGHT:
                 self.facing_right = True
-            if input.LEFT.is_down:
+            if input.LEFT:
                 self.facing_right = False
             self.do_move(self.ForwardTilt)
 
@@ -762,10 +760,10 @@ class Character(PhysicalEntity):
         input = self.input
         if (
             input.A.is_pressed
-            and not input.LEFT.is_down
-            and not input.RIGHT.is_down
-            and not input.UP.is_down
-            and not input.DOWN.is_down
+            and not input.LEFT
+            and not input.RIGHT
+            and not input.UP
+            and not input.DOWN
         ):
             self.do_move(self.Jab)
 
@@ -797,30 +795,25 @@ class Character(PhysicalEntity):
             return True
 
     def allow_air_dodge(self):
-        input = self.input
-        if input.R.is_pressed or input.L.is_pressed and self.air_dodges > 0:
+        if self.input.R.is_pressed or self.input.L.is_pressed and self.air_dodges > 0:
             self.air_dodge()
 
     def allow_dash(self):
-        input = self.input
-        if input.LEFT.is_pressed or input.RIGHT.is_pressed:
+        if self.input.LEFT.is_pressed or self.input.RIGHT.is_pressed:
             self.state = self.state_initial_dash
 
     def allow_crouch(self):
-        input = self.input
-        if input.DOWN.is_down:
+        if self.input.DOWN:
             self.state = self.state_crouch
 
     def allow_aerial_drift(self):
-        input = self.input
-        if input.LEFT.is_down:
+        if self.input.LEFT:
             self.u -= self.acceleration_to_apply(-self.u, self.air_acceleration, self.air_speed)
-        if input.RIGHT.is_down:
+        if self.input.RIGHT:
             self.u += self.acceleration_to_apply(self.u, self.air_acceleration, self.air_speed)
 
     def allow_aerial_up_b(self):
-        input = self.input
-        if input.B.is_pressed and input.UP.is_down:
+        if self.input.B.is_pressed and self.input.UP:
             self.do_move(self.AerialUpB)
 
     def landing_lag(self, ticks):
@@ -943,7 +936,7 @@ class AerialMove(Move):
         if moving_down:
             # if character was already inside the platform, or player is holding down
             if (old_rect.bottom > platform.rect.top) or (
-                character.input.DOWN.is_down and character.state == character.state_fall
+                character.input.DOWN and character.state == character.state_fall
             ):
                 pass
             # if character was above the platform and not holding down
