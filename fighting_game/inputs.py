@@ -53,10 +53,7 @@ class SingleInput:
 
     @property
     def is_pressed(self):
-        if self.parent.is_pressed(self.id):
-            return True
-        else:
-            return False
+        return self.parent.is_pressed(self.id)
 
     @property
     def is_released(self):
