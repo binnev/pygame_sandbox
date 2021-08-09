@@ -10,9 +10,9 @@ if inputs[gamecube.A]:
 """
 import pygame
 
-# button/input indices. These are used for lookup similarly to e.g. pygame.K_ESCAPE
 from base.inputs.queue import InputQueue
 
+# button/input indices. These are used for lookup similarly to e.g. pygame.K_ESCAPE
 A = 0
 B = 1
 X = 2
