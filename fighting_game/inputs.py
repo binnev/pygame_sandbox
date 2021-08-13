@@ -35,80 +35,21 @@ class KeyboardInput(FightingGameInput, KeyboardInputQueue):
     R = pygame.K_ESCAPE
 
 
-class SingleInput:
-    def __init__(self, id: int, parent: InputQueue = None):
-        """
-        Class to describe a single input channel on a joystick/controller -- e.g. the "A" button
-        on a gamecube controller. Implements methods which check with the parent input device
-        whether this button is pressed, released, etc. This allows for the more pleasant shorthand:
-        `controller.a_button.is_pressed` instead of `controller.is_pressed(controller.a_button)`
-
-        :param int id: index of this input channel in the controller.get_values() tuple
-        """
-        self.id = id
-        self.parent = parent
-
-    @property
-    def is_down(self):
-        return self.parent.is_down(self.id)
-
-    @property
-    def is_pressed(self):
-        return self.parent.is_pressed(self.id)
-
-    @property
-    def is_released(self):
-        return self.parent.is_released(self.id)
-
-    @property
-    def value(self):
-        """Does the same thing as is_down but makes some parts of the code more readable,
-        especially for analog inputs that can be between 0-1."""
-        return self.is_down
-
-    def __sub__(self, other):
-        return self.value - (other.value if isinstance(other, SingleInput) else other)
-
-    def __add__(self, other):
-        return self.value + (other.value if isinstance(other, SingleInput) else other)
-
-    def __bool__(self):
-        """ This allows us to do `if input.UP` instead of `if input.UP.is_down` """
-        return bool(self.value)
-
-
 class GamecubeController(GamecubeControllerInputQueue):
-
-    # todo: this is generic enough to go on the GamecubeControllerInputQueue.
-    # input channels in CAPITALS to differentiate them from other methods
-    LEFT = SingleInput(gamecube.GREY_STICK_LEFT)
-    RIGHT = SingleInput(gamecube.GREY_STICK_RIGHT)
-    UP = SingleInput(gamecube.GREY_STICK_UP)
-    DOWN = SingleInput(gamecube.GREY_STICK_DOWN)
-    A = SingleInput(gamecube.A)
-    B = SingleInput(gamecube.B)
-    X = SingleInput(gamecube.X)
-    Y = SingleInput(gamecube.Y)
-    C_UP = SingleInput(gamecube.YELLOW_STICK_UP)
-    C_DOWN = SingleInput(gamecube.YELLOW_STICK_DOWN)
-    C_LEFT = SingleInput(gamecube.YELLOW_STICK_LEFT)
-    C_RIGHT = SingleInput(gamecube.YELLOW_STICK_RIGHT)
-    START = SingleInput(pygame.K_RETURN)
-    D_PAD_UP = SingleInput(gamecube.D_PAD_UP)
-    L = SingleInput(gamecube.L_AXIS)
-    R = SingleInput(gamecube.R_AXIS)
-
-    def __init__(self, controller_id: int, queue_length=5):
-        controller = GamecubeControllerReader(controller_id)
-        self.controller_id = controller_id
-        super().__init__(controller, queue_length=queue_length)
-
-        # for each parentless SingleInput declared on the class, create a new SingleInput
-        # instance with self as parent.
-        for name, attr in self.__class__.__dict__.items():
-            if isinstance(attr, SingleInput):
-                inp = SingleInput(attr.id, parent=self)
-                setattr(self, name, inp)
+    pass
+    # # todo: this is generic enough to go on the GamecubeControllerInputQueue.
+    #
+    # def __init__(self, controller_id: int, queue_length=5):
+    #     controller = GamecubeControllerReader(controller_id)
+    #     self.controller_id = controller_id
+    #     super().__init__(controller, queue_length=queue_length)
+    #
+    #     # for each parentless SingleInput declared on the class, create a new SingleInput
+    #     # instance with self as parent.
+    #     for name, attr in self.__class__.__dict__.items():
+    #         if isinstance(attr, SingleInput):
+    #             inp = SingleInput(attr.id, parent=self)
+    #             setattr(self, name, inp)
 
 
 class Keyboard0(KeyboardInputQueue):

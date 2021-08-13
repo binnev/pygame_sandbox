@@ -23,20 +23,20 @@ Z = 4
 L = 5
 R = 6
 START = 7
-GREY_STICK_LEFT = 8
-GREY_STICK_RIGHT = 9
-GREY_STICK_UP = 10
-GREY_STICK_DOWN = 11
-YELLOW_STICK_LEFT = 12
-YELLOW_STICK_RIGHT = 13
-YELLOW_STICK_UP = 14
-YELLOW_STICK_DOWN = 15
+LEFT = 8
+RIGHT = 9
+UP = 10
+DOWN = 11
+C_LEFT = 12
+C_RIGHT = 13
+C_UP = 14
+C_DOWN = 15
 R_AXIS = 16
 L_AXIS = 17
-D_PAD_LEFT = 18
-D_PAD_RIGHT = 19
-D_PAD_UP = 20
-D_PAD_DOWN = 21
+D_LEFT = 18
+D_RIGHT = 19
+D_UP = 20
+D_DOWN = 21
 
 
 def linear_map(input_value, input_range, output_range, limit_output=True):
@@ -58,16 +58,6 @@ def linear_map(input_value, input_range, output_range, limit_output=True):
         output_value = min(output_value, output_max)
 
     return output_value
-
-
-def create_mapping(input_range, output_range, limit_output=True):
-    """Partially execute the linear_map function to store the input/output ranges so we don't
-    have to input them every time."""
-
-    def wrapper(input_value):
-        return linear_map(input_value, input_range, output_range, limit_output)
-
-    return wrapper
 
 
 class GamecubeControllerReader:
@@ -107,21 +97,30 @@ class GamecubeControllerReader:
             self.L,
             self.R,
             self.START,
-            self.GREY_STICK_LEFT,
-            self.GREY_STICK_RIGHT,
-            self.GREY_STICK_UP,
-            self.GREY_STICK_DOWN,
-            self.YELLOW_STICK_LEFT,
-            self.YELLOW_STICK_RIGHT,
-            self.YELLOW_STICK_UP,
-            self.YELLOW_STICK_DOWN,
+            self.LEFT,
+            self.RIGHT,
+            self.UP,
+            self.DOWN,
+            self.C_LEFT,
+            self.C_RIGHT,
+            self.C_UP,
+            self.C_DOWN,
             self.R_AXIS,
             self.L_AXIS,
-            self.D_PAD_LEFT,
-            self.D_PAD_RIGHT,
-            self.D_PAD_UP,
-            self.D_PAD_DOWN,
+            self.D_LEFT,
+            self.D_RIGHT,
+            self.D_UP,
+            self.D_DOWN,
         )
+
+    def grey_stick_map(self, input_value):
+        return linear_map(input_value, self.GREY_STICK_INPUT_RANGE, (0, 1))
+
+    def yellow_stick_map(self, input_value):
+        return linear_map(input_value, self.YELLOW_STICK_INPUT_RANGE, (0, 1))
+
+    def trigger_map(self, input_value):
+        return linear_map(input_value, self.TRIGGER_INPUT_RANGE, (0, 1))
 
     # =================== AXES (=ANALOG INPUTS) =======================
 
@@ -154,44 +153,44 @@ class GamecubeControllerReader:
     # calibrated external values
 
     @property
-    def GREY_STICK_LEFT(self):
-        return linear_map(-self._GREY_STICK_X_AXIS, self.GREY_STICK_INPUT_RANGE, (0, 1))
+    def LEFT(self):
+        return self.grey_stick_map(-self._GREY_STICK_X_AXIS)
 
     @property
-    def GREY_STICK_RIGHT(self):
-        return linear_map(self._GREY_STICK_X_AXIS, self.GREY_STICK_INPUT_RANGE, (0, 1))
+    def RIGHT(self):
+        return self.grey_stick_map(self._GREY_STICK_X_AXIS)
 
     @property
-    def GREY_STICK_UP(self):
-        return linear_map(-self._GREY_STICK_Y_AXIS, self.GREY_STICK_INPUT_RANGE, (0, 1))
+    def UP(self):
+        return self.grey_stick_map(-self._GREY_STICK_Y_AXIS)
 
     @property
-    def GREY_STICK_DOWN(self):
-        return linear_map(self._GREY_STICK_Y_AXIS, self.GREY_STICK_INPUT_RANGE, (0, 1))
+    def DOWN(self):
+        return self.grey_stick_map(self._GREY_STICK_Y_AXIS)
 
     @property
-    def YELLOW_STICK_LEFT(self):
-        return linear_map(-self._YELLOW_STICK_X_AXIS, self.YELLOW_STICK_INPUT_RANGE, (0, 1))
+    def C_LEFT(self):
+        return self.yellow_stick_map(-self._YELLOW_STICK_X_AXIS)
 
     @property
-    def YELLOW_STICK_RIGHT(self):
-        return linear_map(self._YELLOW_STICK_X_AXIS, self.YELLOW_STICK_INPUT_RANGE, (0, 1))
+    def C_RIGHT(self):
+        return self.yellow_stick_map(self._YELLOW_STICK_X_AXIS)
 
     @property
-    def YELLOW_STICK_UP(self):
-        return linear_map(-self._YELLOW_STICK_Y_AXIS, self.YELLOW_STICK_INPUT_RANGE, (0, 1))
+    def C_UP(self):
+        return self.yellow_stick_map(-self._YELLOW_STICK_Y_AXIS)
 
     @property
-    def YELLOW_STICK_DOWN(self):
-        return linear_map(self._YELLOW_STICK_Y_AXIS, self.YELLOW_STICK_INPUT_RANGE, (0, 1))
+    def C_DOWN(self):
+        return self.yellow_stick_map(self._YELLOW_STICK_Y_AXIS)
 
     @property
     def R_AXIS(self):
-        return linear_map(self._R_TRIGGER_AXIS, self.TRIGGER_INPUT_RANGE, (0, 1))
+        return self.trigger_map(self._R_TRIGGER_AXIS)
 
     @property
     def L_AXIS(self):
-        return linear_map(self._L_TRIGGER_AXIS, self.TRIGGER_INPUT_RANGE, (0, 1))
+        return self.trigger_map(self._L_TRIGGER_AXIS)
 
     # =================== 4-WAY SWITCHES =======================
 
@@ -212,19 +211,19 @@ class GamecubeControllerReader:
     # calibrated external values
 
     @property
-    def D_PAD_LEFT(self):
+    def D_LEFT(self):
         return int(self._D_PAD_X < 0)
 
     @property
-    def D_PAD_RIGHT(self):
+    def D_RIGHT(self):
         return int(self._D_PAD_X > 0)
 
     @property
-    def D_PAD_UP(self):
+    def D_UP(self):
         return int(self._D_PAD_Y > 0)
 
     @property
-    def D_PAD_DOWN(self):
+    def D_DOWN(self):
         return int(self._D_PAD_Y < 0)
 
     # =================== BUTTONS (=BINARY VALUES) =======================
@@ -264,6 +263,48 @@ class GamecubeControllerReader:
         return self.joystick.get_button(9)
 
 
+class ButtonInput:
+    def __init__(self, id: int, parent: InputQueue = None):
+        """
+        Class to describe a single input channel on a joystick/controller -- e.g. the "A" button
+        on a gamecube controller. Implements methods which check with the parent input device
+        whether this button is pressed, released, etc. This allows for the more pleasant shorthand:
+        `controller.a_button.is_pressed` instead of `controller.is_pressed(controller.a_button)`
+
+        :param int id: index of this input channel in the controller.get_values() tuple
+        """
+        self.id = id
+        self.parent = parent
+
+    @property
+    def is_down(self):
+        return self.parent.is_down(self.id)
+
+    @property
+    def is_pressed(self):
+        return self.parent.is_pressed(self.id)
+
+    @property
+    def is_released(self):
+        return self.parent.is_released(self.id)
+
+    @property
+    def value(self):
+        """Does the same thing as is_down but makes some parts of the code more readable,
+        especially for analog inputs that can be between 0-1."""
+        return self.is_down
+
+    def __sub__(self, other):
+        return self.value - (other.value if isinstance(other, ButtonInput) else other)
+
+    def __add__(self, other):
+        return self.value + (other.value if isinstance(other, ButtonInput) else other)
+
+    def __bool__(self):
+        """ This allows us to do `if input.UP` instead of `if input.UP.is_down` """
+        return bool(self.value)
+
+
 class GamecubeControllerInputQueue(InputQueue):
     """
     A wrapper around GamecubeControllerReader and InputQueue which leaves all the fiddly
@@ -273,9 +314,41 @@ class GamecubeControllerInputQueue(InputQueue):
     This allows games to subclass this class and define new key mappings e.g. "A" --> "attack"
     """
 
-    def __init__(self, controller: GamecubeControllerReader, queue_length=5):
-        super().__init__(queue_length)
+    # input channels in CAPITALS to differentiate them from other methods
+    LEFT = ButtonInput(LEFT)
+    RIGHT = ButtonInput(RIGHT)
+    UP = ButtonInput(UP)
+    DOWN = ButtonInput(DOWN)
+    A = ButtonInput(A)
+    B = ButtonInput(B)
+    X = ButtonInput(X)
+    Y = ButtonInput(Y)
+    C_UP = ButtonInput(C_UP)
+    C_DOWN = ButtonInput(C_DOWN)
+    C_LEFT = ButtonInput(C_LEFT)
+    C_RIGHT = ButtonInput(C_RIGHT)
+    START = ButtonInput(START)
+    D_PAD_UP = ButtonInput(D_UP)
+    L = ButtonInput(L_AXIS)
+    R = ButtonInput(R_AXIS)
+
+    def __init__(self, controller_id: int, queue_length=5):
+        controller = GamecubeControllerReader(controller_id)
+        self.controller_id = controller_id
         self.controller = controller
+        super().__init__(queue_length)
+
+        # for each parentless SingleInput declared on the class, create a new SingleInput
+        # instance with self as parent.
+        button_inputs = {
+            name: attr
+            for _class in self.__class__.__mro__
+            for name, attr in _class.__dict__.items()
+            if issubclass(_class, GamecubeControllerInputQueue) and isinstance(attr, ButtonInput)
+        }
+        for name, attr in button_inputs.items():
+            inp = ButtonInput(attr.id, parent=self)
+            setattr(self, name, inp)
 
     def get_new_values(self):
         return self.controller.get_values()
@@ -354,10 +427,10 @@ if __name__ == "__main__":
         textPrint.tprint(screen, "PROCESSED INPUTS:")
         textPrint.indent()
         for button in (
-            "GREY_STICK_LEFT GREY_STICK_RIGHT GREY_STICK_UP GREY_STICK_DOWN "
-            "YELLOW_STICK_LEFT YELLOW_STICK_RIGHT YELLOW_STICK_UP YELLOW_STICK_DOWN "
+            "LEFT RIGHT UP DOWN "
+            "C_LEFT C_RIGHT C_UP C_DOWN "
             "R_AXIS L_AXIS "
-            "D_PAD_LEFT D_PAD_RIGHT D_PAD_UP D_PAD_DOWN "
+            "D_LEFT D_RIGHT D_UP D_DOWN "
         ).split():
             textPrint.tprint(screen, f"{button}: {getattr(controller, button)}")
         textPrint.unindent()

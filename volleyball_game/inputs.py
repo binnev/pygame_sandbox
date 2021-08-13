@@ -19,20 +19,20 @@ class GamecubeController(GamecubeControllerInputQueue):
     """
 
     # key mapping
-    LEFT = gamecube.GREY_STICK_LEFT
-    RIGHT = gamecube.GREY_STICK_RIGHT
-    UP = gamecube.GREY_STICK_UP
-    DOWN = gamecube.GREY_STICK_DOWN
+    LEFT = gamecube.LEFT
+    RIGHT = gamecube.RIGHT
+    UP = gamecube.UP
+    DOWN = gamecube.DOWN
     A = gamecube.A
     B = gamecube.B
     X = gamecube.X
     Y = gamecube.Y
-    C_UP = gamecube.YELLOW_STICK_UP
-    C_DOWN = gamecube.YELLOW_STICK_DOWN
-    C_LEFT = gamecube.YELLOW_STICK_LEFT
-    C_RIGHT = gamecube.YELLOW_STICK_RIGHT
+    C_UP = gamecube.C_UP
+    C_DOWN = gamecube.C_DOWN
+    C_LEFT = gamecube.C_LEFT
+    C_RIGHT = gamecube.C_RIGHT
     START = pygame.K_RETURN
-    D_PAD_UP = gamecube.D_PAD_UP
+    D_PAD_UP = gamecube.D_UP
 
     def __init__(self, controller_id, queue_length=5):
         controller = GamecubeControllerReader(controller_id)
