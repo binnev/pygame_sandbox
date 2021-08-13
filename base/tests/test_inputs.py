@@ -5,7 +5,7 @@ import pytest
 
 from base.inputs import gamecube
 from base.inputs.gamecube import (
-    GamecubeControllerInputQueue,
+    GamecubeController,
     ButtonInput,
 )
 
@@ -15,7 +15,7 @@ def test_gamecube_controller_basic(mock):
     mock.return_value = (1, 0)  # A down, B not down
     pygame.init()
 
-    controller = GamecubeControllerInputQueue(controller_id=0)
+    controller = GamecubeController(controller_id=0)
     controller.read_new_inputs()
     assert controller[0] == (1, 0)
     assert controller.is_down(gamecube.A) == 1
@@ -29,13 +29,13 @@ def test_gamecube_controller_subclasses(mock):
     mock.return_value = (1, 0)  # A down, B not down
     pygame.init()
 
-    class Subclass(GamecubeControllerInputQueue):
+    class Subclass(GamecubeController):
         A2 = ButtonInput(gamecube.A)
 
     class Subclass2(Subclass):
         A3 = ButtonInput(gamecube.A)
 
-    class Subclass3(GamecubeControllerInputQueue):
+    class Subclass3(GamecubeController):
         B2 = ButtonInput(gamecube.B)
 
     subclass = Subclass(controller_id=0)

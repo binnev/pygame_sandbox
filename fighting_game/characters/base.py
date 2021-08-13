@@ -1,13 +1,13 @@
-from numpy import sign
 import numpy
 import pygame
+from numpy import sign
 from pygame import Color, Surface
 from pygame.rect import Rect
 
 from base.animation import SpriteDict
+from base.inputs.gamecube import GamecubeController
 from fighting_game import sounds
 from fighting_game.conf import BOUNCE_LOSS
-from fighting_game.inputs import GamecubeController
 from fighting_game.objects import PhysicalEntity
 from fighting_game.platforms import Platform
 

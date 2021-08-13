@@ -3,9 +3,10 @@ import sys
 import pygame
 from pygame import Surface
 
+from base.inputs.gamecube import GamecubeController
 from fighting_game import sounds
 from fighting_game.conf import *
-from fighting_game.inputs import Keyboard0, Keyboard1, GamecubeController
+from fighting_game.inputs import Keyboard0, Keyboard1
 from fighting_game.objects import Entity, Group
 
 

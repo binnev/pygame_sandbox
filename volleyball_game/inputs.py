@@ -1,11 +1,11 @@
 import pygame
 
 from base.inputs import gamecube
-from base.inputs.gamecube import GamecubeControllerInputQueue, GamecubeControllerReader
+from base.inputs.gamecube import GamecubeController, GamecubeControllerReader
 from base.inputs.keyboard import KeyboardInputQueue
 
 
-class GamecubeController(GamecubeControllerInputQueue):
+class GamecubeController(GamecubeController):
     """VolleyballGame objects will receive this as their `input` parameter.
     They will do stuff like:
     ```

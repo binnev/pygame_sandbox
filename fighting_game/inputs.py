@@ -1,9 +1,6 @@
 import pygame
 
-from base.inputs import gamecube
-from base.inputs.gamecube import GamecubeControllerReader, GamecubeControllerInputQueue
 from base.inputs.keyboard import KeyboardInputQueue
-from base.inputs.queue import InputQueue
 
 
 class FightingGameInput:
@@ -33,23 +30,6 @@ class KeyboardInput(FightingGameInput, KeyboardInputQueue):
     START = pygame.K_p
     L = pygame.K_ESCAPE
     R = pygame.K_ESCAPE
-
-
-class GamecubeController(GamecubeControllerInputQueue):
-    pass
-    # # todo: this is generic enough to go on the GamecubeControllerInputQueue.
-    #
-    # def __init__(self, controller_id: int, queue_length=5):
-    #     controller = GamecubeControllerReader(controller_id)
-    #     self.controller_id = controller_id
-    #     super().__init__(controller, queue_length=queue_length)
-    #
-    #     # for each parentless SingleInput declared on the class, create a new SingleInput
-    #     # instance with self as parent.
-    #     for name, attr in self.__class__.__dict__.items():
-    #         if isinstance(attr, SingleInput):
-    #             inp = SingleInput(attr.id, parent=self)
-    #             setattr(self, name, inp)
 
 
 class Keyboard0(KeyboardInputQueue):

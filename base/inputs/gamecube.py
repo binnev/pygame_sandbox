@@ -305,7 +305,7 @@ class ButtonInput:
         return bool(self.value)
 
 
-class GamecubeControllerInputQueue(InputQueue):
+class GamecubeController(InputQueue):
     """
     A wrapper around GamecubeControllerReader and InputQueue which leaves all the fiddly
     input-reading logic to GamecubeControllerReader, and provides a convenient interface for
@@ -344,7 +344,7 @@ class GamecubeControllerInputQueue(InputQueue):
             name: attr
             for _class in self.__class__.__mro__
             for name, attr in _class.__dict__.items()
-            if issubclass(_class, GamecubeControllerInputQueue) and isinstance(attr, ButtonInput)
+            if issubclass(_class, GamecubeController) and isinstance(attr, ButtonInput)
         }
         for name, attr in button_inputs.items():
             inp = ButtonInput(attr.id, parent=self)
