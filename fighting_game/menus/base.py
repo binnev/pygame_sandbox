@@ -32,7 +32,7 @@ class Menu(Entity):
     def check_button_statuses(self):
         for element in self.buttons:
             element.focus = mouse_hovering_over(element)
-            element.click = mouse_clicking(element)
+            element.press = mouse_clicking(element)
 
     def animate_to(self, animation_function, next_scene_callable):
         """Partial execution. State functions are called without any arguments, so if I want the
@@ -46,12 +46,22 @@ class Menu(Entity):
 
 class Button(PhysicalEntity):
     # These attributes are set by whatever is managing the buttons. The button itself doesn't
-    # check these.
-    focus: bool  # is the mouse hovering over the button at the moment?
-    click: bool  # is the button currently being clicked?
-    debug_color = (0, 100, 100)
+    # check these. This allows the menu to use keyboard/controller inputs to shift focus,
+    # as well as the mouse.
+    focus: bool  # is the button currently selected?
+    press: bool  # is the button currently being clicked?
     font_name = "ubuntu"
     font_size = 20
+    # callable hooks passed by the creator/owner of the Button that trigger some external
+    # functionality.
+    on_press: callable
+    on_focus: callable
+
+    text_color: Color
+    idle_color: Color
+    focus_color: Color
+    press_color: Color
+    color: Color  # the current color of the button
 
     def __init__(
         self,
@@ -60,31 +70,26 @@ class Button(PhysicalEntity):
         width: int,
         height: int,
         text=None,
-        text_color=None,
-        on_click: "callback" = None,
-        on_focus: "callback" = None,
-        color=None,
+        on_press: callable = None,
+        on_focus: callable = None,
     ):
         self.width = width
         self.height = height
         self.text = text
-        self.text_color = text_color or self.debug_color
         self.rect = Rect(0, 0, width, height)
         self.rect.center = (x, y)
-        self.color = color
-        super().__init__()
-        self.current_color = self.color
         self.focus = False
-        self.click = False
-        self.highlight = False
-        self.on_click = on_click or (lambda: None)
+        self.press = False
+        self.on_press = on_press or (lambda: None)
         self.on_focus = on_focus or (lambda: None)
-        self.font = pygame.font.Font(pygame.font.match_font(self.font_name), self.font_size)
+        self.font = pygame.font.Font(pygame.font.get_default_font(), self.font_size)
+        self.color = self.idle_color
+        super().__init__()
 
     @property
     def image(self):
         image = pygame.Surface((self.width, self.height)).convert_alpha()
-        image.fill(self.current_color)
+        image.fill(self.color)
         if self.text:
             text = self.font.render(self.text, True, self.text_color)
             textRect = text.get_rect()
@@ -94,72 +99,44 @@ class Button(PhysicalEntity):
 
     def draw(self, surface, debug=False):
         super().draw(surface, debug)
-        if self.highlight:
-            self.draw_highlight(surface)
-
-    def draw_highlight(self, surface):
-        color = pygame.color.THECOLORS["brown"]  # todo: make highlight color
-        translucent_color = color[:3] + (50,)
-        # mask_surface = mask_to_surface(self.mask, translucent_color)
-        # mask_outline = self.mask.outline()
-        # pygame.draw.polygon(mask_surface, color, mask_outline, 15)
-        # surface.blit(mask_surface, self.image_rect)
 
     def update(self):
-        self.current_color = self.color
-        self.highlight = False
+        self.color = self.idle_color
 
         if self.focus:
             self._own_on_focus()
             self.on_focus()
 
-        if self.click:
+        if self.press:
             self._own_on_click()
-            self.on_click()
+            self.on_press()
 
         super().update()
 
     def _own_on_focus(self):
         """The button's own logic that is executed when the button has focus. Not to be confused
         with self.on_focus which will be a callback passed by the creator of the button."""
-        self.highlight = True
+        self.color = self.focus_color
 
     def _own_on_click(self):
         """ Button's own logic for when clicked. """
-        self.current_color = Color("red")
+        self.color = self.press_color
+
+
+class TestButton(Button):
+    idle_color = (100, 0, 100)  # Color("purple")
+    focus_color = Color("orange")
+    press_color = Color("red")
+    text_color = Color("white")
 
 
 class MainMenu(Menu):
     def __init__(self):
         super().__init__()
         self.state = self.animate_in
-        self.explosion_button = Button(
-            -999,
-            200,
-            200,
-            50,
-            text="random explosion",
-            text_color=Color("white"),
-            color=(100, 0, 100),
-        )
-        self.quit_button = Button(
-            -999,
-            400,
-            200,
-            50,
-            text="quit",
-            text_color=Color("white"),
-            color=(100, 0, 100),
-        )
-        self.settings_button = Button(
-            -999,
-            300,
-            200,
-            50,
-            text="settings",
-            text_color=Color("white"),
-            color=(100, 0, 100),
-        )
+        self.explosion_button = TestButton(-999, 200, 200, 50, text="random explosion")
+        self.quit_button = TestButton(-999, 400, 200, 50, text="quit")
+        self.settings_button = TestButton(-999, 300, 200, 50, text="settings")
         self.add_button(self.explosion_button, self.quit_button, self.settings_button)
         self.explosions = Group()
         self.child_groups.append(self.explosions)
@@ -175,12 +152,12 @@ class MainMenu(Menu):
             self.state = self.idle
 
     def idle(self):
-        if self.quit_button.click:
+        if self.quit_button.press:
             self.state = self.animate_to(self.animate_out, None)
-        if self.settings_button.click:
+        if self.settings_button.press:
             self.game.add_scene(SettingsMenu())
             self.state = self.animate_to(self.animate_out, None)
-        if self.explosion_button.click:
+        if self.explosion_button.press:
             self.explosions.add(
                 Plume(
                     x=random() * SCREEN_WIDTH,
@@ -204,15 +181,7 @@ class SettingsMenu(Menu):
     def __init__(self):
         super().__init__()
         self.state = self.animate_in
-        self.back_button = Button(
-            -999,
-            200,
-            200,
-            50,
-            text="back",
-            text_color=Color("white"),
-            color=(100, 0, 100),
-        )
+        self.back_button = TestButton(-999, 200, 200, 50, text="back")
         self.buttons.add(self.back_button)
 
     def animate_in(self):
@@ -223,7 +192,7 @@ class SettingsMenu(Menu):
             self.state = self.idle
 
     def idle(self):
-        if self.back_button.click:
+        if self.back_button.press:
             self.game.add_scene(MainMenu())
             self.state = self.animate_to(self.animate_out, None)
 

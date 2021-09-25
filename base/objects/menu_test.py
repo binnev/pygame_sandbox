@@ -41,7 +41,7 @@ class Menu(Sprite, AnimationMixin):
     def check_button_statuses(self):
         for element in self.buttons:
             element.focus = mouse_hovering_over(element)
-            element.click = mouse_clicking(element)
+            element.press = mouse_clicking(element)
 
     def animate_to(self, animation_function, next_scene_callable):
         """Partial execution. State functions are called without any arguments, so if I want the

@@ -89,7 +89,7 @@ class GuiTestGround(Game):
             buttons.add(game_button, settings_button, quit_button)
             for button in buttons:
                 button.focus = mouse_hovering_over(button)
-                button.click = mouse_clicking(button)
+                button.press = mouse_clicking(button)
 
             buttons.update()
             buttons.draw(self.window, debug=False)
@@ -148,7 +148,7 @@ class GuiTestGround(Game):
 
             for thing in buttons:
                 thing.focus = mouse_hovering_over(thing)
-                thing.click = mouse_clicking(thing)
+                thing.press = mouse_clicking(thing)
 
             buttons.update()
             buttons.draw(self.window, debug=False)

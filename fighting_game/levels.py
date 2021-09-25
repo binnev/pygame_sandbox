@@ -4,6 +4,7 @@ import pygame
 from pygame import Color, Surface
 from pygame.rect import Rect
 
+from fighting_game import sounds
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 from fighting_game.hitboxes import HitHandler
 from fighting_game.objects import Group, Entity, PhysicalEntity
@@ -99,6 +100,9 @@ class Level(Entity):
                 self.screen_shake = 20
                 angle = self.calculate_plume_angle(object)
                 self.add_particle_effect(Plume(object.x, object.y, angle))
+                sounds.death_plume.play()
+                sounds.crowd_ohh.play()
+
         for object in self.projectiles:
             if not pygame.sprite.collide_rect(self.blast_zone, object):
                 object.kill()

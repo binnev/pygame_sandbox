@@ -53,8 +53,10 @@ class FightingGame(Entity):
         loop. Here's where you should put your main event state machine."""
         from fighting_game.scenes import SandBox
 
-        self.add_scene(SandBox())
-        self.add_scene(MainMenu())
+        self.add_scene(
+            # SandBox(),
+            MainMenu(),
+        )
         self.debug = False
         self.running = True
         while self.running:
