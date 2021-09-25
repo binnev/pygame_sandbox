@@ -10,7 +10,6 @@ from base.groups import EntityGroup
 from base.objects.gui_elements import GuiButton
 from base.objects.gui_test import mouse_hovering_over, mouse_clicking
 from base.objects.mixins import AnimationMixin
-from volleyball_game.inputs import Keyboard0, Keyboard1, GamecubeController
 from volleyball_game.objects import ParticleEffect
 
 mainClock = pygame.time.Clock()

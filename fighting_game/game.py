@@ -7,6 +7,7 @@ from base.inputs.gamecube import GamecubeController
 from fighting_game import sounds
 from fighting_game.conf import *
 from fighting_game.inputs import Keyboard0, Keyboard1
+from fighting_game.menus import MainMenu
 from fighting_game.objects import Entity, Group
 
 
@@ -53,6 +54,7 @@ class FightingGame(Entity):
         from fighting_game.scenes import SandBox
 
         self.add_scene(SandBox())
+        self.add_scene(MainMenu())
         self.debug = False
         self.running = True
         while self.running:
@@ -90,5 +92,6 @@ class FightingGame(Entity):
             self.running = False
 
     def draw(self, surface: Surface, debug: bool = False):
+        surface.fill((0, 0, 0))  # clear the screen
         super().draw(surface, debug)
         pygame.display.update()  # print to screen
