@@ -1,4 +1,3 @@
-from math import sin
 from random import random
 from typing import Union
 
@@ -8,7 +7,6 @@ from pygame.rect import Rect
 
 from base.animation import ease_in_out
 from base.objects.gui_test import mouse_hovering_over, mouse_clicking
-from base.utils import mask_to_surface
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 from fighting_game.objects import Entity, Group, PhysicalEntity
 from fighting_game.particles import Plume
@@ -149,16 +147,12 @@ class ColoredButton(Button):
         self.color = self.press_color
 
 
-class MainMenu(Menu):
-    def __init__(self):
-        super().__init__()
+class MyMenu(Menu):
+    button_size = (200, 50)
+
+    def __init__(self, *groups):
+        super().__init__(*groups)
         self.state = self.animate_in
-        self.explosion_button = ColoredButton(-999, 200, 200, 50, text="random explosion")
-        self.quit_button = ColoredButton(-999, 400, 200, 50, text="quit")
-        self.settings_button = ColoredButton(-999, 300, 200, 50, text="settings")
-        self.add_button(self.explosion_button, self.quit_button, self.settings_button)
-        self.explosions = Group()
-        self.child_groups.append(self.explosions)
 
     def animate_in(self):
         try:
@@ -170,12 +164,32 @@ class MainMenu(Menu):
         except IndexError:
             self.state = self.idle
 
+    def animate_out(self, next_scene):
+        if next_scene:
+            self.game.add_scene(next_scene)
+        try:
+            xs = ease_in_out(250, 750, 20)
+            for button in self.buttons:
+                button.x = xs[self.tick]
+        except IndexError:
+            self.kill()
+
+
+class MainMenu(MyMenu):
+    def __init__(self):
+        super().__init__()
+        self.explosion_button = ColoredButton(-999, 200, *self.button_size, text="random explosion")
+        self.quit_button = ColoredButton(-999, 400, *self.button_size, text="quit")
+        self.settings_button = ColoredButton(-999, 300, *self.button_size, text="settings")
+        self.add_button(self.explosion_button, self.quit_button, self.settings_button)
+        self.explosions = Group()
+        self.child_groups.append(self.explosions)
+
     def idle(self):
         if self.quit_button.is_pressed:
             self.state = self.animate_to(self.animate_out, None)
         if self.settings_button.is_pressed:
-            self.game.add_scene(SettingsMenu())
-            self.state = self.animate_to(self.animate_out, None)
+            self.state = self.animate_to(self.animate_out, SettingsMenu())
         if self.explosion_button.is_pressed:
             self.explosions.add(
                 Plume(
@@ -185,41 +199,13 @@ class MainMenu(Menu):
                 )
             ),
 
-    def animate_out(self, next_scene):
-        try:
-            xs = ease_in_out(250, 750, 20)
-            for button in self.buttons:
-                button.x = xs[self.tick]
-        except IndexError:
-            if next_scene:
-                self.game.scenes.add(next_scene)
-            self.kill()
 
-
-class SettingsMenu(Menu):
+class SettingsMenu(MyMenu):
     def __init__(self):
         super().__init__()
-        self.state = self.animate_in
         self.back_button = ColoredButton(-999, 200, 200, 50, text="back")
         self.buttons.add(self.back_button)
 
-    def animate_in(self):
-        try:
-            xs = ease_in_out(-250, 250, 20)
-            self.back_button.x = xs[self.tick]
-        except IndexError:
-            self.state = self.idle
-
     def idle(self):
         if self.back_button.is_pressed:
-            self.game.add_scene(MainMenu())
-            self.state = self.animate_to(self.animate_out, None)
-
-    def animate_out(self, next_scene):
-        try:
-            xs = ease_in_out(250, 750, 20)
-            self.back_button.x = xs[self.tick]
-        except IndexError:
-            if next_scene:
-                self.game.scenes.add(next_scene)
-            self.kill()
+            self.state = self.animate_to(self.animate_out, MainMenu())
