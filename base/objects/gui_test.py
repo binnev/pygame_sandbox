@@ -88,8 +88,8 @@ class GuiTestGround(Game):
             buttons = EntityGroup()
             buttons.add(game_button, settings_button, quit_button)
             for button in buttons:
-                button.focus = mouse_hovering_over(button)
-                button.press = mouse_clicking(button)
+                button.is_focused = mouse_hovering_over(button)
+                button.is_pressed = mouse_clicking(button)
 
             buttons.update()
             buttons.draw(self.window, debug=False)
@@ -147,8 +147,8 @@ class GuiTestGround(Game):
             buttons.add(back_button)
 
             for thing in buttons:
-                thing.focus = mouse_hovering_over(thing)
-                thing.press = mouse_clicking(thing)
+                thing.is_focused = mouse_hovering_over(thing)
+                thing.is_pressed = mouse_clicking(thing)
 
             buttons.update()
             buttons.draw(self.window, debug=False)
