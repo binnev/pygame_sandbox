@@ -1,6 +1,7 @@
 from random import random
 from typing import Union
 
+import numpy
 import pygame
 from pygame.color import Color
 from pygame.rect import Rect
@@ -140,17 +141,36 @@ class ColoredButton(Button):
 
 
 class MyMenu(Menu):
-    button_size = (200, 50)
+    button_width = 200
+    button_height = 50
+    button_size = (button_width, button_height)
+    transition_length = 40
 
     def __init__(self, *groups):
         super().__init__(*groups)
         self.state = self.animate_in
 
+    @property
+    def game_rect(self):
+        return self.game.window.get_rect()
+
+    def arrange_buttons_vertically(self):
+        num_buttons = len(self.buttons)
+        top = self.game.window.get_rect().top + 150
+        bottom = top + self.button_height * 1.5 * num_buttons
+        ys = numpy.linspace(top, bottom, num=num_buttons)
+        for button, y in zip(self.buttons, ys):
+            button.y = y
+
     def animate_in(self):
+        if self.tick == 0:
+            self.arrange_buttons_vertically()
         try:
             # todo: maybe make these generators so that you're not generating the entire array
             #  each tick
-            xs = ease_in_out(-250, 250, 20)
+            centerx = self.game_rect.centerx
+            far_left = self.game_rect.left - self.button_width
+            xs = ease_in_out(far_left, centerx, self.transition_length)
             for button in self.buttons:
                 button.x = xs[self.tick]
         except IndexError:
@@ -161,7 +181,10 @@ class MyMenu(Menu):
             if next_scene:
                 self.game.add_scene(next_scene)
             try:
-                xs = ease_in_out(250, 750, 20)
+
+                centerx = self.game_rect.centerx
+                far_right = self.game_rect.right + self.button_width
+                xs = ease_in_out(centerx, far_right, self.transition_length)
                 for button in self.buttons:
                     button.x = xs[self.tick]
             except IndexError:
