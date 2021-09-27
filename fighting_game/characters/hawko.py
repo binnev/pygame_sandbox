@@ -217,6 +217,7 @@ class Hawko(Character):
             self.frame_mapping = [
                 {"image": images[0], "hitboxes": []},
                 {"image": images[1], "hitboxes": [first_hit]},
+                {"image": images[0], "hitboxes": []},
                 {"image": images[2], "hitboxes": [second_hit]},
                 {"image": images[3], "hitboxes": []},
                 {"image": images[4], "hitboxes": []},
