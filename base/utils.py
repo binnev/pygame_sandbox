@@ -157,3 +157,17 @@ def arrow_coords(length, width, head_length):
             (length, 0),
         ]
     )
+
+
+def count_edges(values):
+    rising_edges = 0
+    falling_edges = 0
+    for ii, value in enumerate(values):
+        if ii == 0:
+            previous_value = value
+        if value and not previous_value:
+            rising_edges += 1
+        if not value and previous_value:
+            falling_edges += 1
+        previous_value = value
+    return rising_edges, falling_edges
