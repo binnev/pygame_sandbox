@@ -36,15 +36,6 @@ class Menu(Entity):
             element.is_focused = mouse_hovering_over(element)
             element.is_pressed = mouse_clicking(element)
 
-    def animate_to(self, animation_function, next_scene_callable):
-        """Partial execution. State functions are called without any arguments, so if I want the
-        animation function to know what state is next, I need to create this wrapper"""
-
-        def wrapped():
-            return animation_function(next_scene_callable)
-
-        return wrapped
-
 
 class Button(PhysicalEntity):
     # These attributes are set by whatever is managing the buttons. The button itself doesn't
@@ -165,15 +156,18 @@ class MyMenu(Menu):
         except IndexError:
             self.state = self.state_idle
 
-    def animate_out(self, next_scene):
-        if next_scene:
-            self.game.add_scene(next_scene)
-        try:
-            xs = ease_in_out(250, 750, 20)
-            for button in self.buttons:
-                button.x = xs[self.tick]
-        except IndexError:
-            self.kill()
+    def animate_out(self, next_scene=None):
+        def _animate_out():
+            if next_scene:
+                self.game.add_scene(next_scene)
+            try:
+                xs = ease_in_out(250, 750, 20)
+                for button in self.buttons:
+                    button.x = xs[self.tick]
+            except IndexError:
+                self.kill()
+
+        return _animate_out
 
 
 class MainMenu(MyMenu):
@@ -202,11 +196,11 @@ class MainMenu(MyMenu):
         some additional logic to distinguish between _pressed_ and _down_.
         """
         if self.quit_button.is_pressed:
-            self.state = self.animate_to(self.animate_out, None)
+            self.state = self.animate_out()
         if self.settings_button.is_pressed:
-            self.state = self.animate_to(self.animate_out, SettingsMenu())
+            self.state = self.animate_out(next_scene=SettingsMenu())
         if self.game_button.is_pressed:
-            self.state = self.animate_to(self.animate_out, SandBox())
+            self.state = self.animate_out(next_scene=SandBox())
         if self.explosion_button.is_pressed:
             self.explosions.add(
                 Plume(
@@ -225,4 +219,4 @@ class SettingsMenu(MyMenu):
 
     def state_idle(self):
         if self.back_button.is_pressed:
-            self.state = self.animate_to(self.animate_out, MainMenu())
+            self.state = self.animate_out(next_scene=MainMenu())
