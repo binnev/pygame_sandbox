@@ -53,10 +53,7 @@ class FightingGame(Entity):
         loop. Here's where you should put your main event state machine."""
         from fighting_game.scenes import SandBox
 
-        self.add_scene(
-            # SandBox(),
-            MainMenu(),
-        )
+        self.add_scene(MainMenu())
         self.debug = False
         self.running = True
         while self.running:
@@ -68,14 +65,12 @@ class FightingGame(Entity):
 
     def update(self):
         # read inputs first
-        for event in pygame.event.get():
+        self.events = pygame.event.get()
+        for event in self.events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
                 if event.key == pygame.K_F1:
                     self.debug = not self.debug
                 if event.key == pygame.K_s:

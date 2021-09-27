@@ -10,6 +10,7 @@ from base.objects.gui_test import mouse_hovering_over, mouse_clicking
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 from fighting_game.objects import Entity, Group, PhysicalEntity
 from fighting_game.particles import Plume
+from fighting_game.scenes import SandBox
 from fighting_game.utils import pulsing_value
 
 
@@ -162,7 +163,7 @@ class MyMenu(Menu):
             for button in self.buttons:
                 button.x = xs[self.tick]
         except IndexError:
-            self.state = self.idle
+            self.state = self.state_idle
 
     def animate_out(self, next_scene):
         if next_scene:
@@ -179,9 +180,15 @@ class MainMenu(MyMenu):
     def __init__(self):
         super().__init__()
         self.explosion_button = ColoredButton(-999, 200, *self.button_size, text="random explosion")
+        self.settings_button = ColoredButton(-999, 260, *self.button_size, text="settings")
+        self.game_button = ColoredButton(-999, 330, *self.button_size, text="fighting game")
         self.quit_button = ColoredButton(-999, 400, *self.button_size, text="quit")
-        self.settings_button = ColoredButton(-999, 300, *self.button_size, text="settings")
-        self.add_button(self.explosion_button, self.quit_button, self.settings_button)
+        self.add_button(
+            self.explosion_button,
+            self.settings_button,
+            self.game_button,
+            self.quit_button,
+        )
         self.explosions = Group()
         self.child_groups.append(self.explosions)
 
@@ -198,6 +205,8 @@ class MainMenu(MyMenu):
             self.state = self.animate_to(self.animate_out, None)
         if self.settings_button.is_pressed:
             self.state = self.animate_to(self.animate_out, SettingsMenu())
+        if self.game_button.is_pressed:
+            self.state = self.animate_to(self.animate_out, SandBox())
         if self.explosion_button.is_pressed:
             self.explosions.add(
                 Plume(
