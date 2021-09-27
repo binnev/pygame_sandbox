@@ -7,7 +7,6 @@ from base.inputs.gamecube import GamecubeController
 from fighting_game import sounds
 from fighting_game.conf import *
 from fighting_game.inputs import Keyboard0, Keyboard1
-from fighting_game.menus import MainMenu
 from fighting_game.objects import Entity, Group
 
 
@@ -51,7 +50,7 @@ class FightingGame(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
-        from fighting_game.scenes import SandBox
+        from fighting_game.menus import MainMenu
 
         self.add_scene(MainMenu())
         self.debug = False

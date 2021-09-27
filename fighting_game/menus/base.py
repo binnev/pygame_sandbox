@@ -9,6 +9,7 @@ from pygame.rect import Rect
 from base.animation import ease_in_out
 from base.objects.gui_test import mouse_hovering_over, mouse_clicking
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
+from fighting_game.game import FightingGame
 from fighting_game.objects import Entity, Group, PhysicalEntity
 from fighting_game.particles import Plume
 from fighting_game.scenes import SandBox
@@ -18,6 +19,7 @@ from fighting_game.utils import pulsing_value
 class Menu(Entity):
     """ Base menu class. """
 
+    game = FightingGame
     parental_name = "menu"
 
     def __init__(self, *groups):
@@ -31,6 +33,9 @@ class Menu(Entity):
     def update(self):
         self.update_buttons()
         super().update()
+
+    def state_idle(self):
+        pass
 
     def update_buttons(self):
         for element in self.buttons:
@@ -237,8 +242,22 @@ class MainMenu(MyMenu):
 class SettingsMenu(MyMenu):
     def __init__(self):
         super().__init__()
+        self.dummy_button1 = ColoredButton(-999, 200, 200, 50, text="1")
+        self.dummy_button2 = ColoredButton(-999, 200, 200, 50, text="2")
+        self.dummy_button3 = ColoredButton(-999, 200, 200, 50, text="3")
+        self.dummy_button4 = ColoredButton(-999, 200, 200, 50, text="4")
+        self.dummy_button5 = ColoredButton(-999, 200, 200, 50, text="5")
+        self.dummy_button6 = ColoredButton(-999, 200, 200, 50, text="6")
         self.back_button = ColoredButton(-999, 200, 200, 50, text="back")
-        self.buttons.add(self.back_button)
+        self.buttons.add(
+            self.dummy_button1,
+            self.dummy_button2,
+            self.dummy_button3,
+            self.dummy_button4,
+            self.dummy_button5,
+            self.dummy_button6,
+            self.back_button,
+        )
 
     def state_idle(self):
         if self.back_button.is_pressed:
