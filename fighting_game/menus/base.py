@@ -185,7 +185,15 @@ class MainMenu(MyMenu):
         self.explosions = Group()
         self.child_groups.append(self.explosions)
 
-    def idle(self):
+    def state_idle(self):
+        """
+        Currently, having the menu check the button statuses and trigger an action in the idle
+        state is more reliable than using the Button.on_press. This is because the menu sees a
+        button press and immediately changes state. And once it's not in the idle state,
+        the menu is no longer _reading_ button presses. This means we don't get double button
+        clicks from a long mouse press. The Button.on_press route is more correct, but we need
+        some additional logic to distinguish between _pressed_ and _down_.
+        """
         if self.quit_button.is_pressed:
             self.state = self.animate_to(self.animate_out, None)
         if self.settings_button.is_pressed:
@@ -206,6 +214,6 @@ class SettingsMenu(MyMenu):
         self.back_button = ColoredButton(-999, 200, 200, 50, text="back")
         self.buttons.add(self.back_button)
 
-    def idle(self):
+    def state_idle(self):
         if self.back_button.is_pressed:
             self.state = self.animate_to(self.animate_out, MainMenu())
