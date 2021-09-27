@@ -7,7 +7,7 @@ from pygame.rect import Rect
 from base.animation import SpriteDict
 from base.inputs.gamecube import GamecubeController
 from fighting_game import sounds
-from fighting_game.conf import BOUNCE_LOSS
+from fighting_game.conf import BOUNCE_LOSS, AIR_DODGE_BUFFER
 from fighting_game.objects import PhysicalEntity
 from fighting_game.platforms import Platform
 
@@ -795,7 +795,10 @@ class Character(PhysicalEntity):
             return True
 
     def allow_air_dodge(self):
-        if self.input.R.is_pressed or self.input.L.is_pressed and self.air_dodges > 0:
+        if (
+            self.input.R.buffered_presses(AIR_DODGE_BUFFER)
+            or self.input.L.buffered_presses(AIR_DODGE_BUFFER)
+        ) and self.air_dodges > 0:
             self.air_dodge()
 
     def allow_dash(self):

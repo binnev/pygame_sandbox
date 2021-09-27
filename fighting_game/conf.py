@@ -8,3 +8,5 @@ HITPAUSE_CONSTANT = 0.1
 
 SPRITE_SIZE = (32, 32)
 SCALE_SPRITES = 3  # how much to scale up sprites
+
+AIR_DODGE_BUFFER = 5

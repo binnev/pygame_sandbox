@@ -294,6 +294,12 @@ class ButtonInput:
         especially for analog inputs that can be between 0-1."""
         return self.is_down
 
+    def buffered_presses(self, buffer_length):
+        return self.parent.buffered_presses(self.id, buffer_length)
+
+    def buffered_releases(self, buffer_length):
+        return self.parent.buffered_releases(self.id, buffer_length)
+
     def __sub__(self, other):
         return self.value - (other.value if isinstance(other, ButtonInput) else other)
 
