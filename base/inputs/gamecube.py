@@ -332,7 +332,7 @@ class GamecubeController(InputQueue):
     L = ButtonInput(L_AXIS)
     R = ButtonInput(R_AXIS)
 
-    def __init__(self, controller_id: int, queue_length=5):
+    def __init__(self, controller_id: int, queue_length=60):
         controller = GamecubeControllerReader(controller_id)
         self.controller_id = controller_id
         self.controller = controller
