@@ -9,6 +9,8 @@ from base.objects.gui_elements import GuiButton
 
 
 def allow_exit():
+    # fixme: calling the event.get() a second time will yield no events, because the queue will
+    #  already have been emptied by the first call!
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()

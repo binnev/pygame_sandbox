@@ -38,9 +38,17 @@ class Menu(Entity):
         pass
 
     def update_buttons(self):
-        for element in self.buttons:
-            element.is_focused = mouse_hovering_over(element)
-            element.is_pressed = mouse_clicking(element)
+        """todo: if you wanted to make this really efficient, you could only perform updates if
+        an event is detected."""
+        mouse_click = any(event.type == pygame.MOUSEBUTTONDOWN for event in self.game.events)
+        for button in self.buttons:
+            button.is_focused = False
+            button.is_pressed = False
+            if mouse_hovering_over(button):
+                if mouse_click:
+                    button.is_pressed = True
+                else:
+                    button.is_focused = True
 
 
 class Button(PhysicalEntity):
