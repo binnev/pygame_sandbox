@@ -134,7 +134,7 @@ class Character(PhysicalEntity):
 
         # B-button inputs
         input = self.input
-        if input.B.is_pressed:
+        if input.B.buffered_presses(INPUT_BUFFER):
             if input.UP:
                 self.y -= 1
                 self.allow_aerial_up_b()
@@ -205,16 +205,24 @@ class Character(PhysicalEntity):
         )
 
         Cstick_left = (
-            input.C_LEFT.is_pressed and not input.C_UP.is_pressed and not input.C_DOWN.is_pressed
+            input.C_LEFT.buffered_presses(INPUT_BUFFER)
+            and not input.C_UP.is_pressed
+            and not input.C_DOWN.is_pressed
         )
         Cstick_right = (
-            input.C_RIGHT.is_pressed and not input.C_UP.is_pressed and not input.C_DOWN.is_pressed
+            input.C_RIGHT.buffered_presses(INPUT_BUFFER)
+            and not input.C_UP.is_pressed
+            and not input.C_DOWN.is_pressed
         )
         Cstick_up = (
-            input.C_UP.is_pressed and not input.C_LEFT.is_pressed and not input.C_RIGHT.is_pressed
+            input.C_UP.buffered_presses(INPUT_BUFFER)
+            and not input.C_LEFT.is_pressed
+            and not input.C_RIGHT.is_pressed
         )
         Cstick_down = (
-            input.C_DOWN.is_pressed and not input.C_LEFT.is_pressed and not input.C_RIGHT.is_pressed
+            input.C_DOWN.buffered_presses(INPUT_BUFFER)
+            and not input.C_LEFT.is_pressed
+            and not input.C_RIGHT.is_pressed
         )
         Cstick_back = (self.facing_right and Cstick_left) or (
             not self.facing_right and Cstick_right
@@ -224,7 +232,7 @@ class Character(PhysicalEntity):
         )
 
         # A-button inputs
-        if input.A.is_pressed:
+        if input.A.buffered_presses(INPUT_BUFFER):
             if holding_back:
                 self.do_move(self.BackAir)
             elif holding_forward:
@@ -237,7 +245,7 @@ class Character(PhysicalEntity):
                 self.do_move(self.NeutralAir)
 
         # B-button inputs
-        if input.B.is_pressed:
+        if input.B.buffered_presses(INPUT_BUFFER):
             if input.UP:
                 self.allow_aerial_up_b()
             elif input.LEFT:
@@ -633,6 +641,9 @@ class Character(PhysicalEntity):
         def hitpause():
             self.image = Surface((50, 50))
             self.image.fill(Color("red"))
+            # if we are the one doing the hitting
+            if self.hitstun_duration == 0:
+                self.allow_hitfall()
 
             if self.hitpause_duration == 0:
                 self.state = return_state
@@ -691,14 +702,14 @@ class Character(PhysicalEntity):
 
     def allow_fastfall(self):
         input = self.input
-        if input.DOWN.is_pressed and self.v > 0 and not self.fast_fall:
+        if input.DOWN.buffered_presses(INPUT_BUFFER) and self.v > 0 and not self.fast_fall:
             # self.level.add_particle_effect(JumpRing(*self.rect.midbottom, color=Color("orange")))
             self.fast_fall = True
             self.v = self.fast_fall_speed
 
     def allow_hitfall(self):
         input = self.input
-        if input.DOWN and self.hitpause_duration > 0:
+        if input.DOWN.buffered_presses(INPUT_BUFFER) and self.hitpause_duration > 0:
             self.fast_fall = True
             self.v = self.fast_fall_speed
 
@@ -759,7 +770,7 @@ class Character(PhysicalEntity):
     def allow_jab(self):
         input = self.input
         if (
-            input.A.is_pressed
+            input.A.buffered_presses(INPUT_BUFFER)
             and not input.LEFT
             and not input.RIGHT
             and not input.UP
