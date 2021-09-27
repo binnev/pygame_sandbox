@@ -10,7 +10,6 @@ from base.groups import EntityGroup
 from base.objects.gui_elements import GuiButton
 from base.objects.gui_test import mouse_hovering_over, mouse_clicking
 from base.objects.mixins import AnimationMixin
-from volleyball_game.inputs import Keyboard0, Keyboard1, GamecubeController
 from volleyball_game.objects import ParticleEffect
 
 mainClock = pygame.time.Clock()
@@ -41,8 +40,8 @@ class Menu(Sprite, AnimationMixin):
 
     def check_button_statuses(self):
         for element in self.buttons:
-            element.focus = mouse_hovering_over(element)
-            element.click = mouse_clicking(element)
+            element.is_focused = mouse_hovering_over(element)
+            element.is_pressed = mouse_clicking(element)
 
     def animate_to(self, animation_function, next_scene_callable):
         """Partial execution. State functions are called without any arguments, so if I want the

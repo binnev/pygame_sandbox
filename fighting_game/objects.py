@@ -2,7 +2,6 @@ import pygame
 from pygame import Color
 from pygame import Surface
 from pygame.rect import Rect
-from pygame.sprite import Sprite
 
 
 class Group(pygame.sprite.Group):
@@ -25,7 +24,7 @@ class Group(pygame.sprite.Group):
             sprite.kill()
 
 
-class Entity(Sprite):
+class Entity(pygame.sprite.Sprite):
     """
     Finite State Machine:
     - self.tick is incremented every time the main game loop executes

@@ -95,9 +95,6 @@ class Plume(Entity):
         x_unit = numpy.cos(numpy.deg2rad(angle_deg))
         y_unit = -numpy.sin(numpy.deg2rad(angle_deg))
 
-        sounds.death_plume.play()
-        sounds.crowd_ohh.play()
-
         for _ in range(25):
             self.particles.add(
                 Particle(

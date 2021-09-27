@@ -1,7 +1,9 @@
 import sys
+from typing import List
 
 import pygame
 from pygame import Surface
+from pygame.event import Event
 
 from base.inputs.gamecube import GamecubeController
 from fighting_game import sounds
@@ -19,6 +21,7 @@ class FightingGame(Entity):
     font_name = "ubuntu"
     font_size = 50
     parental_name = "game"
+    events: List[Event]
 
     def __init__(self):
         super().__init__()
@@ -50,9 +53,9 @@ class FightingGame(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
-        from fighting_game.scenes import SandBox
+        from fighting_game.menus import MainMenu
 
-        self.add_scene(SandBox())
+        self.add_scene(MainMenu())
         self.debug = False
         self.running = True
         while self.running:
@@ -63,15 +66,16 @@ class FightingGame(Entity):
         self.add_to_group(*objects, group=self.scenes)
 
     def update(self):
-        # read inputs first
-        for event in pygame.event.get():
+        # read inputs first -- NOTE: this empties the event queue! So you can't do this check a
+        # second time per tick elsewhere in the code!
+        self.events = pygame.event.get()
+        if self.debug:
+            print(self.tick, self.events)
+        for event in self.events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
                 if event.key == pygame.K_F1:
                     self.debug = not self.debug
                 if event.key == pygame.K_s:
@@ -90,5 +94,6 @@ class FightingGame(Entity):
             self.running = False
 
     def draw(self, surface: Surface, debug: bool = False):
+        surface.fill((0, 0, 0))  # clear the screen
         super().draw(surface, debug)
         pygame.display.update()  # print to screen
