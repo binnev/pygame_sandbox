@@ -8,6 +8,7 @@ from base.inputs.gamecube import (
     GamecubeController,
     ButtonInput,
 )
+from base.inputs.queue import InputQueue
 
 
 @patch("base.inputs.gamecube.GamecubeControllerReader.get_values")
@@ -75,3 +76,29 @@ def test_gamecube_controller_subclasses(mock):
         assert subclass3.A3.is_down == 1
     assert subclass3.B.is_down == 0
     assert subclass3.B2.is_down == 0
+
+
+@pytest.mark.parametrize(
+    "input, expected_rising_edges, expected_falling_edges",
+    [
+        ([], 0, 0),  # no buffered values shouldn't crash things
+        ([0, 0, 0], 0, 0),  # some values but less than the buffer
+        ([0, 0, 1], 1, 0),
+        ([1, 0, 0], 0, 1),
+        ([0, 1, 0], 1, 1),
+        ([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], 0, 0),  # too far in past
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 1, 0),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0], 1, 1),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1], 2, 1),
+    ],
+)
+def test_buffered_inputs(input, expected_rising_edges, expected_falling_edges):
+    BUFFER_LENGTH = 5
+    queue = InputQueue(queue_length=100)
+    for value in input:
+        queue.append([value])
+
+    rising, falling = queue.buffered_inputs(key=0, buffer_length=BUFFER_LENGTH)
+
+    assert rising == queue.buffered_presses(0, BUFFER_LENGTH) == expected_rising_edges
+    assert falling == queue.buffered_releases(0, BUFFER_LENGTH) == expected_falling_edges

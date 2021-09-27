@@ -3,6 +3,7 @@ from collections import deque
 import pygame
 
 from base.singleton import Singleton
+from base.utils import count_edges
 
 
 class Empty(tuple):
@@ -69,3 +70,17 @@ class InputQueue(deque):
         """ Check if a key has been released this tick """
         keys = self.get_released()
         return keys[key]
+
+    def buffered_inputs(self, key, buffer_length):
+        """ Count the rising and falling edges. Can be used to detect past inputs. """
+        buffer = list(self)[-buffer_length:]
+        values = [layer[key] for layer in buffer]
+        return count_edges(values)
+
+    def buffered_presses(self, key, buffer_length):
+        rising, falling = self.buffered_inputs(key, buffer_length)
+        return rising
+
+    def buffered_releases(self, key, buffer_length):
+        rising, falling = self.buffered_inputs(key, buffer_length)
+        return falling
