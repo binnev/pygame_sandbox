@@ -16,7 +16,7 @@ class Board(Entity):
     game: LangtonsAntGame
     parental_name = "board"
     colormap = matplotlib.cm.viridis
-    scaling = 10
+    scaling = 15
 
     def __init__(self, game):
         self.max_x = 0
@@ -79,7 +79,6 @@ class Board(Entity):
             pixel = Surface((self.scaling, self.scaling))
             colour = self.colours[colour_index]
             pixel.fill(colour[:3])
-            # surface.blit(pixel, tuple([item * self.scaling for item in coords]))
             screen_x, screen_y = self.map_self_to_screen(x, y)
             surface.blit(pixel, (screen_x, screen_y))
 
