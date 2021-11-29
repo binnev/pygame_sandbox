@@ -16,13 +16,13 @@ def path_finder(maze):
 
 max_size = [0]
 
-fps = 10
+fps = 60
 window_width = 1000
 window_height = 1000
-window_caption = "Langton's Ant Simulator"
+window_caption = "Maze Solver"
 font_name = "ubuntu"
 font_size = 20
-ticks_per_frame = 1  # how many iterations to do between draws
+ticks_per_frame = 10  # how many iterations to do between draws
 
 pygame.init()
 pygame.font.init()
@@ -60,11 +60,12 @@ for inp, solvable in MAZES:
 
         maze.update()
 
-        window.fill(pygame.Color("white"))  # clear the screen
-        maze.draw(window)
-        pygame.display.update()  # print to screen
+        if tick % ticks_per_frame == 0:
+            window.fill(pygame.Color("white"))  # clear the screen
+            maze.draw(window)
+            pygame.display.update()  # print to screen
 
         tick += 1
-        clock.tick(fps)
+        # clock.tick(fps)
 
 
