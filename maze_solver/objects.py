@@ -1,4 +1,9 @@
+from pygame import Color
+from pygame.surface import Surface
+
 from fighting_game.objects import Entity, Group
+
+SCALING = 10
 
 
 class NodeTypes:
@@ -8,7 +13,27 @@ class NodeTypes:
     EXPLORED = "░"
 
 
-class Node(Entity):
+class Cell(Entity):
+    color: tuple
+
+    def __init__(self, row, col):
+        self.row = row
+        self.col = col
+        self.x = col
+        self.y = row
+        super().__init__()
+
+    def draw(self, surface: Surface, debug: bool = False):
+        pixel_size = SCALING*0.99
+        pixel = Surface((pixel_size, pixel_size))
+        pixel.fill(self.color[:3])
+        screen_x = self.x * SCALING
+        screen_y = self.y * SCALING
+        surface.blit(pixel, (screen_x, screen_y))
+        super().draw(surface, debug)
+
+
+class Node(Cell):
     """Represents an empty (non wall) cell in a maze"""
 
     row: int
@@ -21,10 +46,9 @@ class Node(Entity):
     is_finish: bool = False
     explored: bool = False
 
-    def __init__(self, row, col):
-        self.row = row
-        self.col = col
-        super().__init__()
+    @property
+    def color(self):
+        return Color("orange") if self.explored else Color("gray")
 
     @property
     def neighbours(self):
@@ -38,11 +62,8 @@ class Node(Entity):
         return self.__repr__()
 
 
-class Wall(Entity):
-    def __init__(self, row, col):
-        self.row = row
-        self.col = col
-        super().__init__()
+class Wall(Cell):
+    color = Color("black")
 
     def __str__(self):
         return NodeTypes.WALL
