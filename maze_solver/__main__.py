@@ -16,7 +16,7 @@ def path_finder(maze):
 
 max_size = [0]
 
-fps = 60
+fps = 10
 window_width = 1000
 window_height = 1000
 window_caption = "Langton's Ant Simulator"
@@ -34,13 +34,6 @@ clock = pygame.time.Clock()
 for inp, solvable in MAZES:
     inp = "\n".join(inp)
     maze = Maze(inp)
-
-    path = maze.find_path()
-    print("-" * 120)
-    print(maze.string(path))
-    print("\n")
-    print("solved" if maze.is_solved else "not solved")
-
     running = True
     debug = False
     tick = 0
@@ -59,10 +52,13 @@ for inp, solvable in MAZES:
                 if event.key == pygame.K_SPACE:
                     running = False
 
+        maze.update()
+
         window.fill(pygame.Color("white"))  # clear the screen
         maze.draw(window)
         pygame.display.update()  # print to screen
 
         tick += 1
+        clock.tick(fps)
 
 

@@ -1,9 +1,10 @@
+import pygame
 from pygame import Color
 from pygame.surface import Surface
 
 from fighting_game.objects import Entity, Group
 
-SCALING = 10
+SCALING = 20
 
 
 class NodeTypes:
@@ -23,8 +24,8 @@ class Cell(Entity):
         self.y = row
         super().__init__()
 
-    def draw(self, surface: Surface, debug: bool = False, color: tuple=None):
-        pixel_size = SCALING*0.99
+    def draw(self, surface: Surface, debug: bool = False, color: tuple = None):
+        pixel_size = SCALING * 0.99
         pixel = Surface((pixel_size, pixel_size))
         color = color or self.color
         pixel.fill(color[:3])
@@ -54,13 +55,21 @@ class Node(Cell):
     @property
     def neighbours(self):
         """Prioritize going right and down"""
-        return filter(None, [self.right, self.down, self.left, self.up])
+        return list(filter(None, [self.right, self.down, self.left, self.up]))
 
     def __repr__(self) -> str:
         return NodeTypes.EXPLORED if self.explored else NodeTypes.EMPTY
 
     def __str__(self) -> str:
         return self.__repr__()
+
+    def draw(self, surface: Surface, debug: bool = False, color: tuple = None):
+        super().draw(surface, debug, color)
+        font = pygame.font.Font(pygame.font.match_font("ubuntu"), 20)
+        text_bitmap = font.render(f"{len(self.neighbours)}", True, Color("black"))
+        screen_x = self.x * SCALING
+        screen_y = self.y * SCALING
+        surface.blit(text_bitmap, (screen_x, screen_y))
 
 
 class Wall(Cell):
@@ -112,6 +121,8 @@ class Maze(Entity):
                     node_left.right = node
 
         self.rows = rows
+        self.path = list()  # the actual path from start to finish
+        self.path.append(self.rows[0][0])
 
     def add_nodes(self, *nodes):
         self.add_to_group(*nodes, group=self.nodes)
@@ -138,8 +149,28 @@ class Maze(Entity):
                 break
         return path
 
+    def depth_first_search_step(self):
+        if not self.path:  # we backtracked all the way to the beginning. Not solvable.
+            return  # not solvable
+        node = self.path[-1]
+        node.explored = True
+        if not node.neighbours:
+            return  # not solvable
+        # if all neighbours are visited, this is a dead end. Backtrack.
+        if all(n.explored for n in node.neighbours):
+            self.path.pop()
+            return  # continue
+
+        # otherwise, get the first unvisited neighbour
+        node = next(n for n in node.neighbours if not n.explored)
+        node.explored = True
+        self.path.append(node)
+
+        # win condition -- quit early
+        if node.is_finish:
+            self.is_solved = True
+
     def depth_first_search(self, row=0, col=0):
-        self.path = list()  # the actual path from start to finish
         node = self.rows[row][col]
         node.explored = True
         self.path.append(node)
@@ -168,10 +199,7 @@ class Maze(Entity):
 
     def string(self, path):
 
-        template = [
-            list(map(str, row))
-            for row in self.rows
-        ]
+        template = [list(map(str, row)) for row in self.rows]
         for node in path:
             template[node.row][node.col] = NodeTypes.PATH
         return "\n".join("".join(row) for row in template)
@@ -179,6 +207,12 @@ class Maze(Entity):
     def can_find_path(self, row=0, col=0):
         path = self.find_path(row, col)
         return (0, 0) in path and (self.height - 1, self.width - 1) in path
+
+    def update(self):
+        if self.is_solved:
+            return
+        self.depth_first_search_step()
+        super().update()
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
@@ -188,5 +222,3 @@ class Maze(Entity):
             self.path[-1].draw(surface, color=Color("brown"))
         except IndexError:
             pass
-
-
