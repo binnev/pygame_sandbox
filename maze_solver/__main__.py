@@ -51,6 +51,12 @@ for inp, solvable in MAZES:
                     debug = not debug
                 if event.key == pygame.K_SPACE:
                     running = False
+                if event.key == pygame.K_DOWN:
+                    fps = max([1, fps // 2])
+                    print(f"fps: {fps}")
+                if event.key == pygame.K_UP:
+                    fps *= 2
+                    print(f"fps: {fps}")
 
         maze.update()
 

@@ -4,7 +4,7 @@ from pygame.surface import Surface
 
 from fighting_game.objects import Entity, Group
 
-SCALING = 20
+SCALING = 10
 
 
 class NodeTypes:
@@ -63,14 +63,6 @@ class Node(Cell):
     def __str__(self) -> str:
         return self.__repr__()
 
-    def draw(self, surface: Surface, debug: bool = False, color: tuple = None):
-        super().draw(surface, debug, color)
-        font = pygame.font.Font(pygame.font.match_font("ubuntu"), 20)
-        text_bitmap = font.render(f"{len(self.neighbours)}", True, Color("black"))
-        screen_x = self.x * SCALING
-        screen_y = self.y * SCALING
-        surface.blit(text_bitmap, (screen_x, screen_y))
-
 
 class Wall(Cell):
     color = Color("black")
@@ -88,41 +80,47 @@ class Maze(Entity):
         self.child_groups = [self.nodes, self.walls]
 
         rows = [
-            [Node(x, y) if cell != NodeTypes.WALL else Wall(x, y) for y, cell in enumerate(row)]
-            for x, row in enumerate(string.split("\n"))
+            [
+                Node(rr, cc) if cell != NodeTypes.WALL else Wall(rr, cc)
+                for cc, cell in enumerate(row)
+            ]
+            for rr, row in enumerate(string.split("\n"))
         ]
         self.height = len(rows)
         self.width = len(rows[0])
 
-        for x, row in enumerate(rows):
-            for y, node in enumerate(row):
-                if isinstance(node, Wall):
-                    self.add_walls(node)
+        for rr, row in enumerate(rows):
+            for cc, cell in enumerate(row):
+                if isinstance(cell, Wall):
+                    self.add_walls(cell)
                     continue  # walls don't have links
 
-                self.add_nodes(node)
-                if (x == self.height - 1) and (y == self.width - 1):
-                    node.is_finish = True  # this is the end of the maze
+                self.add_nodes(cell)
+                if (rr == self.height - 1) and (cc == self.width - 1):
+                    cell.is_finish = True  # this is the end of the maze
 
-                # link with node above
-                if x == 0:
-                    continue
-                node_above = rows[x - 1][y]
-                if isinstance(node_above, Node):
-                    node.up = node_above
-                    node_above.down = node
+                # link with node below
+                try:
+                    node_below = rows[rr + 1][cc]
+                    if isinstance(node_below, Node):
+                        cell.down = node_below
+                        node_below.up = cell
+                except IndexError:
+                    pass
 
-                # link with node left
-                if y == 0:
-                    continue
-                node_left = rows[x][y - 1]
-                if isinstance(node_left, Node):
-                    node.left = node_left
-                    node_left.right = node
+                # link with node to the right
+                try:
+                    node_right = rows[rr][cc + 1]
+                    if isinstance(node_right, Node):
+                        cell.right = node_right
+                        node_right.left = cell
+                except IndexError:
+                    pass
 
         self.rows = rows
         self.path = list()  # the actual path from start to finish
         self.path.append(self.rows[0][0])
+        super().__init__()
 
     def add_nodes(self, *nodes):
         self.add_to_group(*nodes, group=self.nodes)
