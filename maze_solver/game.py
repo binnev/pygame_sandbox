@@ -5,7 +5,6 @@ from pygame.color import Color
 from pygame.surface import Surface
 
 from fighting_game.objects import Entity, Group
-from maze_solver.objects import Maze
 from maze_solver.test_mazes import MAZES
 
 
@@ -17,6 +16,7 @@ class MazeSolverGame(Entity):
     font_name = "ubuntu"
     font_size = 20
     ticks_per_frame = 10  # how many iterations to do between draws
+    parental_name = "game"
 
     def __init__(self):
         super().__init__()
@@ -34,10 +34,11 @@ class MazeSolverGame(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
+        from maze_solver.objects import Maze
 
         for inp, solvable in MAZES:
             inp = "\n".join(inp)
-            self.maze = Maze(inp)
+            self.maze = Maze(inp, game=self)
             self.running = True
             self.debug = False
 

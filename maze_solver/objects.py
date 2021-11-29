@@ -1,10 +1,9 @@
-import pygame
 from pygame import Color
 from pygame.surface import Surface
 
 from fighting_game.objects import Entity, Group
+from maze_solver.game import MazeSolverGame
 
-SCALING = 10
 
 
 class NodeTypes:
@@ -16,6 +15,7 @@ class NodeTypes:
 
 class Cell(Entity):
     color: tuple
+    maze: "Maze"
 
     def __init__(self, row, col):
         self.row = row
@@ -25,12 +25,12 @@ class Cell(Entity):
         super().__init__()
 
     def draw(self, surface: Surface, debug: bool = False, color: tuple = None):
-        pixel_size = SCALING * 0.99
+        pixel_size = self.maze.scaling * 0.99
         pixel = Surface((pixel_size, pixel_size))
         color = color or self.color
         pixel.fill(color[:3])
-        screen_x = self.x * SCALING
-        screen_y = self.y * SCALING
+        screen_x = self.x * self.maze.scaling
+        screen_y = self.y * self.maze.scaling
         surface.blit(pixel, (screen_x, screen_y))
         super().draw(surface, debug)
 
@@ -73,12 +73,10 @@ class Wall(Cell):
 
 class Maze(Entity):
     is_solved: bool = False
+    game: MazeSolverGame
+    parental_name = "maze"
 
-    def __init__(self, string):
-        self.nodes = Group()
-        self.walls = Group()
-        self.child_groups = [self.nodes, self.walls]
-
+    def create_cells(self, string):
         rows = [
             [
                 Node(rr, cc) if cell != NodeTypes.WALL else Wall(rr, cc)
@@ -86,10 +84,10 @@ class Maze(Entity):
             ]
             for rr, row in enumerate(string.split("\n"))
         ]
-        self.height = len(rows)
-        self.width = len(rows[0])
+        return rows
 
-        for rr, row in enumerate(rows):
+    def create_links(self):
+        for rr, row in enumerate(self.rows):
             for cc, cell in enumerate(row):
                 if isinstance(cell, Wall):
                     self.add_walls(cell)
@@ -101,7 +99,7 @@ class Maze(Entity):
 
                 # link with node below
                 try:
-                    node_below = rows[rr + 1][cc]
+                    node_below = self.rows[rr + 1][cc]
                     if isinstance(node_below, Node):
                         cell.down = node_below
                         node_below.up = cell
@@ -110,16 +108,32 @@ class Maze(Entity):
 
                 # link with node to the right
                 try:
-                    node_right = rows[rr][cc + 1]
+                    node_right = self.rows[rr][cc + 1]
                     if isinstance(node_right, Node):
                         cell.right = node_right
                         node_right.left = cell
                 except IndexError:
                     pass
 
-        self.rows = rows
-        self.path = list()  # the actual path from start to finish
+    def __init__(self, string, game):
+        self.game = game
+        self.nodes = Group()
+        self.walls = Group()
+        self.child_groups = [self.nodes, self.walls]
+
+        self.rows = self.create_cells(string)
+        self.height = len(self.rows)
+        self.width = len(self.rows[0])
+        self.create_links()
+
+        # the path taken through the maze -- start at the top left
+        self.path = list()
         self.path.append(self.rows[0][0])
+
+        self.scaling = min(
+            self.game.window_width // self.width,
+            self.game.window_height // self.height,
+        )
         super().__init__()
 
     def add_nodes(self, *nodes):
