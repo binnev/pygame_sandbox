@@ -23,10 +23,11 @@ class Cell(Entity):
         self.y = row
         super().__init__()
 
-    def draw(self, surface: Surface, debug: bool = False):
+    def draw(self, surface: Surface, debug: bool = False, color: tuple=None):
         pixel_size = SCALING*0.99
         pixel = Surface((pixel_size, pixel_size))
-        pixel.fill(self.color[:3])
+        color = color or self.color
+        pixel.fill(color[:3])
         screen_x = self.x * SCALING
         screen_y = self.y * SCALING
         surface.blit(pixel, (screen_x, screen_y))
@@ -138,42 +139,36 @@ class Maze(Entity):
         return path
 
     def depth_first_search(self, row=0, col=0):
-        path = list()  # the actual path from start to finish
+        self.path = list()  # the actual path from start to finish
         node = self.rows[row][col]
         node.explored = True
-        path.append(node)
+        self.path.append(node)
 
         for _ in range(5000):
-            if not path:  # we backtracked all the way to the beginning. Not solvable.
-                return path
-            node = path[-1]
+            if not self.path:  # we backtracked all the way to the beginning. Not solvable.
+                return self.path
+            node = self.path[-1]
             if not node.neighbours:
                 break
             # if all neighbours are visited, this is a dead end. Backtrack.
             if all(n.explored for n in node.neighbours):
-                path.pop()
+                self.path.pop()
                 continue
 
             # otherwise, get the first unvisited neighbour
             node = next(n for n in node.neighbours if not n.explored)
             node.explored = True
-            path.append(node)
+            self.path.append(node)
 
             # win condition -- quit early
             if node.is_finish:
                 self.is_solved = True
                 break
-        return path
+        return self.path
 
     def string(self, path):
 
         template = [
-            # [
-            #     NodeTypes.WALL
-            #     if isinstance(cell, Wall)
-            #     else (NodeTypes.EXPLORED if cell.explored else NodeTypes.EMPTY)
-            #     for cell in row
-            # ]
             list(map(str, row))
             for row in self.rows
         ]
@@ -184,3 +179,14 @@ class Maze(Entity):
     def can_find_path(self, row=0, col=0):
         path = self.find_path(row, col)
         return (0, 0) in path and (self.height - 1, self.width - 1) in path
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+        for node in self.path:
+            node.draw(surface, color=Color("red"))
+        try:
+            self.path[-1].draw(surface, color=Color("brown"))
+        except IndexError:
+            pass
+
+

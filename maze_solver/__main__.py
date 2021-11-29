@@ -17,8 +17,8 @@ def path_finder(maze):
 max_size = [0]
 
 fps = 60
-window_width = 600
-window_height = 600
+window_width = 1000
+window_height = 1000
 window_caption = "Langton's Ant Simulator"
 font_name = "ubuntu"
 font_size = 20
