@@ -4,7 +4,7 @@ from fighting_game.objects import Entity, Group
 class NodeTypes:
     EMPTY = " "
     WALL = "W"
-    PATH = "X"
+    PATH = "."
     EXPLORED = "░"
 
 
@@ -32,7 +32,7 @@ class Node(Entity):
         return filter(None, [self.right, self.down, self.left, self.up])
 
     def __repr__(self) -> str:
-        return f"Node({self.row},{self.col})"
+        return NodeTypes.EXPLORED if self.explored else NodeTypes.EMPTY
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -43,6 +43,9 @@ class Wall(Entity):
         self.row = row
         self.col = col
         super().__init__()
+
+    def __str__(self):
+        return NodeTypes.WALL
 
 
 class Maze(Entity):
@@ -144,12 +147,13 @@ class Maze(Entity):
     def string(self, path):
 
         template = [
-            [
-                NodeTypes.WALL
-                if isinstance(cell, Wall)
-                else (NodeTypes.EXPLORED if cell.explored else NodeTypes.EMPTY)
-                for cell in row
-            ]
+            # [
+            #     NodeTypes.WALL
+            #     if isinstance(cell, Wall)
+            #     else (NodeTypes.EXPLORED if cell.explored else NodeTypes.EMPTY)
+            #     for cell in row
+            # ]
+            list(map(str, row))
             for row in self.rows
         ]
         for node in path:
