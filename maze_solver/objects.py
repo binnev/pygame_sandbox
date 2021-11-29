@@ -1,15 +1,14 @@
-from enum import Enum
-from typing import List
+from fighting_game.objects import Entity, Group
 
 
 class NodeTypes:
     EMPTY = " "
-    WALL = "█"
+    WALL = "W"
     PATH = "X"
     EXPLORED = "░"
 
 
-class Node:
+class Node(Entity):
     """Represents an empty (non wall) cell in a maze"""
 
     row: int
@@ -25,6 +24,7 @@ class Node:
     def __init__(self, row, col):
         self.row = row
         self.col = col
+        super().__init__()
 
     @property
     def neighbours(self):
@@ -38,45 +38,61 @@ class Node:
         return self.__repr__()
 
 
-class Maze:
-    matrix: List[List[Node]]
+class Wall(Entity):
+    def __init__(self, row, col):
+        self.row = row
+        self.col = col
+        super().__init__()
+
+
+class Maze(Entity):
     is_solved: bool = False
 
     def __init__(self, string):
-        string = string.replace("W", NodeTypes.WALL)
+        self.nodes = Group()
+        self.walls = Group()
+        self.child_groups = [self.nodes, self.walls]
 
         rows = [
-            [Node(ii, jj) if cell != NodeTypes.WALL else cell for jj, cell in enumerate(row)]
-            for ii, row in enumerate(string.split("\n"))
+            [Node(x, y) if cell != NodeTypes.WALL else Wall(x, y) for y, cell in enumerate(row)]
+            for x, row in enumerate(string.split("\n"))
         ]
         self.height = len(rows)
         self.width = len(rows[0])
 
-        for ii, row in enumerate(rows):
-            for jj, node in enumerate(row):
-                if node == NodeTypes.WALL:
-                    continue
+        for x, row in enumerate(rows):
+            for y, node in enumerate(row):
+                if isinstance(node, Wall):
+                    self.add_walls(node)
+                    continue  # walls don't have links
 
-                if (ii == self.height - 1) and (jj == self.width - 1):
+                self.add_nodes(node)
+                if (x == self.height - 1) and (y == self.width - 1):
                     node.is_finish = True  # this is the end of the maze
 
                 # link with node above
-                if ii == 0:
+                if x == 0:
                     continue
-                node_above = rows[ii - 1][jj]
-                if node_above != NodeTypes.WALL:
+                node_above = rows[x - 1][y]
+                if isinstance(node_above, Node):
                     node.up = node_above
                     node_above.down = node
 
                 # link with node left
-                if jj == 0:
+                if y == 0:
                     continue
-                node_left = rows[ii][jj - 1]
-                if node_left != NodeTypes.WALL:
+                node_left = rows[x][y - 1]
+                if isinstance(node_left, Node):
                     node.left = node_left
                     node_left.right = node
 
         self.rows = rows
+
+    def add_nodes(self, *nodes):
+        self.add_to_group(*nodes, group=self.nodes)
+
+    def add_walls(self, *walls):
+        self.add_to_group(*walls, group=self.walls)
 
     def find_path(self, row=0, col=0):
         return self.depth_first_search(row, col)
@@ -123,16 +139,14 @@ class Maze:
             if node.is_finish:
                 self.is_solved = True
                 break
-        # else:  # if no break clause raised
-        #     raise Exception("Ran out of iterations!")
         return path
 
     def string(self, path):
 
         template = [
             [
-                cell
-                if cell == NodeTypes.WALL
+                NodeTypes.WALL
+                if isinstance(cell, Wall)
                 else (NodeTypes.EXPLORED if cell.explored else NodeTypes.EMPTY)
                 for cell in row
             ]
