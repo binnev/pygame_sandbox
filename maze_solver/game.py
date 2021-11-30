@@ -15,7 +15,7 @@ class MazeSolverGame(Entity):
     window_caption = "Maze Solver"
     font_name = "ubuntu"
     font_size = 20
-    ticks_per_frame = 10  # how many iterations to do between draws
+    ticks_per_frame = 1  # how many iterations to do between draws
     parental_name = "game"
 
     def __init__(self):

@@ -5,7 +5,6 @@ from fighting_game.objects import Entity, Group
 from maze_solver.game import MazeSolverGame
 
 
-
 class NodeTypes:
     EMPTY = " "
     WALL = "W"
@@ -87,6 +86,7 @@ class Maze(Entity):
         return rows
 
     def create_links(self):
+        """Link each cell to its neighbours"""
         for rr, row in enumerate(self.rows):
             for cc, cell in enumerate(row):
                 if isinstance(cell, Wall):
@@ -144,6 +144,13 @@ class Maze(Entity):
 
     def find_path(self, row=0, col=0):
         return self.depth_first_search(row, col)
+
+    def breadth_first_search_step(self):
+        for node in self.path:
+            node.explored = True
+        self.path = list({n for node in self.path for n in node.neighbours if not n.explored})
+        if any(node.is_finish for node in self.path):
+            self.is_solved = True
 
     def breadth_first_search(self, row=0, col=0):
         """Get the set of open cells that are contiguous with the starting point."""
@@ -223,14 +230,15 @@ class Maze(Entity):
     def update(self):
         if self.is_solved:
             return
-        self.depth_first_search_step()
+        # if self.algorithm == "dfs":
+        self.breadth_first_search_step()
+        # elif self.algorithm == "bfs":
+        # self.depth_first_search_step()
+        # else:
+        #     raise Exception("I got no algorithm")
         super().update()
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
         for node in self.path:
             node.draw(surface, color=Color("red"))
-        try:
-            self.path[-1].draw(surface, color=Color("brown"))
-        except IndexError:
-            pass
