@@ -28,8 +28,8 @@ class Cell(Entity):
         pixel = Surface((pixel_size, pixel_size))
         color = color or self.color
         pixel.fill(color[:3])
-        screen_x = self.x * self.maze.scaling
-        screen_y = self.y * self.maze.scaling
+        screen_x = self.maze.x + (self.x * self.maze.scaling)
+        screen_y = self.maze.y + (self.y * self.maze.scaling)
         surface.blit(pixel, (screen_x, screen_y))
         super().draw(surface, debug)
 
@@ -73,10 +73,16 @@ class Wall(Cell):
 class Maze(Entity):
     is_solved: bool = False
     game: MazeSolverGame
+    scaling: int
+    x: int
+    y: int
+    algorithm: str = "dfs"
     parental_name = "maze"
-    algorithm = "bfs"
 
-    def __init__(self, string, game):
+    def __init__(self, string, game, x=0, y=0, algorithm="dfs"):
+        self.x = x
+        self.y = y
+        self.algorithm = algorithm
         self.game = game
         self.nodes = Group()
         self.walls = Group()
@@ -92,7 +98,7 @@ class Maze(Entity):
         self.path.append(self.rows[0][0])
 
         self.scaling = min(
-            self.game.window_width // self.width,
+            self.game.window_width // 2 // self.width,
             self.game.window_height // self.height,
         )
         super().__init__()

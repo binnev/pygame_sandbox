@@ -10,7 +10,7 @@ from maze_solver.test_mazes import MAZES
 
 class MazeSolverGame(Entity):
     fps = 60
-    window_width = 1000
+    window_width = 2500
     window_height = 1000
     window_caption = "Maze Solver"
     font_name = "ubuntu"
@@ -38,11 +38,9 @@ class MazeSolverGame(Entity):
 
         for inp, solvable in MAZES:
             inp = "\n".join(inp)
-            self.maze = Maze(inp, game=self)
-            self.running = True
-            self.debug = False
-
-            self.add_scene(self.maze)
+            maze1 = Maze(inp, game=self, x=0, y=0, algorithm="dfs")
+            maze2 = Maze(inp, game=self, x=self.window_width//2, y=0, algorithm="bfs")
+            self.add_scene(maze1, maze2)
             self.debug = False
             self.running = True
             while self.running:
@@ -67,7 +65,7 @@ class MazeSolverGame(Entity):
                 if event.key == pygame.K_F1:
                     self.debug = not self.debug
                 if event.key == pygame.K_SPACE:
-                    self.maze.kill()
+                    self.scenes.kill()
                     self.running = False
                 if event.key == pygame.K_DOWN:
                     self.ticks_per_frame = max([1, self.ticks_per_frame // 2])
