@@ -74,6 +74,28 @@ class Maze(Entity):
     is_solved: bool = False
     game: MazeSolverGame
     parental_name = "maze"
+    algorithm = "bfs"
+
+    def __init__(self, string, game):
+        self.game = game
+        self.nodes = Group()
+        self.walls = Group()
+        self.child_groups = [self.nodes, self.walls]
+
+        self.rows = self.create_cells(string)
+        self.height = len(self.rows)
+        self.width = len(self.rows[0])
+        self.create_links()
+
+        # the path taken through the maze -- start at the top left
+        self.path = list()
+        self.path.append(self.rows[0][0])
+
+        self.scaling = min(
+            self.game.window_width // self.width,
+            self.game.window_height // self.height,
+        )
+        super().__init__()
 
     def create_cells(self, string):
         rows = [
@@ -114,27 +136,6 @@ class Maze(Entity):
                         node_right.left = cell
                 except IndexError:
                     pass
-
-    def __init__(self, string, game):
-        self.game = game
-        self.nodes = Group()
-        self.walls = Group()
-        self.child_groups = [self.nodes, self.walls]
-
-        self.rows = self.create_cells(string)
-        self.height = len(self.rows)
-        self.width = len(self.rows[0])
-        self.create_links()
-
-        # the path taken through the maze -- start at the top left
-        self.path = list()
-        self.path.append(self.rows[0][0])
-
-        self.scaling = min(
-            self.game.window_width // self.width,
-            self.game.window_height // self.height,
-        )
-        super().__init__()
 
     def add_nodes(self, *nodes):
         self.add_to_group(*nodes, group=self.nodes)
@@ -230,12 +231,12 @@ class Maze(Entity):
     def update(self):
         if self.is_solved:
             return
-        # if self.algorithm == "dfs":
-        self.breadth_first_search_step()
-        # elif self.algorithm == "bfs":
-        # self.depth_first_search_step()
-        # else:
-        #     raise Exception("I got no algorithm")
+        if self.algorithm == "dfs":
+            self.depth_first_search_step()
+        elif self.algorithm == "bfs":
+            self.breadth_first_search_step()
+        else:
+            raise Exception("I got no algorithm")
         super().update()
 
     def draw(self, surface: Surface, debug: bool = False):
