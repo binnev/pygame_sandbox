@@ -2,7 +2,7 @@ from pygame import Color
 from pygame.surface import Surface
 
 from fighting_game.objects import Entity, Group
-from maze_solver.game import MazeSolverGame
+from automata.maze_solver.game import MazeSolverGame
 
 
 class NodeTypes:

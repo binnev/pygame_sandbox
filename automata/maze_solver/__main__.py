@@ -2,11 +2,11 @@ import sys
 
 import pygame
 
-from langtons_ant.game import LangtonsAntGame
+from automata.maze_solver.game import MazeSolverGame
 
 
 def main():
-    game = LangtonsAntGame()
+    game = MazeSolverGame()
     game.main()
     pygame.quit()
     sys.exit()

@@ -7,7 +7,7 @@ from pygame.surface import Surface
 
 from base.inputs.gamecube import linear_map
 from fighting_game.objects import Entity, Group
-from langtons_ant.game import LangtonsAntGame
+from automata.langtons_ant.game import LangtonsAntGame
 
 
 class Board(Entity):
@@ -27,7 +27,7 @@ class Board(Entity):
         self.contents = dict()
         self.ants = Group()
         self.child_groups = [self.ants]
-        self.add_ants(Ant(x=0, y=0, rules_string="rllr"))
+        self.add_ants(Ant(x=0, y=0, rules_string="rl"))
         super().__init__()
         self.calculate_screen_mapping()
 

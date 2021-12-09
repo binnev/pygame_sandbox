@@ -4,14 +4,14 @@ import pygame
 from pygame.color import Color
 from pygame.surface import Surface
 
+from automata.maze_solver.test_mazes import MAZES
 from fighting_game.objects import Entity, Group
-from maze_solver.test_mazes import MAZES
 
 
 class MazeSolverGame(Entity):
     fps = 60
-    window_width = 2500
-    window_height = 1000
+    window_width = 1000
+    window_height = 500
     window_caption = "Maze Solver"
     font_name = "ubuntu"
     font_size = 20
@@ -34,12 +34,12 @@ class MazeSolverGame(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
-        from maze_solver.objects import Maze
+        from automata.maze_solver.objects import Maze
 
         for inp, solvable in MAZES:
             inp = "\n".join(inp)
             maze1 = Maze(inp, game=self, x=0, y=0, algorithm="dfs")
-            maze2 = Maze(inp, game=self, x=self.window_width//2, y=0, algorithm="bfs")
+            maze2 = Maze(inp, game=self, x=self.window_width // 2, y=0, algorithm="bfs")
             self.add_scene(maze1, maze2)
             self.debug = False
             self.running = True

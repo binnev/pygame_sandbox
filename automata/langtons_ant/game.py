@@ -33,7 +33,7 @@ class LangtonsAntGame(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
-        from langtons_ant.classes import Board
+        from automata.langtons_ant.classes import Board
 
         self.board = Board(self)
         self.add_scene(self.board)

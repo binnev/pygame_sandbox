@@ -1,6 +1,23 @@
 MAZES = [
     (
         [
+            "...WWWWWWWWWWWWW",
+            "......W.....W..W",
+            "WWWW..W..W..W..W",
+            "W........W.....W",
+            "W..WWWW..WWWWWWW",
+            "W.....W........W",
+            "W..WWWWWWW..WWWW",
+            "W..W.....W.....W",
+            "W..WWWW..WWWWWWW",
+            "W...............",
+            "WWWWWWWWWWWWW...",
+        ],
+        True,
+    ),
+    (["."], True),
+    (
+        [
             ".WWWW",
             ".W...",
             ".W.W.",
