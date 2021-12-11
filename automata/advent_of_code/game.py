@@ -116,7 +116,7 @@ class AdventOfCodeGame(Entity):
     fps = 1
     window_width = 1000
     window_height = 1000
-    window_caption = "Advent of Code day 9"
+    window_caption = "Advent of Code"
     font_name = "ubuntu"
     font_size = 20
     parental_name = "game"
