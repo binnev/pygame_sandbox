@@ -113,7 +113,7 @@ raw = yangs_raw = """21278976789986768943139876431347898765434349876789323459654
 9439851012567893235999532349765432123489989679899987899432124567892359764321245789312998789899896434"""
 
 class AdventOfCodeGame(Entity):
-    fps = 30
+    fps = 1
     window_width = 1000
     window_height = 1000
     window_caption = "Advent of Code day 9"
@@ -166,14 +166,14 @@ class AdventOfCodeGame(Entity):
                 if event.key == pygame.K_F1:
                     self.debug = not self.debug
                 if event.key == pygame.K_DOWN:
-                    self.ticks_per_frame = max([1, self.ticks_per_frame // 2])
-                    print(f"self.ticks_per_frame: {self.ticks_per_frame}")
+                    self.fps = max([1, self.fps // 2])
+                    print(f"self.fps: {self.fps}")
                 if event.key == pygame.K_UP:
-                    self.ticks_per_frame *= 2
-                    print(f"self.ticks_per_frame: {self.ticks_per_frame}")
+                    self.fps *= 2
+                    print(f"self.fps: {self.fps}")
 
         super().update()
-        # self.clock.tick(self.fps)
+        self.clock.tick(self.fps)
 
         # if there are no scenes to play, exit
         if not self.scenes:
