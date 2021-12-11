@@ -113,7 +113,7 @@ raw = yangs_raw = """21278976789986768943139876431347898765434349876789323459654
 9439851012567893235999532349765432123489989679899987899432124567892359764321245789312998789899896434"""
 
 class AdventOfCodeGame(Entity):
-    fps = 1
+    fps = 20
     window_width = 1000
     window_height = 1000
     window_caption = "Advent of Code"
@@ -138,9 +138,10 @@ class AdventOfCodeGame(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
-        from automata.advent_of_code.classes import Caverns
+        # from automata.advent_of_code.day9.classes import Caverns
+        from automata.advent_of_code.day11.classes import Board
 
-        self.caverns = Caverns(self, raw)
+        self.caverns = Board(self)
         self.add_scene(self.caverns)
         self.debug = False
         self.running = True
