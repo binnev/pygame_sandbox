@@ -3,13 +3,13 @@ import numpy
 from pygame import Color
 from pygame.surface import Surface
 
-from automata.advent_of_code_day9.game import AdventOfCodeGame
+from automata.advent_of_code.game import AdventOfCodeGame
 from fighting_game.objects import Entity
 
 
 class Caverns(Entity):
     game: AdventOfCodeGame
-    scaling = 9
+    scaling = 10
     colormap = matplotlib.cm.viridis
 
     def __init__(self, game, raw):

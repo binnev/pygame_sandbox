@@ -138,7 +138,7 @@ class AdventOfCodeGame(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
-        from automata.advent_of_code_day9.classes import Caverns
+        from automata.advent_of_code.classes import Caverns
 
         self.caverns = Caverns(self, raw)
         self.add_scene(self.caverns)
