@@ -1,5 +1,6 @@
 import matplotlib
 import numpy
+import pygame
 from pygame import Color
 from pygame.surface import Surface
 
@@ -34,7 +35,7 @@ class Octopus:
         return self.__repr__()
 
 
-class Board(Entity):
+class OctopusBoard(Entity):
     game: AdventOfCodeGame
     scaling = 13
     colormap = matplotlib.cm.twilight
@@ -43,7 +44,6 @@ class Board(Entity):
 
     def __init__(self, game):
         self.game = game
-        # self.contents = [list(map(Octopus, row)) for row in init()]
         self.contents = [
             list(map(Octopus, row))
             for row in numpy.array(
@@ -57,6 +57,13 @@ class Board(Entity):
         return "\n".join("".join(map(str, row)) for row in self.contents)
 
     def update(self):
+        from automata.advent_of_code.menus import MainMenu
+
+        for event in self.game.events:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.game.add_scene(MainMenu())
+                self.kill()
+
         flashes = set()
         for oct in self.octopi:
             oct.energy += 1

@@ -8,7 +8,7 @@ from fighting_game.objects import Entity, Group
 
 
 class AdventOfCodeGame(Entity):
-    fps = 20
+    fps = 60
     window_width = 1000
     window_height = 1000
     window_caption = "Advent of Code"
@@ -33,11 +33,9 @@ class AdventOfCodeGame(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
-        from automata.advent_of_code.day9.classes import Caverns
-        # from automata.advent_of_code.day11.classes import Board
+        from automata.advent_of_code.menus import MainMenu
 
-        self.caverns = Caverns(self)
-        self.add_scene(self.caverns)
+        self.add_scene(MainMenu())
         self.debug = False
         self.running = True
         while self.running:
@@ -56,9 +54,9 @@ class AdventOfCodeGame(Entity):
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
+                # if event.key == pygame.K_ESCAPE:
+                #     pygame.quit()
+                #     sys.exit()
                 if event.key == pygame.K_F1:
                     self.debug = not self.debug
                 if event.key == pygame.K_DOWN:
@@ -77,7 +75,7 @@ class AdventOfCodeGame(Entity):
 
     def draw(self, surface: Surface, debug: bool = False):
         if self.tick % self.ticks_per_frame == 0:
-            surface.fill(Color("white"))  # clear the screen
+            surface.fill(Color("black"))  # clear the screen
             super().draw(surface, debug)
             text_bitmap = self.font.render(f"iterations: {self.tick}", True, Color("black"))
             surface.blit(text_bitmap, (0, 0))
