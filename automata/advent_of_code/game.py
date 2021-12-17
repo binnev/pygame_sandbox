@@ -4,6 +4,7 @@ import pygame
 from pygame.color import Color
 from pygame.surface import Surface
 
+from base.event import EventQueue
 from fighting_game.objects import Entity, Group
 
 
@@ -34,6 +35,7 @@ class AdventOfCodeGame(Entity):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
         from automata.advent_of_code.day9.classes import Caverns
+
         # from automata.advent_of_code.day11.classes import Board
 
         self.caverns = Caverns(self)
@@ -48,17 +50,14 @@ class AdventOfCodeGame(Entity):
         self.add_to_group(*objects, group=self.scenes)
 
     def update(self):
-        self.events = pygame.event.get()
+        EventQueue.update()
         if self.debug:
-            print(self.tick, self.events)
-        for event in self.events:
+            print(self.tick, EventQueue.events)
+        for event in EventQueue.events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
                 if event.key == pygame.K_F1:
                     self.debug = not self.debug
                 if event.key == pygame.K_DOWN:
