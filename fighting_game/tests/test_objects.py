@@ -1,6 +1,6 @@
 from pygame.sprite import Sprite
 
-from fighting_game.objects import Platform
+from fighting_game.platforms import Platform
 
 
 def test_platform_properties():

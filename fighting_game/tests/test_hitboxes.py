@@ -5,7 +5,7 @@ import pytest
 from pygame.rect import Rect
 
 from base.objects import Entity, Group
-from fighting_game.objects import Hitbox, HitHandler, handle_hitbox_collision
+from fighting_game.hitboxes import Hitbox, HitHandler
 
 pygame.display.init()
 window = pygame.display.set_mode((50, 50))
