@@ -1,5 +1,6 @@
 import pygame
 
+from base.event import EventQueue
 from fighting_game.characters.hawko import Hawko
 from fighting_game.objects import Entity, Group
 from fighting_game.characters.debugger import Debugger
@@ -37,7 +38,7 @@ class SandBox(Entity):
         if not self.players:
             self.players.add(Hawko(600, 500, input=self.game.controller0))
             self.level.add_character(*self.players)
-        for event in self.game.events:
+        for event in EventQueue.events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.game.add_scene(MainMenu())
                 self.kill()

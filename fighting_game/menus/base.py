@@ -7,6 +7,7 @@ from pygame.color import Color
 from pygame.rect import Rect
 
 from base.animation import ease_in_out
+from base.event import EventQueue
 from base.objects.gui_test import mouse_hovering_over, mouse_clicking
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 from fighting_game.game import FightingGame
@@ -40,7 +41,7 @@ class Menu(Entity):
     def update_buttons(self):
         """todo: if you wanted to make this really efficient, you could only perform updates if
         an event is detected."""
-        mouse_click = any(event.type == pygame.MOUSEBUTTONDOWN for event in self.game.events)
+        mouse_click = any(event.type == pygame.MOUSEBUTTONDOWN for event in EventQueue.events)
         for button in self.buttons:
             button.is_focused = False
             button.is_pressed = False

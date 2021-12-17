@@ -5,6 +5,7 @@ import pygame
 from pygame import Surface
 from pygame.event import Event
 
+from base.event import EventQueue
 from base.inputs.gamecube import GamecubeController
 from fighting_game import sounds
 from fighting_game.conf import *
@@ -21,7 +22,6 @@ class FightingGame(Entity):
     font_name = "ubuntu"
     font_size = 50
     parental_name = "game"
-    events: List[Event]
 
     def __init__(self):
         super().__init__()
@@ -68,10 +68,10 @@ class FightingGame(Entity):
     def update(self):
         # read inputs first -- NOTE: this empties the event queue! So you can't do this check a
         # second time per tick elsewhere in the code!
-        self.events = pygame.event.get()
+        EventQueue.update()
         if self.debug:
-            print(self.tick, self.events)
-        for event in self.events:
+            print(self.tick, EventQueue.events)
+        for event in EventQueue.events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()

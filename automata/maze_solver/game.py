@@ -5,6 +5,7 @@ from pygame.color import Color
 from pygame.surface import Surface
 
 from automata.maze_solver.test_mazes import MAZES
+from base.event import EventQueue
 from fighting_game.objects import Entity, Group
 
 
@@ -51,10 +52,10 @@ class MazeSolverGame(Entity):
         self.add_to_group(*objects, group=self.scenes)
 
     def update(self):
-        self.events = pygame.event.get()
+        EventQueue.update()
         if self.debug:
-            print(self.tick, self.events)
-        for event in self.events:
+            print(self.tick, EventQueue.events)
+        for event in EventQueue.events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()

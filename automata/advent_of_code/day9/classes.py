@@ -5,6 +5,7 @@ from pygame import Color
 from pygame.surface import Surface
 
 from automata.advent_of_code.game import AdventOfCodeGame
+from base.event import EventQueue
 from fighting_game.objects import Entity
 
 raw = """2199943210
@@ -150,7 +151,7 @@ class Caverns(Entity):
     def update(self):
         from automata.advent_of_code.menus import MainMenu
 
-        for event in self.game.events:
+        for event in EventQueue.events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.game.add_scene(MainMenu())
                 self.kill()
