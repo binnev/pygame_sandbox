@@ -3,12 +3,12 @@ from unittest.mock import patch
 import pygame
 import pytest
 
-from base.inputs import gamecube
-from base.inputs.gamecube import (
+from base.input import gamecube
+from base.input.gamecube import (
     GamecubeController,
     ButtonInput,
 )
-from base.inputs.queue import InputQueue
+from base.input.queue import InputQueue
 
 
 @patch("base.inputs.gamecube.GamecubeControllerReader.get_values")

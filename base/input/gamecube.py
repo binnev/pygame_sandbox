@@ -10,7 +10,7 @@ if inputs[gamecube.A]:
 """
 import pygame
 
-from base.inputs.queue import InputQueue
+from base.input.queue import InputQueue
 
 # button/input indices. These are used for lookup similarly to e.g. pygame.K_ESCAPE
 # It doesn't really matter what order these are, so long as they match up to the order of the

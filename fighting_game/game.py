@@ -1,19 +1,10 @@
-import sys
-from typing import List
-
-import pygame
-from pygame import Surface
-from pygame.event import Event
-
-from base.event import EventQueue
-from base.inputs.gamecube import GamecubeController
-from fighting_game import sounds
+from base.input import GamecubeController
+from base.objects import Game
 from fighting_game.conf import *
 from fighting_game.inputs import Keyboard0, Keyboard1
-from fighting_game.objects import Entity, Group
 
 
-class FightingGame(Entity):
+class FightingGame(Game):
     fps = FPS
     window_width = SCREEN_WIDTH
     window_height = SCREEN_HEIGHT
@@ -25,16 +16,6 @@ class FightingGame(Entity):
 
     def __init__(self):
         super().__init__()
-        pygame.init()
-
-        self.scenes = Group()
-        self.child_groups = [self.scenes]
-
-        pygame.font.init()
-        self.font = pygame.font.Font(pygame.font.match_font(self.font_name), self.font_size)
-        self.window = pygame.display.set_mode((self.window_width, self.window_height))
-        pygame.display.set_caption(self.window_caption)
-        self.clock = pygame.time.Clock()
 
         # input devices
         # todo; should input devices be entities too?! All they need is an .update() method and a
@@ -49,51 +30,6 @@ class FightingGame(Entity):
             self.controller0,
             self.controller1,
         ]
-
-    def main(self):
-        """This is the outermost game function which runs once. It contains the outermost game
-        loop. Here's where you should put your main event state machine."""
         from fighting_game.menus import MainMenu
 
         self.add_scene(MainMenu())
-        self.debug = False
-        self.running = True
-        while self.running:
-            self.update()
-            self.draw(self.window, debug=self.debug)
-
-    def add_scene(self, *objects):
-        self.add_to_group(*objects, group=self.scenes)
-
-    def update(self):
-        # read inputs first -- NOTE: this empties the event queue! So you can't do this check a
-        # second time per tick elsewhere in the code!
-        EventQueue.update()
-        if self.debug:
-            print(self.tick, EventQueue.events)
-        for event in EventQueue.events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_F1:
-                    self.debug = not self.debug
-                if event.key == pygame.K_s:
-                    sounds.announcement.play()
-
-        # todo: this should just be self.inputs.update which super().update() will take care of.
-        #   (make sure that inputs is the first group so that inputs are read at the start of tick)
-        for device in self.input_devices:
-            device.read_new_inputs()
-
-        super().update()
-        self.clock.tick(self.fps)
-
-        # if there are no scenes to play, exit
-        if not self.scenes:
-            self.running = False
-
-    def draw(self, surface: Surface, debug: bool = False):
-        surface.fill((0, 0, 0))  # clear the screen
-        super().draw(surface, debug)
-        pygame.display.update()  # print to screen

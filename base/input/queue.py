@@ -1,8 +1,5 @@
 from collections import deque
 
-import pygame
-
-from base.singleton import Singleton
 from base.utils import count_edges
 
 

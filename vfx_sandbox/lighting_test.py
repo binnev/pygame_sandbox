@@ -7,7 +7,7 @@ from pygame import Color, Surface
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 
-from fighting_game.objects import Entity, Group
+from base.objects import Entity, Group
 
 
 def sin_values(mean, variance, n_points):

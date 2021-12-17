@@ -5,8 +5,8 @@ from pygame import Color
 from pygame.surface import Surface
 
 from automata.advent_of_code.game import AdventOfCodeGame
-from base.event import EventQueue
-from fighting_game.objects import Entity
+from base.input import EventQueue
+from base.objects import Entity
 
 raw = """2199943210
 3987894921

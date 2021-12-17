@@ -5,8 +5,8 @@ import pygame
 from pygame import Color, Surface
 from pygame.rect import Rect
 
-from fighting_game import sounds
-from fighting_game.objects import Group, Entity, PhysicalEntity
+from base.objects import Entity, Group
+from fighting_game.objects import PhysicalEntity
 
 
 def circle_surf(radius, color):

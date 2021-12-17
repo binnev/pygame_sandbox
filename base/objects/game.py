@@ -4,9 +4,8 @@ import pygame
 from pygame.color import Color
 from pygame.surface import Surface
 
-from base.event import EventQueue
-from base.inputs.keyboard import KeyboardInputQueue
-from fighting_game.objects import Group
+from base.input import EventQueue
+from base.objects import Entity, Group
 
 
 class Game(Entity):

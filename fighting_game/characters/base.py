@@ -5,7 +5,7 @@ from pygame import Color, Surface
 from pygame.rect import Rect
 
 from base.animation import SpriteDict
-from base.inputs.gamecube import GamecubeController
+from base.input.gamecube import GamecubeController
 from fighting_game import sounds
 from fighting_game.conf import BOUNCE_LOSS, INPUT_BUFFER
 from fighting_game.objects import PhysicalEntity

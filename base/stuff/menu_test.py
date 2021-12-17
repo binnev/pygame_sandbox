@@ -7,9 +7,9 @@ from pygame.sprite import Sprite
 
 from base.animation import ease_in_out
 from base.groups import EntityGroup
-from base.objects.gui_elements import GuiButton
-from base.objects.gui_test import mouse_hovering_over, mouse_clicking
-from base.objects.mixins import AnimationMixin
+from base.stuff.gui_elements import GuiButton
+from base.stuff.gui_test import mouse_hovering_over, mouse_clicking
+from base.stuff.mixins import AnimationMixin
 from volleyball_game.objects import ParticleEffect
 
 mainClock = pygame.time.Clock()

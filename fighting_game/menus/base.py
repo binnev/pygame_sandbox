@@ -7,11 +7,12 @@ from pygame.color import Color
 from pygame.rect import Rect
 
 from base.animation import ease_in_out
-from base.event import EventQueue
-from base.objects.gui_test import mouse_hovering_over, mouse_clicking
+from base.input import EventQueue
+from base.objects import Group, Entity
+from base.stuff.gui_test import mouse_hovering_over
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 from fighting_game.game import FightingGame
-from fighting_game.objects import Entity, Group, PhysicalEntity
+from fighting_game.objects import PhysicalEntity
 from fighting_game.particles import Plume
 from fighting_game.scenes import SandBox
 from fighting_game.utils import pulsing_value

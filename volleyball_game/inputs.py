@@ -1,8 +1,8 @@
 import pygame
 
-from base.inputs import gamecube
-from base.inputs.gamecube import GamecubeController, GamecubeControllerReader
-from base.inputs.keyboard import KeyboardInputQueue
+from base.input import gamecube
+from base.input.gamecube import GamecubeController, GamecubeControllerReader
+from base.input.keyboard import KeyboardInputQueue
 
 
 class GamecubeController(GamecubeController):

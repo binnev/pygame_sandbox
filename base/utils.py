@@ -3,7 +3,6 @@ from collections import namedtuple
 import numpy
 import pygame
 
-from base import draw
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -81,37 +80,6 @@ def mask_to_surface(mask, set_color=None):
 
 def ticks_to_frames(tick, ticks_per_frame):
     return tick // ticks_per_frame
-
-
-def draw_arrow_between_points(surface, p1, p2, color=None):
-    p1 = numpy.array(p1)
-    p2 = numpy.array(p2)
-    dx, dy = p2 - p1
-
-    # y is down in pygame, but rotations are still counterclockwise, so we need to reverse y.
-    # Great job, pygame developers -.-
-    angle = numpy.rad2deg(numpy.arctan2(-dy, dx))
-    color = color if color else pygame.color.THECOLORS["red"]
-    draw.line(surface, color, p1, p2, 10)
-
-    arrowhead_width = 20
-    arrowhead_length = 40
-    arrowhead_image = pygame.Surface((arrowhead_length, arrowhead_width)).convert_alpha()
-    arrowhead_image.fill((0, 0, 0, 0))
-    arrowhead_origin = numpy.array(arrowhead_image.get_rect().midleft)
-    draw.polygon(
-        arrowhead_image,
-        color,
-        [
-            arrowhead_origin + (arrowhead_length, 0),
-            arrowhead_origin + (0, arrowhead_width / 2),
-            arrowhead_origin + (0, -arrowhead_width / 2),
-        ],
-    )
-    arrowhead_image = pygame.transform.rotate(arrowhead_image, angle)
-    image_rect = arrowhead_image.get_rect()
-    image_rect.center = p2
-    surface.blit(arrowhead_image, image_rect)
 
 
 def draw_arrow(surface, origin, angle_deg, color=None, length=50):

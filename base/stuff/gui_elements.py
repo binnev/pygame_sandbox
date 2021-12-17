@@ -1,7 +1,7 @@
 import pygame
 from pygame.color import Color
 
-from base.objects.entities import Entity
+from base.objects import Entity
 from base.utils import mask_to_surface
 
 

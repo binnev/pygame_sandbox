@@ -4,8 +4,8 @@ import pygame
 import pytest
 from pygame.rect import Rect
 
-from fighting_game.groups import Group
-from fighting_game.objects import Hitbox, Entity, HitHandler, handle_hitbox_collision
+from base.objects import Entity, Group
+from fighting_game.objects import Hitbox, HitHandler, handle_hitbox_collision
 
 pygame.display.init()
 window = pygame.display.set_mode((50, 50))

@@ -1,9 +1,9 @@
 import pygame
 
-from base.event import EventQueue
-from fighting_game.characters.hawko import Hawko
-from fighting_game.objects import Entity, Group
+from base.input import EventQueue
+from base.objects import Entity, Group
 from fighting_game.characters.debugger import Debugger
+from fighting_game.characters.hawko import Hawko
 from fighting_game.levels import Battlefield
 
 

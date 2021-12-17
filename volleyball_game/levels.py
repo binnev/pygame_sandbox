@@ -1,5 +1,5 @@
 from base.groups import Level
-from base.objects.entities import Platform
+from base.stuff.entities import Platform
 from volleyball_game import conf
 
 

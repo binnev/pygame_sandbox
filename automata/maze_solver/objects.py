@@ -1,7 +1,7 @@
 from pygame import Color
 from pygame.surface import Surface
 
-from fighting_game.objects import Entity, Group
+from base.objects import Entity, Group
 from automata.maze_solver.game import MazeSolverGame
 
 

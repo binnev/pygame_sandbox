@@ -1,11 +1,9 @@
-import sys
 import time
 
 import pygame
 
-from base.game import Game
-from base.groups import EntityGroup
-from base.objects.gui_elements import GuiButton
+from base.objects import Group as EntityGroup, Game
+from base.stuff.gui_elements import GuiButton
 
 
 def allow_exit():

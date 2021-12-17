@@ -1,13 +1,11 @@
 import matplotlib
 import numpy
 import pygame
-from pygame import Color
 from pygame.surface import Surface
 
 from automata.advent_of_code.game import AdventOfCodeGame
-from base.event import EventQueue
-from fighting_game.objects import Entity
-
+from base.input import EventQueue
+from base.objects import Entity
 
 raw = """7777838353
 2217272478

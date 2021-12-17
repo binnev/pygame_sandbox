@@ -2,12 +2,10 @@ from typing import Tuple
 
 import matplotlib
 import numpy
-import pygame
 from pygame.surface import Surface
 
-from base.inputs.gamecube import linear_map
-from fighting_game.objects import Entity, Group
 from automata.langtons_ant.game import LangtonsAntGame
+from base.objects import Entity, Group
 
 
 class Board(Entity):

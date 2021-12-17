@@ -4,10 +4,11 @@ import pygame
 from pygame import Color, Surface
 from pygame.rect import Rect
 
+from base.objects import Group, Entity
 from fighting_game import sounds
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 from fighting_game.hitboxes import HitHandler
-from fighting_game.objects import Group, Entity, PhysicalEntity
+from fighting_game.objects import PhysicalEntity
 from fighting_game.particles import Plume
 from fighting_game.platforms import Platform
 

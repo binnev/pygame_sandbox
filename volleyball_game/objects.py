@@ -6,8 +6,8 @@ from numpy.core._multiarray_umath import sign
 from pygame import Color
 
 from base.animation import SpriteDict, SpriteAnimation, ease_out
-from base.objects.entities import Entity, CollisionMixin, Hitbox
-from base.objects.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
+from base.stuff.entities import Entity, CollisionMixin, Hitbox
+from base.stuff.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
 from base.utils import get_overlap_between_objects, un_overlap
 from vfx_sandbox.lighting_test import Explosion
 from volleyball_game import conf
