@@ -41,8 +41,8 @@ class Game(Entity):
         if not self.scenes:
             raise Exception("You need to add an initial scene")
         while self.running:
-            self.update()
-            self.draw(self.window, debug=self.debug)
+            self._update()
+            self._draw(self.window, debug=self.debug)
 
     def add_scene(self, *objects):
         self.add_to_group(*objects, group=self.scenes)
@@ -59,13 +59,14 @@ class Game(Entity):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
                 self.debug = not self.debug
 
+        # todo: add this to fighting game
         # for device in self.input_devices:
         #     device.read_new_inputs()
 
     def print_debug_info(self):
         print(self.tick, EventQueue.events)
 
-    def update(self):
+    def _update(self):
         """
         1. read inputs
         2. update
@@ -73,7 +74,7 @@ class Game(Entity):
         self.read_inputs()
         if self.debug:
             self.print_debug_info()
-        super().update()
+        self.update()
         if self.fps:
             self.clock.tick(self.fps)
 
@@ -81,7 +82,7 @@ class Game(Entity):
         if not self.scenes:
             self.running = False
 
-    def draw(self, surface: Surface, debug: bool = False):
+    def _draw(self, surface: Surface, debug: bool = False):
         surface.fill(self.screen_color)  # clear the screen
-        super().draw(surface, debug)
+        self.draw(surface, debug)
         pygame.display.update()  # print to screen

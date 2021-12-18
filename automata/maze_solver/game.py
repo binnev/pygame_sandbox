@@ -49,10 +49,11 @@ class MazeSolverGame(Game):
                     self.ticks_per_frame *= 2
                     print(f"self.ticks_per_frame: {self.ticks_per_frame}")
 
+    def update(self):
+        for _ in range(self.ticks_per_frame):
+            super().update()
+
     def draw(self, surface: Surface, debug: bool = False):
-        if self.tick % self.ticks_per_frame == 0:
-            surface.fill(Color("white"))  # clear the screen
-            super(Game, self).draw(surface, debug)
-            text_bitmap = self.font.render(f"iterations: {self.tick}", True, Color("black"))
-            surface.blit(text_bitmap, (0, 0))
-            pygame.display.update()  # print to screen
+        super(Game, self).draw(surface, debug)
+        text_bitmap = self.font.render(f"iterations: {self.tick}", True, Color("black"))
+        surface.blit(text_bitmap, (0, 0))
