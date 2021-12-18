@@ -59,8 +59,8 @@ class Game(Entity):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
                 self.debug = not self.debug
 
-        for device in self.input_devices:
-            device.read_new_inputs()
+        # for device in self.input_devices:
+        #     device.read_new_inputs()
 
     def print_debug_info(self):
         print(self.tick, EventQueue.events)
@@ -74,7 +74,8 @@ class Game(Entity):
         if self.debug:
             self.print_debug_info()
         super().update()
-        self.clock.tick(self.fps)
+        if self.fps:
+            self.clock.tick(self.fps)
 
         # if there are no scenes to play, exit
         if not self.scenes:
