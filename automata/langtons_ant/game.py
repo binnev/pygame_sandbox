@@ -26,7 +26,8 @@ class LangtonsAntGame(Game):
         self.board = Board(self)
         self.add_scene(self.board)
 
-    def update(self):
+    def read_inputs(self):
+        super().read_inputs()
         for event in EventQueue.events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -38,14 +39,14 @@ class LangtonsAntGame(Game):
                 if event.key == pygame.K_UP:
                     self.ticks_per_frame *= 2
                     print(f"self.ticks_per_frame: {self.ticks_per_frame}")
-        super().update()
+
+    def update(self):
+        for _ in range(self.ticks_per_frame):
+            super().update()
 
     def draw(self, surface: Surface, debug: bool = False):
-        if self.tick % self.ticks_per_frame == 0:
-            surface.fill(Color("white"))  # clear the screen
-            super(Game, self).draw(surface, debug)
-            text_bitmap = self.font.render(f"iterations: {self.tick}", True, Color("black"))
-            surface.blit(text_bitmap, (0, 0))
-            text_bitmap = self.font.render(f"scaling: {self.board.scaling}", True, Color("black"))
-            surface.blit(text_bitmap, (0, 30))
-            pygame.display.update()  # print to screen
+        super().draw(surface, debug)
+        text_bitmap = self.font.render(f"iterations: {self.tick}", True, Color("black"))
+        surface.blit(text_bitmap, (0, 0))
+        text_bitmap = self.font.render(f"scaling: {self.board.scaling}", True, Color("black"))
+        surface.blit(text_bitmap, (0, 30))

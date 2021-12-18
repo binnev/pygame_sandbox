@@ -54,6 +54,6 @@ class MazeSolverGame(Game):
             super().update()
 
     def draw(self, surface: Surface, debug: bool = False):
-        super(Game, self).draw(surface, debug)
+        super().draw(surface, debug)
         text_bitmap = self.font.render(f"iterations: {self.tick}", True, Color("black"))
         surface.blit(text_bitmap, (0, 0))
