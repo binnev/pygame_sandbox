@@ -1,8 +1,8 @@
 from collections import namedtuple
+from math import sin
 
 import numpy
 import pygame
-
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -139,3 +139,10 @@ def count_edges(values):
             falling_edges += 1
         previous_value = value
     return rising_edges, falling_edges
+
+
+def pulsing_value(tick, min, max, freq, func=None):
+    func = func if func else sin
+    A = (max - min) / 2
+    B = (max + min) / 2
+    return A * func(tick * freq) + B

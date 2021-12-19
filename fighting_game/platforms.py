@@ -1,7 +1,7 @@
 from pygame import Color, Surface
 from pygame.rect import Rect
 
-from fighting_game.objects import PhysicalEntity
+from base.objects import PhysicalEntity
 
 
 class Platform(PhysicalEntity):

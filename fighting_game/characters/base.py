@@ -6,9 +6,9 @@ from pygame.rect import Rect
 
 from base.animation import SpriteDict
 from base.input.gamecube import GamecubeController
+from base.objects import PhysicalEntity
 from fighting_game import sounds
 from fighting_game.conf import BOUNCE_LOSS, INPUT_BUFFER
-from fighting_game.objects import PhysicalEntity
 from fighting_game.platforms import Platform
 
 

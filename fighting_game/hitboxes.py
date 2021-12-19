@@ -1,13 +1,12 @@
 from collections import deque
 
-import numpy
 import pygame
 from pygame.rect import Rect
 
+from base.objects import PhysicalEntity
 from base.utils import draw_arrow
 from fighting_game import sounds
 from fighting_game.conf import HITSTUN_CONSTANT, HITPAUSE_CONSTANT
-from fighting_game.objects import PhysicalEntity
 from fighting_game.projectiles import Projectile
 
 
