@@ -30,7 +30,7 @@ class SandBox(Entity):
         self.state = self.state_main
 
     def state_main(self):
-        from fighting_game.menus.base import MainMenu
+        from fighting_game.menus import MainMenu
 
         if not self.enemies:
             self.enemies.add(Debugger(1000, 500, facing_right=False, input=self.game.controller1))
