@@ -59,10 +59,6 @@ class Game(Entity):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
                 self.debug = not self.debug
 
-        # todo: add this to fighting game
-        # for device in self.input_devices:
-        #     device.read_new_inputs()
-
     def print_debug_info(self):
         print(self.tick, EventQueue.events)
 

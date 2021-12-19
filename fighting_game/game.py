@@ -33,3 +33,8 @@ class FightingGame(Game):
         from fighting_game.menus import MainMenu
 
         self.add_scene(MainMenu())
+
+    def read_inputs(self):
+        super().read_inputs()
+        for device in self.input_devices:
+            device.read_new_inputs()
