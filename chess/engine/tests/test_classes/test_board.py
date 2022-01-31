@@ -1,4 +1,4 @@
-from chess.engine.classes import ChessBoard
+from chess.engine.classes import ChessBoard, King, WHITE, BLACK
 
 
 def test_chessboard_square_coords():
@@ -21,3 +21,17 @@ def test_chessboard_square_coords():
     assert board.square_name((3, 0)) == "d1"
     assert board.square_name((0, 1)) == "a2"
     assert board.square_name((3, 1)) == "d2"
+
+
+def test_chessboard_locate():
+    board = ChessBoard()
+    king1 = King(WHITE)
+    king2 = King(WHITE)
+    king3 = King(BLACK)
+    board.add_piece((1, 1), king1)
+    board.add_piece((2, 2), king2)
+    board.add_piece((3, 3), king3)
+
+    assert board.locate(king1) == (1, 1)
+    assert board.locate(king2) == (2, 2)
+    assert board.locate(king3) == (3, 3)
