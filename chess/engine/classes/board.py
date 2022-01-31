@@ -4,6 +4,7 @@ from typing import Dict, Tuple, TYPE_CHECKING
 if TYPE_CHECKING:
     from .piece import Piece
 
+
 class ChessBoard:
     contents: Dict[Tuple[int, int], "Piece"]
     height: int = 8
