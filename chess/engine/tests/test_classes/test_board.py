@@ -28,9 +28,9 @@ def test_chessboard_locate():
     king1 = King(WHITE)
     king2 = King(WHITE)
     king3 = King(BLACK)
-    board.add_piece((1, 1), king1)
-    board.add_piece((2, 2), king2)
-    board.add_piece((3, 3), king3)
+    board.add_piece(king1, (1, 1))
+    board.add_piece(king2, (2, 2))
+    board.add_piece(king3, (3, 3))
 
     assert board.locate(king1) == (1, 1)
     assert board.locate(king2) == (2, 2)
