@@ -15,7 +15,7 @@ class ChessBoard:
         self.height = height if height else self.height
         self.width = width if width else self.width
 
-    def add_piece(self, square: Tuple[int, int], piece):
+    def add_piece(self, square: Tuple[int, int], piece: "Piece"):
         self.contents[square] = piece
 
     def remove_piece(self, square: Tuple[int, int]):
