@@ -50,7 +50,7 @@ def test_chessboard_add_piece():
     assert king.board == board
 
 
-def test_str():
+def test_str_empty():
     board = ChessBoard()
     assert str(board) == "\n".join(
         [
@@ -65,6 +65,9 @@ def test_str():
         ]
     )
 
+
+def test_str_populated():
+    board = ChessBoard()
     board.add_piece(Pawn(), (0, 0))
     board.add_piece(Pawn(), (1, 1))
     board.add_piece(Pawn(), (2, 2))
@@ -82,5 +85,22 @@ def test_str():
             ". . P . . . . .",
             ". P . . . . . .",
             "P . . . . . . K",
+        ]
+    )
+
+
+def test_str_standard_setup():
+    board = ChessBoard()
+    board.standard_setup()
+    assert str(board) == "\n".join(
+        [
+            "r n b q k b n r",
+            "p p p p p p p p",
+            ". . . . . . . .",
+            ". . . . . . . .",
+            ". . . . . . . .",
+            ". . . . . . . .",
+            "P P P P P P P P",
+            "R N B Q K B N R",
         ]
     )

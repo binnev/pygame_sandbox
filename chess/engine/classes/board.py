@@ -1,12 +1,11 @@
 import string
-from typing import Dict, Tuple, TYPE_CHECKING
+from typing import Dict, Tuple
 
-if TYPE_CHECKING:
-    from .piece import Piece
+from .piece import Piece, Rook, WHITE, Knight, Bishop, Queen, King, Pawn, BLACK
 
 
 class ChessBoard:
-    contents: Dict[Tuple[int, int], "Piece"]
+    contents: Dict[Tuple[int, int], Piece]
     height: int = 8
     width: int = 8
 
@@ -16,7 +15,28 @@ class ChessBoard:
         self.width = width if width else self.width
         self.squares = tuple((x, y) for y in range(self.height) for x in range(self.width))
 
-    def add_piece(self, piece: "Piece", square: Tuple[int, int]):
+    def standard_setup(self):
+        self.add_piece(Rook(WHITE), (0, 0))
+        self.add_piece(Knight(WHITE), (1, 0))
+        self.add_piece(Bishop(WHITE), (2, 0))
+        self.add_piece(Queen(WHITE), (3, 0))
+        self.add_piece(King(WHITE), (4, 0))
+        self.add_piece(Bishop(WHITE), (5, 0))
+        self.add_piece(Knight(WHITE), (6, 0))
+        self.add_piece(Rook(WHITE), (7, 0))
+        self.add_piece(Rook(BLACK), (0, 7))
+        self.add_piece(Knight(BLACK), (1, 7))
+        self.add_piece(Bishop(BLACK), (2, 7))
+        self.add_piece(Queen(BLACK), (3, 7))
+        self.add_piece(King(BLACK), (4, 7))
+        self.add_piece(Bishop(BLACK), (5, 7))
+        self.add_piece(Knight(BLACK), (6, 7))
+        self.add_piece(Rook(BLACK), (7, 7))
+        for x in range(8):
+            self.add_piece(Pawn(WHITE), (x, 1))
+            self.add_piece(Pawn(BLACK), (x, 6))
+
+    def add_piece(self, piece: Piece, square: Tuple[int, int]):
         self.contents[square] = piece
         piece.board = self
 
@@ -57,7 +77,7 @@ class ChessBoard:
         x = string.ascii_lowercase[x]
         return x + y
 
-    def locate(self, piece: "Piece"):
+    def locate(self, piece: Piece):
         for coords, p in self.contents.items():
             if p is piece:
                 return coords
