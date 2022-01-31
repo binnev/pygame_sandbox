@@ -35,3 +35,16 @@ def test_chessboard_locate():
     assert board.locate(king1) == (1, 1)
     assert board.locate(king2) == (2, 2)
     assert board.locate(king3) == (3, 3)
+
+
+def test_chessboard_squares():
+    board = ChessBoard(2, 2)
+    assert board.squares == ((0, 0), (1, 0), (0, 1), (1, 1))
+
+
+def test_chessboard_add_piece():
+    board = ChessBoard()
+    king = King(WHITE)
+    board.add_piece(king, (2, 4))
+    assert board.contents[(2, 4)] is king
+    assert king.board == board

@@ -14,9 +14,11 @@ class ChessBoard:
         self.contents = dict()
         self.height = height if height else self.height
         self.width = width if width else self.width
+        self.squares = tuple((x, y) for y in range(self.height) for x in range(self.width))
 
-    def add_piece(self, square: Tuple[int, int], piece: "Piece"):
+    def add_piece(self, piece: "Piece", square: Tuple[int, int]):
         self.contents[square] = piece
+        piece.board = self
 
     def remove_piece(self, square: Tuple[int, int]):
         del self.contents[square]
