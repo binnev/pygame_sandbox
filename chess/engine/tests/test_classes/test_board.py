@@ -1,4 +1,4 @@
-from chess.engine.classes import ChessBoard, King, WHITE, BLACK
+from chess.engine.classes import ChessBoard, King, WHITE, BLACK, Pawn, Queen
 
 
 def test_chessboard_square_coords():
@@ -48,3 +48,39 @@ def test_chessboard_add_piece():
     board.add_piece(king, (2, 4))
     assert board.contents[(2, 4)] is king
     assert king.board == board
+
+
+def test_str():
+    board = ChessBoard()
+    assert str(board) == "\n".join(
+        [
+            ". . . . . . . .",
+            ". . . . . . . .",
+            ". . . . . . . .",
+            ". . . . . . . .",
+            ". . . . . . . .",
+            ". . . . . . . .",
+            ". . . . . . . .",
+            ". . . . . . . .",
+        ]
+    )
+
+    board.add_piece(Pawn(), (0, 0))
+    board.add_piece(Pawn(), (1, 1))
+    board.add_piece(Pawn(), (2, 2))
+    board.add_piece(Pawn(), (3, 3))
+    board.add_piece(Pawn(), (4, 4))
+    board.add_piece(Queen(), (0, 7))
+    board.add_piece(King(), (7, 0))
+    assert str(board) == "\n".join(
+        [
+            "Q . . . . . . .",
+            ". . . . . . . .",
+            ". . . . . . . .",
+            ". . . . P . . .",
+            ". . . P . . . .",
+            ". . P . . . . .",
+            ". P . . . . . .",
+            "P . . . . . . K",
+        ]
+    )
