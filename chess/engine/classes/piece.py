@@ -1,3 +1,6 @@
+from math import inf
+
+from numpy import array
 from typing import TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
@@ -6,32 +9,45 @@ if TYPE_CHECKING:
 WHITE = "white"
 BLACK = "black"
 
+BISHOP_DIRECTIONS = ((1, 1), (1, -1), (-1, 1), (-1, -1))
+ROOK_DIRECTIONS = ((0, 1), (0, -1), (1, 0), (-1, 0))
+KNIGHT_DIRECTIONS = ((1, 2), (2, 1), (2, -1), (1, -2), (-1, -2), (-2, -1), (-2, 1), (-1, 2))
+
 
 class Piece:
     team: str  # "white" or "black"
     letter: str  # "k" for king
     board: "ChessBoard"
     square: Tuple[int, int]
+    directions: tuple  # what directions can this piece move
+    strides: int  # how many squares can this piece move along its directions
 
-    def __init__(self, team):
+    def __init__(self, team=WHITE):
         self.team = team
 
     def __str__(self):
         return self.letter.upper() if self.team == WHITE else self.letter.lower()
 
     @property
-    def moves_unfiltered(self):
-        """Set of squares this piece could move to if nothing is blocking the way"""
-        return set()
-
-    @property
     def moves(self) -> set:
         """Set of squares this piece could move to, taking into account obstructions and board
         edges"""
+        moves = set()
+        for direction in self.directions:
+            direction = array(direction)
+            candidate = self.square
+            ii = 0
+            while candidate in self.board.squares and ii < self.strides:
+                candidate = tuple(direction + candidate)
+                moves.add(candidate)
+                if self.board.contents.get(candidate):
+                    break
+                ii += 1
+
         return {
             move
-            for move in self.moves_unfiltered
-            if move in self.board.squares  # respect board limits
+            for move in moves
+            if move in self.board.squares
             and (
                 self.board.contents.get(move) is None  # empty squares
                 or self.board.contents.get(move).team != self.team  # only capture enemies
@@ -46,50 +62,32 @@ class Piece:
 
 class King(Piece):
     letter = "k"
-
-    @property
-    def moves_unfiltered(self):
-        x, y = self.square
-        return {
-            (x - 1, y - 1),
-            (x - 1, y),
-            (x - 1, y + 1),
-            (x, y - 1),
-            (x, y + 1),
-            (x + 1, y - 1),
-            (x + 1, y),
-            (x + 1, y + 1),
-        }
+    directions = ROOK_DIRECTIONS + BISHOP_DIRECTIONS
+    strides = 1
 
 
 class Queen(Piece):
     letter = "q"
+    directions = ROOK_DIRECTIONS + BISHOP_DIRECTIONS
+    strides = inf
 
 
 class Bishop(Piece):
     letter = "b"
+    directions = BISHOP_DIRECTIONS
+    strides = inf
 
 
 class Knight(Piece):
     letter = "n"
-
-    @property
-    def moves_unfiltered(self) -> set:
-        x, y = self.square
-        return {
-            (x + 1, y + 2),
-            (x + 2, y + 1),
-            (x + 2, y - 1),
-            (x + 1, y - 2),
-            (x - 1, y - 2),
-            (x - 2, y - 1),
-            (x - 2, y + 1),
-            (x - 1, y + 2),
-        }
+    directions = KNIGHT_DIRECTIONS
+    strides = 1
 
 
 class Rook(Piece):
     letter = "r"
+    directions = ROOK_DIRECTIONS
+    strides = inf
 
 
 class Pawn(Piece):
