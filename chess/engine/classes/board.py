@@ -1,3 +1,4 @@
+import string
 from typing import Dict, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -40,7 +41,7 @@ class ChessBoard:
         name = name.lower()
         x, y = name
         y = int(y) - 1
-        x = "abcdefgh".index(x)
+        x = string.ascii_lowercase.index(x)
         return (x, y)
 
     def square_name(self, square: Tuple[int, int]):
@@ -50,5 +51,5 @@ class ChessBoard:
         """
         x, y = square
         y = str(y + 1)
-        x = "abcdefgh"[x]
+        x = string.ascii_lowercase[x]
         return x + y
