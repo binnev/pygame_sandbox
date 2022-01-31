@@ -27,14 +27,14 @@ class ChessBoard:
         self.contents[square2] = self.contents.pop(square1)
 
     def __str__(self):
-        xs = [x for x, y in self.contents]
-        ys = [-y for x, y in self.contents]
-        string = ""
-        for y in range(min(ys), max(ys) + 1):
-            for x in range(min(xs), max(xs) + 1):
-                string += str(self.contents.get((x, -y), "."))
-            string += "\n"
-        return string
+        V_SEP = "\n"
+        H_SEP = " "
+        xs = range(self.width)
+        ys = range(0, -self.height, -1)
+        return V_SEP.join(
+            H_SEP.join(str(self.contents.get((x, -y), ".")) for x in range(min(xs), max(xs) + 1))
+            for y in range(min(ys), max(ys) + 1)
+        )
 
     def square_coords(self, name: str):
         """
