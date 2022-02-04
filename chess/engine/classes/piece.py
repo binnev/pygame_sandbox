@@ -28,6 +28,14 @@ class Piece:
     def __str__(self):
         return self.letter.upper() if self.team == WHITE else self.letter.lower()
 
+    def __repr__(self):
+        string = f"{self.team} {self.__class__.__name__}"
+        square = self.square
+        if square:
+            square = self.board.square_name(square)
+            string += f" on {square}"
+        return string
+
     @property
     def moves(self) -> set:
         """Set of squares this piece could move to, taking into account obstructions and board
@@ -55,9 +63,12 @@ class Piece:
         }
 
     @property
-    def square(self):
+    def square(self) -> tuple:
         """Coordinates of self on board"""
-        return self.board.locate(self)
+        try:
+            return self.board.locate(self)
+        except AttributeError:
+            return None
 
 
 class King(Piece):

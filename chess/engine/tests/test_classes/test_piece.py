@@ -110,3 +110,13 @@ def test_bishop_moves_obstructed():
         (3, 1),
         (4, 0),
     }
+
+
+def test_piece__repr__():
+
+    piece = Pawn(BLACK)
+    assert piece.__repr__() == "black Pawn"
+
+    board = ChessBoard()
+    board.add_piece(piece, (4, 6))
+    assert piece.__repr__() == "black Pawn on e7"
