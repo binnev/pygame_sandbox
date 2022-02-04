@@ -120,3 +120,17 @@ def test_piece__repr__():
     board = ChessBoard()
     board.add_piece(piece, (4, 6))
     assert piece.__repr__() == "black Pawn on e7"
+
+
+@pytest.mark.parametrize(
+    "piece1, piece2, should_match",
+    [
+        (Pawn(), Pawn(), True),
+        (Pawn(WHITE), Pawn(BLACK), False),
+        (Pawn(WHITE), Pawn(WHITE), True),
+        (Pawn(BLACK), Pawn(BLACK), True),
+        (Pawn(BLACK), Bishop(BLACK), False),
+    ],
+)
+def test_piece__eq__(piece1, piece2, should_match):
+    assert (piece1 == piece2) == should_match

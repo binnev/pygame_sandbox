@@ -36,6 +36,12 @@ class Piece:
             string += f" on {square}"
         return string
 
+    def __eq__(self, other: "Piece"):
+        return (
+            self.__class__ == other.__class__
+            and self.team == other.team
+        )
+
     @property
     def moves(self) -> set:
         """Set of squares this piece could move to, taking into account obstructions and board
