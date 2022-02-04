@@ -77,7 +77,7 @@ class ChessBoard:
         x = string.ascii_lowercase[x]
         return x + y
 
-    def locate(self, piece: Piece):
+    def locate(self, piece: Piece) -> tuple:
         for coords, p in self.contents.items():
             if p is piece:
                 return coords
