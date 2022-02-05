@@ -5,7 +5,7 @@ from chess.engine.classes.piece import PIECES_BY_LETTER
 
 
 def parse_pgn_move(string):
-    """ for string = "Rbxa4" """
+    """ e.g. "Rbxa4" """
     rx = re.compile(
         "([A-Z])?"  # piece
         "([a-wy-z0-9])?"  # additional specifier (not x)
