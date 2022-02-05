@@ -1,6 +1,7 @@
 import re
 
-from chess.engine.classes import WHITE, BLACK, PIECES_BY_LETTER
+from chess.constants import WHITE, BLACK
+from chess.engine.classes.piece import PIECES_BY_LETTER
 
 
 def parse_pgn_move(string):

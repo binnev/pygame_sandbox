@@ -105,6 +105,16 @@ def test_str_standard_setup():
         ]
     )
 
+
+def test_load_fen_position():
+    board1 = ChessBoard()
+    board1.load_standard_setup()
+    board2 = ChessBoard()
+    board2.load_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+
+    assert board1.contents == board2.contents
+
+
 # todo: Move class. Will be like a diff between positions
 #  - stack of Moves to record history and allow undoing
 #  - tree with branches to allow analysis

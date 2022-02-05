@@ -3,11 +3,11 @@ from math import inf
 from numpy import array
 from typing import TYPE_CHECKING, Tuple
 
+from chess.constants import WHITE
+
 if TYPE_CHECKING:
     from .board import ChessBoard
 
-WHITE = "white"
-BLACK = "black"
 
 BISHOP_DIRECTIONS = ((1, 1), (1, -1), (-1, 1), (-1, -1))
 ROOK_DIRECTIONS = ((0, 1), (0, -1), (1, 0), (-1, 0))

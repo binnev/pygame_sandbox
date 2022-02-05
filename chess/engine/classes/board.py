@@ -1,7 +1,9 @@
 import string
 from typing import Dict, Tuple
 
-from .piece import Piece, Rook, WHITE, Knight, Bishop, Queen, King, Pawn, BLACK
+from chess.constants import WHITE, BLACK
+from chess.engine.classes.piece import Piece, Rook, Knight, Bishop, Queen, King, Pawn
+from chess.notation import parse_fen_position
 
 
 class ChessBoard:
@@ -15,7 +17,7 @@ class ChessBoard:
         self.width = width if width else self.width
         self.squares = tuple((x, y) for y in range(self.height) for x in range(self.width))
 
-    def standard_setup(self):
+    def load_standard_setup(self):
         self.add_piece(Rook(WHITE), (0, 0))
         self.add_piece(Knight(WHITE), (1, 0))
         self.add_piece(Bishop(WHITE), (2, 0))
@@ -35,6 +37,10 @@ class ChessBoard:
         for x in range(8):
             self.add_piece(Pawn(WHITE), (x, 1))
             self.add_piece(Pawn(BLACK), (x, 6))
+
+    def load_fen_position(self, string):
+        pieces, *_ = parse_fen_position(string)
+        self.contents = pieces
 
     def add_piece(self, piece: Piece, square: Tuple[int, int]):
         self.contents[square] = piece
