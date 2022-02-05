@@ -37,7 +37,7 @@ def test_parse_fen_row(string, expected_pieces):
     assert parse_fen_row(string) == expected_pieces
 
 
-# @pytest.mark.parametrize("string", ["8/8/8/8/8/8/8/R7 w KQkq - 0 1"])
-# def test_parse_fen_position(string):
-#     position, _ = parse_fen_position(string)
-#     assert position == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+@pytest.mark.parametrize("string", ["8/8/8/8/8/8/8/R7 w KQkq - 0 1"])
+def test_parse_fen_position(string):
+    position, _ = parse_fen_position(string)
+    assert position == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"

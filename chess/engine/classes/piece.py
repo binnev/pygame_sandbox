@@ -37,10 +37,7 @@ class Piece:
         return string
 
     def __eq__(self, other: "Piece"):
-        return (
-            self.__class__ == other.__class__
-            and self.team == other.team
-        )
+        return self.__class__ == other.__class__ and self.team == other.team
 
     @property
     def moves(self) -> set:
@@ -109,3 +106,7 @@ class Rook(Piece):
 
 class Pawn(Piece):
     letter = "p"
+
+
+PIECES = [King, Queen, Rook, Bishop, Knight, Pawn]
+PIECES_BY_LETTER = {piece.letter: piece for piece in PIECES}
