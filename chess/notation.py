@@ -2,8 +2,6 @@ import re
 
 from chess.engine.classes import WHITE, BLACK, PIECES_BY_LETTER
 
-EMPTY = "."
-
 
 def parse_pgn_move(string):
     """ for string = "Rbxa4" """
@@ -27,7 +25,7 @@ def parse_fen_row(string):
     pieces = []
     for char in string:
         if char.isnumeric():
-            pieces.extend([EMPTY] * int(char))
+            pieces.extend([None] * int(char))
         else:
             piece_class = PIECES_BY_LETTER[char.lower()]
             team = WHITE if char.isupper() else BLACK
@@ -52,8 +50,13 @@ def parse_fen_position(string):
     )
     position, *_ = rx.match(string).groups()
 
+    pieces = dict()
     rows = position.split("/")
-    for ii, row in enumerate(rows):
-        parse_fen_row(row, ii)
+    for y, row in enumerate(rows):
+        y = 7 - y
+        row = parse_fen_row(row)
+        for x, piece in enumerate(row):
+            if piece:
+                pieces[(x, y)] = piece
 
-    return position, _
+    return pieces, _

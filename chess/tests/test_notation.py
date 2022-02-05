@@ -1,7 +1,7 @@
 import pytest
 
-from chess.engine.classes import BLACK, Pawn, WHITE, King, Queen
-from chess.notation import parse_pgn_move, parse_fen_position, EMPTY, parse_fen_row
+from chess.engine.classes import BLACK, Pawn, WHITE, King, Queen, Rook
+from chess.notation import parse_pgn_move, parse_fen_position, parse_fen_row
 
 
 @pytest.mark.parametrize(
@@ -27,9 +27,9 @@ def test_parse_pgn_move(string, piece, specifier, capture, target):
 @pytest.mark.parametrize(
     "string, expected_pieces",
     [
-        ("8", [EMPTY] * 8),  # 8 empty spaces,
+        ("8", [None] * 8),  # 8 empty spaces,
         ("p", [Pawn(BLACK)]),
-        ("p2P", [Pawn(BLACK), EMPTY, EMPTY, Pawn(WHITE)]),
+        ("p2P", [Pawn(BLACK), None, None, Pawn(WHITE)]),
         ("KkQq", [King(WHITE), King(BLACK), Queen(WHITE), Queen(BLACK)]),
     ],
 )
@@ -37,7 +37,15 @@ def test_parse_fen_row(string, expected_pieces):
     assert parse_fen_row(string) == expected_pieces
 
 
-@pytest.mark.parametrize("string", ["8/8/8/8/8/8/8/R7 w KQkq - 0 1"])
-def test_parse_fen_position(string):
-    position, _ = parse_fen_position(string)
-    assert position == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+@pytest.mark.parametrize(
+    "string, expected_pieces",
+    [
+        ("8/8/8/8/8/8/8/R7 w KQkq - 0 1", {(0, 0): Rook(WHITE)}),
+        ("8/8/8/8/8/8/8/7R w KQkq - 0 1", {(7, 0): Rook(WHITE)}),
+        ("8/3r4/8/8/8/8/8/8 w KQkq - 0 1", {(3, 6): Rook(BLACK)}),
+        ("7K/8/8/8/8/8/8/q7 w KQkq - 0 1", {(7, 7): King(WHITE), (0, 0): Queen(BLACK)}),
+    ],
+)
+def test_parse_fen_position(string, expected_pieces):
+    pieces, _ = parse_fen_position(string)
+    assert pieces == expected_pieces
