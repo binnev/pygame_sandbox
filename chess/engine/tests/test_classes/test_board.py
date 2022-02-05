@@ -1,4 +1,6 @@
-from chess.engine.classes import ChessBoard, King, WHITE, BLACK, Pawn, Queen
+from chess.engine.classes.board import ChessBoard
+from chess.engine.classes.piece import King, Pawn, Queen
+from chess.constants import WHITE, BLACK
 
 
 def test_chessboard_square_coords():
@@ -89,9 +91,9 @@ def test_str_populated():
     )
 
 
-def test_str_standard_setup():
+def test_str_load_standard_setup():
     board = ChessBoard()
-    board.standard_setup()
+    board.load_standard_setup()
     assert str(board) == "\n".join(
         [
             "r n b q k b n r",

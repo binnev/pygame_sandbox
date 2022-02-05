@@ -1,6 +1,7 @@
 import pytest
 
-from chess.engine.classes import BLACK, Pawn, WHITE, King, Queen, Rook
+from chess.constants import BLACK, WHITE
+from chess.engine.classes.piece import Pawn, King, Queen, Rook
 from chess.notation import parse_pgn_move, parse_fen_position, parse_fen_row
 
 

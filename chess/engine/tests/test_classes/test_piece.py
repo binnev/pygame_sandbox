@@ -1,6 +1,8 @@
 import pytest
 
-from chess.engine.classes import WHITE, King, BLACK, Queen, ChessBoard, Knight, Pawn, Bishop
+from chess.constants import WHITE, BLACK
+from chess.engine.classes.board import ChessBoard
+from chess.engine.classes.piece import King, Queen, Pawn, Bishop, Knight
 
 
 @pytest.mark.parametrize(
