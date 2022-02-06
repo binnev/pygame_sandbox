@@ -110,6 +110,10 @@ class Rook(Piece):
 
 
 class Pawn(Piece):
+    """
+    directions depends on team (white | black)
+    strides depends on whether it's on its starting spot
+    """
     letter = "p"
 
 

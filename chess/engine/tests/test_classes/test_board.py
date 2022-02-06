@@ -463,3 +463,28 @@ def test_do_pgn_move(description, params):
     board.current_player = params["player"]
     board.do_pgn_move(params["move"])
     assert board.__str__(V_SEP="/", H_SEP="") == params["final_position"]
+
+
+def test_pawn_starting_squares():
+    board = ChessBoard()
+    assert board.pawn_starting_squares(WHITE) == [
+        (0, 1),
+        (1, 1),
+        (2, 1),
+        (3, 1),
+        (4, 1),
+        (5, 1),
+        (6, 1),
+        (7, 1),
+    ]
+
+    assert board.pawn_starting_squares(BLACK) == [
+        (0, 6),
+        (1, 6),
+        (2, 6),
+        (3, 6),
+        (4, 6),
+        (5, 6),
+        (6, 6),
+        (7, 6),
+    ]

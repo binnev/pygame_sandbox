@@ -142,3 +142,10 @@ class ChessBoard:
         for coords, p in self.contents.items():
             if p is piece:
                 return Square(*coords)
+
+    def pawn_starting_squares(self, team):
+        return (
+            [Square(x, 1) for x in range(self.width)]
+            if team == WHITE
+            else [Square(x, self.height - 2) for x in range(self.width)]
+        )
