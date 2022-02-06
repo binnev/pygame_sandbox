@@ -44,15 +44,17 @@ def parse_fen_string(string: str) -> (str, str, str, str, str, str):
     """
     E.g. standard starting position:
     rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+
+    (?: ...) is a non-capturing group
     """
     rx = re.compile(
         "([\w./]+)"  # piece positions from white's POV
-        " ([wb])?"  # active player (w = white | b = black)
-        " (K?Q?k?q?)?"  # castling availability (K = white kingside, q = black queenside)
-        " ([\S])?"  # en passant target square (- = standard)
-        " (\d+)?"  # Halfmove clock: The number of halfmoves since the last capture or pawn
+        "(?: ([wb]))?"  # active player (w = white | b = black)
+        "(?: (K?Q?k?q?))?"  # castling availability (K = white kingside, q = black queenside)
+        "(?: ([\S]))?"  # en passant target square (- = standard)
+        "(?: (\d+))?"  # Halfmove clock: The number of halfmoves since the last capture or pawn
         # advance, used for the fifty-move rule.
-        " (\d+)?"  # Fullmove number: The number of the full move. It starts at 1,
+        "(?: (\d+))?"  # Fullmove number: The number of the full move. It starts at 1,
         # and is incremented after Black's move
     )
     position, player, castling, ep, half, full = rx.match(string).groups()

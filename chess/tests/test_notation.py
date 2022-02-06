@@ -69,6 +69,17 @@ def test_generate_fen_row(string, pieces):
                 "1",
             ),
         ),
+        (
+            ".......K/......../......../......../......../......../......../q.......",
+            (
+                ".......K/......../......../......../......../......../......../q.......",
+                None,
+                None,
+                None,
+                None,
+                None,
+            ),
+        ),
     ],
 )
 def test_parse_fen_string(string, expected_outputs):
