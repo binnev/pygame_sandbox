@@ -138,8 +138,6 @@ def test_piece__eq__(piece1, piece2, should_match):
     assert (piece1 == piece2) == should_match
 
 
-
-
 @pytest.mark.parametrize(
     "piece_class, team, letter",
     [
