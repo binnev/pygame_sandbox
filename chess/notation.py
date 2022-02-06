@@ -1,10 +1,11 @@
 import re
+from typing import Type
 
 from chess.constants import WHITE, BLACK
-from chess.engine.classes.piece import PIECES_BY_LETTER
+from chess.engine.classes.piece import Piece, Pawn, CLASSES_BY_LETTER
 
 
-def parse_pgn_move(string):
+def parse_pgn_move(string) -> (Type[Piece], str, str, str):
     """ e.g. "Rbxa4" """
     rx = re.compile(
         "([A-Z])?"  # piece
@@ -13,10 +14,9 @@ def parse_pgn_move(string):
         "([a-z][0-9])"  # target square
     )
 
-    piece, specifier, capture, target = rx.match(string).groups()
-    if piece is None:
-        piece = "P"  # pawn by default
-    return piece, specifier, capture, target
+    letter, specifier, capture, target = rx.match(string).groups()
+    piece_class = CLASSES_BY_LETTER[letter.lower()] if letter else Pawn
+    return piece_class, specifier, capture, target
 
 
 def parse_fen_row(string):
@@ -28,7 +28,7 @@ def parse_fen_row(string):
         if char.isnumeric():
             pieces.extend([None] * int(char))
         else:
-            piece_class = PIECES_BY_LETTER[char.lower()]
+            piece_class = CLASSES_BY_LETTER[char.lower()]
             team = WHITE if char.isupper() else BLACK
             pieces.append(piece_class(team))
     return pieces
