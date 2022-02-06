@@ -46,7 +46,7 @@ def parse_fen_string(string: str) -> (str, str, str, str, str, str):
     rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
     """
     rx = re.compile(
-        "(\w+/\w+/\w+/\w+/\w+/\w+/\w+/\w+)"  # piece positions from white's POV
+        "([\w./]+)"  # piece positions from white's POV
         " ([wb])?"  # active player (w = white | b = black)
         " (K?Q?k?q?)?"  # castling availability (K = white kingside, q = black queenside)
         " ([\S])?"  # en passant target square (- = standard)

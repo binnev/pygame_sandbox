@@ -58,9 +58,20 @@ def test_generate_fen_row(string, pieces):
         ("8/8/8/8/8/8/8/7R w KQkq - 0 1", ("8/8/8/8/8/8/8/7R", "w", "KQkq", "-", "0", "1")),
         ("8/3r4/8/8/8/8/8/8 w KQkq - 0 1", ("8/3r4/8/8/8/8/8/8", "w", "KQkq", "-", "0", "1")),
         ("7K/8/8/8/8/8/8/q7 w KQkq - 0 1", ("7K/8/8/8/8/8/8/q7", "w", "KQkq", "-", "0", "1")),
+        (
+            ".......K/......../......../......../......../......../......../q....... w KQkq - 0 1",
+            (
+                ".......K/......../......../......../......../......../......../q.......",
+                "w",
+                "KQkq",
+                "-",
+                "0",
+                "1",
+            ),
+        ),
     ],
 )
-def test_parse_fen_position(string, expected_outputs):
+def test_parse_fen_string(string, expected_outputs):
     assert parse_fen_string(string) == expected_outputs
 
 
