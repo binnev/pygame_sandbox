@@ -1,11 +1,14 @@
 import re
-from typing import Type
+from typing import Type, TYPE_CHECKING, List, Union, Dict
 
 from chess.constants import WHITE, BLACK
 from chess.engine.classes.piece import Piece, Pawn, CLASSES_BY_LETTER
 
+if TYPE_CHECKING:
+    from chess.engine.classes.board import ChessBoard
 
-def parse_pgn_move(string) -> (Type[Piece], str, str, str):
+
+def parse_pgn_move(string: str) -> (Type[Piece], str, str, str):
     """ e.g. "Rbxa4" """
     rx = re.compile(
         "([A-Z])?"  # piece
@@ -19,7 +22,7 @@ def parse_pgn_move(string) -> (Type[Piece], str, str, str):
     return piece_class, specifier, capture, target
 
 
-def parse_fen_row(string):
+def parse_fen_row(string: str) -> List[Union[Piece, None]]:
     """
     E.g. pppp1ppp
     """
@@ -34,7 +37,7 @@ def parse_fen_row(string):
     return pieces
 
 
-def parse_fen_position(string):
+def parse_fen_string(string: str) -> (str, str, str, str, str, str):
     """
     E.g. standard starting position:
     rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
@@ -42,17 +45,24 @@ def parse_fen_position(string):
     rx = re.compile(
         "(\w+/\w+/\w+/\w+/\w+/\w+/\w+/\w+)"  # piece positions from white's POV
         " ([wb])?"  # active player (w = white | b = black)
-        # " (K?Q?k?q?)?"  # castling availability (K = white kingside, q = black queenside)
-        # " ([\S])?"  # en passant target square (- = standard)
-        # " (\d+)?"  # Halfmove clock: The number of halfmoves since the last capture or pawn
-        # # advance, used for the fifty-move rule.
-        # " (\d+)?"  # Fullmove number: The number of the full move. It starts at 1,
-        # # and is incremented after Black's move
+        " (K?Q?k?q?)?"  # castling availability (K = white kingside, q = black queenside)
+        " ([\S])?"  # en passant target square (- = standard)
+        " (\d+)?"  # Halfmove clock: The number of halfmoves since the last capture or pawn
+        # advance, used for the fifty-move rule.
+        " (\d+)?"  # Fullmove number: The number of the full move. It starts at 1,
+        # and is incremented after Black's move
     )
-    position, *_ = rx.match(string).groups()
+    position, player, castling, ep, half, full = rx.match(string).groups()
+    return position, player, castling, ep, half, full
 
+
+def parse_fen_position(string: str) -> Dict[tuple, Piece]:
+    """
+    E.g. standard starting position:
+    rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+    """
     pieces = dict()
-    rows = position.split("/")
+    rows = string.split("/")
     for y, row in enumerate(rows):
         y = 7 - y
         row = parse_fen_row(row)
@@ -60,4 +70,29 @@ def parse_fen_position(string):
             if piece:
                 pieces[(x, y)] = piece
 
-    return pieces, _
+    return pieces
+
+
+def generate_fen_row(row: List[Union[Piece, None]]) -> str:
+    string = ""
+    empty_squares = 0
+    for square in row:
+        if square is not None:
+            string += str(empty_squares) if empty_squares else ""
+            string += str(square)
+            empty_squares = 0
+        else:
+            empty_squares += 1
+
+    string += str(empty_squares) if empty_squares else ""
+    return string
+
+
+def generate_fen_position(pieces: Dict[tuple, Piece]) -> str:
+    xs = range(8)
+    ys = range(0, -8, -1)
+    rows = []
+    for y in range(min(ys), max(ys) + 1):
+        row = [pieces.get((x, -y)) for x in range(min(xs), max(xs) + 1)]
+        rows.append(generate_fen_row(row))
+    return "/".join(rows)
