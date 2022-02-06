@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING, Tuple
 from chess.constants import WHITE, BLACK
 
 if TYPE_CHECKING:
-    from .board import ChessBoard
-
+    from .board import ChessBoard, Square
 
 BISHOP_DIRECTIONS = ((1, 1), (1, -1), (-1, 1), (-1, -1))
 ROOK_DIRECTIONS = ((0, 1), (0, -1), (1, 0), (-1, 0))
@@ -66,7 +65,7 @@ class Piece:
         }
 
     @property
-    def square(self) -> tuple:
+    def square(self) -> "Square":
         """Coordinates of self on board"""
         try:
             return self.board.locate(self)

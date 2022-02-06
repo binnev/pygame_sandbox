@@ -1,11 +1,11 @@
 import pytest
 
 from chess.constants import WHITE, BLACK
-from chess.engine.classes.board import ChessBoard
+from chess.engine.classes.board import ChessBoard, Square
 from chess.engine.classes.piece import King, Pawn, Queen, Rook
 
 
-def test_chessboard_square_coords():
+def test_square_coords():
     board = ChessBoard(8, 8)
     assert board.square_coords("a1") == (0, 0)
     assert board.square_coords("h1") == (7, 0)
@@ -27,7 +27,7 @@ def test_chessboard_square_coords():
     assert board.square_name((3, 1)) == "d2"
 
 
-def test_chessboard_locate():
+def test_locate():
     board = ChessBoard()
     king1 = King(WHITE)
     king2 = King(WHITE)
@@ -41,17 +41,30 @@ def test_chessboard_locate():
     assert board.locate(king3) == (3, 3)
 
 
-def test_chessboard_squares():
+def test_squares():
     board = ChessBoard(2, 2)
     assert board.squares == ((0, 0), (1, 0), (0, 1), (1, 1))
 
 
-def test_chessboard_add_piece():
+def test_add_piece():
     board = ChessBoard()
     king = King(WHITE)
     board.add_piece(king, (2, 4))
     assert board.contents[(2, 4)] is king
     assert king.board == board
+
+
+def test_add_piece_plays_nice_with_square_namedtuple():
+    board = ChessBoard()
+    king = King(WHITE)
+    board.add_piece(king, (2, 4))
+    assert board.contents[(2, 4)] == king
+    assert board.contents[Square(2, 4)] == king
+
+    board.add_piece(king, Square(2, 4))
+    assert len(board.contents) == 1
+    assert board.contents[(2, 4)] == king
+    assert board.contents[Square(2, 4)] == king
 
 
 def test_str_empty():

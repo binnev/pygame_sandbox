@@ -1,4 +1,5 @@
 import string
+from collections import namedtuple
 from typing import Dict, Tuple
 
 from chess.constants import WHITE, BLACK
@@ -10,9 +11,11 @@ from chess.notation import (
     generate_fen_position,
 )
 
+Square = namedtuple("Square", "x y")
+
 
 class ChessBoard:
-    contents: Dict[Tuple[int, int], Piece]
+    contents: Dict[Square, Piece]
     height: int = 8
     width: int = 8
     current_player: str = WHITE
@@ -21,7 +24,7 @@ class ChessBoard:
         self.contents = dict()
         self.height = height if height else self.height
         self.width = width if width else self.width
-        self.squares = tuple((x, y) for y in range(self.height) for x in range(self.width))
+        self.squares = tuple(Square(x, y) for y in range(self.height) for x in range(self.width))
 
     def load_standard_setup(self):
         self.add_piece(Rook(WHITE), (0, 0))
@@ -59,8 +62,6 @@ class ChessBoard:
     def do_pgn_move(self, string):
         piece_class, specifier, capture, square_name = parse_pgn_move(string)
         target_square = self.square_coords(square_name)
-        # figure out which piece can move to that target square
-
         candidate_pieces = [
             piece
             for coords, piece in self.contents.items()
@@ -70,23 +71,24 @@ class ChessBoard:
         ]
         if specifier:
             if specifier.isnumeric():
-                _, y = self.square_coords(f"a{specifier}")
-                candidate_pieces = [piece for piece in candidate_pieces if piece.square[1] == y]
+                y = self.number_to_y(specifier)
+                candidate_pieces = [piece for piece in candidate_pieces if piece.square.y == y]
             else:
-                x, _ = self.square_coords(f"{specifier}1")
-                candidate_pieces = [piece for piece in candidate_pieces if piece.square[0] == x]
+                x = self.letter_to_x(specifier)
+                candidate_pieces = [piece for piece in candidate_pieces if piece.square.x == x]
 
         piece = candidate_pieces[0]
         self.move_piece(piece.square, target_square)
 
-    def add_piece(self, piece: Piece, square: Tuple[int, int]):
+    def add_piece(self, piece: Piece, square: Square):
+        square = Square(*square)
         self.contents[square] = piece
         piece.board = self
 
-    def remove_piece(self, square: Tuple[int, int]):
+    def remove_piece(self, square: Square):
         del self.contents[square]
 
-    def move_piece(self, square1, square2):
+    def move_piece(self, square1: Square, square2: Square):
         self.contents[square2] = self.contents.pop(square1)
 
     def __str__(self, V_SEP="\n", H_SEP=" "):
@@ -125,7 +127,7 @@ class ChessBoard:
         return string.ascii_lowercase[x]
 
     @classmethod
-    def square_name(cls, square: Tuple[int, int]):
+    def square_name(cls, square: Square):
         """
         (0, 0) -> a1
         (7, 7) -> h8
@@ -135,8 +137,8 @@ class ChessBoard:
         letter = cls.x_to_letter(x)
         return letter + number
 
-    def locate(self, piece: Piece) -> tuple:
+    def locate(self, piece: Piece) -> Square:
         """Get coordinates of Piece instance"""
         for coords, p in self.contents.items():
             if p is piece:
-                return coords
+                return Square(*coords)
