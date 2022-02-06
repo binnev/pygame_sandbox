@@ -1,8 +1,8 @@
 import pytest
 
-from chess.engine.classes.board import ChessBoard
-from chess.engine.classes.piece import King, Pawn, Queen
 from chess.constants import WHITE, BLACK
+from chess.engine.classes.board import ChessBoard
+from chess.engine.classes.piece import King, Pawn, Queen, Rook
 
 
 def test_chessboard_square_coords():
@@ -118,6 +118,10 @@ def test_load_fen_position():
 
     assert board1.contents == board2.contents
 
+    rook = board1.contents[(0, 0)]
+    assert isinstance(rook, Rook)
+    assert rook.board is board1  # check piece has link to parent board
+
 
 def test_fen_position():
     board = ChessBoard()
@@ -125,43 +129,72 @@ def test_fen_position():
     assert board.fen_position == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 
-# @pytest.mark.parametrize(
-#     "starting_position, move, final_position"[
-#         (
-#             "/".join(
-#                 [
-#                     "rnbqkbnr",
-#                     "pppppppp",
-#                     "8",
-#                     "8",
-#                     "8",
-#                     "8",
-#                     "PPPPPPPP",
-#                     "RNBQKBNR",
-#                 ]
-#             ),
-#             "Nf3",
-#             WHITE,
-#             "/".join(
-#                 [
-#                     "rnbqkbnr",
-#                     "pppppppp",
-#                     "8",
-#                     "8",
-#                     "8",
-#                     "5N2",
-#                     "PPPPPPPP",
-#                     "RNBQKB1R",
-#                 ]
-#             ),
-#         )
-#     ]
-# )
-# def test_do_pgn_move(starting_position, move, final_position):
-#     board = ChessBoard()  # todo: set current player in FEN string
-#     board.load_fen_position(starting_position)
-#     board.do_pgn_move(move)
-#     assert board.fen_position == final_position
+@pytest.mark.parametrize(
+    "params",
+    [
+        dict(
+            starting_position="/".join(
+                [
+                    "rnbqkbnr",
+                    "pppppppp",
+                    "........",
+                    "........",
+                    "........",
+                    "........",
+                    "PPPPPPPP",
+                    "RNBQKBNR",
+                ]
+            ),
+            move="Nf3",
+            player=WHITE,
+            final_position="/".join(
+                [
+                    "rnbqkbnr",
+                    "pppppppp",
+                    "........",
+                    "........",
+                    "........",
+                    ".....N..",
+                    "PPPPPPPP",
+                    "RNBQKB.R",
+                ]
+            ),
+        ),
+        dict(
+            starting_position="/".join(
+                [
+                    "rnbqkbnr",
+                    "pppppppp",
+                    "........",
+                    "........",
+                    "........",
+                    ".....N..",
+                    "PPPPPPPP",
+                    "RNBQKB.R",
+                ]
+            ),
+            move="Nf6",
+            player=BLACK,
+            final_position="/".join(
+                [
+                    "rnbqkb.r",
+                    "pppppppp",
+                    ".....n..",
+                    "........",
+                    "........",
+                    ".....N..",
+                    "PPPPPPPP",
+                    "RNBQKB.R",
+                ]
+            ),
+        ),
+    ],
+)
+def test_do_pgn_move(params):
+    board = ChessBoard()  # todo: set current player in FEN string
+    board.load_fen_position(params["starting_position"])
+    board.do_pgn_move(params["move"])
+    assert board.__str__(V_SEP="/", H_SEP="") == params["final_position"]
 
 
 # todo: Move class. Will be like a diff between positions

@@ -3,8 +3,12 @@ from typing import Dict, Tuple
 
 from chess.constants import WHITE, BLACK
 from chess.engine.classes.piece import Piece, Rook, Knight, Bishop, Queen, King, Pawn
-from chess.notation import parse_pgn_move, parse_fen_string, parse_fen_position, \
-    generate_fen_position
+from chess.notation import (
+    parse_pgn_move,
+    parse_fen_string,
+    parse_fen_position,
+    generate_fen_position,
+)
 
 
 class ChessBoard:
@@ -42,7 +46,9 @@ class ChessBoard:
     def load_fen_position(self, string):
         position, *_ = parse_fen_string(string)
         pieces = parse_fen_position(position)
-        self.contents = pieces
+        # using add_piece here makes sure the piece gets a ref to board.
+        for square, piece in pieces.items():
+            self.add_piece(piece, square)
 
     @property
     def fen_position(self):
@@ -74,9 +80,7 @@ class ChessBoard:
     def move_piece(self, square1, square2):
         self.contents[square2] = self.contents.pop(square1)
 
-    def __str__(self):
-        V_SEP = "\n"
-        H_SEP = " "
+    def __str__(self, V_SEP="\n", H_SEP=" "):
         xs = range(self.width)
         ys = range(0, -self.height, -1)
         return V_SEP.join(
