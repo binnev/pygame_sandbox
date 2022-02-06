@@ -1,9 +1,13 @@
 # TODO
 
+## Board to check _legal_ moves
+
+- does a move expose king to check
+
 ## Special Pawn moves
 
-- en passant
 - double first move
+- en passant
 - promotion
 
 ## Move class
