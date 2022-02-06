@@ -15,6 +15,7 @@ class ChessBoard:
     contents: Dict[Tuple[int, int], Piece]
     height: int = 8
     width: int = 8
+    current_player: str = WHITE
 
     def __init__(self, height=None, width=None):
         self.contents = dict()
@@ -44,6 +45,7 @@ class ChessBoard:
             self.add_piece(Pawn(BLACK), (x, 6))
 
     def load_fen_position(self, string):
+        # todo: read current player from FEN
         position, *_ = parse_fen_string(string)
         pieces = parse_fen_position(position)
         # using add_piece here makes sure the piece gets a ref to board.
@@ -62,10 +64,17 @@ class ChessBoard:
         candidate_pieces = [
             piece
             for coords, piece in self.contents.items()
-            if isinstance(piece, piece_class) and target_square in piece.moves
+            if isinstance(piece, piece_class)
+            and target_square in piece.moves
+            and piece.team == self.current_player
         ]
-        # todo: if specifier; filter by specifier
-        candidate_pieces = [piece for piece in candidate_pieces]
+        if specifier:
+            if specifier.isnumeric():
+                _, y = self.square_coords(f"a{specifier}")
+                candidate_pieces = [piece for piece in candidate_pieces if piece.square[1] == y]
+            else:
+                x, _ = self.square_coords(f"{specifier}1")
+                candidate_pieces = [piece for piece in candidate_pieces if piece.square[0] == x]
 
         piece = candidate_pieces[0]
         self.move_piece(piece.square, target_square)
@@ -88,26 +97,43 @@ class ChessBoard:
             for y in range(min(ys), max(ys) + 1)
         )
 
-    def square_coords(self, name: str):
+    @classmethod
+    def number_to_y(cls, number: str):
+        return int(number) - 1
+
+    @classmethod
+    def letter_to_x(cls, letter: str):
+        return string.ascii_lowercase.index(letter)
+
+    @classmethod
+    def square_coords(cls, name: str):
         """
         a1 -> (0, 0)
         h8 -> (7, 7)
         """
-        name = name.lower()
-        x, y = name
-        y = int(y) - 1
-        x = string.ascii_lowercase.index(x)
+        letter, number = name.lower()
+        x = cls.letter_to_x(letter)
+        y = cls.number_to_y(number)
         return (x, y)
 
-    def square_name(self, square: Tuple[int, int]):
+    @classmethod
+    def y_to_number(cls, y: int):
+        return str(y + 1)
+
+    @classmethod
+    def x_to_letter(cls, x: int):
+        return string.ascii_lowercase[x]
+
+    @classmethod
+    def square_name(cls, square: Tuple[int, int]):
         """
         (0, 0) -> a1
         (7, 7) -> h8
         """
         x, y = square
-        y = str(y + 1)
-        x = string.ascii_lowercase[x]
-        return x + y
+        number = cls.y_to_number(y)
+        letter = cls.x_to_letter(x)
+        return letter + number
 
     def locate(self, piece: Piece) -> tuple:
         """Get coordinates of Piece instance"""
