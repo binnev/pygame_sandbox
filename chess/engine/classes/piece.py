@@ -3,7 +3,7 @@ from math import inf
 from numpy import array
 from typing import TYPE_CHECKING, Tuple
 
-from chess.constants import WHITE
+from chess.constants import WHITE, BLACK
 
 if TYPE_CHECKING:
     from .board import ChessBoard
@@ -73,6 +73,12 @@ class Piece:
         except AttributeError:
             return None
 
+    @classmethod
+    def from_letter(cls, letter: str, *args, **kwargs):
+        klass = CLASSES_BY_LETTER[letter.lower()]
+        team = WHITE if letter.isupper() else BLACK
+        return klass(*args, team=team, **kwargs)
+
 
 class King(Piece):
     letter = "k"
@@ -108,5 +114,5 @@ class Pawn(Piece):
     letter = "p"
 
 
-PIECES = [King, Queen, Rook, Bishop, Knight, Pawn]
-PIECES_BY_LETTER = {piece.letter: piece for piece in PIECES}
+CLASSES = [King, Queen, Rook, Bishop, Knight, Pawn]
+CLASSES_BY_LETTER = {cls.letter: cls for cls in CLASSES}
