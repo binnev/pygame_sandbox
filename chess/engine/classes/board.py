@@ -3,7 +3,8 @@ from typing import Dict, Tuple
 
 from chess.constants import WHITE, BLACK
 from chess.engine.classes.piece import Piece, Rook, Knight, Bishop, Queen, King, Pawn
-from chess.notation import parse_fen_position
+from chess.notation import parse_pgn_move, parse_fen_string, parse_fen_position, \
+    generate_fen_position
 
 
 class ChessBoard:
@@ -39,8 +40,29 @@ class ChessBoard:
             self.add_piece(Pawn(BLACK), (x, 6))
 
     def load_fen_position(self, string):
-        pieces, *_ = parse_fen_position(string)
+        position, *_ = parse_fen_string(string)
+        pieces = parse_fen_position(position)
         self.contents = pieces
+
+    @property
+    def fen_position(self):
+        return generate_fen_position(self.contents)
+
+    def do_pgn_move(self, string):
+        piece_class, specifier, capture, square_name = parse_pgn_move(string)
+        target_square = self.square_coords(square_name)
+        # figure out which piece can move to that target square
+
+        candidate_pieces = [
+            piece
+            for coords, piece in self.contents.items()
+            if isinstance(piece, piece_class) and target_square in piece.moves
+        ]
+        # todo: if specifier; filter by specifier
+        candidate_pieces = [piece for piece in candidate_pieces]
+
+        piece = candidate_pieces[0]
+        self.move_piece(piece.square, target_square)
 
     def add_piece(self, piece: Piece, square: Tuple[int, int]):
         self.contents[square] = piece
@@ -84,6 +106,7 @@ class ChessBoard:
         return x + y
 
     def locate(self, piece: Piece) -> tuple:
+        """Get coordinates of Piece instance"""
         for coords, p in self.contents.items():
             if p is piece:
                 return coords

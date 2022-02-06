@@ -1,3 +1,5 @@
+import pytest
+
 from chess.engine.classes.board import ChessBoard
 from chess.engine.classes.piece import King, Pawn, Queen
 from chess.constants import WHITE, BLACK
@@ -115,6 +117,51 @@ def test_load_fen_position():
     board2.load_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
     assert board1.contents == board2.contents
+
+
+def test_fen_position():
+    board = ChessBoard()
+    board.load_standard_setup()
+    assert board.fen_position == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+
+
+# @pytest.mark.parametrize(
+#     "starting_position, move, final_position"[
+#         (
+#             "/".join(
+#                 [
+#                     "rnbqkbnr",
+#                     "pppppppp",
+#                     "8",
+#                     "8",
+#                     "8",
+#                     "8",
+#                     "PPPPPPPP",
+#                     "RNBQKBNR",
+#                 ]
+#             ),
+#             "Nf3",
+#             WHITE,
+#             "/".join(
+#                 [
+#                     "rnbqkbnr",
+#                     "pppppppp",
+#                     "8",
+#                     "8",
+#                     "8",
+#                     "5N2",
+#                     "PPPPPPPP",
+#                     "RNBQKB1R",
+#                 ]
+#             ),
+#         )
+#     ]
+# )
+# def test_do_pgn_move(starting_position, move, final_position):
+#     board = ChessBoard()  # todo: set current player in FEN string
+#     board.load_fen_position(starting_position)
+#     board.do_pgn_move(move)
+#     assert board.fen_position == final_position
 
 
 # todo: Move class. Will be like a diff between positions
