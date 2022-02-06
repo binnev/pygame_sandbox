@@ -30,10 +30,13 @@ def parse_fen_row(string: str) -> List[Union[Piece, None]]:
     for char in string:
         if char.isnumeric():
             pieces.extend([None] * int(char))
-        else:
+        elif char.isalpha():
             piece_class = CLASSES_BY_LETTER[char.lower()]
             team = WHITE if char.isupper() else BLACK
             pieces.append(piece_class(team))
+        else:
+            # if it is a filler character e.g. "."
+            pieces.append(None)
     return pieces
 
 
@@ -77,7 +80,7 @@ def generate_fen_row(row: List[Union[Piece, None]]) -> str:
     string = ""
     empty_squares = 0
     for square in row:
-        if square is not None:
+        if isinstance(square, Piece):
             string += str(empty_squares) if empty_squares else ""
             string += str(square)
             empty_squares = 0

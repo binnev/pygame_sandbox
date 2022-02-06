@@ -80,3 +80,28 @@ def test_parse_fen_position(string, pieces):
 @pytest.mark.parametrize("string, pieces", FEN_POSITION_PIECES)
 def test_generate_fen_position(string, pieces):
     assert generate_fen_position(pieces) == string
+
+
+@pytest.mark.parametrize(
+    "string, pieces",
+    [
+        ("7K/8/8/8/8/8/8/q7", {(7, 7): King(WHITE), (0, 0): Queen(BLACK)}),
+        (
+            "/".join(
+                [
+                    ".......K",
+                    "........",
+                    "........",
+                    "........",
+                    "........",
+                    "........",
+                    "........",
+                    "q.......",
+                ]
+            ),
+            {(7, 7): King(WHITE), (0, 0): Queen(BLACK)},
+        ),
+    ],
+)
+def test_parse_fen_position_can_handle_dots_for_testing_purposes(string, pieces):
+    assert parse_fen_position(string) == pieces
