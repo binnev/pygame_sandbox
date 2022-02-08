@@ -56,8 +56,8 @@ class GuiPiece(PhysicalEntity):
                     y=self.y + random_int(-5, 5),
                     u=1 * random_float(-15, 15),
                     v=1 * random_float(-15, 15),
-                    radius=random_int(2, 7),
-                    color=(200, 200, 200),
+                    radius=random_int(5, 12),
+                    color=(200, 200, 150),
                     gravity=0.1,
                     decay=0.2,
                     friction=0.1,
@@ -67,8 +67,8 @@ class GuiPiece(PhysicalEntity):
     def smoke(self):
         self.particles.add(
             Particle(
-                self.x,
-                self.y,
+                self.x + random_float(-15, 15),
+                self.y + random_float(-15, 15),
                 u=0 + random_float(-1, 1),
                 v=-3 + random_float(-5, 5),
                 radius=random_int(12, 25),
