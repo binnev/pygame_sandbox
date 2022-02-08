@@ -79,6 +79,8 @@ class GuiBoard(Entity):
             for piece in self.pieces:
                 if mouse_hovering_over(piece):
                     piece.state = piece.state_idle
+
+                    # snap to nearest square
                     squares = pygame.sprite.spritecollide(piece, self.squares, dokill=False)
                     nearest_square = min(squares, key=lambda s: distance(s, piece))
                     piece.rect.center = nearest_square.rect.center
@@ -87,4 +89,4 @@ class GuiBoard(Entity):
 def distance(obj1, obj2):
     dx = obj1.rect.centerx - obj2.rect.centerx
     dy = obj1.rect.centery - obj2.rect.centery
-    return math.sqrt(dx**2 + dy**2)
+    return math.sqrt(dx ** 2 + dy ** 2)
