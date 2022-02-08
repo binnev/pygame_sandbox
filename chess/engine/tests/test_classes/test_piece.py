@@ -114,6 +114,140 @@ def test_bishop_moves_obstructed():
     }
 
 
+@pytest.mark.parametrize(
+    "description, param",
+    [
+        (
+            "unobstructed white pawn on starting square has 2 moves",
+            dict(
+                starting_square=(0, 1),
+                team=WHITE,
+                expected_moves={(0, 2), (0, 3)},
+            ),
+        ),
+        (
+            "white pawn on starting square obstructed by piece on next square has no moves",
+            dict(
+                starting_square=(1, 1),
+                team=WHITE,
+                expected_moves=set(),
+            ),
+        ),
+        (
+            "white pawn on starting square obstructed by piece 2 squares away can only move 1 square",
+            dict(
+                starting_square=(2, 1),
+                team=WHITE,
+                expected_moves={(2, 2)},
+            ),
+        ),
+        (
+            "white pawn on arbitrary square has 1 move",
+            dict(
+                starting_square=(3, 2),
+                team=WHITE,
+                expected_moves={(3, 3)},
+            ),
+        ),
+        (
+            "white pawn on back rank has no moves",
+            dict(
+                starting_square=(4, 7),
+                team=WHITE,
+                expected_moves=set(),
+            ),
+        ),
+        (
+            "unobstructed black pawn on starting square has 2 moves",
+            dict(
+                starting_square=(0, 6),
+                team=BLACK,
+                expected_moves={(0, 5), (0, 4)},
+            ),
+        ),
+        (
+            "black pawn on starting square obstructed by piece on next square has no moves",
+            dict(
+                starting_square=(1, 6),
+                team=BLACK,
+                expected_moves=set(),
+            ),
+        ),
+        (
+            "black pawn on starting square obstructed by piece 2 squares away can only move 1 square",
+            dict(
+                starting_square=(2, 6),
+                team=BLACK,
+                expected_moves={(2, 5)},
+            ),
+        ),
+        (
+            "black pawn on arbitrary square has 1 move",
+            dict(
+                starting_square=(3, 5),
+                team=BLACK,
+                expected_moves={(3, 4)},
+            ),
+        ),
+        (
+            "black pawn on back rank has no moves",
+            dict(
+                starting_square=(4, 0),
+                team=BLACK,
+                expected_moves=set(),
+            ),
+        ),
+    ],
+)
+def test_pawn_moves_from_starting_square_obstructed(description, param):
+    board = ChessBoard()
+    board.add_piece(King(), (1, 2))  # obstructs white pawns on 1-file making ANY moves
+    board.add_piece(King(), (2, 3))  # obstructs white pawns on 2-file a double move
+    board.add_piece(King(BLACK), (1, 5))  # obstructs black pawns on 1-file making ANY moves
+    board.add_piece(King(BLACK), (2, 4))  # obstructs black pawns on 2-file a double move
+
+    pawn = Pawn(param["team"])
+    board.add_piece(pawn, param["starting_square"])
+    assert pawn.moves == param["expected_moves"]
+
+
+@pytest.mark.parametrize(
+    "description, param",
+    [
+        (
+            "white pawn on starting square has 2 moves",
+            dict(starting_square=(0, 1), team=WHITE, expected_moves={(0, 2), (0, 3)}),
+        ),
+        (
+            "white pawn on arbitrary square has 1 move",
+            dict(starting_square=(6, 6), team=WHITE, expected_moves={(6, 7)}),
+        ),
+        (
+            "white pawn on back rank can't move any further",
+            dict(starting_square=(7, 7), team=WHITE, expected_moves=set()),
+        ),
+        (
+            "black pawn on starting square has 2 moves",
+            dict(starting_square=(0, 6), team=BLACK, expected_moves={(0, 5), (0, 4)}),
+        ),
+        (
+            "black pawn on arbitrary square has 1 move",
+            dict(starting_square=(0, 5), team=BLACK, expected_moves={(0, 4)}),
+        ),
+        (
+            "black pawn on back rank can't move any further",
+            dict(starting_square=(0, 0), team=BLACK, expected_moves=set()),
+        ),
+    ],
+)
+def test_pawn_moves_from_starting_square_unobstructed(description, param):
+    board = ChessBoard()
+
+    pawn = Pawn(param["team"])
+    board.add_piece(pawn, param["starting_square"])
+    assert pawn.moves == param["expected_moves"]
+
+
 def test_piece__repr__():
 
     piece = Pawn(BLACK)

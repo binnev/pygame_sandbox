@@ -26,6 +26,9 @@ class ChessBoard:
         self.width = width if width else self.width
         self.squares = tuple(Square(x, y) for y in range(self.height) for x in range(self.width))
 
+    def get(self, *args, **kwargs):
+        return self.contents.get(*args, **kwargs)
+
     def load_standard_setup(self):
         self.add_piece(Rook(WHITE), (0, 0))
         self.add_piece(Knight(WHITE), (1, 0))
@@ -149,3 +152,6 @@ class ChessBoard:
             if team == WHITE
             else [Square(x, self.height - 2) for x in range(self.width)]
         )
+
+    def is_pawn_on_starting_square(self, pawn: Pawn):
+        return pawn.square in self.pawn_starting_squares(pawn.team)
