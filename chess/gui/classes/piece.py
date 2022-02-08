@@ -2,17 +2,32 @@ import pygame
 from pygame import Surface, Color
 from pygame.rect import Rect
 
+from base.animation import recolor_image
 from base.input import EventQueue
 from base.objects import PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
+from chess import conf
 from chess.assets.pieces import chess_pieces
+from chess.constants import WHITE, BLACK
 from fighting_game.particles import random_float, Particle, random_int
 
 
 class GuiPiece(PhysicalEntity):
-    width: int = 80
-    height: int = 80
+    width = conf.SQUARE_SIZE
+    height = conf.SQUARE_SIZE
     sprite_name: str
+
+    def __init__(self, x, y, team=WHITE, *groups):
+        super().__init__(*groups)
+        self.team = team
+        self.rect = Rect(0, 0, self.width, self.height)
+        self.rect.center = (x, y)
+        self.image = chess_pieces[self.sprite_name].play(0)
+        if self.team != WHITE:
+            self.image = recolor_image(self.image, {(255, 255, 255): Color("black")})
+        self.state = self.state_idle
+        self.particles = Group()
+        self.child_groups = [self.particles]
 
     def draw(self, surface: Surface, debug: bool = False):
         # todo: this is to make child particles appear behind self. Need to make it so I can
@@ -20,23 +35,12 @@ class GuiPiece(PhysicalEntity):
         super().draw(surface, debug)
         surface.blit(self.image, self.image_rect)
 
-    def __init__(self, x, y, *groups):
-        super().__init__(*groups)
-        self.rect = Rect(0, 0, self.width, self.height)
-        self.rect.center = (x, y)
-        self.image = chess_pieces[self.sprite_name].play(0)
-        self.state = self.state_idle
-        self.particles = Group()
-        self.child_groups = [self.particles]
-
     def state_idle(self):
         if mouse_hovering_over(self):
             self.smoke()
             if any(event.type == pygame.MOUSEBUTTONDOWN for event in EventQueue.events):
                 self.spark()
                 self.state = self.state_grabbed
-        else:
-            self.image = chess_pieces[self.sprite_name].play(0)
 
     def state_grabbed(self):
         self.flame()
@@ -67,12 +71,28 @@ class GuiPiece(PhysicalEntity):
                 self.y,
                 u=0 + random_float(-1, 1),
                 v=-3 + random_float(-5, 5),
-                radius=random_int(25, 50),
-                color=[random_int(10, 80)] * 3,
+                radius=random_int(12, 25),
+                color=self.flame_color,
                 gravity=-0.02,
                 friction=0.025,
-                blit_flag=False,
-                decay=0.5,
+                blit_flag=pygame.BLEND_SUB,
+                decay=1.5,
+            )
+        )
+
+    @property
+    def flame_color(self):
+        return (
+            (
+                random_int(0, 80),
+                random_int(0, 15),
+                random_int(0, 100),
+            )
+            if self.team == BLACK
+            else (
+                random_int(0, 60),
+                random_int(0, 60),
+                random_int(0, 10),
             )
         )
 
@@ -84,14 +104,11 @@ class GuiPiece(PhysicalEntity):
                 u=30 * 0 + random_float(-5, 5),
                 v=30 * 0 + random_float(-5, 5),
                 radius=random_int(30, 60),
-                color=(
-                    random_int(30, 60),
-                    random_int(0, 15),
-                    random_int(40, 80),
-                ),
+                color=self.flame_color,
                 gravity=-0.5,
                 decay=1,
                 friction=0.1,
+                blit_flag=pygame.BLEND_SUB,
             )
         )
 
