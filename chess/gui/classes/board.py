@@ -1,14 +1,15 @@
+import math
 import random
 
 import pygame
+from pygame import Surface, Color
+from pygame import Vector2
 from pygame.rect import Rect
 
 from base.input import EventQueue
 from base.objects import Entity, PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf
-from pygame import Surface, Color
-
 from chess.constants import BLACK, WHITE
 from chess.gui.classes.piece import Pawn, King, Queen, Bishop, Knight, Rook, GuiPiece
 
@@ -78,3 +79,12 @@ class GuiBoard(Entity):
             for piece in self.pieces:
                 if mouse_hovering_over(piece):
                     piece.state = piece.state_idle
+                    squares = pygame.sprite.spritecollide(piece, self.squares, dokill=False)
+                    nearest_square = min(squares, key=lambda s: distance(s, piece))
+                    piece.rect.center = nearest_square.rect.center
+
+
+def distance(obj1, obj2):
+    dx = obj1.rect.centerx - obj2.rect.centerx
+    dy = obj1.rect.centery - obj2.rect.centery
+    return math.sqrt(dx**2 + dy**2)
