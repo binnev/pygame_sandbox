@@ -155,3 +155,6 @@ class ChessBoard:
 
     def is_pawn_on_starting_square(self, pawn: Pawn):
         return pawn.square in self.pawn_starting_squares(pawn.team)
+
+    def switch_player(self):
+        self.current_player = WHITE if self.current_player == BLACK else BLACK
