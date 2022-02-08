@@ -1,13 +1,16 @@
 import random
 
+import pygame
 from pygame.rect import Rect
+
+from base.input import EventQueue
 from base.objects import Entity, PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf
 from pygame import Surface, Color
 
 from chess.constants import BLACK, WHITE
-from chess.gui.classes.piece import Pawn, King, Queen, Bishop, Knight, Rook
+from chess.gui.classes.piece import Pawn, King, Queen, Bishop, Knight, Rook, GuiPiece
 
 
 class GuiSquare(PhysicalEntity):
@@ -43,6 +46,7 @@ class GuiBoard(Entity):
         self.squares = Group()
         self.pieces = Group()
         self.child_groups = [self.squares, self.pieces]
+        self.state = self.state_idle
 
         for x in range(8):
             for y in range(8):
@@ -61,3 +65,16 @@ class GuiBoard(Entity):
 
     def add_pieces(self, *objects):
         self.add_to_group(*objects, group=self.pieces)
+
+    def state_idle(self):
+        if EventQueue.filter(pygame.MOUSEBUTTONDOWN):
+            for piece in self.pieces:
+                piece: GuiPiece
+                if mouse_hovering_over(piece):
+                    piece.spark()
+                    piece.state = piece.state_grabbed
+                    break  # only one piece at a time
+        if EventQueue.filter(pygame.MOUSEBUTTONUP):
+            for piece in self.pieces:
+                if mouse_hovering_over(piece):
+                    piece.state = piece.state_idle

@@ -38,15 +38,10 @@ class GuiPiece(PhysicalEntity):
     def state_idle(self):
         if mouse_hovering_over(self):
             self.smoke()
-            if any(event.type == pygame.MOUSEBUTTONDOWN for event in EventQueue.events):
-                self.spark()
-                self.state = self.state_grabbed
 
     def state_grabbed(self):
         self.flame()
         self.rect.center = pygame.mouse.get_pos()
-        if any(event.type == pygame.MOUSEBUTTONUP for event in EventQueue.events):
-            self.state = self.state_idle
 
     def spark(self):
         for _ in range(20):

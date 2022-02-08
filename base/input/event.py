@@ -13,3 +13,7 @@ class EventQueue:
     def update(cls):
         events = pygame.event.get()
         cls.events = events
+
+    @classmethod
+    def filter(cls, event_type: int):
+        return [event for event in cls.events if event.type == event_type]
