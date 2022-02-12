@@ -67,6 +67,22 @@ class GuiPiece(PhysicalEntity):
                 )
             )
 
+    def blood(self):
+        for _ in range(20):
+            self.particles.add(
+                Particle(
+                    x=self.x + random_int(-5, 5),
+                    y=self.y + random_int(-5, 5),
+                    u=1 * random_float(-15, 15),
+                    v=1 * random_float(-15, 15),
+                    radius=random_int(5, 12),
+                    color=(255, 0, 0),
+                    gravity=0.1,
+                    decay=0.2,
+                    friction=0.1,
+                )
+            )
+
     def smoke(self):
         self.particles.add(
             Particle(

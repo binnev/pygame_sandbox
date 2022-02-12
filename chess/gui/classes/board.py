@@ -76,7 +76,6 @@ class GuiBoard(Entity):
             for piece in self.pieces:
                 piece: GuiPiece
                 if mouse_hovering_over(piece):
-                    piece.spark()
                     piece.state = piece.state_grabbed
                     self.selected_pieces.add(piece)
                     self.pieces.remove(piece)
@@ -93,7 +92,7 @@ class GuiBoard(Entity):
                 # remove other pieces on that square
                 capture = pygame.sprite.spritecollide(piece, self.pieces, dokill=True)
                 if capture:
-                    piece.spark()
+                    piece.blood()
 
                 self.selected_pieces.remove(piece)
                 self.pieces.add(piece)
