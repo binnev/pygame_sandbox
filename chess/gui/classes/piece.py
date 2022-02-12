@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import pygame
 from pygame import Surface, Color
 from pygame.rect import Rect
@@ -9,13 +11,19 @@ from base.stuff.gui_test import mouse_hovering_over
 from chess import conf
 from chess.assets.pieces import chess_pieces
 from chess.constants import WHITE, BLACK
+from chess.gui.utils import distance
 from fighting_game.particles import random_float, Particle, random_int
+
+
+if TYPE_CHECKING:
+    from chess.gui.classes.board import GuiBoard
 
 
 class GuiPiece(PhysicalEntity):
     width = conf.SQUARE_SIZE
     height = conf.SQUARE_SIZE
     sprite_name: str
+    board: "GuiBoard"
 
     def __init__(self, x, y, team=WHITE, *groups):
         super().__init__(*groups)
@@ -38,10 +46,25 @@ class GuiPiece(PhysicalEntity):
     def state_idle(self):
         if mouse_hovering_over(self):
             self.smoke()
+            # if EventQueue.filter(pygame.MOUSEBUTTONDOWN):
+            #     self.spark()
+            #     self.state = self.state_grabbed
 
     def state_grabbed(self):
         self.flame()
         self.rect.center = pygame.mouse.get_pos()
+        if EventQueue.filter(pygame.MOUSEBUTTONUP):
+            # snap to nearest square
+            squares = pygame.sprite.spritecollide(self, self.board.squares, dokill=False)
+            nearest_square = min(squares, key=lambda s: distance(s, self))
+            self.rect.center = nearest_square.rect.center
+            self.state = self.state_idle
+
+            # kill any other pieces on that square
+            pieces = pygame.sprite.spritecollide(self, self.board.pieces, dokill=False)
+            for piece in pieces:
+                if piece is not self:
+                    piece.kill()
 
     def spark(self):
         for _ in range(20):
