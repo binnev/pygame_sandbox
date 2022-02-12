@@ -25,6 +25,7 @@ class GuiPiece(PhysicalEntity):
     sprite_name: str
     board: "GuiBoard"
 
+
     def __init__(self, x, y, team=WHITE, *groups):
         super().__init__(*groups)
         self.team = team

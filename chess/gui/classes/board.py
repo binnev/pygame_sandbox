@@ -18,6 +18,7 @@ from chess.gui.utils import distance
 class GuiSquare(PhysicalEntity):
     width = conf.SQUARE_SIZE
     height = conf.SQUARE_SIZE
+    color: Color
 
     def __init__(self, x, y, coords, color: Color, *groups):
         """
@@ -29,17 +30,24 @@ class GuiSquare(PhysicalEntity):
         super().__init__(*groups)
         self.rect = Rect(0, 0, self.width, self.height)
         self.rect.center = (x, y)
-        self.image = Surface((self.width - 5, self.height - 5))
-        self.image.fill(color)
         self.color = color
         self.coords = coords
-        self.state = self.state_idle
 
-    def state_idle(self):
+    @property
+    def image(self):
+        image = Surface((self.width - 5, self.height - 5))
         if mouse_hovering_over(self):
-            self.image.fill((160, 160, 130))
+            image.fill((160, 160, 130))
         else:
-            self.image.fill(self.color)
+            image.fill(self.color)
+
+        font = pygame.font.Font(pygame.font.get_default_font(), 20)
+        text = font.render(f"{self.coords[0]}, {self.coords[1]}", True, Color("red"))
+        textRect = text.get_rect()
+        textRect.bottomleft = image.get_rect().bottomleft
+        image.blit(text, textRect)
+
+        return image
 
 
 class GuiBoard(Entity):
@@ -60,10 +68,12 @@ class GuiBoard(Entity):
                 screen_y = conf.SQUARE_SIZE * 10 - (y + 1) * conf.SQUARE_SIZE
                 sq = GuiSquare(screen_x, screen_y, (x, y), color)
                 self.add_squares(sq)
-                klass = random.choice([Pawn, King, Queen, Bishop, Knight, Rook])
-                team = random.choice([WHITE, BLACK])
-                piece = klass(screen_x, screen_y, team)
-                self.add_pieces(piece)
+
+                # # add random pieces
+                # klass = random.choice([Pawn, King, Queen, Bishop, Knight, Rook])
+                # team = random.choice([WHITE, BLACK])
+                # piece = klass(screen_x, screen_y, team)
+                # self.add_pieces(piece)
 
     def add_squares(self, *objects):
         self.add_to_group(*objects, group=self.squares)
