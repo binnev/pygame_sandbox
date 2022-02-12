@@ -49,7 +49,8 @@ class GuiBoard(Entity):
         super().__init__(*groups)
         self.squares = Group()
         self.pieces = Group()
-        self.child_groups = [self.squares, self.pieces]
+        self.selected_pieces = Group()
+        self.child_groups = [self.squares, self.pieces, self.selected_pieces]
         self.state = self.state_idle
 
         for x in range(8):
@@ -77,4 +78,22 @@ class GuiBoard(Entity):
                 if mouse_hovering_over(piece):
                     piece.spark()
                     piece.state = piece.state_grabbed
+                    self.selected_pieces.add(piece)
+                    self.pieces.remove(piece)
                     break  # only one piece at a time
+
+        if EventQueue.filter(pygame.MOUSEBUTTONUP):
+            for piece in self.selected_pieces:
+                piece.state = piece.state_idle
+
+                # snap to nearest square
+                nearest_sq = min(self.squares, key=lambda s: distance(s, piece))
+                piece.rect.center = nearest_sq.rect.center
+
+                # remove other pieces on that square
+                capture = pygame.sprite.spritecollide(piece, self.pieces, dokill=True)
+                if capture:
+                    piece.spark()
+
+                self.selected_pieces.remove(piece)
+                self.pieces.add(piece)
