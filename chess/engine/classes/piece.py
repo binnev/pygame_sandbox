@@ -1,12 +1,13 @@
 from math import inf
-
-from numpy import array
 from typing import TYPE_CHECKING, Tuple
 
+from numpy import array
+
 from chess.constants import WHITE, BLACK
+from chess.engine.typing import Square
 
 if TYPE_CHECKING:
-    from .board import ChessBoard, Square
+    from .board import ChessBoard
 
 BISHOP_DIRECTIONS = ((1, 1), (1, -1), (-1, 1), (-1, -1))
 ROOK_DIRECTIONS = ((0, 1), (0, -1), (1, 0), (-1, 0))
@@ -65,7 +66,7 @@ class Piece:
         }
 
     @property
-    def square(self) -> "Square":
+    def square(self) -> Square:
         """Coordinates of self on board"""
         try:
             return self.board.locate(self)

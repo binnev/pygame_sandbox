@@ -5,14 +5,13 @@ from typing import Dict, Tuple
 
 from chess.constants import WHITE, BLACK
 from chess.engine.classes.piece import Piece, Rook, Knight, Bishop, Queen, King, Pawn
+from chess.engine.typing import Square, Move
 from chess.notation import (
     parse_pgn_move,
     parse_fen_string,
     parse_fen_position,
     generate_fen_position,
 )
-
-Square = namedtuple("Square", "x y")
 
 
 class ChessBoard:
@@ -82,7 +81,8 @@ class ChessBoard:
                 candidate_pieces = [piece for piece in candidate_pieces if piece.square.x == x]
 
         piece = candidate_pieces[0]
-        self.move_piece(piece.square, target_square)
+        move = Move(piece.square, target_square)
+        self.do_move(move)
 
     def add_piece(self, piece: Piece, square: Square):
         square = Square(*square)
@@ -92,7 +92,8 @@ class ChessBoard:
     def remove_piece(self, square: Square):
         del self.contents[square]
 
-    def move_piece(self, square1: Square, square2: Square):
+    def do_move(self, move: Move):
+        square1, square2 = move
         self.contents[square2] = self.contents.pop(square1)
 
     def __str__(self, V_SEP="\n", H_SEP=" "):
@@ -112,15 +113,13 @@ class ChessBoard:
         return string.ascii_lowercase.index(letter)
 
     @classmethod
-    def square_coords(cls, name: str):
+    def square_coords(cls, name: str) -> Square:
         """
         a1 -> (0, 0)
         h8 -> (7, 7)
         """
         letter, number = name.lower()
-        x = cls.letter_to_x(letter)
-        y = cls.number_to_y(number)
-        return (x, y)
+        return Square(x=cls.letter_to_x(letter), y=cls.number_to_y(number))
 
     @classmethod
     def y_to_number(cls, y: int):
@@ -172,9 +171,9 @@ class ChessBoard:
         king = self.get_king(team)
         return king.square in threatened_squares
 
-    def after_move(self, move: Tuple[Square, Square]) -> "ChessBoard":
+    def after_move(self, move: Move) -> "ChessBoard":
         new_position = deepcopy(self)
-        new_position.move_piece(*move)
+        new_position.do_move(move)
         return new_position
 
     def is_checkmated(self, team: str):
@@ -193,7 +192,7 @@ class ChessBoard:
     def is_stalemated(self, team: str):
         return not self.team_legal_moves(team) and not self.is_in_check(team)
 
-    def is_move_legal(self, move: Tuple[Square, Square]):
+    def is_move_legal(self, move: Move):
         square1, square2 = move
         moving_piece = self.contents.get(square1)
         team = moving_piece.team
