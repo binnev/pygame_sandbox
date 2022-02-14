@@ -5,7 +5,7 @@ from pygame.rect import Rect
 from base.input import EventQueue
 from base.objects import Entity, PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
-from chess import conf
+from chess import conf, sounds
 from chess.engine.classes.board import ChessBoard
 from chess.engine.typing import Move
 from chess.gui.classes.piece import (
@@ -13,6 +13,7 @@ from chess.gui.classes.piece import (
     CLASSES_BY_LETTER,
 )
 from chess.gui.utils import distance
+from chess.utils import other_team
 
 
 class GuiSquare(PhysicalEntity):
@@ -140,6 +141,10 @@ class GuiBoard(Entity):
             # update engine
             self.engine.do_move(move)
             print(self.engine)
+            if self.engine.is_checkmated(other_team(piece.team)):
+                sounds.checkmate.play()
+            if self.engine.is_in_check(other_team(piece.team)):
+                sounds.check.play()
 
             # snap to nearest square
             piece.rect.center = new_square.rect.center

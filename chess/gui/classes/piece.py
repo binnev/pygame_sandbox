@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 class GuiPiece(PhysicalEntity):
     letter: str
+    team: str
     width = conf.SQUARE_SIZE
     height = conf.SQUARE_SIZE
     sprite_name: str
