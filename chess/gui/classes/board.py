@@ -69,11 +69,33 @@ class GuiBoard(Entity):
                 sq = GuiSquare(screen_x, screen_y, (x, y), color)
                 self.add_squares(sq)
 
-                # add random pieces
-                klass = random.choice([Pawn, King, Queen, Bishop, Knight, Rook])
-                team = random.choice([WHITE, BLACK])
-                piece = klass(screen_x, screen_y, team)
-                self.add_pieces(piece)
+        self.load_standard_setup()
+
+    def load_standard_setup(self):
+        self.add_piece_to_square(Rook(0, 0, WHITE), (0, 0))
+        self.add_piece_to_square(Knight(0, 0, WHITE), (1, 0))
+        self.add_piece_to_square(Bishop(0, 0, WHITE), (2, 0))
+        self.add_piece_to_square(Queen(0, 0, WHITE), (3, 0))
+        self.add_piece_to_square(King(0, 0, WHITE), (4, 0))
+        self.add_piece_to_square(Bishop(0, 0, WHITE), (5, 0))
+        self.add_piece_to_square(Knight(0, 0, WHITE), (6, 0))
+        self.add_piece_to_square(Rook(0, 0, WHITE), (7, 0))
+        self.add_piece_to_square(Rook(0, 0, BLACK), (0, 7))
+        self.add_piece_to_square(Knight(0, 0, BLACK), (1, 7))
+        self.add_piece_to_square(Bishop(0, 0, BLACK), (2, 7))
+        self.add_piece_to_square(Queen(0, 0, BLACK), (3, 7))
+        self.add_piece_to_square(King(0, 0, BLACK), (4, 7))
+        self.add_piece_to_square(Bishop(0, 0, BLACK), (5, 7))
+        self.add_piece_to_square(Knight(0, 0, BLACK), (6, 7))
+        self.add_piece_to_square(Rook(0, 0, BLACK), (7, 7))
+        for x in range(8):
+            self.add_piece_to_square(Pawn(0, 0, WHITE), (x, 1))
+            self.add_piece_to_square(Pawn(0, 0, BLACK), (x, 6))
+
+    def add_piece_to_square(self, piece, coords):
+        square = next(s for s in self.squares if s.coords == coords)
+        piece.rect.center = square.rect.center
+        self.add_pieces(piece)
 
     def add_squares(self, *objects):
         self.add_to_group(*objects, group=self.squares)
