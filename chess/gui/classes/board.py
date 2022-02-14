@@ -92,6 +92,7 @@ class GuiBoard(Entity):
     def add_piece_to_square(self, piece, coords):
         square = self.square_coords[coords]
         piece.rect.center = square.rect.center
+        piece.square = square
         self.add_pieces(piece)
 
     def add_squares(self, *objects):

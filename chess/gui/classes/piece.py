@@ -16,7 +16,7 @@ from fighting_game.particles import random_float, Particle, random_int
 
 
 if TYPE_CHECKING:
-    from chess.gui.classes.board import GuiBoard
+    from chess.gui.classes.board import GuiBoard, GuiSquare
 
 
 class GuiPiece(PhysicalEntity):
@@ -24,6 +24,7 @@ class GuiPiece(PhysicalEntity):
     height = conf.SQUARE_SIZE
     sprite_name: str
     board: "GuiBoard"
+    square: "GuiSquare"
 
 
     def __init__(self, x, y, team=WHITE, *groups):
