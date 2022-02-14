@@ -1,18 +1,22 @@
-import math
-import random
-
 import pygame
 from pygame import Surface, Color
-from pygame import Vector2
 from pygame.rect import Rect
 
 from base.input import EventQueue
 from base.objects import Entity, PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf
-from chess.constants import BLACK, WHITE
 from chess.engine.classes.board import ChessBoard
-from chess.gui.classes.piece import Pawn, King, Queen, Bishop, Knight, Rook, GuiPiece
+from chess.gui.classes.piece import (
+    Pawn,
+    King,
+    Queen,
+    Bishop,
+    Knight,
+    Rook,
+    GuiPiece,
+    CLASSES_BY_LETTER,
+)
 from chess.gui.utils import distance
 
 
@@ -78,14 +82,7 @@ class GuiBoard(Entity):
 
     def load_engine_position(self):
         for coords, engine_piece in self.engine.contents.items():
-            klass = {
-                "k": King,
-                "q": Queen,
-                "b": Bishop,
-                "n": Knight,
-                "r": Rook,
-                "p": Pawn,
-            }[engine_piece.letter]
+            klass = CLASSES_BY_LETTER[engine_piece.letter]
             piece = klass(0, 0, engine_piece.team)
             self.add_piece_to_square(piece, coords)
 

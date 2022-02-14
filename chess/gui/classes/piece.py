@@ -20,12 +20,12 @@ if TYPE_CHECKING:
 
 
 class GuiPiece(PhysicalEntity):
+    letter: str
     width = conf.SQUARE_SIZE
     height = conf.SQUARE_SIZE
     sprite_name: str
     board: "GuiBoard"
     square: "GuiSquare"
-
 
     def __init__(self, x, y, team=WHITE, *groups):
         super().__init__(*groups)
@@ -135,24 +135,34 @@ class GuiPiece(PhysicalEntity):
 
 
 class Pawn(GuiPiece):
+    letter = "p"
     sprite_name = "pawn"
 
 
 class Queen(GuiPiece):
+    letter = "q"
     sprite_name = "queen"
 
 
 class King(GuiPiece):
+    letter = "k"
     sprite_name = "king"
 
 
 class Bishop(GuiPiece):
+    letter = "b"
     sprite_name = "bishop"
 
 
 class Rook(GuiPiece):
+    letter = "r"
     sprite_name = "rook"
 
 
 class Knight(GuiPiece):
+    letter = "n"
     sprite_name = "knight"
+
+
+CLASSES = [King, Queen, Rook, Bishop, Knight, Pawn]
+CLASSES_BY_LETTER = {cls.letter: cls for cls in CLASSES}
