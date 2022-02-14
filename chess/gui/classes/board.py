@@ -41,11 +41,11 @@ class GuiSquare(PhysicalEntity):
         else:
             image.fill(self.color)
 
-        font = pygame.font.Font(pygame.font.get_default_font(), 20)
-        text = font.render(f"{self.coords[0]}, {self.coords[1]}", True, Color("red"))
-        textRect = text.get_rect()
-        textRect.bottomleft = image.get_rect().bottomleft
-        image.blit(text, textRect)
+        # font = pygame.font.Font(pygame.font.get_default_font(), 20)
+        # text = font.render(f"{self.coords[0]}, {self.coords[1]}", True, Color("red"))
+        # textRect = text.get_rect()
+        # textRect.bottomleft = image.get_rect().bottomleft
+        # image.blit(text, textRect)
 
         return image
 
@@ -69,11 +69,11 @@ class GuiBoard(Entity):
                 sq = GuiSquare(screen_x, screen_y, (x, y), color)
                 self.add_squares(sq)
 
-                # # add random pieces
-                # klass = random.choice([Pawn, King, Queen, Bishop, Knight, Rook])
-                # team = random.choice([WHITE, BLACK])
-                # piece = klass(screen_x, screen_y, team)
-                # self.add_pieces(piece)
+                # add random pieces
+                klass = random.choice([Pawn, King, Queen, Bishop, Knight, Rook])
+                team = random.choice([WHITE, BLACK])
+                piece = klass(screen_x, screen_y, team)
+                self.add_pieces(piece)
 
     def add_squares(self, *objects):
         self.add_to_group(*objects, group=self.squares)
