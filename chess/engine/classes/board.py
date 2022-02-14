@@ -190,13 +190,15 @@ class ChessBoard:
 
         return True
 
+    def is_stalemated(self, team: str):
+        return not self.team_legal_moves(team) and not self.is_in_check(team)
+
     def is_move_legal(self, move: Tuple[Square, Square]):
         square1, square2 = move
         moving_piece = self.contents.get(square1)
         team = moving_piece.team
         new_position = self.after_move(move)
-        if new_position.is_in_check(team):
-            return False
+        return square2 in self.squares and not new_position.is_in_check(team)
 
     def team_moves(self, team: str):
         return [
@@ -208,3 +210,9 @@ class ChessBoard:
 
     def team_legal_moves(self, team: str):
         return [move for move in self.team_moves(team) if self.is_move_legal(move)]
+
+    def piece_legal_moves(self, piece: Piece):
+        square1 = piece.square
+        return [
+            (square1, square2) for square2 in piece.moves if self.is_move_legal((square1, square2))
+        ]

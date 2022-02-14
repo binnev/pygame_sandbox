@@ -607,9 +607,85 @@ def test_pawn_starting_squares():
                 expected_result=True,
             ),
         ),
+        (
+            "shouldn't be check",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "K.......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=False,
+            ),
+        ),
+        (
+            "shouldn't be check",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        ".K......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=False,
+            ),
+        ),
+        (
+            "shouldn't be check",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "K.......",
+                        "........",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=False,
+            ),
+        ),
+        (
+            "shouldn't be check",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        ".K......",
+                        "........",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=False,
+            ),
+        ),
     ],
 )
-def test_chessboard_is_check(description, params):
+def test_chessboard_is_in_check(description, params):
     board = ChessBoard()
     board.load_fen_position(params["position"])
     assert board.is_in_check(params["team"]) == params["expected_result"]
@@ -810,3 +886,233 @@ def test_chessboard_team_moves(description, params):
     board = ChessBoard()
     board.load_fen_position(params["position"])
     assert board.team_moves(params["team"]) == params["expected_result"]
+
+
+@pytest.mark.parametrize(
+    "description, params",
+    [
+        (
+            "legal move",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "K.......",
+                    ]
+                ),
+                move=[(0, 0), (1, 0)],
+                expected_result=True,
+            ),
+        ),
+        (
+            "square not on board",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "K.......",
+                    ]
+                ),
+                move=[(0, 0), (420, 69)],
+                expected_result=False,
+            ),
+        ),
+        (
+            "move puts self in check",
+            dict(
+                position="/".join(
+                    [
+                        "q.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "B.......",
+                        "K.......",
+                    ]
+                ),
+                move=[(0, 1), (1, 2)],
+                expected_result=False,
+            ),
+        ),
+        (
+            "move blocks a check",
+            dict(
+                position="/".join(
+                    [
+                        "q.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        ".B......",
+                        "........",
+                        "K.......",
+                    ]
+                ),
+                move=[(1, 2), (0, 1)],
+                expected_result=True,
+            ),
+        ),
+    ],
+)
+def test_chessboard_is_move_legal(description, params):
+    board = ChessBoard()
+    board.load_fen_position(params["position"])
+    assert board.is_move_legal(params["move"]) == params["expected_result"]
+
+
+@pytest.mark.parametrize(
+    "description, params",
+    [
+        (
+            "two kings",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "K.......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=[
+                    ((0, 0), (0, 1)),
+                    ((0, 0), (1, 0)),
+                    ((0, 0), (1, 1)),
+                ],
+            ),
+        ),
+        (
+            "only the king can move because of the pin",
+            dict(
+                position="/".join(
+                    [
+                        "q.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "B.......",
+                        "K.......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=[
+                    ((0, 0), (1, 0)),
+                    ((0, 0), (1, 1)),
+                ],
+            ),
+        ),
+        (
+            "stalemate",
+            dict(
+                position="/".join(
+                    [
+                        "qr......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "B.......",
+                        "K.......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=[],
+            ),
+        ),
+    ],
+)
+def test_chessboard_team_legal_moves(description, params):
+    board = ChessBoard()
+    board.load_fen_position(params["position"])
+    assert board.team_legal_moves(params["team"]) == params["expected_result"]
+
+
+@pytest.mark.parametrize(
+    "description, params",
+    [
+        (
+            "two kings",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "K.......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=False,
+            ),
+        ),
+        (
+            "stalemate",
+            dict(
+                position="/".join(
+                    [
+                        "qr......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "B.......",
+                        "K.......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=True,
+            ),
+        ),
+        (
+            "king and queen stalemate",
+            dict(
+                position="/".join(
+                    [
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "..q.k...",
+                        "........",
+                        "...K....",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=True,
+            ),
+        ),
+    ],
+)
+def test_chessboard_is_stalemated(description, params):
+    board = ChessBoard()
+    board.load_fen_position(params["position"])
+    assert board.is_stalemated(params["team"]) == params["expected_result"]
