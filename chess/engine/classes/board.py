@@ -172,9 +172,9 @@ class ChessBoard:
         king = self.get_king(team)
         return king.square in threatened_squares
 
-    def after_move(self, square1: Square, square2: Square) -> "ChessBoard":
+    def after_move(self, move: Tuple[Square, Square]) -> "ChessBoard":
         new_position = deepcopy(self)
-        new_position.move_piece(square1, square2)
+        new_position.move_piece(*move)
         return new_position
 
     def is_checkmated(self, team: str):
@@ -183,12 +183,28 @@ class ChessBoard:
             return False
 
         # can any move make it not check
-        for coords, piece in self.contents.items():
-            if piece.team != team:
-                continue  # our opponent can't save us
-            for square in piece.moves:
-                new_position = self.after_move(piece.square, square)
-                if not new_position.is_in_check(team):
-                    return False
+        for move in self.team_moves(team):
+            new_position = self.after_move(move)
+            if not new_position.is_in_check(team):
+                return False
 
         return True
+
+    def is_move_legal(self, move: Tuple[Square, Square]):
+        square1, square2 = move
+        moving_piece = self.contents.get(square1)
+        team = moving_piece.team
+        new_position = self.after_move(move)
+        if new_position.is_in_check(team):
+            return False
+
+    def team_moves(self, team: str):
+        return [
+            (piece.square, square)
+            for coords, piece in self.contents.items()
+            for square in piece.moves
+            if piece.team == team
+        ]
+
+    def team_legal_moves(self, team: str):
+        return [move for move in self.team_moves(team) if self.is_move_legal(move)]

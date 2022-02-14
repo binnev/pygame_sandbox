@@ -609,10 +609,10 @@ def test_pawn_starting_squares():
         ),
     ],
 )
-def test_chessboard_is_expected_result(description, params):
+def test_chessboard_is_check(description, params):
     board = ChessBoard()
     board.load_fen_position(params["position"])
-    assert board.is_expected_result(params["team"]) == params["expected_result"]
+    assert board.is_in_check(params["team"]) == params["expected_result"]
 
 
 @pytest.mark.parametrize(
@@ -776,3 +776,37 @@ def test_chessboard_is_checkmated(description, params):
     board = ChessBoard()
     board.load_fen_position(params["position"])
     assert board.is_checkmated(params["team"]) == params["expected_result"]
+
+
+@pytest.mark.parametrize(
+    "description, params",
+    [
+        (
+            "starting position",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "K.......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=[
+                    ((0, 0), (0, 1)),
+                    ((0, 0), (1, 0)),
+                    ((0, 0), (1, 1)),
+                ],
+            ),
+        ),
+    ],
+)
+def test_chessboard_team_moves(description, params):
+    board = ChessBoard()
+    board.load_fen_position(params["position"])
+    assert board.team_moves(params["team"]) == params["expected_result"]
