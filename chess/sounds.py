@@ -18,8 +18,9 @@ def _(name):
     return load_sound(f"{name}")
 
 
-pygame.mixer.pre_init(32000, -16, 2, 512)
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.mixer.init()
 
 check = _("check")
 checkmate = _("checkmate")
+stalemate = _("stalemate")

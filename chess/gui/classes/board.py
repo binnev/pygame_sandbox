@@ -143,8 +143,10 @@ class GuiBoard(Entity):
             print(self.engine)
             if self.engine.is_checkmated(other_team(piece.team)):
                 sounds.checkmate.play()
-            if self.engine.is_in_check(other_team(piece.team)):
+            elif self.engine.is_in_check(other_team(piece.team)):
                 sounds.check.play()
+            elif self.engine.is_stalemated(other_team(piece.team)):
+                sounds.stalemate.play()
 
             # snap to nearest square
             piece.rect.center = new_square.rect.center
