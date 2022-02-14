@@ -1,7 +1,7 @@
 import string
 from collections import namedtuple
 from copy import deepcopy
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 from chess.constants import WHITE, BLACK
 from chess.engine.classes.piece import Piece, Rook, Knight, Bishop, Queen, King, Pawn
@@ -26,7 +26,7 @@ class ChessBoard:
         self.width = width if width else self.width
         self.squares = tuple(Square(x, y) for y in range(self.height) for x in range(self.width))
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Piece:
         return self.contents.get(*args, **kwargs)
 
     def load_standard_setup(self):
@@ -59,7 +59,7 @@ class ChessBoard:
             self.add_piece(piece, square)
 
     @property
-    def fen_position(self):
+    def fen_position(self) -> str:
         return generate_fen_position(self.contents)
 
     def do_pgn_move(self, string):
@@ -96,7 +96,7 @@ class ChessBoard:
         square1, square2 = move
         self.contents[square2] = self.contents.pop(square1)
 
-    def __str__(self, V_SEP="\n", H_SEP=" "):
+    def __str__(self, V_SEP="\n", H_SEP=" ") -> str:
         xs = range(self.width)
         ys = range(0, -self.height, -1)
         return V_SEP.join(
@@ -105,11 +105,11 @@ class ChessBoard:
         )
 
     @classmethod
-    def number_to_y(cls, number: str):
+    def number_to_y(cls, number: str) -> int:
         return int(number) - 1
 
     @classmethod
-    def letter_to_x(cls, letter: str):
+    def letter_to_x(cls, letter: str) -> int:
         return string.ascii_lowercase.index(letter)
 
     @classmethod
@@ -122,15 +122,15 @@ class ChessBoard:
         return Square(x=cls.letter_to_x(letter), y=cls.number_to_y(number))
 
     @classmethod
-    def y_to_number(cls, y: int):
+    def y_to_number(cls, y: int) -> str:
         return str(y + 1)
 
     @classmethod
-    def x_to_letter(cls, x: int):
+    def x_to_letter(cls, x: int) -> str:
         return string.ascii_lowercase[x]
 
     @classmethod
-    def square_name(cls, square: Square):
+    def square_name(cls, square: Square) -> str:
         """
         (0, 0) -> a1
         (7, 7) -> h8
@@ -146,23 +146,23 @@ class ChessBoard:
             if p is piece:
                 return Square(*coords)
 
-    def pawn_starting_squares(self, team):
+    def pawn_starting_squares(self, team) -> List[Square]:
         return (
             [Square(x, 1) for x in range(self.width)]
             if team == WHITE
             else [Square(x, self.height - 2) for x in range(self.width)]
         )
 
-    def is_pawn_on_starting_square(self, pawn: Pawn):
+    def is_pawn_on_starting_square(self, pawn: Pawn) -> bool:
         return pawn.square in self.pawn_starting_squares(pawn.team)
 
     def switch_player(self):
         self.current_player = WHITE if self.current_player == BLACK else BLACK
 
-    def get_king(self, team: str):
+    def get_king(self, team: str) -> King:
         return next(p for p in self.contents.values() if isinstance(p, King) and p.team == team)
 
-    def is_in_check(self, team: str):
+    def is_in_check(self, team: str) -> bool:
         threatened_squares = []
         for coords, piece in self.contents.items():
             if piece.team == team:
@@ -176,7 +176,7 @@ class ChessBoard:
         new_position.do_move(move)
         return new_position
 
-    def is_checkmated(self, team: str):
+    def is_checkmated(self, team: str) -> bool:
         # is it check
         if not self.is_in_check(team):
             return False
@@ -189,31 +189,31 @@ class ChessBoard:
 
         return True
 
-    def is_stalemated(self, team: str):
+    def is_stalemated(self, team: str) -> bool:
         return not self.team_legal_moves(team) and not self.is_in_check(team)
 
-    def is_move_legal(self, move: Move):
+    def is_move_legal(self, move: Move) -> bool:
         square1, square2 = move
         moving_piece = self.contents.get(square1)
         team = moving_piece.team
         new_position = self.after_move(move)
         return square2 in self.squares and not new_position.is_in_check(team)
 
-    def team_moves(self, team: str):
+    def team_moves(self, team: str) -> List[Move]:
         return [
-            (piece.square, square)
+            Move(piece.square, square)
             for coords, piece in self.contents.items()
             for square in piece.moves
             if piece.team == team
         ]
 
-    def team_legal_moves(self, team: str):
+    def team_legal_moves(self, team: str) -> List[Move]:
         return [move for move in self.team_moves(team) if self.is_move_legal(move)]
 
-    def piece_legal_moves(self, piece_square: Square):
+    def piece_legal_moves(self, piece_square: Square) -> List[Move]:
         piece = self.contents.get(piece_square)
         return [
-            (piece_square, square2)
+            Move(piece_square, square2)
             for square2 in piece.moves
-            if self.is_move_legal((piece_square, square2))
+            if self.is_move_legal(Move(piece_square, square2))
         ]

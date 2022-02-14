@@ -8,12 +8,6 @@ from base.stuff.gui_test import mouse_hovering_over
 from chess import conf
 from chess.engine.classes.board import ChessBoard
 from chess.gui.classes.piece import (
-    Pawn,
-    King,
-    Queen,
-    Bishop,
-    Knight,
-    Rook,
     GuiPiece,
     CLASSES_BY_LETTER,
 )
@@ -55,6 +49,21 @@ class GuiSquare(PhysicalEntity):
         return image
 
 
+class SquareAnnotation(PhysicalEntity):
+    width = conf.SQUARE_SIZE
+    height = conf.SQUARE_SIZE
+    color: Color = (30, 30, 30, 30)
+
+    def __init__(self, x, y, *groups):
+        super().__init__(*groups)
+        self.rect = Rect(0, 0, self.width, self.height)
+        self.rect.center = (x, y)
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+        pygame.draw.circle(surface, self.color, self.rect.center, conf.SQUARE_SIZE // 3, 5)
+
+
 class GuiBoard(Entity):
     parental_name = "board"
 
@@ -63,7 +72,13 @@ class GuiBoard(Entity):
         self.squares = Group()
         self.pieces = Group()
         self.selected_pieces = Group()
-        self.child_groups = [self.squares, self.pieces, self.selected_pieces]
+        self.annotations = Group()
+        self.child_groups = [
+            self.squares,
+            self.annotations,
+            self.pieces,
+            self.selected_pieces,
+        ]
         self.state = self.state_idle
         self.square_coords = dict()
 
@@ -98,14 +113,27 @@ class GuiBoard(Entity):
     def add_pieces(self, *objects):
         self.add_to_group(*objects, group=self.pieces)
 
+    def add_annotations(self, *objects):
+        self.add_to_group(*objects, group=self.annotations)
+
+    def pick_up(self, piece: GuiPiece):
+        self.annotations.kill()
+        piece.state = piece.state_grabbed
+        self.selected_pieces.add(piece)
+        self.pieces.remove(piece)
+        # add annotations for piece's legal moves
+        annotations = []
+        for _, destination in self.get_legal_moves(piece):
+            square = self.square_coords[destination]
+            annotation = SquareAnnotation(square.x, square.y)
+            annotations.append(annotation)
+        self.add_annotations(*annotations)
+
     def state_idle(self):
         if EventQueue.filter(pygame.MOUSEBUTTONDOWN):
             for piece in self.pieces:
-                piece: GuiPiece
                 if mouse_hovering_over(piece):
-                    piece.state = piece.state_grabbed
-                    self.selected_pieces.add(piece)
-                    self.pieces.remove(piece)
+                    self.pick_up(piece)
                     break  # only one piece at a time
 
         if EventQueue.filter(pygame.MOUSEBUTTONUP):
@@ -123,3 +151,6 @@ class GuiBoard(Entity):
 
                 self.selected_pieces.remove(piece)
                 self.pieces.add(piece)
+
+    def get_legal_moves(self, piece: GuiPiece):
+        return self.engine.piece_legal_moves(piece.square.coords)
