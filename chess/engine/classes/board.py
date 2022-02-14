@@ -194,10 +194,10 @@ class ChessBoard:
 
     def is_move_legal(self, move: Move) -> bool:
         square1, square2 = move
-        moving_piece = self.contents.get(square1)
-        team = moving_piece.team
+        piece = self.contents.get(square1)
+        team = piece.team
         new_position = self.after_move(move)
-        return square2 in self.squares and not new_position.is_in_check(team)
+        return square2 in piece.moves and not new_position.is_in_check(team)
 
     def team_moves(self, team: str) -> List[Move]:
         return [

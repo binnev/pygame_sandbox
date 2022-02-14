@@ -7,6 +7,7 @@ from base.objects import Entity, PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf
 from chess.engine.classes.board import ChessBoard
+from chess.engine.typing import Move
 from chess.gui.classes.piece import (
     GuiPiece,
     CLASSES_BY_LETTER,
@@ -129,6 +130,34 @@ class GuiBoard(Entity):
             annotations.append(annotation)
         self.add_annotations(*annotations)
 
+    def put_down(self, piece: GuiPiece):
+        new_square = min(self.squares, key=lambda s: distance(s, piece))
+
+        # check move is legal
+        move = Move(piece.square.coords, new_square.coords)
+        if self.engine.is_move_legal(move):
+
+            # update engine
+            self.engine.do_move(move)
+            print(self.engine)
+
+            # snap to nearest square
+            piece.rect.center = new_square.rect.center
+            piece.square = new_square
+
+            # remove other pieces on that square
+            captured_pieces = pygame.sprite.spritecollide(piece, self.pieces, dokill=True)
+            if captured_pieces:
+                piece.blood()
+
+        else:
+            piece.rect.center = piece.square.rect.center
+
+        self.selected_pieces.remove(piece)
+        self.pieces.add(piece)
+        piece.state = piece.state_idle
+        self.annotations.kill()
+
     def state_idle(self):
         if EventQueue.filter(pygame.MOUSEBUTTONDOWN):
             for piece in self.pieces:
@@ -138,19 +167,7 @@ class GuiBoard(Entity):
 
         if EventQueue.filter(pygame.MOUSEBUTTONUP):
             for piece in self.selected_pieces:
-                piece.state = piece.state_idle
-
-                # snap to nearest square
-                nearest_sq = min(self.squares, key=lambda s: distance(s, piece))
-                piece.rect.center = nearest_sq.rect.center
-
-                # remove other pieces on that square
-                capture = pygame.sprite.spritecollide(piece, self.pieces, dokill=True)
-                if capture:
-                    piece.blood()
-
-                self.selected_pieces.remove(piece)
-                self.pieces.add(piece)
+                self.put_down(piece)
 
     def get_legal_moves(self, piece: GuiPiece):
         return self.engine.piece_legal_moves(piece.square.coords)
