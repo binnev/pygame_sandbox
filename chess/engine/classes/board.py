@@ -1,5 +1,6 @@
 import string
 from collections import namedtuple
+from copy import deepcopy
 from typing import Dict, Tuple
 
 from chess.constants import WHITE, BLACK
@@ -159,11 +160,35 @@ class ChessBoard:
     def switch_player(self):
         self.current_player = WHITE if self.current_player == BLACK else BLACK
 
+    def get_king(self, team: str):
+        return next(p for p in self.contents.values() if isinstance(p, King) and p.team == team)
+
     def is_in_check(self, team: str):
         threatened_squares = []
         for coords, piece in self.contents.items():
             if piece.team == team:
                 continue  # can't be in check from our own pieces
             threatened_squares.extend(piece.captures if isinstance(piece, Pawn) else piece.moves)
-        king = next(p for p in self.contents.values() if isinstance(p, King) and p.team == team)
+        king = self.get_king(team)
         return king.square in threatened_squares
+
+    def after_move(self, square1: Square, square2: Square) -> "ChessBoard":
+        new_position = deepcopy(self)
+        new_position.move_piece(square1, square2)
+        return new_position
+
+    def is_checkmated(self, team: str):
+        # is it check
+        if not self.is_in_check(team):
+            return False
+
+        # can any move make it not check
+        for coords, piece in self.contents.items():
+            if piece.team != team:
+                continue  # our opponent can't save us
+            for square in piece.moves:
+                new_position = self.after_move(piece.square, square)
+                if not new_position.is_in_check(team):
+                    return False
+
+        return True
