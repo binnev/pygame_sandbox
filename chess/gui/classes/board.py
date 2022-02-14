@@ -11,6 +11,7 @@ from base.objects import Entity, PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf
 from chess.constants import BLACK, WHITE
+from chess.engine.classes.board import ChessBoard
 from chess.gui.classes.piece import Pawn, King, Queen, Bishop, Knight, Rook, GuiPiece
 from chess.gui.utils import distance
 
@@ -60,40 +61,36 @@ class GuiBoard(Entity):
         self.selected_pieces = Group()
         self.child_groups = [self.squares, self.pieces, self.selected_pieces]
         self.state = self.state_idle
+        self.square_coords = dict()
 
         for x in range(8):
             for y in range(8):
                 color = (40, 40, 40) if (y % 2) == (x % 2) else (90, 90, 90)
                 screen_x = (x + 1) * conf.SQUARE_SIZE
                 screen_y = conf.SQUARE_SIZE * 10 - (y + 1) * conf.SQUARE_SIZE
-                sq = GuiSquare(screen_x, screen_y, (x, y), color)
-                self.add_squares(sq)
+                square = GuiSquare(screen_x, screen_y, (x, y), color)
+                self.add_squares(square)
+                self.square_coords[(x, y)] = square
 
-        self.load_standard_setup()
+        self.engine = ChessBoard()
+        self.engine.load_standard_setup()
+        self.load_engine_position()
 
-    def load_standard_setup(self):
-        self.add_piece_to_square(Rook(0, 0, WHITE), (0, 0))
-        self.add_piece_to_square(Knight(0, 0, WHITE), (1, 0))
-        self.add_piece_to_square(Bishop(0, 0, WHITE), (2, 0))
-        self.add_piece_to_square(Queen(0, 0, WHITE), (3, 0))
-        self.add_piece_to_square(King(0, 0, WHITE), (4, 0))
-        self.add_piece_to_square(Bishop(0, 0, WHITE), (5, 0))
-        self.add_piece_to_square(Knight(0, 0, WHITE), (6, 0))
-        self.add_piece_to_square(Rook(0, 0, WHITE), (7, 0))
-        self.add_piece_to_square(Rook(0, 0, BLACK), (0, 7))
-        self.add_piece_to_square(Knight(0, 0, BLACK), (1, 7))
-        self.add_piece_to_square(Bishop(0, 0, BLACK), (2, 7))
-        self.add_piece_to_square(Queen(0, 0, BLACK), (3, 7))
-        self.add_piece_to_square(King(0, 0, BLACK), (4, 7))
-        self.add_piece_to_square(Bishop(0, 0, BLACK), (5, 7))
-        self.add_piece_to_square(Knight(0, 0, BLACK), (6, 7))
-        self.add_piece_to_square(Rook(0, 0, BLACK), (7, 7))
-        for x in range(8):
-            self.add_piece_to_square(Pawn(0, 0, WHITE), (x, 1))
-            self.add_piece_to_square(Pawn(0, 0, BLACK), (x, 6))
+    def load_engine_position(self):
+        for coords, engine_piece in self.engine.contents.items():
+            klass = {
+                "k": King,
+                "q": Queen,
+                "b": Bishop,
+                "n": Knight,
+                "r": Rook,
+                "p": Pawn,
+            }[engine_piece.letter]
+            piece = klass(0, 0, engine_piece.team)
+            self.add_piece_to_square(piece, coords)
 
     def add_piece_to_square(self, piece, coords):
-        square = next(s for s in self.squares if s.coords == coords)
+        square = self.square_coords[coords]
         piece.rect.center = square.rect.center
         self.add_pieces(piece)
 
