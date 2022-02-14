@@ -120,20 +120,23 @@ class Pawn(Piece):
     @property
     def moves(self) -> set:
         move_direction = array((0, 1) if self.team == WHITE else (0, -1))
-        capture_directions = [(1, 1), (-1, 1)] if self.team == WHITE else [(1, -1), (-1, -1)]
-        capture_directions = [array(d) for d in capture_directions]
         move_square1 = tuple(move_direction + self.square)
         move_square2 = tuple(move_direction * 2 + self.square)
-        capture_squares = [tuple(d + self.square) for d in capture_directions]
-
-        moves = {
-            s for s in capture_squares if self.board.get(s) and self.board.get(s).team != self.team
-        }
+        moves = self.captures
         if not self.board.get(move_square1):
             moves.add(move_square1)
             if not self.board.get(move_square2) and self.board.is_pawn_on_starting_square(self):
                 moves.add(move_square2)
+        return {move for move in moves if move in self.board.squares}
 
+    @property
+    def captures(self):
+        capture_directions = [(1, 1), (-1, 1)] if self.team == WHITE else [(1, -1), (-1, -1)]
+        capture_directions = [array(d) for d in capture_directions]
+        capture_squares = [tuple(d + self.square) for d in capture_directions]
+        moves = {
+            s for s in capture_squares if self.board.get(s) and self.board.get(s).team != self.team
+        }
         return {move for move in moves if move in self.board.squares}
 
 

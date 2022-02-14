@@ -488,3 +488,128 @@ def test_pawn_starting_squares():
         (6, 6),
         (7, 6),
     ]
+
+
+@pytest.mark.parametrize(
+    "description, params",
+    [
+        (
+            "starting position",
+            dict(
+                position="/".join(
+                    [
+                        "rnbqkbnr",
+                        "pppppppp",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "PPPPPPPP",
+                        "RNBQKBNR",
+                    ]
+                ),
+                team=WHITE,
+                in_check=False,
+            ),
+        ),
+        (
+            "with pawn",
+            dict(
+                position="/".join(
+                    [
+                        "....k...",
+                        "...P....",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                    ]
+                ),
+                team=BLACK,
+                in_check=True,
+            ),
+        ),
+        (
+            "with bishop",
+            dict(
+                position="/".join(
+                    [
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        ".....b..",
+                        "........",
+                        "...K....",
+                        "........",
+                    ]
+                ),
+                team=WHITE,
+                in_check=True,
+            ),
+        ),
+        (
+            "with bishop and rook",
+            dict(
+                position="/".join(
+                    [
+                        "........",
+                        "...r....",
+                        "........",
+                        "........",
+                        ".....b..",
+                        "........",
+                        "...K....",
+                        "........",
+                    ]
+                ),
+                team=WHITE,
+                in_check=True,
+            ),
+        ),
+        (
+            "with rook",
+            dict(
+                position="/".join(
+                    [
+                        "........",
+                        "...r....",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "...K....",
+                        "........",
+                    ]
+                ),
+                team=WHITE,
+                in_check=True,
+            ),
+        ),
+        (
+            "with queen",
+            dict(
+                position="/".join(
+                    [
+                        ".......k",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "Q.......",
+                    ]
+                ),
+                team=BLACK,
+                in_check=True,
+            ),
+        ),
+    ],
+)
+def test_do_pgn_move(description, params):
+    board = ChessBoard()
+    board.load_fen_position(params["position"])
+    assert board.is_in_check(params["team"]) == params["in_check"]

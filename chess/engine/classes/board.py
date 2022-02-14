@@ -158,3 +158,12 @@ class ChessBoard:
 
     def switch_player(self):
         self.current_player = WHITE if self.current_player == BLACK else BLACK
+
+    def is_in_check(self, team: str):
+        threatened_squares = []
+        for coords, piece in self.contents.items():
+            if piece.team == team:
+                continue  # can't be in check from our own pieces
+            threatened_squares.extend(piece.captures if isinstance(piece, Pawn) else piece.moves)
+        king = next(p for p in self.contents.values() if isinstance(p, King) and p.team == team)
+        return king.square in threatened_squares
