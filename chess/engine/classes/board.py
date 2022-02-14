@@ -211,8 +211,10 @@ class ChessBoard:
     def team_legal_moves(self, team: str):
         return [move for move in self.team_moves(team) if self.is_move_legal(move)]
 
-    def piece_legal_moves(self, piece: Piece):
-        square1 = piece.square
+    def piece_legal_moves(self, piece_square: Square):
+        piece = self.contents.get(piece_square)
         return [
-            (square1, square2) for square2 in piece.moves if self.is_move_legal((square1, square2))
+            (piece_square, square2)
+            for square2 in piece.moves
+            if self.is_move_legal((piece_square, square2))
         ]

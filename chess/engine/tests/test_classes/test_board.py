@@ -1116,3 +1116,32 @@ def test_chessboard_is_stalemated(description, params):
     board = ChessBoard()
     board.load_fen_position(params["position"])
     assert board.is_stalemated(params["team"]) == params["expected_result"]
+
+
+def test_chessboard_piece_legal_moves():
+    board = ChessBoard()
+    board.load_fen_position(
+        "/".join(
+            [
+                "........",
+                "........",
+                "........",
+                "........",
+                "........",
+                "..q.k...",
+                "........",
+                "...K....",
+            ]
+        )
+    )
+    assert board.piece_legal_moves((3, 0)) == []
+    black_king_moves = set(board.piece_legal_moves((4, 2)))
+    expected = {
+        ((4, 2), (3, 2)),  # left
+        ((4, 2), (5, 2)),  # right
+        ((4, 2), (4, 3)),  # up
+        ((4, 2), (5, 3)),  # right up
+        ((4, 2), (3, 3)),  # left up
+        ((4, 2), (5, 1)),  # right down
+    }
+    assert black_king_moves.difference(expected) == expected.difference(black_king_moves) == set()
