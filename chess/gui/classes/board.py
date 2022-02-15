@@ -165,14 +165,25 @@ class GuiBoard(Entity):
         piece.state = piece.state_idle
         self.annotations.kill()
 
+    def remove(self, piece: GuiPiece):
+        self.engine.remove_piece(piece.square.coords)
+        piece.kill()
+        print(self.engine)
+
     def state_idle(self):
-        if EventQueue.filter(pygame.MOUSEBUTTONDOWN):
+        if EventQueue.get(type=pygame.MOUSEBUTTONDOWN, button=pygame.BUTTON_LEFT):
             for piece in self.pieces:
                 if mouse_hovering_over(piece):
                     self.pick_up(piece)
                     break  # only one piece at a time
 
-        if EventQueue.filter(pygame.MOUSEBUTTONUP):
+        if EventQueue.get(type=pygame.MOUSEBUTTONDOWN, button=pygame.BUTTON_RIGHT):
+            for piece in self.pieces:
+                if mouse_hovering_over(piece):
+                    self.remove(piece)
+                    break  # only one piece at a time
+
+        if EventQueue.filter(type=pygame.MOUSEBUTTONUP):
             for piece in self.selected_pieces:
                 self.put_down(piece)
 

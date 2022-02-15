@@ -15,5 +15,16 @@ class EventQueue:
         cls.events = events
 
     @classmethod
-    def filter(cls, event_type: int):
-        return [event for event in cls.events if event.type == event_type]
+    def filter(cls, **kwargs):
+        return [
+            event
+            for event in cls.events
+            if all(getattr(event, attribute, None) == value for attribute, value in kwargs.items())
+        ]
+
+    @classmethod
+    def get(cls, **kwargs):
+        try:
+            return cls.filter(**kwargs)[0]
+        except IndexError:
+            return None
