@@ -157,13 +157,14 @@ class GuiBoard(Entity):
             if captured_pieces:
                 piece.blood()
 
+            self.annotations.kill()
+
         else:
             piece.rect.center = piece.square.rect.center
 
         self.selected_pieces.remove(piece)
         self.pieces.add(piece)
         piece.state = piece.state_idle
-        self.annotations.kill()
 
     def remove(self, piece: GuiPiece):
         self.engine.remove_piece(piece.square.coords)
