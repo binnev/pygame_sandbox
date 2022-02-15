@@ -140,7 +140,7 @@ class GuiBoard(Entity):
 
             # update engine
             self.engine.do_move(move)
-            print(self.engine)
+            # print(self.engine)
             if self.engine.is_checkmated(other_team(piece.team)):
                 sounds.checkmate.play()
             elif self.engine.is_in_check(other_team(piece.team)):
@@ -169,7 +169,7 @@ class GuiBoard(Entity):
     def remove(self, piece: GuiPiece):
         self.engine.remove_piece(piece.square.coords)
         piece.kill()
-        print(self.engine)
+        # print(self.engine)
 
     def state_idle(self):
         if EventQueue.get(type=pygame.MOUSEBUTTONDOWN, button=pygame.BUTTON_LEFT):
