@@ -6,9 +6,9 @@
 
 ## Special Pawn moves
 
-- double first move
-- en passant
-- promotion
+- [x] double first move
+- [ ] en passant
+- [ ] promotion
 
 ## Move class
 

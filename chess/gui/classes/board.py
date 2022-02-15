@@ -125,8 +125,8 @@ class GuiBoard(Entity):
         self.pieces.remove(piece)
         # add annotations for piece's legal moves
         annotations = []
-        for _, destination in self.get_legal_moves(piece):
-            square = self.square_coords[destination]
+        for move in self.get_legal_moves(piece):
+            square = self.square_coords[move.destination]
             annotation = SquareAnnotation(square.x, square.y)
             annotations.append(annotation)
         self.add_annotations(*annotations)

@@ -18,13 +18,16 @@ class ChessBoard:
     contents: Dict[Square, Piece]
     height: int = 8
     width: int = 8
+    current_move: int = 0
     current_player: str = WHITE
+    history: list
 
     def __init__(self, height=None, width=None):
         self.contents = dict()
         self.height = height if height else self.height
         self.width = width if width else self.width
         self.squares = tuple(Square(x, y) for y in range(self.height) for x in range(self.width))
+        self.history = []
 
     def get(self, *args, **kwargs) -> Piece:
         return self.contents.get(*args, **kwargs)
@@ -93,8 +96,9 @@ class ChessBoard:
         del self.contents[square]
 
     def do_move(self, move: Move):
-        square1, square2 = move
-        self.contents[square2] = self.contents.pop(square1)
+        move.captured_piece = self.contents.get(move.destination)
+        self.contents[move.destination] = self.contents.pop(move.origin)
+        self.current_move += 1
 
     def __str__(self, V_SEP="\n", H_SEP=" ") -> str:
         xs = range(self.width)
@@ -193,11 +197,10 @@ class ChessBoard:
         return not self.team_legal_moves(team) and not self.is_in_check(team)
 
     def is_move_legal(self, move: Move) -> bool:
-        square1, square2 = move
-        piece = self.contents.get(square1)
+        piece = self.contents.get(move.origin)
         team = piece.team
         new_position = self.after_move(move)
-        return square2 in piece.moves and not new_position.is_in_check(team)
+        return move.destination in piece.moves and not new_position.is_in_check(team)
 
     def team_moves(self, team: str) -> List[Move]:
         return [
