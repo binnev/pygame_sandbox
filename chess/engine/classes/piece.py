@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Tuple, Set
 from numpy import array
 
 from chess.constants import WHITE, BLACK
-from chess.engine.typing import Square
+from chess.engine.classes.square import Square
 
 if TYPE_CHECKING:
     from .board import ChessBoard

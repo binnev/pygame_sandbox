@@ -1,7 +1,6 @@
-from collections import namedtuple
 from typing import NamedTuple
 
-Square = namedtuple("Square", "x y")
+from chess.engine.classes.square import Square
 
 
 class Move(NamedTuple):

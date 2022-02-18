@@ -1,11 +1,12 @@
 import string
-from collections import namedtuple
 from copy import deepcopy
-from typing import Dict, Tuple, List
+from typing import Dict, List
 
 from chess.constants import WHITE, BLACK
 from chess.engine.classes.piece import Piece, Rook, Knight, Bishop, Queen, King, Pawn
-from chess.engine.typing import Square, Move
+from chess.engine.classes.square import Square
+from chess.engine.classes.move import Move
+
 from chess.notation import (
     parse_pgn_move,
     parse_fen_string,
