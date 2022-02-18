@@ -24,7 +24,7 @@ def test_king_moves():
     king = King()
     board.add_piece(king, (1, 1))
 
-    assert king.moves == {
+    assert king.squares == {
         (0, 0),
         (0, 1),
         (0, 2),
@@ -43,7 +43,7 @@ def test_king_moves_obstructed():
     board.add_piece(Pawn(WHITE), (1, 1))
     board.add_piece(Bishop(BLACK), (0, 1))
 
-    assert king.moves == {
+    assert king.squares == {
         (0, 1),  # enemy bishop
         (1, 0),  # empty square
     }
@@ -53,7 +53,7 @@ def test_knight_moves():
     board = ChessBoard()
     knight = Knight()
     board.add_piece(knight, (5, 5))
-    assert knight.moves == {
+    assert knight.squares == {
         (5 + 1, 5 + 2),
         (5 + 2, 5 + 1),
         (5 + 2, 5 - 1),
@@ -72,7 +72,7 @@ def test_knight_moves_obstructed():
     board.add_piece(Bishop(WHITE), (1, 3))
     board.add_piece(Pawn(BLACK), (2, 2))
 
-    assert knight.moves == {
+    assert knight.squares == {
         (2, 0),  # empty square
         (2, 2),  # enemy pawn
     }
@@ -82,7 +82,7 @@ def test_bishop_moves():
     board = ChessBoard(5, 5)
     bishop = Bishop()
     board.add_piece(bishop, (2, 2))
-    assert bishop.moves == {
+    assert bishop.squares == {
         (0, 0),
         (1, 1),
         (3, 3),
@@ -102,7 +102,7 @@ def test_bishop_moves_obstructed():
     board.add_piece(bishop, (2, 2))
     board.add_piece(pawn, (3, 3))
     board.add_piece(king, (1, 1))
-    assert bishop.moves == {
+    assert bishop.squares == {
         # (0, 0),  # behind king
         # (1, 1),  # occupied by king
         (3, 3),
@@ -119,27 +119,27 @@ def test_bishop_moves_obstructed():
     [
         (
             "white pawn on starting square has 2 moves",
-            dict(starting_square=(0, 1), team=WHITE, expected_moves={(0, 2), (0, 3)}),
+            dict(starting_square=(0, 1), team=WHITE, expected_squares={(0, 2), (0, 3)}),
         ),
         (
             "white pawn on arbitrary square has 1 move",
-            dict(starting_square=(6, 6), team=WHITE, expected_moves={(6, 7)}),
+            dict(starting_square=(6, 6), team=WHITE, expected_squares={(6, 7)}),
         ),
         (
             "white pawn on back rank can't move any further",
-            dict(starting_square=(7, 7), team=WHITE, expected_moves=set()),
+            dict(starting_square=(7, 7), team=WHITE, expected_squares=set()),
         ),
         (
             "black pawn on starting square has 2 moves",
-            dict(starting_square=(0, 6), team=BLACK, expected_moves={(0, 5), (0, 4)}),
+            dict(starting_square=(0, 6), team=BLACK, expected_squares={(0, 5), (0, 4)}),
         ),
         (
             "black pawn on arbitrary square has 1 move",
-            dict(starting_square=(0, 5), team=BLACK, expected_moves={(0, 4)}),
+            dict(starting_square=(0, 5), team=BLACK, expected_squares={(0, 4)}),
         ),
         (
             "black pawn on back rank can't move any further",
-            dict(starting_square=(0, 0), team=BLACK, expected_moves=set()),
+            dict(starting_square=(0, 0), team=BLACK, expected_squares=set()),
         ),
     ],
 )
@@ -148,7 +148,7 @@ def test_pawn_moves_unobstructed(description, param):
 
     pawn = Pawn(param["team"])
     board.add_piece(pawn, param["starting_square"])
-    assert pawn.moves == param["expected_moves"]
+    assert pawn.squares == param["expected_squares"]
 
 
 @pytest.mark.parametrize(
@@ -159,7 +159,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(0, 1),
                 team=WHITE,
-                expected_moves={(0, 2), (0, 3)},
+                expected_squares={(0, 2), (0, 3)},
             ),
         ),
         (
@@ -167,7 +167,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(1, 1),
                 team=WHITE,
-                expected_moves=set(),
+                expected_squares=set(),
             ),
         ),
         (
@@ -175,7 +175,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(2, 1),
                 team=WHITE,
-                expected_moves={(2, 2)},
+                expected_squares={(2, 2)},
             ),
         ),
         (
@@ -183,7 +183,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(3, 2),
                 team=WHITE,
-                expected_moves={(3, 3)},
+                expected_squares={(3, 3)},
             ),
         ),
         (
@@ -191,7 +191,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(4, 7),
                 team=WHITE,
-                expected_moves=set(),
+                expected_squares=set(),
             ),
         ),
         (
@@ -199,7 +199,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(0, 6),
                 team=BLACK,
-                expected_moves={(0, 5), (0, 4)},
+                expected_squares={(0, 5), (0, 4)},
             ),
         ),
         (
@@ -207,7 +207,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(1, 6),
                 team=BLACK,
-                expected_moves=set(),
+                expected_squares=set(),
             ),
         ),
         (
@@ -215,7 +215,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(2, 6),
                 team=BLACK,
-                expected_moves={(2, 5)},
+                expected_squares={(2, 5)},
             ),
         ),
         (
@@ -223,7 +223,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(3, 5),
                 team=BLACK,
-                expected_moves={(3, 4)},
+                expected_squares={(3, 4)},
             ),
         ),
         (
@@ -231,7 +231,7 @@ def test_pawn_moves_unobstructed(description, param):
             dict(
                 starting_square=(4, 0),
                 team=BLACK,
-                expected_moves=set(),
+                expected_squares=set(),
             ),
         ),
     ],
@@ -245,7 +245,7 @@ def test_pawn_moves_obstructed(description, param):
 
     pawn = Pawn(param["team"])
     board.add_piece(pawn, param["starting_square"])
-    assert pawn.moves == param["expected_moves"]
+    assert pawn.squares == param["expected_squares"]
 
 
 @pytest.mark.parametrize(
@@ -256,7 +256,7 @@ def test_pawn_moves_obstructed(description, param):
             dict(
                 starting_square=(0, 1),
                 team=WHITE,
-                expected_moves={(0, 2), (0, 3), (1, 2)},
+                expected_squares={(0, 2), (0, 3), (1, 2)},
             ),
         ),
         (
@@ -264,7 +264,7 @@ def test_pawn_moves_obstructed(description, param):
             dict(
                 starting_square=(2, 1),
                 team=WHITE,
-                expected_moves={(2, 2), (2, 3), (1, 2), (3, 2)},
+                expected_squares={(2, 2), (2, 3), (1, 2), (3, 2)},
             ),
         ),
         (
@@ -272,7 +272,7 @@ def test_pawn_moves_obstructed(description, param):
             dict(
                 starting_square=(0, 6),
                 team=BLACK,
-                expected_moves={(0, 5), (0, 4), (1, 5)},
+                expected_squares={(0, 5), (0, 4), (1, 5)},
             ),
         ),
         (
@@ -280,7 +280,7 @@ def test_pawn_moves_obstructed(description, param):
             dict(
                 starting_square=(2, 6),
                 team=BLACK,
-                expected_moves={(2, 5), (2, 4), (1, 5), (3, 5)},
+                expected_squares={(2, 5), (2, 4), (1, 5), (3, 5)},
             ),
         ),
     ],
@@ -294,7 +294,7 @@ def test_pawn_captures(description, param):
 
     pawn = Pawn(param["team"])
     board.add_piece(pawn, param["starting_square"])
-    assert pawn.moves == param["expected_moves"]
+    assert pawn.squares == param["expected_squares"]
 
 
 def test_piece__repr__():

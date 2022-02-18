@@ -69,7 +69,7 @@ class ChessBoard:
             piece
             for coords, piece in self.contents.items()
             if isinstance(piece, piece_class)
-            and target_square in piece.moves
+            and target_square in piece.squares
             and piece.team == self.current_player
         ]
         if specifier:
@@ -167,7 +167,7 @@ class ChessBoard:
         for coords, piece in self.contents.items():
             if piece.team == team:
                 continue  # can't be in check from our own pieces
-            threatened_squares.extend(piece.captures if isinstance(piece, Pawn) else piece.moves)
+            threatened_squares.extend(piece.captures if isinstance(piece, Pawn) else piece.squares)
         king = self.get_king(team)
         return king.square in threatened_squares
 
@@ -197,13 +197,13 @@ class ChessBoard:
         piece = self.contents.get(square1)
         team = piece.team
         new_position = self.after_move(move)
-        return square2 in piece.moves and not new_position.is_in_check(team)
+        return square2 in piece.squares and not new_position.is_in_check(team)
 
     def team_moves(self, team: str) -> List[Move]:
         return [
             Move(piece.square, square)
             for coords, piece in self.contents.items()
-            for square in piece.moves
+            for square in piece.squares
             if piece.team == team
         ]
 
@@ -214,6 +214,6 @@ class ChessBoard:
         piece = self.contents.get(piece_square)
         return [
             Move(piece_square, square2)
-            for square2 in piece.moves
+            for square2 in piece.squares
             if self.is_move_legal(Move(piece_square, square2))
         ]

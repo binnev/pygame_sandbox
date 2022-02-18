@@ -1,5 +1,5 @@
 from math import inf
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Tuple, Set
 
 from numpy import array
 
@@ -40,7 +40,7 @@ class Piece:
         return self.__class__ == other.__class__ and self.team == other.team
 
     @property
-    def moves(self) -> set:
+    def squares(self) -> Set[Square]:
         """Set of squares this piece could move to, taking into account obstructions and board
         edges"""
         moves = set()
@@ -119,7 +119,7 @@ class Pawn(Piece):
     letter = "p"
 
     @property
-    def moves(self) -> set:
+    def squares(self) -> Set[Square]:
         move_direction = array((0, 1) if self.team == WHITE else (0, -1))
         move_square1 = tuple(move_direction + self.square)
         move_square2 = tuple(move_direction * 2 + self.square)
