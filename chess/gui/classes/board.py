@@ -7,7 +7,7 @@ from base.objects import Entity, PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf, sounds
 from chess.engine.classes.board import ChessBoard
-from chess.engine.typing import Move
+from chess.engine.classes.move import Move
 from chess.gui.classes.piece import (
     GuiPiece,
     CLASSES_BY_LETTER,
