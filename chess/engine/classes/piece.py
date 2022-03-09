@@ -54,6 +54,9 @@ class Piece(NamedTuple):
             current_square=current_square, position=position, team=self.team, piece_type=self.type
         )
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.team} {self.type})"
+
 
 def get_squares(
     current_square: Square, position: "Position", piece_type: PieceTypes, team: Teams
