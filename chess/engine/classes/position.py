@@ -4,6 +4,7 @@ from chess.constants import WHITE, Teams
 from chess.engine.classes.move import Move
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.square import Square
+from chess.notation import parse_fen_string, parse_fen_position
 
 
 class Position(dict):
@@ -53,3 +54,9 @@ class Position(dict):
 
     def is_pawn_starting_square(self, square: Square, team: Teams) -> bool:
         return square in self.pawn_starting_squares(team)
+
+    @classmethod
+    def from_fen(cls, string):
+        position, *_ = parse_fen_string(string)
+        pieces = parse_fen_position(position)
+        return cls(pieces)

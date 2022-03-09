@@ -3,6 +3,7 @@ from typing import Type, TYPE_CHECKING, List, Union, Dict
 
 from chess.constants import WHITE, BLACK, LETTER_TO_PIECE, PAWN
 from chess.engine.classes.piece import Piece
+from chess.engine.classes.square import Square
 
 if TYPE_CHECKING:
     from chess.engine.classes.board import ChessBoard
@@ -31,9 +32,9 @@ def parse_fen_row(string: str) -> List[Union[Piece, None]]:
         if char.isnumeric():
             pieces.extend([None] * int(char))
         elif char.isalpha():
-            piece_class = CLASSES_BY_LETTER[char.lower()]
+            piece_type = LETTER_TO_PIECE[char.lower()]
             team = WHITE if char.isupper() else BLACK
-            pieces.append(piece_class(team))
+            pieces.append(Piece(team=team, type=piece_type))
         else:
             # if it is a filler character e.g. "."
             pieces.append(None)
@@ -61,7 +62,7 @@ def parse_fen_string(string: str) -> (str, str, str, str, str, str):
     return position, player, castling, ep, half, full
 
 
-def parse_fen_position(string: str) -> Dict[tuple, Piece]:
+def parse_fen_position(string: str) -> Dict[Square, Piece]:
     """
     E.g. standard starting position:
     rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
@@ -73,8 +74,8 @@ def parse_fen_position(string: str) -> Dict[tuple, Piece]:
         row = parse_fen_row(row)
         for x, piece in enumerate(row):
             if piece:
-                pieces[(x, y)] = piece
-
+                square = Square(x, y)
+                pieces[square] = piece
     return pieces
 
 
