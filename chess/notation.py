@@ -1,8 +1,8 @@
 import re
 from typing import Type, TYPE_CHECKING, List, Union, Dict
 
-from chess.constants import WHITE, BLACK
-from chess.engine.classes.piece import Piece, Pawn, CLASSES_BY_LETTER
+from chess.constants import WHITE, BLACK, LETTER_TO_PIECE, PAWN
+from chess.engine.classes.piece import Piece
 
 if TYPE_CHECKING:
     from chess.engine.classes.board import ChessBoard
@@ -18,7 +18,7 @@ def parse_pgn_move(string: str) -> (Type[Piece], str, str, str):
     )
 
     letter, specifier, capture, target = rx.match(string).groups()
-    piece_class = CLASSES_BY_LETTER[letter.lower()] if letter else Pawn
+    piece_class = LETTER_TO_PIECE[letter.lower()] if letter else PAWN
     return piece_class, specifier, capture, target
 
 

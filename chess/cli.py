@@ -1,4 +1,5 @@
 from chess.engine.classes.board import ChessBoard
+from chess.engine.exceptions import InvalidMove
 
 if __name__ == "__main__":
     running = True
@@ -11,7 +12,5 @@ if __name__ == "__main__":
             break
         try:
             board.do_pgn_move(move)
-        except Exception:
-            print(f"invalid move: {move}")
-        else:
-            board.switch_player()
+        except InvalidMove as e:
+            print(f"invalid move: {move}; {e}")
