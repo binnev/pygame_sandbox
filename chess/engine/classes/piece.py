@@ -1,7 +1,4 @@
-from math import inf
 from typing import Set, NamedTuple, TYPE_CHECKING
-
-from numpy import array
 
 from chess.constants import (
     WHITE,
@@ -10,21 +7,12 @@ from chess.constants import (
     Teams,
     LETTER_TO_PIECE,
     PIECE_TO_SYMBOL,
-    PAWN,
-    KING,
-    QUEEN,
-    BISHOP,
-    KNIGHT,
-    ROOK,
 )
 from chess.engine.classes.square import Square
+from chess.engine.utils import get_squares
 
 if TYPE_CHECKING:
     from chess.engine.classes.position import Position
-
-BISHOP_DIRECTIONS = ((1, 1), (1, -1), (-1, 1), (-1, -1))
-ROOK_DIRECTIONS = ((0, 1), (0, -1), (1, 0), (-1, 0))
-KNIGHT_DIRECTIONS = ((1, 2), (2, 1), (2, -1), (1, -2), (-1, -2), (-2, -1), (-2, 1), (-1, 2))
 
 
 class Piece(NamedTuple):
@@ -36,6 +24,9 @@ class Piece(NamedTuple):
     def __str__(self):
         return PIECE_TO_SYMBOL[self.team][self.type]
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.team} {self.type})"
+
     @classmethod
     def from_letter(cls, letter: str):
         """Note: limited to traditional black/white only"""
@@ -45,76 +36,7 @@ class Piece(NamedTuple):
         return cls(team, piece_type)
 
     def get_squares(self, current_square: Square, position: "Position") -> Set[Square]:
-        """
-        Select move generator function based on piece type
-        generate moves
-        return moves
-        """
-        return get_squares(
-            current_square=current_square, position=position, team=self.team, piece_type=self.type
-        )
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.team} {self.type})"
-
-
-def get_squares(
-    current_square: Square, position: "Position", piece_type: PieceTypes, team: Teams
-) -> Set[Square]:
-    if piece_type == PAWN:
-        return get_pawn_squares(current_square=current_square, position=position, team=team)
-
-    squares = set()
-    directions = {
-        BISHOP: BISHOP_DIRECTIONS,
-        ROOK: ROOK_DIRECTIONS,
-        KNIGHT: KNIGHT_DIRECTIONS,
-        KING: ROOK_DIRECTIONS + BISHOP_DIRECTIONS,
-        QUEEN: ROOK_DIRECTIONS + BISHOP_DIRECTIONS,
-    }[piece_type]
-    strides = {BISHOP: inf, ROOK: inf, KNIGHT: 1, KING: 1, QUEEN: inf}[piece_type]
-    for direction in directions:
-        direction = array(direction)
-        candidate = current_square
-        ii = 0
-        while candidate in position.squares and ii < strides:
-            candidate = Square(*tuple(direction + candidate))
-            squares.add(candidate)
-            if position.get(candidate):
-                break
-            ii += 1
-
-    return {
-        square
-        for square in squares
-        if square in position.squares
-        and (
-            position.get(square) is None  # empty squares
-            or position.get(square).team != team  # only capture enemies
-        )
-    }
-
-
-def pawn_captures(current_square: Square, position: "Position", team: Teams) -> Set[Square]:
-    capture_directions = [(1, 1), (-1, 1)] if team == WHITE else [(1, -1), (-1, -1)]
-    capture_directions = [array(d) for d in capture_directions]
-    capture_squares = [tuple(d + current_square) for d in capture_directions]
-    moves = {s for s in capture_squares if position.get(s) and position.get(s).team != team}
-    return {move for move in moves if move in position.squares}
-
-
-def get_pawn_squares(current_square: Square, position: "Position", team: Teams) -> Set[Square]:
-    move_direction = array((0, 1) if team == WHITE else (0, -1))
-    move_square1 = Square(*tuple(move_direction + current_square))
-    move_square2 = Square(*tuple(move_direction * 2 + current_square))
-    moves = pawn_captures(current_square=current_square, position=position, team=team)
-    if not position.get(move_square1):
-        moves.add(move_square1)
-        if position.is_pawn_starting_square(current_square, team) and not position.get(
-            move_square2
-        ):
-            moves.add(move_square2)
-    return {move for move in moves if move in position.squares}
+        return get_squares(current_square=current_square, position=position, piece=self)
 
 
 # class Piece:

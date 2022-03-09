@@ -17,14 +17,17 @@ class Position(dict):
     width: int = 8
     height: int = 8
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, width=8, height=8, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.width = width
+        self.height = height
         self.squares = tuple(Square(x, y) for y in range(self.height) for x in range(self.width))
 
     def get(self, square: Square, default=None) -> Optional[Piece]:
         return super().get(square, default)
 
-    def add(self, piece: Piece, square: Square):
+    def add(self, piece: Piece, square: tuple):
+        square = Square(*square)
         self[square] = piece
 
     def do_move(self, move: Move):

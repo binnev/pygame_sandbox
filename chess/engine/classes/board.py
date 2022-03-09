@@ -28,9 +28,30 @@ class ChessBoard:
     def position(self):
         return self.history[self.move_counter]
 
-    def get_moves(self, square: Square) -> Set[Move]:
+    def get_moves(self, current_square: Square) -> Set[Move]:
         """Given a square, find the legal moves for the piece on that square. This includes
         preventing putting self in check etc"""
+        piece = self.position.get(current_square)
+        if not piece:
+            return set()
+        squares = piece.get_squares(current_square, self.position)
+        moves = set()
+        for square in squares:
+            captured_piece = self.position.get(square)
+            move = Move(
+                origin=current_square,
+                destination=square,
+                piece=piece,
+                captured_piece=captured_piece,
+                captured_piece_square=square if captured_piece else None,  # todo: en passant
+            )
+            moves.add(move)
+        moves = {move for move in moves if self.is_move_legal(move)}
+        return moves
+
+    def get_squares(self, square: Square) -> Set[Square]:
+        """Given a square, find the legal squares for the piece on that square."""
+        return {move.destination for move in self.get_moves(square)}
 
     def team_moves(self, team: Teams) -> Set[Move]:
         """Get all the moves for a given team. """
@@ -101,7 +122,7 @@ class ChessBoard:
             (square, piece)
             for square, piece in self.position.items()
             if piece.type == piece_type
-            and target_square in piece.get_squares(square, self.position)
+            and target_square in self.get_squares(piece)
             and piece.team == self.active_team
         ]
         if specifier:
@@ -121,12 +142,13 @@ class ChessBoard:
         except IndexError:
             raise InvalidMove(f"No {piece_type} can reach {target_square.to_str()}")
         captured_piece = self.position.get(target_square)  # not true for en passant
-        move = Move(origin=square,
-                    destination=target_square,
-                    piece=piece,
-                    captured_piece=captured_piece,
-                    captured_piece_square=target_square if captured_piece else None,
-                    )
+        move = Move(
+            origin=square,
+            destination=target_square,
+            piece=piece,
+            captured_piece=captured_piece,
+            captured_piece_square=target_square if captured_piece else None,
+        )
         self.do_move(move)
 
     def update_active_team(self):
