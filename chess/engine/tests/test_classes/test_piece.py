@@ -1,41 +1,17 @@
 import pytest
 
-from chess.constants import WHITE, BLACK
-from chess.engine.classes.board import ChessBoard
-
-
-@pytest.mark.parametrize(
-    "piece_class, team, expected_str",
-    [
-        (King, WHITE, "K"),
-        (King, BLACK, "k"),
-        (Queen, WHITE, "Q"),
-        (Queen, BLACK, "q"),
-    ],
-)
-def test_piece_str(piece_class, team, expected_str):
-    piece = piece_class(team)
-    assert str(piece) == expected_str
-
-
-def test_piece__repr__():
-
-    piece = Pawn(BLACK)
-    assert piece.__repr__() == "black Pawn"
-
-    board = ChessBoard()
-    board.add_piece(piece, (4, 6))
-    assert piece.__repr__() == "black Pawn on e7"
+from chess.constants import WHITE, BLACK, PAWN, BISHOP, KING, QUEEN
+from chess.engine.classes.piece import Piece
 
 
 @pytest.mark.parametrize(
     "piece1, piece2, should_match",
     [
-        (Pawn(), Pawn(), True),
-        (Pawn(WHITE), Pawn(BLACK), False),
-        (Pawn(WHITE), Pawn(WHITE), True),
-        (Pawn(BLACK), Pawn(BLACK), True),
-        (Pawn(BLACK), Bishop(BLACK), False),
+        (Piece(WHITE, PAWN), Piece(WHITE, PAWN), True),
+        (Piece(WHITE, PAWN), Piece(BLACK, PAWN), False),
+        (Piece(WHITE, PAWN), Piece(WHITE, PAWN), True),
+        (Piece(BLACK, PAWN), Piece(BLACK, PAWN), True),
+        (Piece(BLACK, PAWN), Piece(BLACK, BISHOP), False),
     ],
 )
 def test_piece__eq__(piece1, piece2, should_match):
@@ -43,14 +19,14 @@ def test_piece__eq__(piece1, piece2, should_match):
 
 
 @pytest.mark.parametrize(
-    "piece_class, team, letter",
+    "piece_type, team, letter",
     [
-        (King, WHITE, "K"),
-        (King, BLACK, "k"),
-        (Queen, WHITE, "Q"),
-        (Queen, BLACK, "q"),
+        (KING, WHITE, "K"),
+        (KING, BLACK, "k"),
+        (QUEEN, WHITE, "Q"),
+        (QUEEN, BLACK, "q"),
     ],
 )
-def test_piece_from_letter(piece_class, team, letter):
+def test_piece_from_letter(piece_type, team, letter):
     piece = Piece.from_letter(letter)
-    assert piece == piece_class(team=team)
+    assert piece == Piece(team, piece_type)
