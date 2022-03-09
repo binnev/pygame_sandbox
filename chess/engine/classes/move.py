@@ -1,13 +1,13 @@
-from dataclasses import dataclass
+from typing import NamedTuple
 
 from chess.constants import PieceTypes
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.square import Square
 
 
-@dataclass
-class Move:
+class Move(NamedTuple):
     """Basically a diff between two Positions"""
+
     origin: Square
     destination: Square
     piece: Piece

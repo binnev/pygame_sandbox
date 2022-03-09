@@ -46,7 +46,7 @@ class ChessBoard:
                 captured_piece_square=square if captured_piece else None,  # todo: en passant
             )
             moves.add(move)
-        moves = {move for move in moves if self.is_move_legal(move)}
+        # moves = {move for move in moves if self.is_move_legal(move)}
         return moves
 
     def get_squares(self, square: Square) -> Set[Square]:
@@ -122,19 +122,19 @@ class ChessBoard:
             (square, piece)
             for square, piece in self.position.items()
             if piece.type == piece_type
-            and target_square in self.get_squares(piece)
             and piece.team == self.active_team
+            and target_square in self.get_squares(square)
         ]
         if specifier:
             if specifier.isnumeric():
                 y = Square.number_to_y(specifier)
                 candidate_pieces = [
-                    (square, piece) for square, piece in candidate_pieces if piece.square.y == y
+                    (square, piece) for square, piece in candidate_pieces if square.y == y
                 ]
             else:
                 x = Square.letter_to_x(specifier)
                 candidate_pieces = [
-                    (square, piece) for square, piece in candidate_pieces if piece.square.x == x
+                    (square, piece) for square, piece in candidate_pieces if square.x == x
                 ]
 
         try:
