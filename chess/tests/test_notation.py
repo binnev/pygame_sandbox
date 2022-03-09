@@ -1,7 +1,7 @@
 import pytest
 
-from chess.constants import BLACK, WHITE
-from chess.engine.classes.piece import Pawn, King, Queen, Rook
+from chess.constants import BLACK, WHITE, PAWN, ROOK, KING, QUEEN
+from chess.engine.classes.piece import Piece
 from chess.notation import (
     parse_pgn_move,
     parse_fen_position,
@@ -15,13 +15,13 @@ from chess.notation import (
 @pytest.mark.parametrize(
     "string, piece, specifier, capture, target",
     [
-        ("e4", Pawn, None, None, "e4"),
-        ("dxe4", Pawn, "d", "x", "e4"),
-        ("Re4", Rook, None, None, "e4"),
-        ("Rae4", Rook, "a", None, "e4"),
-        ("Rxe4", Rook, None, "x", "e4"),
-        ("Rbxe4", Rook, "b", "x", "e4"),
-        ("R5xe4", Rook, "5", "x", "e4"),
+        ("e4", PAWN, None, None, "e4"),
+        ("dxe4", PAWN, "d", "x", "e4"),
+        ("Re4", ROOK, None, None, "e4"),
+        ("Rae4", ROOK, "a", None, "e4"),
+        ("Rxe4", ROOK, None, "x", "e4"),
+        ("Rbxe4", ROOK, "b", "x", "e4"),
+        ("R5xe4", ROOK, "5", "x", "e4"),
     ],
 )
 def test_parse_pgn_move(string, piece, specifier, capture, target):
@@ -34,10 +34,21 @@ def test_parse_pgn_move(string, piece, specifier, capture, target):
 
 FEN_ROW_PIECES = [
     ("8", [None] * 8),  # 8 empty spaces,
-    ("p", [Pawn(BLACK)]),
-    ("p2P", [Pawn(BLACK), None, None, Pawn(WHITE)]),
-    ("KkQq", [King(WHITE), King(BLACK), Queen(WHITE), Queen(BLACK)]),
-    ("KkQq3", [King(WHITE), King(BLACK), Queen(WHITE), Queen(BLACK), None, None, None]),
+    ("p", [Piece(BLACK, PAWN)]),
+    ("p2P", [Piece(BLACK, PAWN), None, None, Piece(WHITE, PAWN)]),
+    ("KkQq", [Piece(WHITE, KING), Piece(BLACK, KING), Piece(WHITE, QUEEN), Piece(BLACK, QUEEN)]),
+    (
+        "KkQq3",
+        [
+            Piece(WHITE, KING),
+            Piece(BLACK, KING),
+            Piece(WHITE, QUEEN),
+            Piece(BLACK, QUEEN),
+            None,
+            None,
+            None,
+        ],
+    ),
 ]
 
 
@@ -87,10 +98,10 @@ def test_parse_fen_string(string, expected_outputs):
 
 
 FEN_POSITION_PIECES = [
-    ("8/8/8/8/8/8/8/R7", {(0, 0): Rook(WHITE)}),
-    ("8/8/8/8/8/8/8/7R", {(7, 0): Rook(WHITE)}),
-    ("8/3r4/8/8/8/8/8/8", {(3, 6): Rook(BLACK)}),
-    ("7K/8/8/8/8/8/8/q7", {(7, 7): King(WHITE), (0, 0): Queen(BLACK)}),
+    ("8/8/8/8/8/8/8/R7", {(0, 0): Piece(WHITE, ROOK)}),
+    ("8/8/8/8/8/8/8/7R", {(7, 0): Piece(WHITE, ROOK)}),
+    ("8/3r4/8/8/8/8/8/8", {(3, 6): Piece(BLACK, ROOK)}),
+    ("7K/8/8/8/8/8/8/q7", {(7, 7): Piece(WHITE, KING), (0, 0): Piece(BLACK, QUEEN)}),
 ]
 
 
@@ -107,7 +118,7 @@ def test_generate_fen_position(string, pieces):
 @pytest.mark.parametrize(
     "string, pieces",
     [
-        ("7K/8/8/8/8/8/8/q7", {(7, 7): King(WHITE), (0, 0): Queen(BLACK)}),
+        ("7K/8/8/8/8/8/8/q7", {(7, 7): Piece(WHITE, KING), (0, 0): Piece(BLACK, QUEEN)}),
         (
             "/".join(
                 [
@@ -121,7 +132,7 @@ def test_generate_fen_position(string, pieces):
                     "q.......",
                 ]
             ),
-            {(7, 7): King(WHITE), (0, 0): Queen(BLACK)},
+            {(7, 7): Piece(WHITE, KING), (0, 0): Piece(BLACK, QUEEN)},
         ),
     ],
 )

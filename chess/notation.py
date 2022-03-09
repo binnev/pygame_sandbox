@@ -85,7 +85,7 @@ def generate_fen_row(row: List[Union[Piece, None]]) -> str:
     for square in row:
         if isinstance(square, Piece):
             string += str(empty_squares) if empty_squares else ""
-            string += str(square)
+            string += square.letter
             empty_squares = 0
         else:
             empty_squares += 1
@@ -94,11 +94,11 @@ def generate_fen_row(row: List[Union[Piece, None]]) -> str:
     return string
 
 
-def generate_fen_position(pieces: Dict[tuple, Piece]) -> str:
+def generate_fen_position(pieces: Dict[Square, Piece]) -> str:
     xs = range(8)
     ys = range(0, -8, -1)
     rows = []
     for y in range(min(ys), max(ys) + 1):
-        row = [pieces.get((x, -y)) for x in range(min(xs), max(xs) + 1)]
+        row = [pieces.get(Square(x, -y)) for x in range(min(xs), max(xs) + 1)]
         rows.append(generate_fen_row(row))
     return "/".join(rows)

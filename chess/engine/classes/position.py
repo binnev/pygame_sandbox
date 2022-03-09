@@ -17,10 +17,10 @@ class Position(dict):
     width: int = 8
     height: int = 8
 
-    def __init__(self, *args, width=8, height=8, **kwargs) -> None:
+    def __init__(self, *args, width=None, height=None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.width = width
-        self.height = height
+        self.width = width or self.width
+        self.height = height or self.height
         self.squares = tuple(Square(x, y) for y in range(self.height) for x in range(self.width))
 
     def get(self, square: Square, default=None) -> Optional[Piece]:

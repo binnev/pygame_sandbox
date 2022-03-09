@@ -25,6 +25,13 @@ class ChessBoard:
     history: List[Position] = None
     active_team: Teams = WHITE
 
+    def __init__(self, height=None, width=None, position=None):
+        self.history = []
+        self.history.append(position or Position(height=height, width=width))
+
+    def __str__(self):
+        return str(self.position)
+
     @property
     def position(self):
         return self.history[self.move_counter]
@@ -113,8 +120,17 @@ class ChessBoard:
             position.add(Piece(BLACK, PAWN), Square(x, 6))
         self.history.append(position)
 
-    def __str__(self):
-        return str(self.position)
+    def load_fen_position(self, string):
+        # todo: read current player from FEN
+        position = Position.from_fen(string)
+        self.history = []
+        self.history.append(position)
+        self.move_counter = 0
+        self.active_team = WHITE
+
+    @property
+    def fen_position(self) -> str:
+        return generate_fen_position(self.position)
 
     def do_pgn_move(self, string):
         # parse PGN notation and create Move class
