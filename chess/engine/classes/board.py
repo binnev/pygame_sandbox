@@ -8,6 +8,7 @@ from chess.engine.classes.position import Position
 from chess.engine.classes.square import Square
 from chess.engine.classes.move import Move
 from chess.engine.exceptions import InvalidMove
+from chess.engine.utils import get_squares
 
 from chess.notation import (
     parse_pgn_move,
@@ -116,6 +117,7 @@ class ChessBoard:
         return str(self.position)
 
     def do_pgn_move(self, string):
+        # parse PGN notation and create Move class
         piece_type, specifier, capture, square_name = parse_pgn_move(string)
         target_square = Square.from_str(square_name)
         candidate_pieces = [
@@ -123,7 +125,7 @@ class ChessBoard:
             for square, piece in self.position.items()
             if piece.type == piece_type
             and piece.team == self.active_team
-            and target_square in self.get_squares(square)
+            and target_square in get_squares(square, self.position, piece)
         ]
         if specifier:
             if specifier.isnumeric():
@@ -149,6 +151,7 @@ class ChessBoard:
             captured_piece=captured_piece,
             captured_piece_square=target_square if captured_piece else None,
         )
+        # check legality?
         self.do_move(move)
 
     def update_active_team(self):
