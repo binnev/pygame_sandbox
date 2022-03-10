@@ -433,7 +433,7 @@ def test_is_checkmated(description, params):
         ),
     ],
 )
-def test_chessboard_is_stalemated(description, params):
+def test_is_stalemated(description, params):
     position = Position.from_fen(params["position"])
     assert is_stalemated(params["team"], position) == params["expected_result"]
 

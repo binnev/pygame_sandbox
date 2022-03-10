@@ -61,9 +61,6 @@ class ChessBoard:
         """Given a square, find the legal squares for the piece on that square."""
         return {move.destination for move in self.get_moves(square)}
 
-    def team_moves(self, team: Teams) -> Set[Move]:
-        """Get all the moves for a given team. """
-
     def do_move(self, move: Move):
         new_position = Position({**self.position})
         new_position.do_move(move)
