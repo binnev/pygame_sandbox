@@ -1,6 +1,6 @@
 import pytest
 
-from chess.constants import WHITE, BLACK, KING, PAWN, BISHOP, KNIGHT, ROOK
+from chess.constants import WHITE, BLACK, KING, PAWN, BISHOP, KNIGHT, ROOK, QUEEN
 from chess.engine.classes.move import Move
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.position import Position
@@ -262,7 +262,7 @@ def test_get_squares_knight_obstructed():
     }
 
 
-def test_bishop_squares():
+def test_get_squares_bishop():
     position = Position(width=5, height=5)
     position.add(Piece(WHITE, BISHOP), (2, 2))
     assert get_squares(current_square=Square(2, 2), position=position) == {
@@ -277,7 +277,7 @@ def test_bishop_squares():
     }
 
 
-def test_bishop_squares_obstructed():
+def test_get_squares_bishop_obstructed():
     position = Position(width=5, height=5)
     position.add(Piece(BLACK, PAWN), (3, 3))
     position.add(Piece(WHITE, KING), (1, 1))
@@ -323,7 +323,7 @@ def test_bishop_squares_obstructed():
         ),
     ],
 )
-def test_pawn_squares_unobstructed(description, param):
+def test_get_squares_pawn(description, param):
     position = Position()
     position.add(Piece(param["team"], PAWN), param["starting_square"])
     assert (
@@ -417,7 +417,7 @@ def test_pawn_squares_unobstructed(description, param):
         ),
     ],
 )
-def test_pawn_squares_obstructed(description, param):
+def test_get_squares_pawn_obstructed(description, param):
     position = Position()
     position.add(Piece(param["team"], PAWN), param["starting_square"])
     position.add(Piece(WHITE, KING), (1, 2))  # obstructs white pawns on 1-file making ANY moves
@@ -467,7 +467,7 @@ def test_pawn_squares_obstructed(description, param):
         ),
     ],
 )
-def test_pawn_capture_squares(description, param):
+def test_get_squares_pawn_captures(description, param):
     position = Position()
     position.add(Piece(param["team"], PAWN), param["starting_square"])
     position.add(Piece(WHITE, ROOK), (1, 5))
@@ -710,7 +710,7 @@ def test_get_moves_knight_obstructed():
     }
 
 
-def test_bishop_moves():
+def test_get_moves_bishop():
     position = Position(width=5, height=5)
     position.add(Piece(WHITE, BISHOP), (2, 2))
     assert get_moves(current_square=Square(2, 2), position=position) == {
@@ -725,7 +725,7 @@ def test_bishop_moves():
     }
 
 
-def test_bishop_moves_obstructed():
+def test_get_moves_bishop_obstructed():
     position = Position(width=5, height=5)
     position.add(Piece(BLACK, PAWN), (3, 3))
     position.add(Piece(WHITE, KING), (1, 1))
@@ -774,7 +774,7 @@ def test_bishop_moves_obstructed():
         ),
     ],
 )
-def test_pawn_moves_unobstructed(description, param):
+def test_get_moves_pawn_unobstructed(description, param):
     position = Position()
     piece = Piece(param["team"], PAWN)
     position.add(piece, param["starting_square"])
@@ -872,7 +872,7 @@ def test_pawn_moves_unobstructed(description, param):
         ),
     ],
 )
-def test_pawn_moves_obstructed(description, param):
+def test_get_moves_pawn_obstructed(description, param):
     position = Position()
     piece = Piece(param["team"], PAWN)
     position.add(piece, param["starting_square"])
@@ -979,7 +979,7 @@ def test_pawn_moves_obstructed(description, param):
         ),
     ],
 )
-def test_pawn_capture_moves(description, param):
+def test_get_moves_pawn_captures(description, param):
     position = Position()
     piece = Piece(param["team"], PAWN)
     position.add(piece, param["starting_square"])
@@ -987,5 +987,110 @@ def test_pawn_capture_moves(description, param):
     position.add(Piece(WHITE, ROOK), (3, 5))
     position.add(Piece(BLACK, ROOK), (1, 2))
     position.add(Piece(BLACK, ROOK), (3, 2))
+    moves = get_moves(current_square=param["starting_square"], position=position)
+    assert moves == param["expected_moves"]
+
+
+@pytest.mark.parametrize(
+    "description, param",
+    [
+        (
+            "white pawn can promote to empty square",
+            dict(
+                starting_square=(7, 6),
+                team=WHITE,
+                expected_moves={
+                    Move(
+                        origin=Square(7, 6),
+                        destination=Square(7, 7),
+                        piece=Piece(WHITE, PAWN),
+                        promote_to=piece_type,
+                    )
+                    for piece_type in [QUEEN, ROOK, BISHOP, KNIGHT]
+                },
+            ),
+        ),
+        (
+            "white pawn can promote to empty square or capture the rook with promotion",
+            dict(
+                starting_square=(0, 6),
+                team=WHITE,
+                expected_moves={
+                    *{
+                        Move(
+                            origin=Square(0, 6),
+                            destination=Square(0, 7),
+                            piece=Piece(WHITE, PAWN),
+                            promote_to=piece_type,
+                        )
+                        for piece_type in [QUEEN, ROOK, BISHOP, KNIGHT]
+                    },
+                    *{
+                        Move(
+                            origin=Square(0, 6),
+                            destination=Square(1, 7),
+                            piece=Piece(WHITE, PAWN),
+                            promote_to=piece_type,
+                            captured_piece=Piece(BLACK, ROOK),
+                            captured_piece_square=Square(1, 7),
+                        )
+                        for piece_type in [QUEEN, ROOK, BISHOP, KNIGHT]
+                    },
+                },
+            ),
+        ),
+        (
+            "black pawn can promote to empty square",
+            dict(
+                starting_square=(7, 1),
+                team=BLACK,
+                expected_moves={
+                    Move(
+                        origin=Square(7, 1),
+                        destination=Square(7, 0),
+                        piece=Piece(BLACK, PAWN),
+                        promote_to=piece_type,
+                    )
+                    for piece_type in [QUEEN, ROOK, BISHOP, KNIGHT]
+                },
+            ),
+        ),
+        (
+            "black pawn can promote to empty square or capture the rook with promotion",
+            dict(
+                starting_square=(0, 1),
+                team=BLACK,
+                expected_moves={
+                    *{
+                        Move(
+                            origin=Square(0, 1),
+                            destination=Square(0, 0),
+                            piece=Piece(BLACK, PAWN),
+                            promote_to=piece_type,
+                        )
+                        for piece_type in [QUEEN, ROOK, BISHOP, KNIGHT]
+                    },
+                    *{
+                        Move(
+                            origin=Square(0, 1),
+                            destination=Square(1, 0),
+                            piece=Piece(BLACK, PAWN),
+                            promote_to=piece_type,
+                            captured_piece=Piece(WHITE, ROOK),
+                            captured_piece_square=Square(1, 0),
+                        )
+                        for piece_type in [QUEEN, ROOK, BISHOP, KNIGHT]
+                    },
+                },
+            ),
+        ),
+    ],
+)
+def test_get_moves_pawn_promotion(description, param):
+    position = Position()
+    piece = Piece(param["team"], PAWN)
+    position.add(piece, param["starting_square"])
+    position.add(Piece(BLACK, ROOK), (1, 7))
+    position.add(Piece(WHITE, ROOK), (1, 0))
     moves = get_moves(current_square=param["starting_square"], position=position)
     assert moves == param["expected_moves"]
