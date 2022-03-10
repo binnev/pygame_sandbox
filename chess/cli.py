@@ -1,5 +1,5 @@
 from chess.engine.classes.board import ChessBoard
-from chess.engine.exceptions import InvalidMove
+from chess.engine.exceptions import IllegalMove
 
 if __name__ == "__main__":
     running = True
@@ -7,10 +7,10 @@ if __name__ == "__main__":
     board.load_standard_setup()
     while running:
         print(board)
-        move = input("enter move: ")
+        move = input(f"{board.active_team} to move: ")
         if move.strip() in ["exit", "quit"]:
             break
         try:
             board.do_pgn_move(move)
-        except InvalidMove as e:
+        except IllegalMove as e:
             print(f"invalid move: {move}; {e}")

@@ -2,5 +2,5 @@ class ChessEngineException(Exception):
     pass
 
 
-class InvalidMove(ChessEngineException):
+class IllegalMove(ChessEngineException):
     pass

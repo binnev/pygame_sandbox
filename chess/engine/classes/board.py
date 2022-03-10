@@ -7,8 +7,8 @@ from chess.engine.classes.piece import Piece
 from chess.engine.classes.position import Position
 from chess.engine.classes.square import Square
 from chess.engine.classes.move import Move
-from chess.engine.exceptions import InvalidMove
-from chess.engine.utils import get_squares
+from chess.engine.exceptions import IllegalMove
+from chess.engine.utils import get_squares, get_moves
 
 from chess.notation import (
     parse_pgn_move,
@@ -152,7 +152,8 @@ class ChessBoard:
         try:
             square, piece = candidate_pieces[0]
         except IndexError:
-            raise InvalidMove(f"No {piece_type} can reach {target_square.to_str()}")
+            raise IllegalMove(f"No {piece_type} can reach {target_square.to_str()}")
+        legal_moves = get_moves(current_square=square, position=self.position)
         captured_piece = self.position.get(target_square)  # not true for en passant
         move = Move(
             origin=square,
@@ -161,8 +162,10 @@ class ChessBoard:
             captured_piece=captured_piece,
             captured_piece_square=target_square if captured_piece else None,
         )
-        # check legality?
-        self.do_move(move)
+        if move in legal_moves:
+            self.do_move(move)
+        else:
+            raise IllegalMove("You are in check")
 
     def update_active_team(self):
         self.active_team = other_team(self.active_team)
