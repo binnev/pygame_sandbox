@@ -1,4 +1,5 @@
 from chess.constants import WHITE, KING, BLACK, QUEEN
+from chess.engine.classes.move import Move
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.position import Position
 from chess.engine.classes.square import Square
@@ -33,6 +34,27 @@ def test_init_from_other_position():
     assert position2.pop((0, 0)) == Piece(WHITE, KING)
     assert position1 != position2
     assert len(position2) == 1
+
+
+def test_after_move():
+    position = Position(
+        {
+            Square(0, 0): Piece(WHITE, KING),
+            Square(0, 1): Piece(BLACK, QUEEN),
+        }
+    )
+    move = Move(
+        origin=Square(0, 0),
+        destination=Square(3, 3),
+        piece=Piece(WHITE, KING),
+    )
+
+    new_position = position.after_move(move)
+    assert position.get((0, 0)) == Piece(WHITE, KING)
+    assert position.get((0, 1)) == Piece(BLACK, QUEEN)
+    assert new_position.get((0, 0)) is None
+    assert new_position.get((0, 1)) == Piece(BLACK, QUEEN)
+    assert new_position.get((3, 3)) == Piece(WHITE, KING)
 
 
 def test_squares():
