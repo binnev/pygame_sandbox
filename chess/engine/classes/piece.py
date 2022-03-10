@@ -46,7 +46,7 @@ class Piece(NamedTuple):
         return letter.upper() if self.team == WHITE else letter.lower()
 
     def get_squares(self, current_square: Square, position: "Position") -> Set[Square]:
-        return get_squares(current_square=current_square, position=position, piece=self)
+        return get_squares(current_square=current_square, position=position)
 
 
 # class Piece:

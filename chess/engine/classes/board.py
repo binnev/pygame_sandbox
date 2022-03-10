@@ -138,7 +138,7 @@ class ChessBoard:
             for square, piece in self.position.items()
             if piece.type == piece_type
             and piece.team == self.active_team
-            and target_square in get_squares(square, self.position, piece)
+            and target_square in get_squares(square, self.position)
         ]
         if specifier:
             if specifier.isnumeric():

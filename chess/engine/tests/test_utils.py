@@ -1,10 +1,11 @@
 import pytest
 
 from chess.constants import WHITE, BLACK, KING, PAWN, BISHOP, KNIGHT, ROOK
+from chess.engine.classes.move import Move
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.position import Position
 from chess.engine.classes.square import Square
-from chess.engine.utils import is_in_check, get_squares, is_checkmated
+from chess.engine.utils import is_in_check, get_squares, is_checkmated, get_moves
 
 
 @pytest.mark.parametrize(
@@ -208,12 +209,10 @@ def test_is_in_check(description, params):
 
 
 def test_get_squares_king():
+    square = Square(1, 1)
     position = Position()
-    assert get_squares(
-        current_square=Square(1, 1),
-        position=position,
-        piece=Piece(WHITE, KING),
-    ) == {
+    position.add(Piece(WHITE, KING), square)
+    assert get_squares(current_square=square, position=position) == {
         (0, 0),
         (0, 1),
         (0, 2),
@@ -229,12 +228,8 @@ def test_get_squares_king_obstructed():
     position = Position()
     position.add(Piece(WHITE, PAWN), (1, 1))
     position.add(Piece(BLACK, BISHOP), (0, 1))
-
-    assert get_squares(
-        current_square=Square(0, 0),
-        position=position,
-        piece=Piece(WHITE, KING),
-    ) == {
+    position.add(Piece(WHITE, KING), (0, 0))
+    assert get_squares(current_square=Square(0, 0), position=position,) == {
         (0, 1),  # enemy bishop
         (1, 0),  # empty square
     }
@@ -242,11 +237,8 @@ def test_get_squares_king_obstructed():
 
 def test_get_squares_knight():
     position = Position()
-    assert get_squares(
-        current_square=Square(5, 5),
-        position=position,
-        piece=Piece(WHITE, KNIGHT),
-    ) == {
+    position.add(Piece(WHITE, KNIGHT), (5, 5))
+    assert get_squares(current_square=Square(5, 5), position=position) == {
         (5 + 1, 5 + 2),
         (5 + 2, 5 + 1),
         (5 + 2, 5 - 1),
@@ -262,12 +254,9 @@ def test_get_squares_knight_obstructed():
     position = Position()
     position.add(Piece(WHITE, BISHOP), (1, 3))
     position.add(Piece(BLACK, PAWN), (2, 2))
+    position.add(Piece(WHITE, KNIGHT), (0, 1))
 
-    assert get_squares(
-        current_square=Square(0, 1),
-        position=position,
-        piece=Piece(WHITE, KNIGHT),
-    ) == {
+    assert get_squares(current_square=Square(0, 1), position=position) == {
         (2, 0),  # empty square
         (2, 2),  # enemy pawn
     }
@@ -275,11 +264,8 @@ def test_get_squares_knight_obstructed():
 
 def test_bishop_moves():
     position = Position(width=5, height=5)
-    assert get_squares(
-        current_square=Square(2, 2),
-        position=position,
-        piece=Piece(WHITE, BISHOP),
-    ) == {
+    position.add(Piece(WHITE, BISHOP), (2, 2))
+    assert get_squares(current_square=Square(2, 2), position=position) == {
         (0, 0),
         (1, 1),
         (3, 3),
@@ -295,11 +281,8 @@ def test_bishop_moves_obstructed():
     position = Position(width=5, height=5)
     position.add(Piece(BLACK, PAWN), (3, 3))
     position.add(Piece(WHITE, KING), (1, 1))
-    assert get_squares(
-        current_square=Square(2, 2),
-        position=position,
-        piece=Piece(WHITE, BISHOP),
-    ) == {
+    position.add(Piece(WHITE, BISHOP), (2, 2))
+    assert get_squares(current_square=Square(2, 2), position=position) == {
         # (0, 0),  # behind king
         # (1, 1),  # occupied by king
         (3, 3),
@@ -342,12 +325,9 @@ def test_bishop_moves_obstructed():
 )
 def test_pawn_moves_unobstructed(description, param):
     position = Position()
+    position.add(Piece(param["team"], PAWN), param["starting_square"])
     assert (
-        get_squares(
-            current_square=param["starting_square"],
-            position=position,
-            piece=Piece(param["team"], PAWN),
-        )
+        get_squares(current_square=param["starting_square"], position=position)
         == param["expected_squares"]
     )
 
@@ -439,16 +419,13 @@ def test_pawn_moves_unobstructed(description, param):
 )
 def test_pawn_moves_obstructed(description, param):
     position = Position()
+    position.add(Piece(param["team"], PAWN), param["starting_square"])
     position.add(Piece(WHITE, KING), (1, 2))  # obstructs white pawns on 1-file making ANY moves
     position.add(Piece(WHITE, KING), (2, 3))  # obstructs white pawns on 2-file a double move
     position.add(Piece(BLACK, KING), (1, 5))  # obstructs black pawns on 1-file making ANY moves
     position.add(Piece(BLACK, KING), (2, 4))  # obstructs black pawns on 2-file a double move
     assert (
-        get_squares(
-            current_square=param["starting_square"],
-            position=position,
-            piece=Piece(param["team"], PAWN),
-        )
+        get_squares(current_square=param["starting_square"], position=position)
         == param["expected_squares"]
     )
 
@@ -492,16 +469,13 @@ def test_pawn_moves_obstructed(description, param):
 )
 def test_pawn_captures(description, param):
     position = Position()
+    position.add(Piece(param["team"], PAWN), param["starting_square"])
     position.add(Piece(WHITE, ROOK), (1, 5))
     position.add(Piece(WHITE, ROOK), (3, 5))
     position.add(Piece(BLACK, ROOK), (1, 2))
     position.add(Piece(BLACK, ROOK), (3, 2))
     assert (
-        get_squares(
-            current_square=param["starting_square"],
-            position=position,
-            piece=Piece(param["team"], PAWN),
-        )
+        get_squares(current_square=param["starting_square"], position=position)
         == param["expected_squares"]
     )
 
@@ -667,3 +641,17 @@ def test_is_checkmated(description, params):
     position = Position()
     position.from_fen(params["position"])
     assert is_checkmated(params["team"], position) == params["expected_result"]
+
+
+def test_get_moves_king():
+    position = Position({(1, 1): Piece(WHITE, KING)})
+    assert get_moves(current_square=Square(1, 1), position=position) == {
+        Move(origin=Square(1, 1), destination=Square(0, 0), piece=Piece(WHITE, KING)),
+        Move(origin=Square(1, 1), destination=Square(0, 1), piece=Piece(WHITE, KING)),
+        Move(origin=Square(1, 1), destination=Square(0, 2), piece=Piece(WHITE, KING)),
+        Move(origin=Square(1, 1), destination=Square(1, 0), piece=Piece(WHITE, KING)),
+        Move(origin=Square(1, 1), destination=Square(1, 2), piece=Piece(WHITE, KING)),
+        Move(origin=Square(1, 1), destination=Square(2, 0), piece=Piece(WHITE, KING)),
+        Move(origin=Square(1, 1), destination=Square(2, 1), piece=Piece(WHITE, KING)),
+        Move(origin=Square(1, 1), destination=Square(2, 2), piece=Piece(WHITE, KING)),
+    }

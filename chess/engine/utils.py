@@ -17,6 +17,7 @@ from chess.constants import (
     ROOK_DIRECTIONS,
     KNIGHT_DIRECTIONS,
 )
+from chess.engine.classes.move import Move
 from chess.engine.classes.square import Square
 
 if TYPE_CHECKING:
@@ -60,14 +61,14 @@ def is_stalemated(self, team: str) -> bool:
     return not self.team_legal_moves(team) and not self.is_in_check(team)
 
 
-def get_squares(current_square: Square, position: "Position", piece: "Piece") -> Set[Square]:
+def get_squares(current_square: Square, position: "Position") -> Set[Square]:
     """Find the squares that this piece could possibly move to from the current_square,
     ignoring special rules:
     - en passant
     - castling
     - putting self in check
     """
-
+    piece = position.get(current_square)
     if piece.type == PAWN:
         return get_pawn_squares(current_square=current_square, position=position, team=piece.team)
 
@@ -122,3 +123,67 @@ def get_pawn_squares(current_square: Square, position: "Position", team: Teams) 
         ):
             moves.add(move_square2)
     return {move for move in moves if move in position.squares}
+
+
+def get_moves(
+    current_square: Square,
+    position: "Position",
+    previous_move: Move = None,
+    can_castle_kingside=False,
+    can_castle_queenside=False,
+) -> Set[Move]:
+    """
+    Get all the legal moves of a piece, including:
+    - castling
+        - castling rights kingside / queenside
+        - is in check current position
+        - are the squares between king & rook threatened
+        - are the king and rook on their starting squares (== castling rights...)
+    - promotion
+    - en passant
+        - check to the left/right of pawn
+        - was previous move a pawn double move to target square
+    - checking for putting self in check
+        - position after move
+    need:
+    - position
+    - previous move (
+    """
+    # "basic" moves based on the piece's squares
+    piece = position.get(current_square)
+    moves = set()
+    squares = get_squares(current_square=current_square, position=position)
+    for square in squares:
+        captured_piece = position.get(square)
+        if piece.type == PAWN and position.is_pawn_promotion_square(square, piece.team):
+            for piece_type in (QUEEN, ROOK, BISHOP, KNIGHT):
+                moves.add(
+                    Move(
+                        origin=current_square,
+                        destination=square,
+                        piece=piece,
+                        captured_piece=captured_piece,
+                        captured_piece_square=square if captured_piece else None,
+                        promote_to=piece_type,
+                    )
+                )
+        else:
+            moves.add(
+                Move(
+                    origin=current_square,
+                    destination=square,
+                    piece=piece,
+                    captured_piece=captured_piece,
+                    captured_piece_square=square if captured_piece else None,
+                )
+            )
+
+    # todo: castling
+    # todo: en passant
+
+    legal_moves = set()
+    for move in moves:
+        new_position = position.after_move(move)
+        if not is_in_check(piece.team, new_position):
+            legal_moves.add(move)
+    return legal_moves

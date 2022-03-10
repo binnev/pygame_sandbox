@@ -27,6 +27,7 @@ class Position(dict):
         return super().get(square, default)
 
     def add(self, piece: Piece, square: tuple):
+        # todo: reverse order of args to resemble key: value order
         square = Square(*square)
         self[square] = piece
 
