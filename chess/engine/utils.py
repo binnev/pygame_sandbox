@@ -47,7 +47,7 @@ def is_checkmated(team: Teams, position: "Position") -> bool:
     if not is_in_check(team, position):
         return False
 
-    # can any move make it not check
+    # can any _legal_ move make it not check
     team_pieces = {s: p for s, p in position.items() if p.team == team}
     for square, piece in team_pieces.items():
         for move in get_moves(current_square=square, position=position):
@@ -58,8 +58,17 @@ def is_checkmated(team: Teams, position: "Position") -> bool:
     return True
 
 
-def is_stalemated(self, team: str) -> bool:
-    return not self.team_legal_moves(team) and not self.is_in_check(team)
+def is_stalemated(team: Teams, position: "Position") -> bool:
+    if is_in_check(team, position):
+        return False
+
+    team_pieces = (s for s, p in position.items() if p.team == team)
+    legal_moves = {
+        move
+        for square in team_pieces
+        for move in get_moves(current_square=square, position=position)
+    }
+    return not legal_moves
 
 
 def get_squares(current_square: Square, position: "Position") -> Set[Square]:

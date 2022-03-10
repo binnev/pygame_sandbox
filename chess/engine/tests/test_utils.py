@@ -5,7 +5,7 @@ from chess.engine.classes.move import Move
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.position import Position
 from chess.engine.classes.square import Square
-from chess.engine.utils import is_in_check, get_squares, is_checkmated, get_moves
+from chess.engine.utils import is_in_check, get_squares, is_checkmated, get_moves, is_stalemated
 
 
 @pytest.mark.parametrize(
@@ -369,6 +369,73 @@ def test_is_checkmated(description, params):
     position = Position.from_fen(params["position"])
     assert len(position) > 0
     assert is_checkmated(params["team"], position) == params["expected_result"]
+
+
+@pytest.mark.parametrize(
+    "description, params",
+    [
+        (
+            "two kings",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "K.......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=False,
+            ),
+        ),
+        (
+            "stalemate",
+            dict(
+                position="/".join(
+                    [
+                        "qr......",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "B.......",
+                        "K.......",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=True,
+            ),
+        ),
+        (
+            "king and queen stalemate",
+            dict(
+                position="/".join(
+                    [
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "..q.k...",
+                        "........",
+                        "...K....",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=True,
+            ),
+        ),
+    ],
+)
+def test_chessboard_is_stalemated(description, params):
+    position = Position.from_fen(params["position"])
+    assert is_stalemated(params["team"], position) == params["expected_result"]
 
 
 def test_get_squares_king():
