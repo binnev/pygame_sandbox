@@ -70,18 +70,11 @@ class ChessBoard:
         # todo: update any non-position-specific history stuff like castling rights
         # todo: overwrite any upstream moves in the history (or branch the tree?)
 
-    def undo_move(self, move: Move):
-        """reverse of above"""
-        self.back()
-        self.history.pop()
-
-    def next(self):
-        """Go to next move"""
-        self.move_counter += 1
-
     def back(self):
         """Go to prev move"""
         self.move_counter -= 1
+        self.history.pop()
+        self.update_active_team()
 
     def is_checkmated(self, team: Teams) -> bool:
         """Is the team checkmated"""
