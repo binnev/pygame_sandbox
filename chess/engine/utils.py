@@ -50,11 +50,9 @@ def is_checkmated(team: Teams, position: "Position") -> bool:
     # can any move make it not check
     team_pieces = {s: p for s, p in position.items() if p.team == team}
     for square, piece in team_pieces.items():
-        for move in piece.get_moves(...):
-            position.do_move(move)
-            is_check = is_in_check(team, position)
-            position.undo_move(move)
-            if not is_check:
+        for move in get_moves(current_square=square, position=position):
+            new_position = position.after_move(move)
+            if not is_in_check(team, new_position):
                 return False
 
     return True
