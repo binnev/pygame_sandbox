@@ -31,7 +31,10 @@ def is_in_check(team: Teams, position: "Position") -> bool:
     get opposing team's squares
     check if king is in squares
     """
-    king_square = next(s for s, p in position.items() if p.type == KING and p.team == team)
+    try:
+        king_square = next(s for s, p in position.items() if p.type == KING and p.team == team)
+    except StopIteration:  # no king on board
+        return False
     opponent_pieces = {s: p for s, p in position.items() if p.team != team}
     opponent_squares = set()
     for square, piece in opponent_pieces.items():
