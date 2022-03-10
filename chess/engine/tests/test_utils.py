@@ -644,7 +644,8 @@ def test_is_checkmated(description, params):
 
 
 def test_get_moves_king():
-    position = Position({(1, 1): Piece(WHITE, KING)})
+    position = Position()
+    position.add(Piece(WHITE, KING), (1, 1))
     assert get_moves(current_square=Square(1, 1), position=position) == {
         Move(origin=Square(1, 1), destination=Square(0, 0), piece=Piece(WHITE, KING)),
         Move(origin=Square(1, 1), destination=Square(0, 1), piece=Piece(WHITE, KING)),
