@@ -8,7 +8,7 @@ from chess.engine.classes.position import Position
 from chess.engine.classes.square import Square
 from chess.engine.classes.move import Move
 from chess.engine.exceptions import IllegalMove
-from chess.engine.utils import get_squares, get_moves
+from chess.engine.utils import get_squares, get_moves, is_checkmated, is_in_check, is_stalemated
 
 from chess.notation import (
     parse_pgn_move,
@@ -22,19 +22,21 @@ from chess.utils import other_team
 class ChessBoard:
     position: Position
     move_counter: int = 0
-    history: List[Position] = None
+    position_history: List[Position] = None
+    move_history: List[Move] = None
     active_team: Teams = WHITE
 
     def __init__(self, height=None, width=None, position=None):
-        self.history = []
-        self.history.append(position or Position(height=height, width=width))
+        self.position_history = []
+        self.move_history = []
+        self.position_history.append(position or Position(height=height, width=width))
 
     def __str__(self):
         return str(self.position)
 
     @property
     def position(self):
-        return self.history[self.move_counter]
+        return self.position_history[self.move_counter]
 
     def get_moves(self, current_square: Square) -> Set[Move]:
         """Given a square, find the legal moves for the piece on that square. This includes
@@ -64,7 +66,8 @@ class ChessBoard:
     def do_move(self, move: Move):
         new_position = Position({**self.position})
         new_position.do_move(move)
-        self.history.append(new_position)
+        self.position_history.append(new_position)
+        self.move_history.append(move)
         self.move_counter += 1
         self.update_active_team()
         # todo: update any non-position-specific history stuff like castling rights
@@ -72,18 +75,31 @@ class ChessBoard:
 
     def back(self):
         """Go to prev move"""
-        self.move_counter -= 1
-        self.history.pop()
-        self.update_active_team()
+        if len(self.position_history) > 1:
+            self.move_counter -= 1
+            self.position_history.pop()
+            self.update_active_team()
 
     def is_checkmated(self, team: Teams) -> bool:
-        """Is the team checkmated"""
+        return is_checkmated(team, self.position)
 
     def is_in_check(self, team: Teams) -> bool:
-        """Is the team checkmated"""
+        return is_in_check(team, self.position)
+
+    def is_stalemated(self, team: Teams) -> bool:
+        return is_stalemated(team, self.position)
+
+    def get_moves(self, current_square: Square) -> Set[Move]:
+        return get_moves(
+            current_square=current_square,
+            position=self.position,
+            previous_move=None,  # todo
+            can_castle_kingside=False,  # todo
+            can_castle_queenside=False,  # todo
+        )
 
     def load_standard_setup(self):
-        self.history = []
+        self.position_history = []
         self.move_counter = 0
         position = Position()
         position.add(Piece(WHITE, ROOK), Square(0, 0))
@@ -105,13 +121,13 @@ class ChessBoard:
         for x in range(8):
             position.add(Piece(WHITE, PAWN), Square(x, 1))
             position.add(Piece(BLACK, PAWN), Square(x, 6))
-        self.history.append(position)
+        self.position_history.append(position)
 
     def load_fen_position(self, string):
         # todo: read current player from FEN
         position = Position.from_fen(string)
-        self.history = []
-        self.history.append(position)
+        self.position_history = []
+        self.position_history.append(position)
         self.move_counter = 0
         self.active_team = WHITE
 

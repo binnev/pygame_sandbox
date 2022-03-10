@@ -6,11 +6,16 @@ from base.input import EventQueue
 from base.objects import Entity, PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf, sounds
+from chess.constants import KNIGHT, QUEEN, ROOK, BISHOP
 from chess.engine.classes.board import ChessBoard
 from chess.engine.classes.move import Move
 from chess.gui.classes.piece import (
     GuiPiece,
     CLASSES_BY_LETTER,
+    Queen,
+    Knight,
+    Bishop,
+    Rook,
 )
 from chess.gui.utils import distance
 from chess.utils import other_team
@@ -98,8 +103,10 @@ class GuiBoard(Entity):
         self.load_engine_position()
 
     def load_engine_position(self):
-        for coords, engine_piece in self.engine.contents.items():
-            klass = CLASSES_BY_LETTER[engine_piece.letter]
+        self.pieces.kill()
+        self.selected_pieces.kill()
+        for coords, engine_piece in self.engine.position.items():
+            klass = CLASSES_BY_LETTER[engine_piece.letter.lower()]
             piece = klass(0, 0, engine_piece.team)
             self.add_piece_to_square(piece, coords)
 
@@ -125,8 +132,8 @@ class GuiBoard(Entity):
         self.pieces.remove(piece)
         # add annotations for piece's legal moves
         annotations = []
-        for _, destination in self.get_legal_moves(piece):
-            square = self.square_coords[destination]
+        for move in self.engine.get_moves(piece.square.coords):
+            square = self.square_coords[move.destination]
             annotation = SquareAnnotation(square.x, square.y)
             annotations.append(annotation)
         self.add_annotations(*annotations)
@@ -135,41 +142,25 @@ class GuiBoard(Entity):
         new_square = min(self.squares, key=lambda s: distance(s, piece))
 
         # check move is legal
-        move = Move(piece.square.coords, new_square.coords)
-        if self.engine.is_move_legal(move):
-
+        legal_moves = self.engine.get_moves(piece.square.coords)
+        legal_moves = {move for move in legal_moves if move.destination == new_square.coords}
+        if legal_moves:
+            move = legal_moves.pop()  # todo: promotion will require a menu
+            # todo: self.do_move()
             # update engine
             self.engine.do_move(move)
-            # print(self.engine)
-            if self.engine.is_checkmated(other_team(piece.team)):
-                sounds.checkmate.play()
-            elif self.engine.is_in_check(other_team(piece.team)):
-                sounds.check.play()
-            elif self.engine.is_stalemated(other_team(piece.team)):
-                sounds.stalemate.play()
-
-            # snap to nearest square
-            piece.rect.center = new_square.rect.center
-            piece.square = new_square
-
-            # remove other pieces on that square
-            captured_pieces = pygame.sprite.spritecollide(piece, self.pieces, dokill=True)
-            if captured_pieces:
-                piece.blood()
-
-            self.annotations.kill()
+            print(self.engine)
+            self.do_move(move)
 
         else:
             piece.rect.center = piece.square.rect.center
-
-        self.selected_pieces.remove(piece)
-        self.pieces.add(piece)
-        piece.state = piece.state_idle
+            self.selected_pieces.remove(piece)
+            self.pieces.add(piece)
+            piece.state = piece.state_idle
 
     def remove(self, piece: GuiPiece):
-        self.engine.remove_piece(piece.square.coords)
+        self.engine.position.pop(piece.square.coords)
         piece.kill()
-        # print(self.engine)
 
     def state_idle(self):
         if EventQueue.get(type=pygame.MOUSEBUTTONDOWN, button=pygame.BUTTON_LEFT):
@@ -188,5 +179,51 @@ class GuiBoard(Entity):
             for piece in self.selected_pieces:
                 self.put_down(piece)
 
-    def get_legal_moves(self, piece: GuiPiece):
-        return self.engine.piece_legal_moves(piece.square.coords)
+        if EventQueue.filter(type=pygame.KEYDOWN, key=pygame.K_LEFT):
+            self.engine.back()
+            self.load_engine_position()
+
+    def do_move(self, move: Move):
+        piece = next(piece for piece in self.selected_pieces if piece.square.coords == move.origin)
+        target_square = next(square for square in self.squares if square.coords == move.destination)
+
+        # promotion
+        if move.promote_to:
+            # todo: need piecetype to class mapping. OR: (better) be able to
+            #  change piece type on the fly.
+            mapping = {
+                QUEEN: Queen,
+                ROOK: Rook,
+                BISHOP: Bishop,
+                KNIGHT: Knight,
+            }
+            new_piece = mapping[move.promote_to](0, 0, team=piece.team)
+            self.selected_pieces.add(new_piece)
+            piece.kill()
+            piece = new_piece
+
+        # snap piece to new square. todo: animate
+        piece.rect.center = target_square.rect.center
+        piece.square = target_square
+        self.selected_pieces.remove(piece)
+        self.pieces.add(piece)
+        piece.state = piece.state_idle
+
+        if move.captured_piece:
+            captured_piece = next(
+                piece for piece in self.pieces if piece.square.coords == move.captured_piece_square
+            )
+            captured_piece.blood()
+            captured_piece.kill()
+
+        if move.extra_move:
+            self.do_move(move.extra_move)
+
+        if self.engine.is_checkmated(other_team(piece.team)):
+            sounds.checkmate.play()
+        elif self.engine.is_in_check(other_team(piece.team)):
+            sounds.check.play()
+        elif self.engine.is_stalemated(other_team(piece.team)):
+            sounds.stalemate.play()
+
+        self.annotations.kill()
