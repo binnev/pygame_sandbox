@@ -1,7 +1,38 @@
-from chess.constants import WHITE, KING, BLACK
+from chess.constants import WHITE, KING, BLACK, QUEEN
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.position import Position
 from chess.engine.classes.square import Square
+
+
+def test_init_empty():
+    position = Position()
+    assert len(position) == 0
+
+
+def test_init_from_dict_literal():
+    position = Position(
+        {
+            Square(0, 0): Piece(WHITE, KING),
+            Square(0, 1): Piece(BLACK, QUEEN),
+        }
+    )
+    assert len(position) == 2
+
+
+def test_init_from_other_position():
+    position1 = Position(
+        {
+            Square(0, 0): Piece(WHITE, KING),
+            Square(0, 1): Piece(BLACK, QUEEN),
+        }
+    )
+    position2 = Position(position1)
+    assert position1 == position2
+    assert len(position1) == len(position2) == 2
+    # should be separate instances, not two links to the same data
+    assert position2.pop((0, 0)) == Piece(WHITE, KING)
+    assert position1 != position2
+    assert len(position2) == 1
 
 
 def test_squares():

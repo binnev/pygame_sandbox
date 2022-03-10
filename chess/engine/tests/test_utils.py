@@ -4,7 +4,7 @@ from chess.constants import WHITE, BLACK, KING, PAWN, BISHOP, KNIGHT, ROOK
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.position import Position
 from chess.engine.classes.square import Square
-from chess.engine.utils import is_in_check, get_squares
+from chess.engine.utils import is_in_check, get_squares, is_checkmated
 
 
 @pytest.mark.parametrize(
@@ -504,3 +504,166 @@ def test_pawn_captures(description, param):
         )
         == param["expected_squares"]
     )
+
+
+@pytest.mark.parametrize(
+    "description, params",
+    [
+        (
+            "starting position",
+            dict(
+                position="/".join(
+                    [
+                        "rnbqkbnr",
+                        "pppppppp",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "PPPPPPPP",
+                        "RNBQKBNR",
+                    ]
+                ),
+                team=WHITE,
+                expected_result=False,
+            ),
+        ),
+        (
+            "classic back rank",
+            dict(
+                position="/".join(
+                    [
+                        ".k..R...",
+                        "ppp..ppp",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                    ]
+                ),
+                team=BLACK,
+                expected_result=True,
+            ),
+        ),
+        (
+            "back rank except the king has a square",
+            dict(
+                position="/".join(
+                    [
+                        "..k.R...",
+                        "ppp.....",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                    ]
+                ),
+                team=BLACK,
+                expected_result=False,
+            ),
+        ),
+        (
+            "back rank except we can block it",
+            dict(
+                position="/".join(
+                    [
+                        "..k.R...",
+                        "pppp....",
+                        "........",
+                        "......b.",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                    ]
+                ),
+                team=BLACK,
+                expected_result=False,
+            ),
+        ),
+        (
+            "back rank except the king can capture",
+            dict(
+                position="/".join(
+                    [
+                        "...kR...",
+                        "pppp....",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                        "........",
+                    ]
+                ),
+                team=BLACK,
+                expected_result=False,
+            ),
+        ),
+        (
+            "back rank except the piece can be captured",
+            dict(
+                position="/".join(
+                    [
+                        "k...R...",
+                        "pppp....",
+                        "........",
+                        "........",
+                        "........",
+                        "....q...",
+                        "........",
+                        "........",
+                    ]
+                ),
+                team=BLACK,
+                expected_result=False,
+            ),
+        ),
+        (
+            "scholar's mate",
+            dict(
+                position="/".join(
+                    [
+                        "r.bqkbnr",
+                        "pppp.Qpp",
+                        "..n.....",
+                        "....pp..",
+                        "..B.P...",
+                        "........",
+                        "PPPP.PPP",
+                        "RNB.K.NR",
+                    ]
+                ),
+                team=BLACK,
+                expected_result=True,
+            ),
+        ),
+        (
+            "the bishop can't block because it's pinned",
+            dict(
+                position="/".join(
+                    [
+                        "k.......",
+                        ".b......",
+                        "...B....",
+                        "...Q....",
+                        "........",
+                        "RR......",
+                        "........",
+                        "........",
+                    ]
+                ),
+                team=BLACK,
+                expected_result=True,
+            ),
+        ),
+    ],
+)
+def test_is_checkmated(description, params):
+    position = Position()
+    position.from_fen(params["position"])
+    assert is_checkmated(params["team"], position) == params["expected_result"]

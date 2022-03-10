@@ -38,6 +38,28 @@ def is_in_check(team: Teams, position: "Position") -> bool:
     return king_square in opponent_squares
 
 
+def is_checkmated(team: Teams, position: "Position") -> bool:
+    # is it check
+    if not is_in_check(team, position):
+        return False
+
+    # can any move make it not check
+    team_pieces = {s: p for s, p in position.items() if p.team == team}
+    for square, piece in team_pieces.items():
+        for move in piece.get_moves(...):
+            position.do_move(move)
+            is_check = is_in_check(team, position)
+            position.undo_move(move)
+            if not is_check:
+                return False
+
+    return True
+
+
+def is_stalemated(self, team: str) -> bool:
+    return not self.team_legal_moves(team) and not self.is_in_check(team)
+
+
 def get_squares(current_square: Square, position: "Position", piece: "Piece") -> Set[Square]:
     """Find the squares that this piece could possibly move to from the current_square,
     ignoring special rules:

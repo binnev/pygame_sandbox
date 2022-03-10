@@ -92,9 +92,6 @@ class ChessBoard:
     def is_in_check(self, team: Teams) -> bool:
         """Is the team checkmated"""
 
-    def is_checkmated(self, team: Teams) -> bool:
-        """Is the team checkmated"""
-
     def load_standard_setup(self):
         self.history = []
         self.move_counter = 0
