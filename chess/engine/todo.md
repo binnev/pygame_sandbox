@@ -19,7 +19,3 @@
 - parser for "rbxa4" type moves (again, Move.to/from_string)
 
 ## gui
-
-- token change 
-- token change but my git username is binnev now
-- token change; uname = binnev; email = byntje
