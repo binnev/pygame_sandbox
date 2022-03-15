@@ -106,8 +106,8 @@ class GuiBoard(Entity):
         self.pieces.kill()
         self.selected_pieces.kill()
         for coords, engine_piece in self.engine.position.items():
-            klass = CLASSES_BY_LETTER[engine_piece.letter.lower()]
-            piece = klass(0, 0, engine_piece.team)
+            piece_class = CLASSES_BY_LETTER[engine_piece.letter.lower()]
+            piece = piece_class(0, 0, engine_piece.team)
             self.add_piece_to_square(piece, coords)
 
     def add_piece_to_square(self, piece, coords):

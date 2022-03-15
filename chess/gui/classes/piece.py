@@ -5,15 +5,12 @@ from pygame import Surface, Color
 from pygame.rect import Rect
 
 from base.animation import recolor_image
-from base.input import EventQueue
 from base.objects import PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf
 from chess.assets.pieces import chess_pieces
-from chess.constants import WHITE, BLACK
-from chess.gui.utils import distance
+from chess.constants import WHITE, BLACK, Teams, PieceTypes
 from fighting_game.particles import random_float, Particle, random_int
-
 
 if TYPE_CHECKING:
     from chess.gui.classes.board import GuiBoard, GuiSquare
@@ -28,14 +25,18 @@ class GuiPiece(PhysicalEntity):
     board: "GuiBoard"
     square: "GuiSquare"
 
-    def __init__(self, x, y, team=WHITE, *groups):
+    def __init__(self, x, y, team: Teams, type=PieceTypes, *groups):
         super().__init__(*groups)
         self.team = team
+        self.type = type
         self.rect = Rect(0, 0, self.width, self.height)
         self.rect.center = (x, y)
-        self.image = chess_pieces[self.sprite_name].play(0)
+        self.image = chess_pieces[self.type].play(0)
         if self.team != WHITE:
-            self.image = recolor_image(self.image, {(255, 255, 255): Color("black")})
+            self.image = recolor_image(self.image, {
+                (255, 255, 255): Color("black"),
+                (0, 0, 0): Color("white"),
+            })
         self.state = self.state_idle
         self.particles = Group()
         self.child_groups = [self.particles]
@@ -133,37 +134,3 @@ class GuiPiece(PhysicalEntity):
                 blit_flag=pygame.BLEND_SUB,
             )
         )
-
-
-class Pawn(GuiPiece):
-    letter = "p"
-    sprite_name = "pawn"
-
-
-class Queen(GuiPiece):
-    letter = "q"
-    sprite_name = "queen"
-
-
-class King(GuiPiece):
-    letter = "k"
-    sprite_name = "king"
-
-
-class Bishop(GuiPiece):
-    letter = "b"
-    sprite_name = "bishop"
-
-
-class Rook(GuiPiece):
-    letter = "r"
-    sprite_name = "rook"
-
-
-class Knight(GuiPiece):
-    letter = "n"
-    sprite_name = "knight"
-
-
-CLASSES = [King, Queen, Rook, Bishop, Knight, Pawn]
-CLASSES_BY_LETTER = {cls.letter: cls for cls in CLASSES}
