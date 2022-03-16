@@ -1,10 +1,13 @@
 import pygame
 from pygame import Surface, Rect
+from pygame.color import Color
 from pygame.sprite import AbstractGroup
 
-from base.animation import recolor_image
+from base.animation import recolor_image, scale_image
 from base.objects import PhysicalEntity, Entity, Group
+from fighting_game.particles import Particle, random_float, random_int
 from quarto.assets.images import quarto_pieces, misc
+from quarto.utils import common_attribute
 
 
 class Piece(PhysicalEntity):
@@ -13,7 +16,8 @@ class Piece(PhysicalEntity):
     square: bool
     black: bool
 
-    square: "Square" = None
+    board_square: "Square" = None
+    flame_color = Color("red")
 
     def __init__(self, x: int, y: int, tall: bool, hollow: bool, square: bool, black: bool):
         super().__init__()
@@ -35,12 +39,12 @@ class Piece(PhysicalEntity):
                     (255, 255, 255): (100, 100, 100),
                 },
             )
+        self.particles = Group()
+        self.child_groups = [self.particles]
 
     def draw(self, surface: Surface, debug: bool = False):
-        # todo: this is to make child particles appear behind self. Need to make it so I can
-        #  configure this without hacking.
-        surface.blit(self.image, self.image_rect)
         super().draw(surface, debug)
+        surface.blit(self.image, self.image_rect)
 
     @property
     def image_rect(self):
@@ -68,6 +72,21 @@ class Piece(PhysicalEntity):
     def shape(self):
         return "square" if self.square else "round"
 
+    def flame(self):
+        self.particles.add(
+            Particle(
+                self.x,
+                self.y,
+                u=30 * 0 + random_float(-5, 5),
+                v=30 * 0 + random_float(-5, 5),
+                radius=random_int(30, 60),
+                color=self.flame_color,
+                gravity=-0.5,
+                decay=1,
+                friction=0.1,
+            )
+        )
+
 
 class Square(PhysicalEntity):
     width = 60
@@ -90,11 +109,11 @@ class Square(PhysicalEntity):
     def add_piece(self, piece: Piece):
         piece.rect.midbottom = self.rect.midbottom
         self.piece = piece
-        piece.square = self
+        piece.board_square = self
 
     def remove_piece(self, piece):
         self.piece = None
-        piece.square = None
+        piece.board_square = None
 
 
 class QuartoBoard(Entity):
@@ -102,30 +121,44 @@ class QuartoBoard(Entity):
         super().__init__(*groups)
         self.x = x
         self.y = y
+        self.game_over = False
         self.squares = Group()
         self.pieces = Group()
         self.child_groups = [
             self.squares,
             self.pieces,
         ]
-        self.foobar = {}
+        self.square_coords = {}
 
-        ii = 0
-        for tall in True, False:
-            for hollow in True, False:
-                for square in True, False:
-                    for black in True, False:
-                        y, x = divmod(ii, 4)
-                        SPACING = 60
-                        screen_x = self.x + (x + y) * SPACING
-                        screen_y = self.y + (y - x) * SPACING // 2
-                        sq = Square(screen_x, screen_y, black=(y % 2) == (x % 2))
-                        self.squares.add(sq)
-                        self.foobar[(x, y)] = sq
-                        piece = Piece(0, 0, tall=tall, hollow=hollow, square=square, black=black)
-                        sq.add_piece(piece)
-                        self.pieces.add(piece)
-                        ii += 1
+        self.win_vectors = [
+            # columns
+            ((0, 0), (0, 1), (0, 2), (0, 3)),
+            ((1, 0), (1, 1), (1, 2), (1, 3)),
+            ((2, 0), (2, 1), (2, 2), (2, 3)),
+            ((3, 0), (3, 1), (3, 2), (3, 3)),
+            # rows
+            ((0, 0), (1, 0), (2, 0), (3, 0)),
+            ((0, 1), (1, 1), (2, 1), (3, 1)),
+            ((0, 2), (1, 2), (2, 2), (3, 2)),
+            ((0, 3), (1, 3), (2, 3), (3, 3)),
+            # diagonals
+            ((0, 0), (1, 1), (2, 2), (3, 3)),
+            ((3, 0), (2, 1), (1, 2), (0, 3)),
+        ]
+
+        for ii in range(16):
+            y, x = divmod(ii, 4)
+            SPACING = 60
+            screen_x = self.x + (x + y) * SPACING
+            screen_y = self.y + (y - x) * SPACING // 2
+            sq = Square(screen_x, screen_y, black=(y % 2) == (x % 2))
+            self.squares.add(sq)
+            self.square_coords[(x, y)] = sq
+
+        self.state = self.state_main
+
+    def state_main(self):
+        self.check_victory()
 
     def draw(self, surface: Surface, debug: bool = False):
         for square in self.squares_forward():
@@ -137,14 +170,38 @@ class QuartoBoard(Entity):
     def squares_forward(self):
         for ii in range(16):
             y, x = divmod(ii, 4)
-            yield self.foobar[(x, y)]
+            yield self.square_coords[(x, y)]
 
     def squares_backward(self):
         for ii in range(15, -1, -1):
             y, x = divmod(ii, 4)
-            yield self.foobar[(x, y)]
+            yield self.square_coords[(x, y)]
 
     def pieces_backward(self):
         for square in self.squares_backward():
             if square.piece:
                 yield square.piece
+
+    def check_victory(self):
+        for vector in self.win_vectors:
+            pieces = [piece for xy in vector if (piece := self.square_coords[xy].piece)]
+            if len(pieces) < 4:
+                continue
+            if attr := common_attribute(pieces):
+                self.game_over = True
+                print(f"Win because 4 {attr} in a row!")
+                for piece in pieces:
+                    piece.flame()
+                break
+
+
+class UnusedPiecePad(PhysicalEntity):
+    width = 300
+    height = 150
+
+    def __init__(self, x, y, *groups: AbstractGroup) -> None:
+        super().__init__(*groups)
+        self.rect = Rect(0, 0, self.width, self.height)
+        self.rect.center = (x, y)
+        self.image = misc["square"].play(0)
+        self.image = scale_image(self.image, 4)
