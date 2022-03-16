@@ -9,14 +9,7 @@ from chess import conf, sounds
 from chess.constants import KNIGHT, QUEEN, ROOK, BISHOP
 from chess.engine.classes.board import ChessBoard
 from chess.engine.classes.move import Move
-from chess.gui.classes.piece import (
-    GuiPiece,
-    CLASSES_BY_LETTER,
-    Queen,
-    Knight,
-    Bishop,
-    Rook,
-)
+from chess.gui.classes.piece import GuiPiece
 from chess.gui.utils import distance
 from chess.utils import other_team
 
@@ -106,8 +99,8 @@ class GuiBoard(Entity):
         self.pieces.kill()
         self.selected_pieces.kill()
         for coords, engine_piece in self.engine.position.items():
-            piece_class = CLASSES_BY_LETTER[engine_piece.letter.lower()]
-            piece = piece_class(0, 0, engine_piece.team)
+            # todo: use engine piece coords too.
+            piece = GuiPiece(0, 0, engine_piece.team, type=engine_piece.type)
             self.add_piece_to_square(piece, coords)
 
     def add_piece_to_square(self, piece, coords):
@@ -191,13 +184,7 @@ class GuiBoard(Entity):
         if move.promote_to:
             # todo: need piecetype to class mapping. OR: (better) be able to
             #  change piece type on the fly.
-            mapping = {
-                QUEEN: Queen,
-                ROOK: Rook,
-                BISHOP: Bishop,
-                KNIGHT: Knight,
-            }
-            new_piece = mapping[move.promote_to](0, 0, team=piece.team)
+            new_piece = GuiPiece(0, 0, team=piece.team, type=move.promote_to)
             self.selected_pieces.add(new_piece)
             piece.kill()
             piece = new_piece
