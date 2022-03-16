@@ -38,8 +38,8 @@ class QuartoMatch(Entity):
             for hollow in True, False:
                 for square in True, False:
                     for black in True, False:
-                        screen_x = self.unused_piece_pad.x + randint(-100, 100)
-                        screen_y = self.unused_piece_pad.y + randint(-100, 100)
+                        screen_x = self.unused_piece_pad.x + randint(-200, 200)
+                        screen_y = self.unused_piece_pad.y + randint(-50, 50)
                         piece = Piece(
                             screen_x, screen_y, tall=tall, hollow=hollow, square=square, black=black
                         )
