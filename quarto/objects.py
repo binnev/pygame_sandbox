@@ -15,7 +15,7 @@ class Piece(PhysicalEntity):
 
     def __init__(self, x: int, y: int, tall: bool, hollow: bool, square: bool, black: bool):
         super().__init__()
-        self.rect = Rect(0, 0, 32, 32)
+        self.rect = Rect(0, 0, 64, 128 if tall else 64)
         self.rect.center = (x, y)
         self.tall = tall
         self.hollow = hollow
@@ -33,7 +33,6 @@ class Piece(PhysicalEntity):
                     (255, 255, 255): (100, 100, 100),
                 },
             )
-        self.state = self.state_idle
 
     def draw(self, surface: Surface, debug: bool = False):
         # todo: this is to make child particles appear behind self. Need to make it so I can
@@ -66,12 +65,6 @@ class Piece(PhysicalEntity):
     @property
     def shape(self):
         return "square" if self.square else "round"
-
-    def state_idle(self):
-        pass
-
-    def state_grabbed(self):
-        self.rect.center = pygame.mouse.get_pos()
 
 
 class Square(PhysicalEntity):

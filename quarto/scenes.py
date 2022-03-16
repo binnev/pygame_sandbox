@@ -41,12 +41,16 @@ class QuartoMatch(Entity):
             for piece in self.selected_pieces:
                 self.put_down(piece)
 
+        if event := EventQueue.get(type=pygame.MOUSEMOTION):
+            dx, dy = event.rel
+            for piece in self.selected_pieces:
+                piece.rect.centerx += dx
+                piece.rect.centery += dy
+
     def pick_up(self, piece: Piece):
-        piece.state = piece.state_grabbed
         piece.kill()  # remove from other groups
         self.selected_pieces.add(piece)
 
     def put_down(self, piece: Piece):
-        piece.state = piece.state_idle
         piece.kill()
         self.board.pieces.add(piece)
