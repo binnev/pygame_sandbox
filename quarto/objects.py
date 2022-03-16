@@ -1,3 +1,4 @@
+import pygame
 from pygame import Surface, Rect
 from pygame.sprite import AbstractGroup
 
@@ -32,6 +33,7 @@ class Piece(PhysicalEntity):
                     (255, 255, 255): (100, 100, 100),
                 },
             )
+        self.state = self.state_idle
 
     def draw(self, surface: Surface, debug: bool = False):
         # todo: this is to make child particles appear behind self. Need to make it so I can
@@ -65,11 +67,20 @@ class Piece(PhysicalEntity):
     def shape(self):
         return "square" if self.square else "round"
 
+    def state_idle(self):
+        pass
+
+    def state_grabbed(self):
+        self.rect.center = pygame.mouse.get_pos()
+
 
 class Square(PhysicalEntity):
+    width = 60
+    height = 40
+
     def __init__(self, x, y, black: bool, *groups: AbstractGroup) -> None:
         super().__init__(*groups)
-        self.rect = Rect(0, 0, 32, 32)
+        self.rect = Rect(0, 0, self.width, self.height)
         self.rect.center = (x, y)
 
         self.black = black
@@ -85,11 +96,9 @@ class QuartoBoard(Entity):
         self.y = y
         self.squares = Group()
         self.pieces = Group()
-        self.selected_pieces = Group()
         self.child_groups = [
             self.squares,
             self.pieces,
-            self.selected_pieces,
         ]
 
         ii = 0
