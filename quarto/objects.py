@@ -69,7 +69,7 @@ class Piece(PhysicalEntity):
 
 class Square(PhysicalEntity):
     width = 60
-    height = 40
+    height = 30
 
     def __init__(self, x, y, black: bool, *groups: AbstractGroup) -> None:
         super().__init__(*groups)
@@ -103,15 +103,18 @@ class QuartoBoard(Entity):
                         SPACING = 60
                         screen_x = self.x + (x + y) * SPACING
                         screen_y = self.y + (y - x) * SPACING // 2
-                        self.squares.add(Square(screen_x, screen_y, black=(y % 2) == (x % 2)))
-                        self.pieces.add(
-                            Piece(
+                        sq = Square(screen_x, screen_y, black=(y % 2) == (x % 2))
+                        self.squares.add(sq)
+                        piece = Piece(
                                 screen_x,
                                 screen_y,
                                 tall=tall,
                                 hollow=hollow,
                                 square=square,
                                 black=black,
-                            ),
+                            )
+                        piece.rect.bottom = sq.rect.bottom
+                        self.pieces.add(
+                            piece,
                         )
                         ii += 1
