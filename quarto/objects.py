@@ -5,6 +5,7 @@ from pygame.sprite import AbstractGroup
 
 from base.animation import recolor_image, scale_image
 from base.objects import PhysicalEntity, Entity, Group
+from base.utils import maskFromSurface, mask_to_surface, outline_image
 from fighting_game.particles import Particle, random_float, random_int
 from quarto.assets.images import quarto_pieces, misc
 from quarto.utils import common_attribute
@@ -18,6 +19,7 @@ class Piece(PhysicalEntity):
 
     board_square: "Square" = None
     flame_color = Color("red")
+    highlight = True
 
     def __init__(self, x: int, y: int, tall: bool, hollow: bool, square: bool, black: bool):
         super().__init__()
@@ -43,8 +45,14 @@ class Piece(PhysicalEntity):
         self.child_groups = [self.particles]
 
     def draw(self, surface: Surface, debug: bool = False):
-        super().draw(surface, debug)
+        if self.highlight:
+            outline = outline_image(self.image)
+            img_rect = self.image_rect
+            outline = [(x + img_rect.x, y + img_rect.y) for x, y in outline]
+            pygame.draw.polygon(surface, Color("red"), outline, 20)
+        self.highlight = False
         surface.blit(self.image, self.image_rect)
+        super().draw(surface, debug)
 
     @property
     def image_rect(self):
@@ -121,7 +129,6 @@ class QuartoBoard(Entity):
         super().__init__(*groups)
         self.x = x
         self.y = y
-        self.game_over = False
         self.squares = Group()
         self.pieces = Group()
         self.child_groups = [
@@ -187,11 +194,9 @@ class QuartoBoard(Entity):
             pieces = [piece for xy in vector if (piece := self.square_coords[xy].piece)]
             if len(pieces) < 4:
                 continue
-            if attr := common_attribute(pieces):
-                self.game_over = True
-                print(f"Win because 4 {attr} in a row!")
+            if common_attribute(pieces):
                 for piece in pieces:
-                    piece.flame()
+                    piece.highlight = True
                 break
 
 

@@ -3,6 +3,7 @@ from math import sin
 
 import numpy
 import pygame
+from pygame.surface import Surface
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -78,12 +79,16 @@ def mask_to_surface(mask, set_color=None):
     return surface
 
 
+def outline_image(surface: Surface):
+    mask = maskFromSurface(surface)
+    return  mask.outline()
+
 def ticks_to_frames(tick, ticks_per_frame):
     return tick // ticks_per_frame
 
 
 def draw_arrow(surface, origin, angle_deg, color=None, length=50):
-    """ angle needs to be in degrees """
+    """angle needs to be in degrees"""
     arrow_xy = arrow_coords(length, length // 10, length // 4)
     r = rotation_matrix(angle_deg)
     arrow_xy = arrow_xy.dot(r)
