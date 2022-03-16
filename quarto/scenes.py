@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING
 
 import pygame
-from pygame.sprite import AbstractGroup
+from pygame.sprite import AbstractGroup, spritecollide
 
 from base.input import EventQueue
 from base.objects import Entity, Group
 from base.stuff.gui_test import mouse_hovering_over
-from quarto.utils import distance
 from quarto.objects import QuartoBoard, Piece
+from quarto.utils import distance
 
 if TYPE_CHECKING:
     from quarto.game import QuartoGame
@@ -33,7 +33,7 @@ class QuartoMatch(Entity):
 
     def state_idle(self):
         if EventQueue.get(type=pygame.MOUSEBUTTONDOWN, button=pygame.BUTTON_LEFT):
-            for piece in self.board.pieces:
+            for piece in [*self.unused_pieces, *self.board.pieces_backward()]:
                 if mouse_hovering_over(piece):
                     self.pick_up(piece)
                     break
@@ -50,13 +50,19 @@ class QuartoMatch(Entity):
 
     def pick_up(self, piece: Piece):
         piece.kill()  # remove from other groups
+        if piece.square:
+            piece.square.remove_piece(piece)
         self.selected_pieces.add(piece)
 
     def put_down(self, piece: Piece):
         piece.kill()
-        self.board.pieces.add(piece)
         # get nearest square
-        new_square = min(
-            self.board.squares, key=lambda s: distance(s.rect.midbottom, piece.rect.midbottom)
-        )
-        new_square.snap_piece(piece)
+        if colliding_squares := spritecollide(piece, self.board.squares, dokill=False):
+            nearest_square = min(
+                colliding_squares, key=lambda s: distance(s.rect.midbottom, piece.rect.midbottom)
+            )
+            if not nearest_square.piece:
+                nearest_square.add_piece(piece)
+                self.board.pieces.add(piece)
+                return
+        self.unused_pieces.add(piece)

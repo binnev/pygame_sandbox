@@ -13,9 +13,11 @@ class Piece(PhysicalEntity):
     square: bool
     black: bool
 
+    square: "Square" = None
+
     def __init__(self, x: int, y: int, tall: bool, hollow: bool, square: bool, black: bool):
         super().__init__()
-        self.rect = Rect(0, 0, 64, 128 if tall else 64)
+        self.rect = Rect(0, 0, 64, 110 if tall else 80)
         self.rect.center = (x, y)
         self.tall = tall
         self.hollow = hollow
@@ -70,6 +72,7 @@ class Piece(PhysicalEntity):
 class Square(PhysicalEntity):
     width = 60
     height = 30
+    piece: Piece = None
 
     def __init__(self, x, y, black: bool, *groups: AbstractGroup) -> None:
         super().__init__(*groups)
@@ -84,8 +87,14 @@ class Square(PhysicalEntity):
         self.pieces = Group()
         self.child_groups = [self.pieces]
 
-    def snap_piece(self, piece: Piece):
+    def add_piece(self, piece: Piece):
         piece.rect.midbottom = self.rect.midbottom
+        self.piece = piece
+        piece.square = self
+
+    def remove_piece(self, piece):
+        self.piece = None
+        piece.square = None
 
 
 class QuartoBoard(Entity):
@@ -99,6 +108,7 @@ class QuartoBoard(Entity):
             self.squares,
             self.pieces,
         ]
+        self.foobar = {}
 
         ii = 0
         for tall in True, False:
@@ -111,9 +121,30 @@ class QuartoBoard(Entity):
                         screen_y = self.y + (y - x) * SPACING // 2
                         sq = Square(screen_x, screen_y, black=(y % 2) == (x % 2))
                         self.squares.add(sq)
+                        self.foobar[(x, y)] = sq
                         piece = Piece(0, 0, tall=tall, hollow=hollow, square=square, black=black)
-                        sq.snap_piece(piece)
-                        self.pieces.add(
-                            piece,
-                        )
+                        sq.add_piece(piece)
+                        self.pieces.add(piece)
                         ii += 1
+
+    def draw(self, surface: Surface, debug: bool = False):
+        for square in self.squares_forward():
+            square.draw(surface, debug)
+        for square in self.squares_forward():
+            if square.piece:
+                square.piece.draw(surface, debug)
+
+    def squares_forward(self):
+        for ii in range(16):
+            y, x = divmod(ii, 4)
+            yield self.foobar[(x, y)]
+
+    def squares_backward(self):
+        for ii in range(15, -1, -1):
+            y, x = divmod(ii, 4)
+            yield self.foobar[(x, y)]
+
+    def pieces_backward(self):
+        for square in self.squares_backward():
+            if square.piece:
+                yield square.piece
