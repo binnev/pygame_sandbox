@@ -17,8 +17,8 @@ class Piece(PhysicalEntity):
     square: bool
     black: bool
 
+    mouse_offset: tuple
     board_square: "Square" = None
-    flame_color = Color("red")
     highlight = True
 
     def __init__(self, x: int, y: int, tall: bool, hollow: bool, square: bool, black: bool):
@@ -43,6 +43,14 @@ class Piece(PhysicalEntity):
             )
         self.particles = Group()
         self.child_groups = [self.particles]
+
+    def state_main(self):
+        pass
+
+    def state_grabbed(self):
+        mx, my = pygame.mouse.get_pos()
+        dx, dy = self.mouse_offset
+        self.rect.center = ((mx + dx), (my + dy))
 
     def draw(self, surface: Surface, debug: bool = False):
         if self.highlight:

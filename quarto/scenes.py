@@ -57,20 +57,20 @@ class QuartoMatch(Entity):
             for piece in self.selected_pieces:
                 self.put_down(piece)
 
-        if event := EventQueue.get(type=pygame.MOUSEMOTION):
-            dx, dy = event.rel
-            for piece in self.selected_pieces:
-                piece.rect.centerx += dx
-                piece.rect.centery += dy
-
     def pick_up(self, piece: Piece):
         piece.kill()  # remove from other groups
         if piece.board_square:
             piece.board_square.remove_piece(piece)
         self.selected_pieces.add(piece)
+        mx, my = pygame.mouse.get_pos()
+        dx = piece.x - mx
+        dy = piece.y - my
+        piece.mouse_offset = (dx, dy)
+        piece.state = piece.state_grabbed
 
     def put_down(self, piece: Piece):
         piece.kill()
+        piece.state = piece.state_main
         if colliding_squares := spritecollide(piece, self.board.squares, dokill=False):
             nearest_square = min(
                 colliding_squares, key=lambda s: distance(s.rect.midbottom, piece.rect.midbottom)
