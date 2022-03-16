@@ -1,30 +1,23 @@
-from typing import NamedTuple, List
+from base.objects import Entity
+from quarto.assets.pieces import quarto_pieces
 
 
-class Piece(NamedTuple):
+class Piece(Entity):
     tall: bool
     hollow: bool
     square: bool
     black: bool
 
+    def __init__(self, x: int, y: int, tall: bool, hollow: bool, square: bool, black: bool):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.tall = tall
+        self.hollow = hollow
+        self.square = square
+        self.black = black
 
-p = Piece(tall=True, hollow=False, square=True, black=True)
+        # todo: set correct self.image
+        self.image = quarto_pieces["tall-hollow-square-white"].play(0)
 
 
-def common_attribute(row: List[Piece]) -> str | None:
-    for attribute in ["tall", "hollow", "square", "black"]:
-        if all(getattr(p, attribute) for p in row):
-            return attribute
-        if all(not getattr(p, attribute) for p in row):
-            return f"not {attribute}"
-
-
-for row in [
-    (Piece(True, True, True, True), Piece(False, False, False, False)),
-    (Piece(True, True, True, True), Piece(False, False, False, True)),
-    (Piece(True, True, True, True), Piece(True, False, False, True)),
-    (Piece(False, True, True, True), Piece(True, False, False, True)),
-    (Piece(False, True, True, True), Piece(True, False, False, False)),
-    (Piece(False, True, False, True), Piece(True, False, False, False)),
-]:
-    print(common_attribute(row))
