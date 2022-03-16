@@ -1,8 +1,9 @@
-from pygame import Surface, Rect, Color
+from pygame import Surface, Rect
+from pygame.sprite import AbstractGroup
 
 from base.animation import recolor_image
-from base.objects import PhysicalEntity
-from quarto.assets.pieces import quarto_pieces
+from base.objects import PhysicalEntity, Entity
+from quarto.assets.images import quarto_pieces, misc
 
 
 class Piece(PhysicalEntity):
@@ -63,3 +64,19 @@ class Piece(PhysicalEntity):
     @property
     def shape(self):
         return "square" if self.square else "round"
+
+
+class Square(PhysicalEntity):
+    def __init__(self, x, y, black: bool, *groups: AbstractGroup) -> None:
+        super().__init__(*groups)
+        self.rect = Rect(0, 0, 32, 32)
+        self.rect.center = (x, y)
+
+        self.black = black
+        self.image = misc["square"].play(0)
+        if self.black:
+            self.image = recolor_image(self.image, {(255, 255, 255): (100, 100, 100)})
+
+
+class QuartoBoard(Entity):
+    pass

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from pygame.sprite import AbstractGroup
 
 from base.objects import Entity, Group
-from quarto.objects import Piece
+from quarto.objects import Piece, Square
 
 if TYPE_CHECKING:
     from quarto.game import QuartoGame
@@ -24,6 +24,8 @@ class QuartoMatch(Entity):
         #     NextPiecePillow(),
         # )
         ii = 0
+        self.entities.add(Square(500, 200, black=True))
+        self.entities.add(Square(600, 200, black=False))
         for tall in True, False:
             for hollow in True, False:
                 for square in True, False:
