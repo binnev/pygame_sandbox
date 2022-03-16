@@ -20,11 +20,7 @@ class Piece(PhysicalEntity):
         self.square = square
         self.black = black
         image_code = f"{self.height}-{self.tip}-{self.shape}-white"
-        try:
-            self.image = quarto_pieces[image_code].play(0)
-        except KeyError:
-            self.image = Surface((50, 50))
-            self.image.fill(Color("red"))  # 119
+        self.image = quarto_pieces[image_code].play(0)
         if self.black:
             self.image = recolor_image(
                 self.image,
