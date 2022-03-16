@@ -60,7 +60,7 @@ class Game(Entity):
                 self.debug = not self.debug
 
     def print_debug_info(self):
-        print(self.tick, EventQueue.events)
+        pass
 
     def _update(self):
         """
