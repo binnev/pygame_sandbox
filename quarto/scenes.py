@@ -18,9 +18,25 @@ class QuartoMatch(Entity):
         self.entities = Group()
         self.child_groups = [self.entities]
 
-        self.entities.add(
-            # QuartoBoard(),
-            # PieceSideArea(),
-            # NextPiecePillow(),
-            Piece(100, 100)
-        )
+        # self.entities.add(
+        #     QuartoBoard(),
+        #     PieceSideArea(),
+        #     NextPiecePillow(),
+        # )
+        ii = 0
+        for tall in True, False:
+            for hollow in True, False:
+                for square in True, False:
+                    for black in True, False:
+                        x, y = divmod(ii, 4)
+                        self.entities.add(
+                            Piece(
+                                100 * x + 100,
+                                100 * y + 200,
+                                tall=tall,
+                                hollow=hollow,
+                                square=square,
+                                black=black,
+                            ),
+                        )
+                        ii += 1

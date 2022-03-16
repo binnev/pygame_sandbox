@@ -1,4 +1,5 @@
 from base.objects import Game
+from quarto.scenes import QuartoMatch
 
 
 class QuartoGame(Game):
@@ -12,4 +13,4 @@ class QuartoGame(Game):
 
     def __init__(self):
         super().__init__()
-        self.add_scene(...)
+        self.add_scene(QuartoMatch())
