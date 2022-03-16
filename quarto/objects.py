@@ -81,6 +81,12 @@ class Square(PhysicalEntity):
         if self.black:
             self.image = recolor_image(self.image, {(255, 255, 255): (100, 100, 100)})
 
+        self.pieces = Group()
+        self.child_groups = [self.pieces]
+
+    def snap_piece(self, piece: Piece):
+        piece.rect.midbottom = self.rect.midbottom
+
 
 class QuartoBoard(Entity):
     def __init__(self, x, y, *groups: AbstractGroup) -> None:
@@ -105,15 +111,8 @@ class QuartoBoard(Entity):
                         screen_y = self.y + (y - x) * SPACING // 2
                         sq = Square(screen_x, screen_y, black=(y % 2) == (x % 2))
                         self.squares.add(sq)
-                        piece = Piece(
-                                screen_x,
-                                screen_y,
-                                tall=tall,
-                                hollow=hollow,
-                                square=square,
-                                black=black,
-                            )
-                        piece.rect.bottom = sq.rect.bottom
+                        piece = Piece(0, 0, tall=tall, hollow=hollow, square=square, black=black)
+                        sq.snap_piece(piece)
                         self.pieces.add(
                             piece,
                         )

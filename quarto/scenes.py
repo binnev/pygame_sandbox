@@ -6,6 +6,7 @@ from pygame.sprite import AbstractGroup
 from base.input import EventQueue
 from base.objects import Entity, Group
 from base.stuff.gui_test import mouse_hovering_over
+from quarto.utils import distance
 from quarto.objects import QuartoBoard, Piece
 
 if TYPE_CHECKING:
@@ -54,3 +55,8 @@ class QuartoMatch(Entity):
     def put_down(self, piece: Piece):
         piece.kill()
         self.board.pieces.add(piece)
+        # get nearest square
+        new_square = min(
+            self.board.squares, key=lambda s: distance(s.rect.midbottom, piece.rect.midbottom)
+        )
+        new_square.snap_piece(piece)
