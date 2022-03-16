@@ -24,7 +24,7 @@ quarto_pieces = SpriteDict(
 misc = SpriteDict(
     folder=folder,
     size=(32, 16),
-    scale=conf.SCALE_SPRITES,
+    scale=3.8,
     file_mapping={
         "square": "square.png",
     },

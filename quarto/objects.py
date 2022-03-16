@@ -2,7 +2,7 @@ from pygame import Surface, Rect
 from pygame.sprite import AbstractGroup
 
 from base.animation import recolor_image
-from base.objects import PhysicalEntity, Entity
+from base.objects import PhysicalEntity, Entity, Group
 from quarto.assets.images import quarto_pieces, misc
 
 
@@ -79,4 +79,37 @@ class Square(PhysicalEntity):
 
 
 class QuartoBoard(Entity):
-    pass
+    def __init__(self, x, y, *groups: AbstractGroup) -> None:
+        super().__init__(*groups)
+        self.x = x
+        self.y = y
+        self.squares = Group()
+        self.pieces = Group()
+        self.selected_pieces = Group()
+        self.child_groups = [
+            self.squares,
+            self.pieces,
+            self.selected_pieces,
+        ]
+
+        ii = 0
+        for tall in True, False:
+            for hollow in True, False:
+                for square in True, False:
+                    for black in True, False:
+                        y, x = divmod(ii, 4)
+                        SPACING = 60
+                        screen_x = self.x + (x + y) * SPACING
+                        screen_y = self.y + (y - x) * SPACING // 2
+                        self.squares.add(Square(screen_x, screen_y, black=(y % 2) == (x % 2)))
+                        self.pieces.add(
+                            Piece(
+                                screen_x,
+                                screen_y,
+                                tall=tall,
+                                hollow=hollow,
+                                square=square,
+                                black=black,
+                            ),
+                        )
+                        ii += 1
