@@ -205,7 +205,7 @@ class QuartoBoard(Entity):
             if common_attribute(pieces):
                 for piece in pieces:
                     piece.highlight = True
-                break
+                # break
 
 
 class UnusedPiecePad(PhysicalEntity):
