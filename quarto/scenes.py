@@ -1,3 +1,4 @@
+import math
 from random import randint
 from typing import TYPE_CHECKING
 
@@ -38,8 +39,11 @@ class QuartoMatch(Entity):
             for hollow in True, False:
                 for square in True, False:
                     for black in True, False:
-                        screen_x = self.unused_piece_pad.x + randint(-200, 200)
-                        screen_y = self.unused_piece_pad.y + randint(-50, 50)
+                        radius = 130
+                        angle_deg = -90 - 20 * ii
+                        angle_rad = angle_deg / 180 * math.pi
+                        screen_x = self.unused_piece_pad.x + radius * math.cos(angle_rad)
+                        screen_y = self.unused_piece_pad.y + radius * math.sin(angle_rad) // 2
                         piece = Piece(
                             screen_x, screen_y, tall=tall, hollow=hollow, square=square, black=black
                         )
