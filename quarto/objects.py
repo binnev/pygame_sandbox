@@ -23,7 +23,7 @@ class Piece(PhysicalEntity):
 
     def __init__(self, x: int, y: int, tall: bool, hollow: bool, square: bool, black: bool):
         super().__init__()
-        self.rect = Rect(0, 0, 50, 110 if tall else 80)
+        self.rect = Rect(0, 0, 50, 120 if tall else 80)
         self.rect.center = (x, y)
         self.tall = tall
         self.hollow = hollow

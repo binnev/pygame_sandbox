@@ -52,7 +52,7 @@ class QuartoMatch(Entity):
 
     def state_idle(self):
         if EventQueue.get(type=pygame.MOUSEBUTTONDOWN, button=pygame.BUTTON_LEFT):
-            for piece in [*self.unused_pieces, *self.board.pieces_backward()]:
+            for piece in [*self.unused_pieces_backward(), *self.board.pieces_backward()]:
                 if mouse_hovering_over(piece):
                     self.pick_up(piece)
                     break
@@ -60,6 +60,10 @@ class QuartoMatch(Entity):
         if EventQueue.filter(type=pygame.MOUSEBUTTONUP):
             for piece in self.selected_pieces:
                 self.put_down(piece)
+
+    def unused_pieces_backward(self):
+        for piece in self.unused_pieces.sprites()[::-1]:
+            yield piece
 
     def pick_up(self, piece: Piece):
         piece.kill()  # remove from other groups
