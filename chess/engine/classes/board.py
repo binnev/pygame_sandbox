@@ -78,6 +78,7 @@ class ChessBoard:
         if len(self.position_history) > 1:
             self.move_counter -= 1
             self.position_history.pop()
+            self.move_history.pop()
             self.update_active_team()
 
     def is_checkmated(self, team: Teams) -> bool:

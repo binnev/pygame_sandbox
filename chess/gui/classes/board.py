@@ -177,10 +177,25 @@ class GuiBoard(Entity):
             last_move = self.engine.move_history[-1]
             self.undo_move(last_move)
             self.engine.back()
-            # self.load_engine_position()
 
     def undo_move(self, move: Move):
-        piece = next(piece for piece in self.pieces if piece.square.coords == move.destination)
+        piece = next(p for p in self.pieces if p.square.coords == move.destination)
+        target_square = next(s for s in self.squares if s.coords == move.origin)
+
+        # move active piece
+        piece.animate_to(xy=target_square.rect.center)
+        piece.square = target_square
+
+        # resurrect captured piece
+        if move.captured_piece:
+            square = next(s for s in self.squares if s.coords == move.captured_piece_square)
+            captured_piece = GuiPiece(
+                *square.rect.center,
+                type=move.captured_piece.type,
+                team=move.captured_piece.team,
+            )
+            self.add_piece_to_square(captured_piece, move.captured_piece_square)
+            self.pieces.add(captured_piece)
 
     def do_move(self, move: Move):
         piece = next(piece for piece in self.selected_pieces if piece.square.coords == move.origin)
