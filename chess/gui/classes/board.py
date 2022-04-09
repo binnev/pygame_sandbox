@@ -182,6 +182,11 @@ class GuiBoard(Entity):
         piece = next(p for p in self.pieces if p.square.coords == move.destination)
         target_square = next(s for s in self.squares if s.coords == move.origin)
 
+        # undo promotion
+        piece.kill()
+        piece = GuiPiece(0, 0, type=move.piece.type, team=move.piece.team)
+        self.add_piece_to_square(piece, move.destination)
+
         # move active piece
         piece.animate_to(xy=target_square.rect.center)
         piece.square = target_square
