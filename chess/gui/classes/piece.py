@@ -58,7 +58,8 @@ class GuiPiece(PhysicalEntity):
         self.flame()
         self.rect.center = pygame.mouse.get_pos()
 
-    def animate_to(self, xy, next_state, duration_ticks):
+    def animate_to(self, xy, duration_ticks=10, next_state=None):
+        next_state = next_state or self.state_idle
         x0, y0 = self.rect.center
         x1, y1 = xy
         xs = (x for x in ease_in_out(x0, x1, duration_ticks))

@@ -186,24 +186,20 @@ class GuiBoard(Entity):
         piece = next(piece for piece in self.selected_pieces if piece.square.coords == move.origin)
         target_square = next(square for square in self.squares if square.coords == move.destination)
 
-        # promotion
-        if move.promote_to:
-            # todo: need piecetype to class mapping. OR: (better) be able to
-            #  change piece type on the fly.
-            new_piece = GuiPiece(0, 0, team=piece.team, type=move.promote_to)
-            self.selected_pieces.add(new_piece)
-            piece.kill()
-            piece = new_piece
-
         # animate piece to new square
-        piece.animate_to(
-            xy=target_square.rect.center,
-            next_state=piece.state_idle,
-            duration_ticks=10,
-        )
+        piece.animate_to(xy=target_square.rect.center)
         piece.square = target_square
         self.selected_pieces.remove(piece)
         self.pieces.add(piece)
+
+        # promotion
+        if move.promote_to:
+            new_piece = GuiPiece(*piece.rect.center, team=piece.team, type=move.promote_to)
+            new_piece.square = piece.square
+            new_piece.animate_to(xy=new_piece.square.rect.center)
+            self.pieces.add(new_piece)
+            piece.kill()
+            piece = new_piece
 
         if move.captured_piece:
             captured_piece = next(
