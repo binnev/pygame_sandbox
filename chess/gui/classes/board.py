@@ -174,8 +174,13 @@ class GuiBoard(Entity):
                 self.put_down(piece)
 
         if EventQueue.filter(type=pygame.KEYDOWN, key=pygame.K_LEFT):
+            last_move = self.engine.move_history[-1]
+            self.undo_move(last_move)
             self.engine.back()
-            self.load_engine_position()
+            # self.load_engine_position()
+
+    def undo_move(self, move: Move):
+        piece = next(piece for piece in self.pieces if piece.square.coords == move.destination)
 
     def do_move(self, move: Move):
         piece = next(piece for piece in self.selected_pieces if piece.square.coords == move.origin)
@@ -190,12 +195,15 @@ class GuiBoard(Entity):
             piece.kill()
             piece = new_piece
 
-        # snap piece to new square. todo: animate
-        piece.rect.center = target_square.rect.center
+        # animate piece to new square
+        piece.animate_to(
+            xy=target_square.rect.center,
+            next_state=piece.state_idle,
+            duration_ticks=10,
+        )
         piece.square = target_square
         self.selected_pieces.remove(piece)
         self.pieces.add(piece)
-        piece.state = piece.state_idle
 
         if move.captured_piece:
             captured_piece = next(
