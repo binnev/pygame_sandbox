@@ -109,6 +109,11 @@ class GuiBoard(Entity):
         piece.square = square
         self.add_pieces(piece)
 
+    def animate_piece_to_square(self, piece, coords):
+        square = self.square_coords[coords]
+        piece.animate_to(xy=square.rect.center)
+        piece.square = square
+
     def add_squares(self, *objects):
         self.add_to_group(*objects, group=self.squares)
 
@@ -180,7 +185,6 @@ class GuiBoard(Entity):
 
     def undo_move(self, move: Move):
         piece = next(p for p in self.pieces if p.square.coords == move.destination)
-        target_square = next(s for s in self.squares if s.coords == move.origin)
 
         # undo promotion
         piece.kill()
@@ -188,8 +192,7 @@ class GuiBoard(Entity):
         self.add_piece_to_square(piece, move.destination)
 
         # move active piece
-        piece.animate_to(xy=target_square.rect.center)
-        piece.square = target_square
+        self.animate_piece_to_square(piece, move.origin)
 
         # resurrect captured piece
         if move.captured_piece:
@@ -204,19 +207,16 @@ class GuiBoard(Entity):
 
     def do_move(self, move: Move):
         piece = next(piece for piece in self.selected_pieces if piece.square.coords == move.origin)
-        target_square = next(square for square in self.squares if square.coords == move.destination)
 
         # animate piece to new square
-        piece.animate_to(xy=target_square.rect.center)
-        piece.square = target_square
+        self.animate_piece_to_square(piece, move.destination)
         self.selected_pieces.remove(piece)
         self.pieces.add(piece)
 
         # promotion
         if move.promote_to:
             new_piece = GuiPiece(*piece.rect.center, team=piece.team, type=move.promote_to)
-            new_piece.square = piece.square
-            new_piece.animate_to(xy=new_piece.square.rect.center)
+            self.animate_piece_to_square(new_piece, move.destination)
             self.pieces.add(new_piece)
             piece.kill()
             piece = new_piece
