@@ -139,17 +139,18 @@ class GuiBoard(Entity):
         legal_moves = {move for move in legal_moves if move.destination == new_square.coords}
         if legal_moves:
             move = legal_moves.pop()  # todo: promotion will require a menu
-            # todo: self.do_move()
-            # update engine
             self.engine.do_move(move)
             print(self.engine)
             self.do_move(move)
 
         else:
-            piece.rect.center = piece.square.rect.center
+            piece.animate_to(
+                xy=piece.square.rect.center,
+                next_state=piece.state_idle,
+                duration_ticks=10,
+            )
             self.selected_pieces.remove(piece)
             self.pieces.add(piece)
-            piece.state = piece.state_idle
 
     def remove(self, piece: GuiPiece):
         self.engine.position.pop(piece.square.coords)
