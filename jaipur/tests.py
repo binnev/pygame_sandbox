@@ -1,6 +1,8 @@
 import unittest
+
+from .constants import CAMEL
 from .engine.classes import Token, Deck
-from .utilities import parse_player_input, parse_card_group
+from .utils import parse_player_input, parse_card_group
 from .exceptions import InvalidInputError, IllegalMoveError
 
 class TestToken(unittest.TestCase):
@@ -11,25 +13,11 @@ class TestToken(unittest.TestCase):
         self.assertEqual(token.name, "gold")
         self.assertEqual(token.value, 6)
 
-    def test_for_illegal_names(self):
-        # test for goods that don't exist
-        with self.assertRaises(ValueError):
-            Token("pineapple", 1)
-
-    def test_for_illegal_values(self):
-        # test for zero or negative values
-        with self.assertRaises(ValueError):
-            Token("leather", -3)
-        # test for non integer values
-        with self.assertRaises(ValueError):
-            Token("cloth", 4.7)
-        with self.assertRaises(ValueError):
-            Token("spice", 2.0)
-
 class TestDeck(unittest.TestCase):
 
     def setUp(self):
-        self.deck = Deck(default=True)
+        self.deck = Deck()
+        self.deck.default_setup()
         self.initial_deck_len = len(self.deck)
 
     def tearDown(self):
@@ -48,13 +36,13 @@ class TestDeck(unittest.TestCase):
 
     def test_draw_too_many(self):
         # draw exactly the number of cards left in the deck
-        self.deck = Deck(camel=5)
+        self.deck = Deck.setup_with(camel=5)
         drawn_cards = self.deck.draw(5)
         self.assertEqual(drawn_cards, ["camel"]*5)
         self.assertEqual(len(self.deck), 0)
 
         # drawing too many cards should just return available cards
-        self.deck = Deck(camel=5)
+        self.deck = Deck.setup_with(camel=5)
         drawn_cards = self.deck.draw(10)
         self.assertEqual(drawn_cards, ["camel"]*5)
         self.assertEqual(len(self.deck), 0)
@@ -335,5 +323,9 @@ class Test_parse_card_group(unittest.TestCase):
         self.assertEqual(cards, {"camel": None, "leather": 1})
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_deck_default_setup():
+    deck = Deck()
+    assert len(deck) == 0
+    deck.default_setup()
+    assert len(deck) == 55
+    assert deck.count(CAMEL) == 11

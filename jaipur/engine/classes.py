@@ -1,7 +1,19 @@
 from dataclasses import dataclass
 from random import shuffle
 
-from jaipur.constants import TokenNames
+from jaipur.constants import (
+    TokenNames,
+    DIAMOND,
+    GOLD,
+    SILVER,
+    CLOTH,
+    SPICE,
+    LEATHER,
+    CAMEL,
+    COMBO3,
+    COMBO4,
+    COMBO5,
+)
 from jaipur.exceptions import InvalidInputError, IllegalMoveError
 from jaipur.utils import parse_player_input
 
@@ -23,27 +35,9 @@ class Token:
 
 
 class Deck(list):
-    def __init__(self, default=False, **kwargs):
-        # default deck for Jaipur
-        if default:
-            contents = {
-                "diamond": 6,
-                "gold": 6,
-                "silver": 6,
-                "cloth": 8,
-                "spice": 8,
-                "leather": 10,
-                "camel": 11,
-            }
-        else:
-            contents = {}
-        # update with any specific requests from kwargs
-        contents.update(kwargs)
-        # convert to list
-        temp = []
-        for goods, amount in contents.items():
-            temp.extend([goods] * amount)
-        super().__init__(temp)
+    def add(self, **kwargs):
+        for goods, amount in kwargs.items():
+            self.extend([goods] * amount)
 
     def shuffle(self):
         shuffle(self)
@@ -67,9 +61,28 @@ class Deck(list):
         """Look at the next card(s)"""
         return self[-depth:]
 
+    def default_setup(self):
+        contents = {
+            DIAMOND: 6,
+            GOLD: 6,
+            SILVER: 6,
+            CLOTH: 8,
+            SPICE: 8,
+            LEATHER: 10,
+            CAMEL: 11,
+        }
+        self.add(**contents)
+
+    @classmethod
+    def setup_with(cls, **kwargs) -> "Deck":
+        instance = cls()
+        instance.add(**kwargs)
+        return instance
+
 
 class TokenStack(Deck):
-    """Represents the stacks of tokens. Could be anything from the market goods
+    """
+    Represents the stacks of tokens. Could be anything from the market goods
     to the Biggest Herd token to the combo tokens.
     Functionally very similar to the Deck class, but not limited to the card
     types
@@ -90,7 +103,8 @@ class TokenStack(Deck):
 
 
 class Marketplace(Deck):
-    """Represents the 5 card river marketplace.
+    """
+    Represents the 5 card river marketplace.
     Needs to keep track of empty spaces and/or preserve the order.
     """
 
@@ -203,17 +217,17 @@ class Game:
         # create token piles
         # populate tokens dictionary
         self.resource_tokens = {
-            "diamond": [5, 5, 5, 7, 7],
-            "gold": [5, 5, 5, 6, 6],
-            "silver": [5, 5, 5, 5, 5],
-            "leather": [1, 1, 1, 1, 1, 1, 2, 3, 4],
-            "cloth": [1, 1, 2, 2, 3, 3, 5],
-            "spice": [1, 1, 2, 2, 3, 3, 5],
+            DIAMOND: [5, 5, 5, 7, 7],
+            GOLD: [5, 5, 5, 6, 6],
+            SILVER: [5, 5, 5, 5, 5],
+            LEATHER: [1, 1, 1, 1, 1, 1, 2, 3, 4],
+            CLOTH: [1, 1, 2, 2, 3, 3, 5],
+            SPICE: [1, 1, 2, 2, 3, 3, 5],
         }
         self.bonus_tokens = {
-            "combo3": [1, 1, 2, 2, 2, 3, 3],
-            "combo4": [4, 4, 5, 5, 6, 6],
-            "combo5": [8, 8, 9, 10, 10],
+            COMBO3: [1, 1, 2, 2, 2, 3, 3],
+            COMBO4: [4, 4, 5, 5, 6, 6],
+            COMBO5: [8, 8, 9, 10, 10],
         }
 
         # convert values to TokenStacks
@@ -225,7 +239,8 @@ class Game:
             self.bonus_tokens[key].shuffle()
 
         # create deck
-        self.deck = Deck(default=True)
+        self.deck = Deck()
+        self.deck.default_setup()
         self.deck.shuffle()
 
         # create marketplace/river (always start with 3 camels)
