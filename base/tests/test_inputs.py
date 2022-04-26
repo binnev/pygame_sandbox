@@ -11,7 +11,7 @@ from base.input.gamecube import (
 from base.input.queue import InputQueue
 
 
-@patch("base.inputs.gamecube.GamecubeControllerReader.get_values")
+@patch("base.input.gamecube.GamecubeControllerReader.get_values")
 def test_gamecube_controller_basic(mock):
     mock.return_value = (1, 0)  # A down, B not down
     pygame.init()
@@ -25,7 +25,7 @@ def test_gamecube_controller_basic(mock):
     assert controller.B.is_down == 0
 
 
-@patch("base.inputs.gamecube.GamecubeControllerReader.get_values")
+@patch("base.input.gamecube.GamecubeControllerReader.get_values")
 def test_gamecube_controller_subclasses(mock):
     mock.return_value = (1, 0)  # A down, B not down
     pygame.init()
