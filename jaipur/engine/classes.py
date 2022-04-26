@@ -95,9 +95,6 @@ class TokenStack(Deck):
         """
         self.sort(key=lambda x: x.value)
 
-    def get_values(self):
-        return [token.value for token in self]
-
 
 class Marketplace(Deck):
     """
