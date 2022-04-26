@@ -4,7 +4,7 @@ import pygame
 from pygame import Surface, Color
 from pygame.rect import Rect
 
-from base.animation import recolor_image
+from base.animation import recolor_image, ease_in_out
 from base.objects import PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf
@@ -33,10 +33,13 @@ class GuiPiece(PhysicalEntity):
         self.rect.center = (x, y)
         self.image = chess_pieces[self.type].play(0)
         if self.team != WHITE:
-            self.image = recolor_image(self.image, {
-                (255, 255, 255): Color("black"),
-                (0, 0, 0): Color("white"),
-            })
+            self.image = recolor_image(
+                self.image,
+                {
+                    (255, 255, 255): Color("black"),
+                    (0, 0, 0): Color("white"),
+                },
+            )
         self.state = self.state_idle
         self.particles = Group()
         self.child_groups = [self.particles]
@@ -54,6 +57,23 @@ class GuiPiece(PhysicalEntity):
     def state_grabbed(self):
         self.flame()
         self.rect.center = pygame.mouse.get_pos()
+
+    def animate_to(self, xy, duration_ticks=10, next_state=None):
+        next_state = next_state or self.state_idle
+        x0, y0 = self.rect.center
+        x1, y1 = xy
+        xs = (x for x in ease_in_out(x0, x1, duration_ticks))
+        ys = (y for y in ease_in_out(y0, y1, duration_ticks))
+
+        def state_animate():
+            try:
+                x = next(xs)
+                y = next(ys)
+                self.rect.center = (x, y)
+            except StopIteration:
+                self.state = next_state
+
+        self.state = state_animate
 
     def spark(self):
         for _ in range(20):
