@@ -1,33 +1,8 @@
 from random import shuffle
 
-from base.utils import Enum
+from jaipur.constants import TokenNames
 from jaipur.exceptions import InvalidInputError, IllegalMoveError
 from jaipur.utils import parse_player_input
-
-
-DIAMOND = "diamond"
-SILVER = "silver"
-GOLD = "gold"
-CLOTH = "cloth"
-SPICE = "spice"
-LEATHER = "leather"
-COMBO3 = "combo3"
-COMBO4 = "combo4"
-COMBO5 = "combo5"
-LARGEST_HERD = "largest_herd"
-
-
-class TokenNames(Enum):
-    DIAMOND = DIAMOND
-    SILVER = SILVER
-    GOLD = GOLD
-    CLOTH = CLOTH
-    SPICE = SPICE
-    LEATHER = LEATHER
-    COMBO3 = COMBO3
-    COMBO4 = COMBO4
-    COMBO5 = COMBO5
-    LARGEST_HERD = LARGEST_HERD
 
 
 class Token:
