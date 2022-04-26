@@ -3,7 +3,7 @@ import pygame
 
 from base.animation import ease_in_out
 from base.objects import Entity, Group, EventQueue
-from base.stuff.gui_test import mouse_hovering_over
+from base.utils import mouse_hovering_over
 
 
 class Menu(Entity):

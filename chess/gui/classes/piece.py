@@ -7,7 +7,7 @@ from pygame.rect import Rect
 from base.image import recolor_image
 from base.animation import ease_in_out
 from base.objects import PhysicalEntity, Group
-from base.stuff.gui_test import mouse_hovering_over
+from base.utils import mouse_hovering_over
 from chess import conf
 from chess.assets.pieces import chess_pieces
 from chess.constants import WHITE, BLACK, Teams, PieceTypes

@@ -152,3 +152,8 @@ def pulsing_value(tick, min, max, freq, func=None):
     A = (max - min) / 2
     B = (max + min) / 2
     return A * func(tick * freq) + B
+
+
+def mouse_hovering_over(element):
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    return element.rect.collidepoint(mouse_x, mouse_y)

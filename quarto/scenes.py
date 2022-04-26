@@ -7,7 +7,7 @@ from pygame.sprite import AbstractGroup, spritecollide
 
 from base.input import EventQueue
 from base.objects import Entity, Group
-from base.stuff.gui_test import mouse_hovering_over
+from base.utils import mouse_hovering_over
 from quarto.objects import QuartoBoard, Piece, UnusedPiecePad, Square
 from quarto.utils import distance
 

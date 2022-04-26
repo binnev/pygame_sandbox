@@ -4,7 +4,7 @@ from pygame.rect import Rect
 
 from base.input import EventQueue
 from base.objects import Entity, PhysicalEntity, Group
-from base.stuff.gui_test import mouse_hovering_over
+from base.utils import mouse_hovering_over
 from chess import conf, sounds
 from chess.constants import KNIGHT, QUEEN, ROOK, BISHOP
 from chess.engine.classes.board import ChessBoard
