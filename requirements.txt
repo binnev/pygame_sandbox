@@ -3,3 +3,5 @@ numpy
 black
 pytest
 matplotlib
+coverage
+pytest-cov
