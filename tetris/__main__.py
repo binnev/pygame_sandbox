@@ -6,7 +6,7 @@ from collections import deque
 import numpy as np
 import pygame
 
-from base.keyhandler import KeyHandler
+from base.input import KeyboardInputQueue
 from tetris import shapes
 from tetris.exceptions import (
     CollisionError,
@@ -264,7 +264,7 @@ def new_random_shape():
 
 def main():
     movement_timer = MOVEMENT_TIMER
-    KeyHandler.initialise(queue_length=5)
+    key_handler = KeyboardInputQueue()
     screen = Screen.get()
     myfont = pygame.font.SysFont("monospace", 40)
 
@@ -284,11 +284,11 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-        KeyHandler.append(pygame.key.get_pressed())
+        key_handler.append(pygame.key.get_pressed())
 
         # move shape
         try:
-            if KeyHandler.get_pressed()[pygame.K_LEFT]:
+            if key_handler.get_pressed()[pygame.K_LEFT]:
                 try:
                     trial_shape = copy.deepcopy(shape)
                     trial_board = copy.deepcopy(board)
@@ -299,7 +299,7 @@ def main():
                 else:
                     shape.x -= 1
 
-            if KeyHandler.get_pressed()[pygame.K_RIGHT]:
+            if key_handler.get_pressed()[pygame.K_RIGHT]:
                 try:
                     trial_shape = copy.deepcopy(shape)
                     trial_board = copy.deepcopy(board)
@@ -310,11 +310,11 @@ def main():
                 else:
                     shape.x += 1
 
-            if KeyHandler.get_down()[pygame.K_DOWN]:
+            if key_handler.get_down()[pygame.K_DOWN]:
                 shape.y += 1
                 shape.check(board)
 
-            if KeyHandler.get_pressed()[pygame.K_SPACE]:
+            if key_handler.get_pressed()[pygame.K_SPACE]:
                 try:
                     trial_shape = copy.deepcopy(shape)
                     trial_board = copy.deepcopy(board)
