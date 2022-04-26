@@ -109,6 +109,11 @@ class GuiBoard(Entity):
         piece.square = square
         self.add_pieces(piece)
 
+    def animate_piece_to_square(self, piece, coords):
+        square = self.square_coords[coords]
+        piece.animate_to(xy=square.rect.center)
+        piece.square = square
+
     def add_squares(self, *objects):
         self.add_to_group(*objects, group=self.squares)
 
@@ -139,17 +144,18 @@ class GuiBoard(Entity):
         legal_moves = {move for move in legal_moves if move.destination == new_square.coords}
         if legal_moves:
             move = legal_moves.pop()  # todo: promotion will require a menu
-            # todo: self.do_move()
-            # update engine
             self.engine.do_move(move)
             print(self.engine)
             self.do_move(move)
 
         else:
-            piece.rect.center = piece.square.rect.center
+            piece.animate_to(
+                xy=piece.square.rect.center,
+                next_state=piece.state_idle,
+                duration_ticks=10,
+            )
             self.selected_pieces.remove(piece)
             self.pieces.add(piece)
-            piece.state = piece.state_idle
 
     def remove(self, piece: GuiPiece):
         self.engine.position.pop(piece.square.coords)
@@ -173,28 +179,47 @@ class GuiBoard(Entity):
                 self.put_down(piece)
 
         if EventQueue.filter(type=pygame.KEYDOWN, key=pygame.K_LEFT):
+            last_move = self.engine.move_history[-1]
+            self.undo_move(last_move)
             self.engine.back()
-            self.load_engine_position()
+
+    def undo_move(self, move: Move):
+        piece = next(p for p in self.pieces if p.square.coords == move.destination)
+
+        # undo promotion
+        piece.kill()
+        piece = GuiPiece(0, 0, type=move.piece.type, team=move.piece.team)
+        self.add_piece_to_square(piece, move.destination)
+
+        # move active piece
+        self.animate_piece_to_square(piece, move.origin)
+
+        # resurrect captured piece
+        if move.captured_piece:
+            square = next(s for s in self.squares if s.coords == move.captured_piece_square)
+            captured_piece = GuiPiece(
+                *square.rect.center,
+                type=move.captured_piece.type,
+                team=move.captured_piece.team,
+            )
+            self.add_piece_to_square(captured_piece, move.captured_piece_square)
+            self.pieces.add(captured_piece)
 
     def do_move(self, move: Move):
         piece = next(piece for piece in self.selected_pieces if piece.square.coords == move.origin)
-        target_square = next(square for square in self.squares if square.coords == move.destination)
+
+        # animate piece to new square
+        self.animate_piece_to_square(piece, move.destination)
+        self.selected_pieces.remove(piece)
+        self.pieces.add(piece)
 
         # promotion
         if move.promote_to:
-            # todo: need piecetype to class mapping. OR: (better) be able to
-            #  change piece type on the fly.
-            new_piece = GuiPiece(0, 0, team=piece.team, type=move.promote_to)
-            self.selected_pieces.add(new_piece)
+            new_piece = GuiPiece(*piece.rect.center, team=piece.team, type=move.promote_to)
+            self.animate_piece_to_square(new_piece, move.destination)
+            self.pieces.add(new_piece)
             piece.kill()
             piece = new_piece
-
-        # snap piece to new square. todo: animate
-        piece.rect.center = target_square.rect.center
-        piece.square = target_square
-        self.selected_pieces.remove(piece)
-        self.pieces.add(piece)
-        piece.state = piece.state_idle
 
         if move.captured_piece:
             captured_piece = next(
