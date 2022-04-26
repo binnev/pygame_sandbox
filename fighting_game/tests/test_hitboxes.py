@@ -4,7 +4,7 @@ import pygame
 import pytest
 from pygame.rect import Rect
 
-from base.objects import Entity, Group
+from base.objects import Group, PhysicalEntity
 from fighting_game.hitboxes import Hitbox, HitHandler
 
 pygame.display.init()
@@ -12,7 +12,7 @@ window = pygame.display.set_mode((50, 50))
 
 
 def test_siblings_set_at_init():
-    owner = Entity()
+    owner = PhysicalEntity()
     owner.rect = Rect(0, 0, 0, 0)
     kwargs = dict(width=10, height=10, rotation=0, owner=owner)
     h3 = Hitbox(**kwargs)
@@ -61,7 +61,7 @@ def test_siblings_set_at_init():
 
 
 def test_setting_siblings_properties():
-    owner = Entity()
+    owner = PhysicalEntity()
     owner.rect = Rect(0, 0, 0, 0)
     kwargs = dict(width=10, height=10, rotation=0, owner=owner)
 
@@ -108,7 +108,7 @@ def test_setting_siblings_properties():
 
 
 def test_owner_position_inheritance():
-    owner = Entity()
+    owner = PhysicalEntity()
     owner.rect = Rect(6, 9, 0, 0)
     kwargs = dict(width=10, height=10, rotation=0, owner=owner)
 
@@ -134,11 +134,11 @@ def test_owner_position_inheritance():
 
 @patch("fighting_game.objects.handle_hitbox_collision")
 def test_handle_hits(mock):
-    entity = Entity()
+    entity = PhysicalEntity()
     entity.rect = Rect(0, 0, 10, 10)
     entity.x = 0
     entity.y = 0
-    owner = Entity()
+    owner = PhysicalEntity()
     owner.rect = Rect(0, 0, 0, 0)
     hit_handler = HitHandler()
 
@@ -154,11 +154,11 @@ def test_handle_hits(mock):
 
 @patch("fighting_game.objects.handle_hitbox_collision")
 def test_handle_hits_sibling_hitboxes_simultaneous(mock):
-    entity = Entity()
+    entity = PhysicalEntity()
     entity.rect = Rect(0, 0, 10, 10)
     entity.x = 0
     entity.y = 0
-    owner = Entity()
+    owner = PhysicalEntity()
     owner.rect = Rect(0, 0, 0, 0)
 
     h1 = Hitbox(width=10, height=10, owner=owner)
@@ -193,11 +193,11 @@ def test_handle_hits_sibling_hitboxes_simultaneous(mock):
 
 @patch("fighting_game.objects.handle_hitbox_collision")
 def test_handle_hits_sibling_hitboxes_later(mock):
-    entity = Entity()
+    entity = PhysicalEntity()
     entity.rect = Rect(0, 0, 10, 10)
     entity.x = 0
     entity.y = 0
-    owner = Entity()
+    owner = PhysicalEntity()
     owner.rect = Rect(0, 0, 0, 0)
     hit_handler = HitHandler()
 
