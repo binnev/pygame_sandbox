@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from random import shuffle
 
 from jaipur.constants import TokenNames
@@ -5,22 +6,17 @@ from jaipur.exceptions import InvalidInputError, IllegalMoveError
 from jaipur.utils import parse_player_input
 
 
+@dataclass
 class Token:
-    """Represents the round goods tokens which give players points. Each token
+    """
+    Represents the round goods tokens which give players points. Each token
     should have
     - a value (on the back)
     - the name (on the front) e.g. "diamond" or "triple combo"
     """
 
-    def __init__(self, name: TokenNames, value: int):
-        if name not in TokenNames:
-            raise ValueError(f"{name} is not a legal token name.")
-        if value <= 0:
-            raise ValueError("Illegal token value (zero or negative)")
-        if not isinstance(value, int):
-            raise ValueError("Illegal token value (non-integer)")
-        self.name = name
-        self.value = value
+    name: TokenNames
+    value: int
 
     def __repr__(self):
         return str(self.value)
