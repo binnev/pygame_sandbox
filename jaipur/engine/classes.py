@@ -135,10 +135,8 @@ class Marketplace(Deck):
 class Player:
     def __init__(self, name):
         self.name = name
-        self.hand = Deck()
-        self.tokens = []
         self.victory_points = 0
-        self.herd = Deck()
+        self.reset()
 
     def reset(self):
         self.hand = Deck()
@@ -146,10 +144,12 @@ class Player:
         self.tokens = []
 
     def missing(self, cards):
-        """Check if the player is missing any of the cards in the list.
+        """
+        Check if the player is missing any of the cards in the list.
         If it is missing any of the cards, return the name of that card.
         If the player has all the cards, return False.
-        Used to check that trades will go through"""
+        Used to check that trades will go through
+        """
         # convert single string to list of strings
         cards = [cards] if isinstance(cards, str) else cards
         counts = {card: cards.count(card) for card in cards}
