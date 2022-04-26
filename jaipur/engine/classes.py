@@ -53,11 +53,11 @@ class Deck(list):
         finally:
             return drawn_cards
 
-    def take(self, card, number=1) -> list:
+    def take(self, card, number=1) -> list[str]:
         """Take a card by name"""
-        return [self.pop(self.index(card)) for __ in range(number)]
+        return [self.pop(self.index(card)) for _ in range(number)]
 
-    def peek(self, depth=1) -> list:
+    def peek(self, depth=1) -> list[str]:
         """Look at the next card(s)"""
         return self[-depth:]
 
@@ -102,36 +102,28 @@ class Marketplace(Deck):
     Needs to keep track of empty spaces and/or preserve the order.
     """
 
-    def __init__(self, list_of_5_cards):
-        super().__init__()
-        self.extend(list_of_5_cards)
-
-    def swap(self, player_card, market_card):
+    def swap(self, player_card, market_card) -> str:
         """Swap one player card for one market card. Illegal move. Intended for
         use as part of the trade() method."""
-        # remove market card
-        ind = self.index(market_card)
-        (out,) = self.take(market_card)  # comma because only ever one card
-        self.insert(ind, player_card)  # insert player card into same slot
-        return out
+        self.append(player_card)
+        return self.take(market_card)[0]
 
-    def trade(self, player_cards, market_cards):
+    def trade(self, player_cards, market_cards) -> list[str]:
         """Swap several player cards for several marketplace cards"""
-        # start swapping
-        out = []
-        for player_card, market_card in zip(player_cards, market_cards):
-            out.append(self.swap(player_card, market_card))
-        return out
+        return [
+            self.swap(player_card, market_card)
+            for player_card, market_card in zip(player_cards, market_cards)
+        ]
 
-    def take_camels(self):
+    def take_camels(self) -> list[str]:
         return self.take("camel", self.count("camel"))
 
-    def missing(self, cards):
-        """Check if the marketplace is missing any of the cards in the list.
-        If it is missing any of the cards, return the name of that card.
-        If the marketplace has all the cards, return False.
-        Used to check that trades will go through."""
-        # convert single string to list of strings
+    def missing(self, cards) -> bool | str:
+        """
+        Check if the marketplace is missing any of the cards in the list. If it is missing any of
+        the cards, return the name of that card. If the marketplace has all the cards,
+        return False. Used to check that trades will go through.
+        """
         cards = [cards] if isinstance(cards, str) else cards
         counts = {card: cards.count(card) for card in cards}
         for card, amount in counts.items():
