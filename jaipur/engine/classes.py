@@ -35,14 +35,14 @@ class Token:
 
 
 class Deck(list):
-    def add(self, **kwargs):
+    def add(self, **kwargs: dict[TokenNames: int]):
         for goods, amount in kwargs.items():
             self.extend([goods] * amount)
 
     def shuffle(self):
         shuffle(self)
 
-    def draw(self, number=1):
+    def draw(self, number=1) -> list:
         """Draw the next card(s)"""
         drawn_cards = []
         try:
@@ -53,11 +53,11 @@ class Deck(list):
         finally:
             return drawn_cards
 
-    def take(self, card, number=1):
+    def take(self, card, number=1) -> list:
         """Take a card by name"""
         return [self.pop(self.index(card)) for __ in range(number)]
 
-    def peek(self, depth=1):
+    def peek(self, depth=1) -> list:
         """Look at the next card(s)"""
         return self[-depth:]
 
