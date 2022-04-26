@@ -81,7 +81,8 @@ def mask_to_surface(mask, set_color=None):
 
 def outline_image(surface: Surface):
     mask = maskFromSurface(surface)
-    return  mask.outline()
+    return mask.outline()
+
 
 def ticks_to_frames(tick, ticks_per_frame):
     return tick // ticks_per_frame

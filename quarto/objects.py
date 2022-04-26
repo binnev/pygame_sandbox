@@ -5,7 +5,7 @@ from pygame.sprite import AbstractGroup
 
 from base.image import recolor_image, scale_image
 from base.objects import PhysicalEntity, Entity, Group
-from base.utils import maskFromSurface, mask_to_surface, outline_image
+from base.utils import outline_image
 from fighting_game.particles import Particle, random_float, random_int
 from quarto.assets.images import quarto_pieces, misc
 from quarto.utils import common_attribute
