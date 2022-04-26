@@ -23,9 +23,9 @@ hawko_sprites = SpriteDict(
         uair="hawko_uair.png",
         dash_attack="hawko_nair.png",
         jab="hawko_jab.png",
-        dtilt="hawko_dtilt.png",
-        utilt="hawko_utilt.png",
-        ftilt="hawko_ftilt.png",
-        aerial_laser="hawko_aerial_laser.png",
     ),
 )
+hawko_sprites.register("aerial_laser", "hawko_aerial_laser.png")
+hawko_sprites.register("dtilt", "hawko_dtilt.png")
+hawko_sprites.register("utilt", "hawko_utilt.png")
+hawko_sprites.register("ftilt", "hawko_ftilt.png")

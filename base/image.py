@@ -84,7 +84,7 @@ class SpriteSheet:
 
     def __init__(
         self,
-        filename: str,
+        filename: Path | str,
         image_size: (int, int),
         colorkey=None,
         num_images: int = 0,
@@ -102,7 +102,7 @@ class SpriteSheet:
         self.num_images = num_images
 
     def load(self):
-        """ Load the image file. Don't call this until pygame.display has been initiated. """
+        """Load the image file. Don't call this until pygame.display has been initiated."""
         filename = Path(self.filename).as_posix()
         self.sheet = load_image(filename, self.colorkey)
 
@@ -175,7 +175,7 @@ class SpriteAnimation:
             return False
 
     def loop(self, n: int):
-        """ If n is greater than the number of frames, start again at the beginning. """
+        """If n is greater than the number of frames, start again at the beginning."""
         return self.play(n % len(self.images))
 
     def flip(self, flip_x: bool, flip_y: bool):
@@ -215,13 +215,21 @@ class SpriteDict(dict):
         """
         super().__init__()
         self.scale = scale
+        self.image_size = size
         self.colormap = colormap
         self.create_flipped_versions = create_flipped_versions
         folder = Path(folder)
+        self.folder = folder
 
         self.sprite_sheets = dict()
-        for name, filename in file_mapping.items():
-            self.sprite_sheets[name] = SpriteSheet(folder / filename, image_size=size)
+        for key, filename in file_mapping.items():
+            self.register(key, filename)
+
+    def register(self, key: str, filename: str, image_size=None):
+        image_size = image_size or self.image_size
+        self.sprite_sheets[key] = SpriteSheet(
+            filename=self.folder / filename, image_size=image_size
+        )
 
     def load(self):
         for name, sprite_sheet in self.sprite_sheets.items():
@@ -249,5 +257,3 @@ class SpriteDict(dict):
         if not self._loaded:
             self.load()
         return super().__getitem__(item)
-
-
