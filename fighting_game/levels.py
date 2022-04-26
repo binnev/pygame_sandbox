@@ -23,7 +23,7 @@ class BlastZone(PhysicalEntity):
 
 
 class Level(Entity):
-    """ A Scene representing a level of a game. """
+    """A Scene representing a level of a game."""
 
     parental_name = "level"
     screen_shake: int
@@ -109,7 +109,7 @@ class Level(Entity):
                 object.kill()
 
     def calculate_plume_angle(self, object):
-        """ Object has just entered the blastzone """
+        """Object has just entered the blastzone"""
         if object.x < self.blast_zone.rect.left:
             angle = 0
         elif object.x > self.blast_zone.rect.right:

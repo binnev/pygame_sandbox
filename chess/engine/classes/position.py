@@ -32,7 +32,7 @@ class Position(dict):
         self[square] = piece
 
     def do_move(self, move: Move):
-        """Apply the move, mutating the position in place. """
+        """Apply the move, mutating the position in place."""
         self.pop(move.origin)
         if move.captured_piece:
             self.pop(move.captured_piece_square)

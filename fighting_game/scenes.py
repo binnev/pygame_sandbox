@@ -8,7 +8,7 @@ from fighting_game.levels import Battlefield
 
 
 class SandBox(Entity):
-    """ Sandbox scene to try stuff out """
+    """Sandbox scene to try stuff out"""
 
     game: "FightingGame"  # parent scene
 

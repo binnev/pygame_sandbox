@@ -116,7 +116,7 @@ class VolleyballGame(Game):
 
 
 class VolleyballMatch(Sprite):
-    """ The scene in which the volleyballmatch takes place. """
+    """The scene in which the volleyballmatch takes place."""
 
     game: VolleyballGame  # added by the game when it adds this scene
     starting_positions = [
@@ -173,7 +173,7 @@ class VolleyballMatch(Sprite):
         self.state = self.match
 
     def match(self):
-        """ Main state function """
+        """Main state function"""
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 button = pygame.mouse.get_pressed()
@@ -208,7 +208,7 @@ class VolleyballMatch(Sprite):
         self.player2.state = self.player2.state_stand
 
     def score_bouncing_balls(self):
-        """ do scoring if ball bounces off ground. """
+        """do scoring if ball bounces off ground."""
         bouncing_balls = pygame.sprite.spritecollide(
             self.level.ground, self.level.projectiles, dokill=False
         )

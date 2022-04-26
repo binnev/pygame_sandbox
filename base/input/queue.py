@@ -30,7 +30,7 @@ class InputQueue(deque):
         self.append(self.get_new_values())
 
     def get_down(self):
-        """ Return the keys which are currently held down """
+        """Return the keys which are currently held down"""
         return self[-1] if len(self) > 0 else Empty()
 
     def get_pressed(self):
@@ -54,22 +54,22 @@ class InputQueue(deque):
             return Empty()
 
     def is_pressed(self, key):
-        """ Check if a key has been pressed this tick """
+        """Check if a key has been pressed this tick"""
         keys = self.get_pressed()
         return keys[key]
 
     def is_down(self, key):
-        """ Check if a key is currently held down """
+        """Check if a key is currently held down"""
         keys = self.get_down()
         return keys[key]
 
     def is_released(self, key):
-        """ Check if a key has been released this tick """
+        """Check if a key has been released this tick"""
         keys = self.get_released()
         return keys[key]
 
     def buffered_inputs(self, key, buffer_length):
-        """ Count the rising and falling edges. Can be used to detect past inputs. """
+        """Count the rising and falling edges. Can be used to detect past inputs."""
         buffer = list(self)[-buffer_length:]
         values = [layer[key] for layer in buffer]
         return count_edges(values)

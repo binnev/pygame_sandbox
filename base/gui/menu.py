@@ -7,7 +7,7 @@ from base.stuff.gui_test import mouse_hovering_over
 
 
 class Menu(Entity):
-    """ Base menu class. """
+    """Base menu class."""
 
     parental_name = "menu"
 

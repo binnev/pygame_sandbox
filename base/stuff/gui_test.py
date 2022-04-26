@@ -41,7 +41,7 @@ class GuiTestGround(Game):
         super().__init__()
 
     def main(self):
-        """ outermost game loop """
+        """outermost game loop"""
         self.window.fill((0, 0, 0))
         text = self.font.render("WELCOME SCREEN", True, (255, 255, 255))
         textRect = text.get_rect()

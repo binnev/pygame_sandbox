@@ -36,7 +36,7 @@ class Entity(pygame.sprite.Sprite):
             group.draw(surface, debug)
 
     def kill(self):
-        """ Removes self from all groups it is a member of. """
+        """Removes self from all groups it is a member of."""
         for group in self.child_groups:
             group.kill()
         super().kill()
@@ -96,7 +96,7 @@ class PhysicalEntity(Entity):
 
     @property
     def image_rect(self):
-        """ Default is to align the image with the center of the object """
+        """Default is to align the image with the center of the object"""
         if self.image:
             image_rect = self.image.get_rect()
             image_rect.center = self.rect.center
@@ -124,5 +124,5 @@ class PhysicalEntity(Entity):
 
     @property
     def animation_frame(self):
-        """ Convert game ticks to animation frames. """
+        """Convert game ticks to animation frames."""
         return self.tick // self.frame_duration

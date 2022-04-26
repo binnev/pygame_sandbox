@@ -2,13 +2,13 @@ import pygame
 
 
 class Group(pygame.sprite.Group):
-    """ Container for multiple sprite objects. """
+    """Container for multiple sprite objects."""
 
     def update(self, *args):
         super().update(*args)
 
     def draw(self, surface, debug=False):
-        """ Draws all of the member sprites onto the given surface. """
+        """Draws all of the member sprites onto the given surface."""
         sprites = self.sprites()
         for sprite in sprites:
             sprite.draw(surface, debug)

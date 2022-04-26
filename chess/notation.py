@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 def parse_pgn_move(string: str) -> (Type[Piece], str, str, str):
-    """ e.g. "Rbxa4" """
+    """e.g. "Rbxa4" """
     rx = re.compile(
         "([A-Z])?"  # piece
         "([a-wy-z0-9])?"  # additional specifier (not x)

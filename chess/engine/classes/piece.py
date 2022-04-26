@@ -47,4 +47,3 @@ class Piece(NamedTuple):
 
     def get_squares(self, current_square: Square, position: "Position") -> Set[Square]:
         return get_squares(current_square=current_square, position=position)
-

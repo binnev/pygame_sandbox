@@ -41,7 +41,7 @@ class VolleyballMove:
         self.sprite_animation = self.instance.sprites[name]
 
     def __call__(self):
-        """ This is the equivalent to the function states. """
+        """This is the equivalent to the function states."""
         # update instance image
         animation_frame = self.instance.animation_frame
         self.instance.image = self.sprite_animation.get_frame(animation_frame)
@@ -926,7 +926,7 @@ class JumpRing(SingleUseAnimation):
             self.diameters = ease_out(self.width // 4, self.width, 5)
 
         def get_frame(self, n):
-            """ Create a ring image animation """
+            """Create a ring image animation"""
             try:
                 diameter = self.diameters[n]
                 surface = pygame.Surface((self.width, self.height)).convert_alpha()

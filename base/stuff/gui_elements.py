@@ -78,5 +78,5 @@ class GuiButton(Entity):
         self.highlight = True
 
     def _own_on_click(self):
-        """ Button's own logic for when clicked. """
+        """Button's own logic for when clicked."""
         self.current_color = Color("red")

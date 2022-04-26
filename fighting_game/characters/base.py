@@ -677,7 +677,7 @@ class Character(PhysicalEntity):
         self.aerial_jumps -= 1
 
     def handle_get_hit(self, hitbox):
-        """ What to do when self gets hit by a hitbox. """
+        """What to do when self gets hit by a hitbox."""
         # here's where we calculate how far/fast the object gets knocked
         self.damage += hitbox.damage  # important for charged smashes
         # fixed knockback is affected by nothing
@@ -844,7 +844,7 @@ class Character(PhysicalEntity):
 
     @staticmethod
     def acceleration_to_apply(speed, acceleration, speed_limit):
-        """ everything must be > 0 """
+        """everything must be > 0"""
         if speed + acceleration <= speed_limit:
             return acceleration
         else:
@@ -882,7 +882,7 @@ class Move:
         self.handle_physics()
 
     def handle_physics(self):
-        """ handle grounded physics by default"""
+        """handle grounded physics by default"""
         self.character.grounded_physics()
 
     def update_image(self, frame_data):
@@ -895,7 +895,7 @@ class Move:
         self.character.level.add_hitbox(*active_hitboxes)
 
     def get_next_state(self):
-        """ This needs to be a method because we might need to instantiate a class-based state. """
+        """This needs to be a method because we might need to instantiate a class-based state."""
         return self.character.state_stand
 
     def end(self):

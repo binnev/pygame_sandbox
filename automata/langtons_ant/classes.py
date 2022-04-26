@@ -9,7 +9,7 @@ from base.objects import Entity, Group
 
 
 class Board(Entity):
-    """ The board on which the ants crawl"""
+    """The board on which the ants crawl"""
 
     game: LangtonsAntGame
     parental_name = "board"

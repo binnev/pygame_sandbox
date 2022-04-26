@@ -307,7 +307,7 @@ class ButtonInput:
         return self.value + (other.value if isinstance(other, ButtonInput) else other)
 
     def __bool__(self):
-        """ This allows us to do `if input.UP` instead of `if input.UP.is_down` """
+        """This allows us to do `if input.UP` instead of `if input.UP.is_down`"""
         return bool(self.value)
 
 
@@ -361,7 +361,7 @@ class GamecubeController(InputQueue):
 
 
 if __name__ == "__main__":
-    """ visual input checking. """
+    """visual input checking."""
 
     class TextPrint(object):
         def __init__(self):
