@@ -1,3 +1,4 @@
+import enum
 from collections import namedtuple
 from math import sin
 
@@ -157,3 +158,19 @@ def pulsing_value(tick, min, max, freq, func=None):
 def mouse_hovering_over(element):
     mouse_x, mouse_y = pygame.mouse.get_pos()
     return element.rect.collidepoint(mouse_x, mouse_y)
+
+
+class MyEnumMeta(enum.EnumMeta):
+    """
+    Incredibly, enum.Enum does not have a __contains__ method, so we can't do stuff like:
+    class Colours(Enum):
+        ...
+    assert "red" in Colours
+    """
+
+    def __contains__(cls, member):
+        return any(x.value == member for x in cls)
+
+
+class Enum(enum.Enum, metaclass=MyEnumMeta):
+    pass

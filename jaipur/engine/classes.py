@@ -1,21 +1,44 @@
 from random import shuffle
-from exceptions import InvalidInputError, IllegalMoveError
-from utilities import parse_player_input
 
-allowed_token_names = ("diamond", "silver", "gold", "cloth", "spice",
-                       "leather", "combo3", "combo4", "combo5", "largest_herd",
-                       )
+from base.utils import Enum
+from jaipur.exceptions import InvalidInputError, IllegalMoveError
+from jaipur.utils import parse_player_input
 
 
-class Token():
+DIAMOND = "diamond"
+SILVER = "silver"
+GOLD = "gold"
+CLOTH = "cloth"
+SPICE = "spice"
+LEATHER = "leather"
+COMBO3 = "combo3"
+COMBO4 = "combo4"
+COMBO5 = "combo5"
+LARGEST_HERD = "largest_herd"
+
+
+class TokenNames(Enum):
+    DIAMOND = DIAMOND
+    SILVER = SILVER
+    GOLD = GOLD
+    CLOTH = CLOTH
+    SPICE = SPICE
+    LEATHER = LEATHER
+    COMBO3 = COMBO3
+    COMBO4 = COMBO4
+    COMBO5 = COMBO5
+    LARGEST_HERD = LARGEST_HERD
+
+
+class Token:
     """Represents the round goods tokens which give players points. Each token
     should have
     - a value (on the back)
     - the name (on the front) e.g. "diamond" or "triple combo"
     """
 
-    def __init__(self, name, value):
-        if name not in allowed_token_names:
+    def __init__(self, name: TokenNames, value: int):
+        if name not in TokenNames:
             raise ValueError(f"{name} is not a legal token name.")
         if value <= 0:
             raise ValueError("Illegal token value (zero or negative)")
@@ -32,13 +55,15 @@ class Deck(list):
     def __init__(self, default=False, **kwargs):
         # default deck for Jaipur
         if default:
-            contents = {"diamond": 6,
-                        "gold": 6,
-                        "silver": 6,
-                        "cloth": 8,
-                        "spice": 8,
-                        "leather": 10,
-                        "camel": 11}
+            contents = {
+                "diamond": 6,
+                "gold": 6,
+                "silver": 6,
+                "cloth": 8,
+                "spice": 8,
+                "leather": 10,
+                "camel": 11,
+            }
         else:
             contents = {}
         # update with any specific requests from kwargs
@@ -78,6 +103,7 @@ class TokenStack(Deck):
     Functionally very similar to the Deck class, but not limited to the card
     types
     """
+
     def __init__(self, *list_of_tokens):
         list.__init__(self, list(list_of_tokens))
 
@@ -96,6 +122,7 @@ class Marketplace(Deck):
     """Represents the 5 card river marketplace.
     Needs to keep track of empty spaces and/or preserve the order.
     """
+
     def __init__(self, list_of_5_cards):
         super().__init__()
         self.extend(list_of_5_cards)
@@ -105,7 +132,7 @@ class Marketplace(Deck):
         use as part of the trade() method."""
         # remove market card
         ind = self.index(market_card)
-        out, = self.take(market_card)  # comma because only ever one card
+        (out,) = self.take(market_card)  # comma because only ever one card
         self.insert(ind, player_card)  # insert player card into same slot
         return out
 
@@ -124,7 +151,7 @@ class Marketplace(Deck):
         """Check if the marketplace is missing any of the cards in the list.
         If it is missing any of the cards, return the name of that card.
         If the marketplace has all the cards, return False.
-        Used to check that trades will go through. """
+        Used to check that trades will go through."""
         # convert single string to list of strings
         cards = [cards] if isinstance(cards, str) else cards
         counts = {card: cards.count(card) for card in cards}
@@ -134,7 +161,7 @@ class Marketplace(Deck):
         return False
 
 
-class Player():
+class Player:
     def __init__(self, name):
         self.name = name
         self.hand = Deck()
@@ -162,7 +189,7 @@ class Player():
 
     def count(self, card):
         """Count how many the player has of a single resource card. Checks
-        player herd if card is "camel"; checks hand otherwise. """
+        player herd if card is "camel"; checks hand otherwise."""
         return (self.herd if card == "camel" else self.hand).count(card)
 
     def take(self, cards):
@@ -191,7 +218,7 @@ class Player():
         return sum(token.value for token in self.tokens)
 
 
-class Game():
+class Game:
     def __init__(self):
         """Setup actions at the very beginning of the game"""
         # create players
@@ -204,17 +231,19 @@ class Game():
         """Setup actions at the start of each round"""
         # create token piles
         # populate tokens dictionary
-        self.resource_tokens = {"diamond": [5, 5, 5, 7, 7],
-                                "gold": [5, 5, 5, 6, 6],
-                                "silver": [5, 5, 5, 5, 5],
-                                "leather": [1, 1, 1, 1, 1, 1, 2, 3, 4],
-                                "cloth": [1, 1, 2, 2, 3, 3, 5],
-                                "spice": [1, 1, 2, 2, 3, 3, 5],
-                                }
-        self.bonus_tokens = {"combo3": [1, 1, 2, 2, 2, 3, 3],
-                             "combo4": [4, 4, 5, 5, 6, 6],
-                             "combo5": [8, 8, 9, 10, 10],
-                             }
+        self.resource_tokens = {
+            "diamond": [5, 5, 5, 7, 7],
+            "gold": [5, 5, 5, 6, 6],
+            "silver": [5, 5, 5, 5, 5],
+            "leather": [1, 1, 1, 1, 1, 1, 2, 3, 4],
+            "cloth": [1, 1, 2, 2, 3, 3, 5],
+            "spice": [1, 1, 2, 2, 3, 3, 5],
+        }
+        self.bonus_tokens = {
+            "combo3": [1, 1, 2, 2, 2, 3, 3],
+            "combo4": [4, 4, 5, 5, 6, 6],
+            "combo5": [8, 8, 9, 10, 10],
+        }
 
         # convert values to TokenStacks
         for key, values in self.resource_tokens.items():
@@ -249,14 +278,15 @@ class Game():
         return False
 
     def prompt_player_turn(self, player):
-        message = (f"{player.name}, it is your turn. \n"
-                   "Do one of the following:\n"
-                   "\t1) 'buy diamond' --> take 1 diamond from the market\n"
-                   "\t2) 'trade leather camel for diamond gold' --> trade your leather & camel for gold & diamond\n"
-                   "\t    or 'trade 3 camel for 3 leather'\n"
-                   "\t3) 'sell cloth' --> sell all your cloth. You can specify a number to sell: 'sell 2 cloth'\n"
-                   "\t4) 'camels' --> take all the camels\n"
-                   )
+        message = (
+            f"{player.name}, it is your turn. \n"
+            "Do one of the following:\n"
+            "\t1) 'buy diamond' --> take 1 diamond from the market\n"
+            "\t2) 'trade leather camel for diamond gold' --> trade your leather & camel for gold & diamond\n"
+            "\t    or 'trade 3 camel for 3 leather'\n"
+            "\t3) 'sell cloth' --> sell all your cloth. You can specify a number to sell: 'sell 2 cloth'\n"
+            "\t4) 'camels' --> take all the camels\n"
+        )
         return input(message).strip()
 
     def refill_marketplace(self):
@@ -268,12 +298,10 @@ class Game():
     def buy(self, player, card):
         # player hand size can't exceed 7
         if len(player.hand) >= 7:
-            raise IllegalMoveError("You already have 7 cards in your hand. "
-                                   "You can't buy.")
+            raise IllegalMoveError("You already have 7 cards in your hand. " "You can't buy.")
         # you can't buy a camel
         if card == "camel":
-            raise IllegalMoveError("You can't buy a camel. Use the 'camels' action "
-                                   "instead.")
+            raise IllegalMoveError("You can't buy a camel. Use the 'camels' action " "instead.")
         # can't buy stuff that's not in the marketplace
         if self.marketplace.missing(card):
             raise IllegalMoveError(f"There is no {card} in the marketplace.")
@@ -312,8 +340,9 @@ class Game():
     def trade(self, player, player_cards, market_cards):
         # check card lists are equal length
         if len(player_cards) != len(market_cards):
-            raise IllegalMoveError("The number of player cards doesn't match "
-                                   "the number of market cards for trade.")
+            raise IllegalMoveError(
+                "The number of player cards doesn't match " "the number of market cards for trade."
+            )
         # don't allow single-card trades
         if len(player_cards) == 1:
             raise IllegalMoveError("You can't trade less than 2 cards.")
@@ -323,18 +352,17 @@ class Game():
         # check the player has all the cards they want to trade in
         card = player.missing(player_cards)
         if card:
-            raise IllegalMoveError(f"You don't have enough {card} to make this"
-                                   " trade.")
+            raise IllegalMoveError(f"You don't have enough {card} to make this" " trade.")
         # check if the requested market_cards are all there
         card = self.marketplace.missing(market_cards)
         if card:
-            raise IllegalMoveError(f"There are not enough {card} cards in the "
-                                   "marketplace for this trade")
+            raise IllegalMoveError(
+                f"There are not enough {card} cards in the " "marketplace for this trade"
+            )
         # check hand size
         non_camel_cards = [c for c in player_cards if c != "camel"]
         if len(player.hand) - len(non_camel_cards) + len(market_cards) > 7:
-            raise IllegalMoveError("Your hand will be greater than 7 cards "
-                                   "after this trade")
+            raise IllegalMoveError("Your hand will be greater than 7 cards " "after this trade")
 
         # take the cards out of the player's hand (or herd, if camel)
         player.take(player_cards)
@@ -345,8 +373,7 @@ class Game():
 
     def take_camels(self, player):
         if self.marketplace.count("camel") == 0:
-            raise IllegalMoveError("There are no camels in the marketplace. "
-                                   "Try another action.")
+            raise IllegalMoveError("There are no camels in the marketplace. " "Try another action.")
         player.give(self.marketplace.take_camels())
         self.refill_marketplace()
 
@@ -360,7 +387,7 @@ class Game():
 
         # make arrangements for the player's request
         if action == "buy":
-            goods, = details
+            (goods,) = details
             self.buy(player, goods)
         elif action == "trade":
             player_cards, market_cards = details
@@ -383,7 +410,7 @@ class Game():
             while response is not True:
                 print(self)  # print the board
                 if response:
-                    print(">"*90+"\n"+response+"\n"+">"*90)
+                    print(">" * 90 + "\n" + response + "\n" + ">" * 90)
                 try:
                     response = self.player_turn()  # play out player turn
                 except (IllegalMoveError, InvalidInputError) as e:
@@ -437,33 +464,44 @@ class Game():
                 return None
 
     def __repr__(self):
-        diamond = "{:<10}".format("diamond:")+"{:<20}".format(str(self.resource_tokens["diamond"]))
-        gold = "{:<10}".format("gold:")+"{:<20}".format(str(self.resource_tokens["gold"]))
-        silver = "{:<10}".format("silver:")+"{:<20}".format(str(self.resource_tokens["silver"]))
-        spice = "{:<10}".format("spice:")+"{:<20}".format(str(self.resource_tokens["spice"]))
-        cloth = "{:<10}".format("cloth:")+"{:<20}".format(str(self.resource_tokens["cloth"]))
-        leather = "{:<10}".format("leather:")+"{:<20}".format(str(self.resource_tokens["leather"]))
+        diamond = "{:<10}".format("diamond:") + "{:<20}".format(
+            str(self.resource_tokens["diamond"])
+        )
+        gold = "{:<10}".format("gold:") + "{:<20}".format(str(self.resource_tokens["gold"]))
+        silver = "{:<10}".format("silver:") + "{:<20}".format(str(self.resource_tokens["silver"]))
+        spice = "{:<10}".format("spice:") + "{:<20}".format(str(self.resource_tokens["spice"]))
+        cloth = "{:<10}".format("cloth:") + "{:<20}".format(str(self.resource_tokens["cloth"]))
+        leather = "{:<10}".format("leather:") + "{:<20}".format(
+            str(self.resource_tokens["leather"])
+        )
 
-        player1_vp = (f"({self.player1.victory_points} victory points)"
-                      if self.player1.victory_points else "")
-        player2_vp = (f"({self.player2.victory_points} victory points)"
-                      if self.player2.victory_points else "")
+        player1_vp = (
+            f"({self.player1.victory_points} victory points)" if self.player1.victory_points else ""
+        )
+        player2_vp = (
+            f"({self.player2.victory_points} victory points)" if self.player2.victory_points else ""
+        )
 
-        strings = ["="*90,
-                   f"{self.player1.name} {player1_vp}",
-                   f"\thand: {sorted(self.player1.hand)}",
-                   f"\ttokens: {self.player1.tokens}",
-                   f"\therd: {'*'*len(self.player1.herd)}",
-                   f"MARKETPLACE: {self.marketplace}",
-                   f"DECK: {'*'*len(self.deck)}",
-                   "TOKENS:",
-                   "\t"+diamond, "\t"+gold, "\t"+silver, "\t"+spice,
-                   "\t"+cloth, "\t"+leather,
-                   f"{self.player2.name} {player2_vp}",
-                   f"\thand: {sorted(self.player2.hand)}",
-                   f"\ttokens: {self.player2.tokens}",
-                   f"\therd: {'*'*len(self.player2.herd)}",
-                   ]
+        strings = [
+            "=" * 90,
+            f"{self.player1.name} {player1_vp}",
+            f"\thand: {sorted(self.player1.hand)}",
+            f"\ttokens: {self.player1.tokens}",
+            f"\therd: {'*'*len(self.player1.herd)}",
+            f"MARKETPLACE: {self.marketplace}",
+            f"DECK: {'*'*len(self.deck)}",
+            "TOKENS:",
+            "\t" + diamond,
+            "\t" + gold,
+            "\t" + silver,
+            "\t" + spice,
+            "\t" + cloth,
+            "\t" + leather,
+            f"{self.player2.name} {player2_vp}",
+            f"\thand: {sorted(self.player2.hand)}",
+            f"\ttokens: {self.player2.tokens}",
+            f"\therd: {'*'*len(self.player2.herd)}",
+        ]
         return "\n".join(strings)
 
 
