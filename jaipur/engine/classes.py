@@ -163,7 +163,7 @@ class Player:
         player herd if card is "camel"; checks hand otherwise."""
         return (self.herd if card == "camel" else self.hand).count(card)
 
-    def take(self, cards):
+    def take(self, cards: str | list[str]) -> list[str]:
         """Take cards from the player's hand or herd, depending on the card
         type. Return those cards as a list of strings.
         The input can be a single card (string) or a list of strings."""
@@ -190,9 +190,12 @@ class Player:
 
 
 class Game:
+    """
+    This is the controller that runs the match and checks moves are legal.
+    """
+
     def __init__(self):
         """Setup actions at the very beginning of the game"""
-        # create players
         self.player1 = Player(name="Player 1")
         self.player2 = Player(name="Player 2")
         self.players = self.player1, self.player2
@@ -200,8 +203,6 @@ class Game:
 
     def setup_round(self):
         """Setup actions at the start of each round"""
-        # create token piles
-        # populate tokens dictionary
         self.resource_tokens = {
             DIAMOND: [5, 5, 5, 7, 7],
             GOLD: [5, 5, 5, 6, 6],
@@ -249,18 +250,6 @@ class Game:
             return True
         return False
 
-    def prompt_player_turn(self, player):
-        message = (
-            f"{player.name}, it is your turn. \n"
-            "Do one of the following:\n"
-            "\t1) 'buy diamond' --> take 1 diamond from the market\n"
-            "\t2) 'trade leather camel for diamond gold' --> trade your leather & camel for gold & diamond\n"
-            "\t    or 'trade 3 camel for 3 leather'\n"
-            "\t3) 'sell cloth' --> sell all your cloth. You can specify a number to sell: 'sell 2 cloth'\n"
-            "\t4) 'camels' --> take all the camels\n"
-        )
-        return input(message).strip()
-
     def refill_marketplace(self):
         while len(self.marketplace) < 5:
             self.marketplace.extend(self.deck.draw())
@@ -268,17 +257,12 @@ class Game:
                 break
 
     def buy(self, player, card):
-        # player hand size can't exceed 7
         if len(player.hand) >= 7:
-            raise IllegalMoveError("You already have 7 cards in your hand. " "You can't buy.")
-        # you can't buy a camel
+            raise IllegalMoveError("You already have 7 cards in your hand. You can't buy.")
         if card == "camel":
-            raise IllegalMoveError("You can't buy a camel. Use the 'camels' action " "instead.")
-        # can't buy stuff that's not in the marketplace
+            raise IllegalMoveError("You can't buy a camel. Use the 'camels' action instead.")
         if self.marketplace.missing(card):
             raise IllegalMoveError(f"There is no {card} in the marketplace.")
-
-        # take card from marketplace into player hand
         player.hand.extend(self.marketplace.take(card))
         self.refill_marketplace()
 
@@ -310,44 +294,35 @@ class Game:
             player.tokens.extend(self.bonus_tokens["combo5"].draw())
 
     def trade(self, player, player_cards, market_cards):
-        # check card lists are equal length
         if len(player_cards) != len(market_cards):
             raise IllegalMoveError(
-                "The number of player cards doesn't match " "the number of market cards for trade."
+                "The number of player cards doesn't match the number of market cards for trade."
             )
-        # don't allow single-card trades
         if len(player_cards) == 1:
             raise IllegalMoveError("You can't trade less than 2 cards.")
-        # don't allow trading for marketplace camels
         if "camel" in market_cards:
             raise IllegalMoveError("You can't trade for camels in the market")
-        # check the player has all the cards they want to trade in
-        card = player.missing(player_cards)
-        if card:
-            raise IllegalMoveError(f"You don't have enough {card} to make this" " trade.")
-        # check if the requested market_cards are all there
-        card = self.marketplace.missing(market_cards)
-        if card:
+        if card := player.missing(player_cards):
+            raise IllegalMoveError(f"You don't have enough {card} to make this trade.")
+        if card := self.marketplace.missing(market_cards):
             raise IllegalMoveError(
-                f"There are not enough {card} cards in the " "marketplace for this trade"
+                f"There are not enough {card} cards in the marketplace for this trade"
             )
-        # check hand size
         non_camel_cards = [c for c in player_cards if c != "camel"]
         if len(player.hand) - len(non_camel_cards) + len(market_cards) > 7:
-            raise IllegalMoveError("Your hand will be greater than 7 cards " "after this trade")
+            raise IllegalMoveError("Your hand will be greater than 7 cards after this trade")
 
-        # take the cards out of the player's hand (or herd, if camel)
         player.take(player_cards)
-        # do the market trade
         self.marketplace.trade(player_cards, market_cards)
-        # give market cards to player
         player.give(market_cards)
 
     def take_camels(self, player):
         if self.marketplace.count("camel") == 0:
-            raise IllegalMoveError("There are no camels in the marketplace. " "Try another action.")
+            raise IllegalMoveError("There are no camels in the marketplace. Try another action.")
         player.give(self.marketplace.take_camels())
         self.refill_marketplace()
+
+    # VVVVVVVVVVVVVVVVVVVVVV CLI interaction methods. Move elsewhere VVVVVVVVVVVVVVVVVVVVVV
 
     def player_turn(self):
         # get current player
@@ -382,7 +357,7 @@ class Game:
             while response is not True:
                 print(self)  # print the board
                 if response:
-                    print(">" * 90 + "\n" + response + "\n" + ">" * 90)
+                    print(">" * 90 + f"\n{response}\n" + ">" * 90)
                 try:
                     response = self.player_turn()  # play out player turn
                 except (IllegalMoveError, InvalidInputError) as e:
@@ -390,8 +365,7 @@ class Game:
             self.current_player += 1  # increment current player
 
         print("END OF THE ROUND!")
-        # after round has finished,
-        # award the largest herd token
+        # after round has finished, award the largest herd token
         player1_herd_size = len(self.player1.herd)
         player2_herd_size = len(self.player2.herd)
         if player1_herd_size > player2_herd_size:
@@ -420,20 +394,13 @@ class Game:
             print(f"It's a draw! Both players get a victory point.")
 
     def play_game(self):
-        print("ROUND 1!")
-        self.play_round()
-        print("ROUND 2!")
-        self.play_round()
-        for player in self.players:
-            if player.victory_points == 2:
-                print(f"THE WINNER IS {player.name.upper()}!")
-                return None
-        print("ROUND 3!")
-        self.play_round()
-        for player in self.players:
-            if player.victory_points == 2:
-                print(f"THE WINNER IS {player.name.upper()}!")
-                return None
+        for round in range(1, 4):
+            print(f"ROUND {round}!")
+            self.play_round()
+            for player in self.players:
+                if player.victory_points == 2:
+                    print(f"THE WINNER IS {player.name.upper()}!")
+                    return None
 
     def __repr__(self):
         diamond = "{:<10}".format("diamond:") + "{:<20}".format(
@@ -475,6 +442,18 @@ class Game:
             f"\therd: {'*'*len(self.player2.herd)}",
         ]
         return "\n".join(strings)
+
+    def prompt_player_turn(self, player):
+        message = (
+            f"{player.name}, it is your turn. \n"
+            "Do one of the following:\n"
+            "\t1) 'buy diamond' --> take 1 diamond from the market\n"
+            "\t2) 'trade leather camel for diamond gold' --> trade your leather & camel for gold & diamond\n"
+            "\t    or 'trade 3 camel for 3 leather'\n"
+            "\t3) 'sell cloth' --> sell all your cloth. You can specify a number to sell: 'sell 2 cloth'\n"
+            "\t4) 'camels' --> take all the camels\n"
+        )
+        return input(message).strip()
 
 
 """ TODO:
