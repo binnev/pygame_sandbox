@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from base.event import EventQueue
+from base.input.event import EventQueue
 
 
 @patch("pygame.event.get")

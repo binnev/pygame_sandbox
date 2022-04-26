@@ -4,7 +4,7 @@ import pygame
 from pygame import Surface, Color
 from pygame.rect import Rect
 
-from base.animation import recolor_image
+from base.image import recolor_image
 from base.objects import PhysicalEntity, Group
 from base.stuff.gui_test import mouse_hovering_over
 from chess import conf

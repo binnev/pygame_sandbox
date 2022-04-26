@@ -4,7 +4,7 @@ from numpy import sign
 from pygame import Color, Surface
 from pygame.rect import Rect
 
-from base.animation import SpriteDict
+from base.image import SpriteDict
 from base.input.gamecube import GamecubeController
 from base.objects import PhysicalEntity
 from fighting_game import sounds

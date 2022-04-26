@@ -1,4 +1,4 @@
-from base.animation import SpriteDict, relative_folder, SpriteSheet, SpriteAnimation
+from base.image import SpriteDict, relative_folder, SpriteSheet, SpriteAnimation
 from volleyball_game import conf
 
 folder = relative_folder(__file__, "stickman")

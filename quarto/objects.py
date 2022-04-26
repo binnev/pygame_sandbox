@@ -3,7 +3,7 @@ from pygame import Surface, Rect
 from pygame.color import Color
 from pygame.sprite import AbstractGroup
 
-from base.animation import recolor_image, scale_image
+from base.image import recolor_image, scale_image
 from base.objects import PhysicalEntity, Entity, Group
 from base.utils import maskFromSurface, mask_to_surface, outline_image
 from fighting_game.particles import Particle, random_float, random_int

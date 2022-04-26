@@ -3,7 +3,7 @@ from pathlib import Path
 import pygame
 import pytest
 
-from base.animation import SpriteSheet
+from base.image import SpriteSheet
 
 
 def test_spritesheet_load_image():

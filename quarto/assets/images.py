@@ -1,4 +1,4 @@
-from base.animation import relative_folder, SpriteDict
+from base.image import relative_folder, SpriteDict
 from quarto import conf
 
 folder = relative_folder(__file__, "images")
