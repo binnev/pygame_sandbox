@@ -35,7 +35,7 @@ class Token:
 
 
 class Deck(list):
-    def add(self, **kwargs: dict[TokenNames: int]):
+    def add(self, **kwargs: dict[TokenNames:int]):
         for goods, amount in kwargs.items():
             self.extend([goods] * amount)
 
@@ -88,10 +88,7 @@ class TokenStack(Deck):
     types
     """
 
-    def __init__(self, *list_of_tokens):
-        list.__init__(self, list(list_of_tokens))
-
-    def sort_by_value(self, descending=True):
+    def sort_by_value(self):
         """Sort the stack of tokens so that the highest value ones are on top.
         This means the highest value tokens should be the first to get popped
         off the list---meaning they should be at the end of the list.
@@ -232,10 +229,10 @@ class Game:
 
         # convert values to TokenStacks
         for key, values in self.resource_tokens.items():
-            self.resource_tokens[key] = TokenStack(*(Token(key, v) for v in values))
+            self.resource_tokens[key] = TokenStack(Token(key, v) for v in values)
             self.resource_tokens[key].sort_by_value()
         for key, values in self.bonus_tokens.items():
-            self.bonus_tokens[key] = TokenStack(*(Token(key, v) for v in values))
+            self.bonus_tokens[key] = TokenStack(Token(key, v) for v in values)
             self.bonus_tokens[key].shuffle()
 
         # create deck
