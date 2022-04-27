@@ -1,3 +1,6 @@
+import random
+from dataclasses import dataclass
+
 O = "o"
 X = "x"
 EMPTY = "."
@@ -91,6 +94,63 @@ class Match:
         self.history.append((None, state))
 
     def do_move(self, move: int):
-        _, current_state = self.history[-1]
-        next_state = current_state.do_move(move)
+        next_state = self.current_state.do_move(move)
         self.history.append((move, next_state))
+
+    @property
+    def current_state(self):
+        return self.history[-1][1]
+
+    @property
+    def is_active(self) -> bool:
+        return not self.current_state.is_game_over
+
+    @property
+    def player_to_move(self):
+        return self.current_state.player_to_move
+
+
+class Agent:
+    def choose_move(self, state: State) -> int:
+        raise NotImplementedError
+
+
+class RandomAgent(Agent):
+    def choose_move(self, state: State) -> int:
+        return random.choice(state.available_moves)
+
+
+class HumanAgent(Agent):
+    def choose_move(self, state: State) -> int:
+        print("Current state:")
+        state.print()
+        print(f"Available moves are: {state.available_moves}")
+        move = input(f"Choose a move: ")
+        return int(move)
+
+
+@dataclass
+class Controller:
+    """Currently this is implicitly running a match for the CLI. Might need to create specific
+    subclasses for GUI"""
+
+    agent_o: Agent
+    agent_x: Agent
+    match: Match
+
+    def get_agent(self, player: str) -> Agent:
+        return {X: self.agent_x, O: self.agent_o}[player]
+
+    def run_turn(self):
+        player = self.match.player_to_move
+        agent = self.get_agent(player)
+        move = agent.choose_move(self.match.current_state)
+        self.match.do_move(move)
+        print(f"Player {player} has chosen move {move}")
+        self.match.current_state.print()
+
+    def run_match(self):
+        while self.match.is_active:
+            self.run_turn()
+        winner = self.match.current_state.winner or "no-one"
+        print(f"congratulations to {winner}!")
