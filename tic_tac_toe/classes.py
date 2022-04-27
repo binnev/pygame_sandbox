@@ -3,7 +3,7 @@ X = "x"
 EMPTY = "."
 
 
-class GameState(str):
+class State(str):
     """
     len 9 string to store a tic-tac-toe game state:
     o| |
@@ -34,13 +34,17 @@ class GameState(str):
     def print(self):
         print(self.to_string())
 
-    def do_move(self, move: int) -> "GameState":
+    def do_move(self, move: int) -> "State":
         chars = list(self)
         chars[move] = self.player_to_move
-        return GameState("".join(chars))
+        return State("".join(chars))
+
+    @classmethod
+    def initial(cls) -> "State":
+        return cls(".........")
 
 
-def player_to_move(state: GameState) -> str | None:
+def player_to_move(state: State) -> str | None:
     os = state.count(O)
     xs = state.count(X)
     if xs < os:
@@ -49,7 +53,7 @@ def player_to_move(state: GameState) -> str | None:
         return O
 
 
-def available_moves(state: GameState) -> tuple[int]:
+def available_moves(state: State) -> tuple[int]:
     return tuple(index for index, char in enumerate(state) if char == EMPTY)
 
 
@@ -65,7 +69,7 @@ WIN_VECTORS = (
 )
 
 
-def is_game_over(state: GameState) -> (bool, str | None):
+def is_game_over(state: State) -> (bool, str | None):
     """is_over, winner = is_game_over(state)"""
     if EMPTY not in state:
         return True, None
@@ -76,3 +80,17 @@ def is_game_over(state: GameState) -> (bool, str | None):
         if values == [O, O, O]:
             return True, O
     return False, None
+
+
+class Match:
+    history: list[tuple[int | None, State]]
+
+    def __init__(self, initial_state: State = None):
+        state = initial_state or State.initial()
+        self.history = []
+        self.history.append((None, state))
+
+    def do_move(self, move: int):
+        _, current_state = self.history[-1]
+        next_state = current_state.do_move(move)
+        self.history.append((move, next_state))

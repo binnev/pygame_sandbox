@@ -1,10 +1,10 @@
 import pytest
 
-from tic_tac_toe.classes import GameState, player_to_move, available_moves, is_game_over, O, X
+from tic_tac_toe.classes import State, player_to_move, available_moves, is_game_over, O, X, Match
 
 
 def test_game_state_to_string():
-    state = GameState("o...x...o")
+    state = State("o...x...o")
     assert state.to_string() == "\n".join(
         (
             "o| | ",
@@ -26,13 +26,13 @@ def test_game_state_to_string():
     ],
 )
 def test_game_state_do_move(initial_state, move, expected_state):
-    state = GameState(initial_state)
+    state = State(initial_state)
     state = state.do_move(move)
     assert state == expected_state
 
 
 def test_game_state_init():
-    state = GameState("ooo......")
+    state = State("ooo......")
     assert state.is_game_over is True
     assert state.winner == O
     assert state.player_to_move == X
@@ -49,7 +49,7 @@ def test_game_state_init():
     ],
 )
 def test_player_to_move(state, expected_player):
-    state = GameState(state)
+    state = State(state)
     assert player_to_move(state) == expected_player
 
 
@@ -63,7 +63,7 @@ def test_player_to_move(state, expected_player):
     ],
 )
 def test_available_moves(state, expected_moves):
-    state = GameState(state)
+    state = State(state)
     assert available_moves(state) == expected_moves
 
 
@@ -78,5 +78,25 @@ def test_available_moves(state, expected_moves):
     ],
 )
 def test_is_game_over(state, expected_result):
-    state = GameState(state)
+    state = State(state)
     assert is_game_over(state) == expected_result
+
+
+def test_match_init():
+    match = Match()
+    assert match.history == [(None, State.initial())]
+
+    custom_state = State("oxo......")
+    match = Match(initial_state=custom_state)
+    assert match.history == [(None, custom_state)]
+
+
+def test_match_do_move():
+    match = Match()
+    match.do_move(8)
+    match.do_move(0)
+    assert match.history == [
+        (None, State.initial()),
+        (8, State("........o")),
+        (0, State("x.......o")),
+    ]
