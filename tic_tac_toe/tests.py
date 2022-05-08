@@ -1,16 +1,10 @@
 import pytest
+from .match import Match
+from .state import State, player_to_move, available_moves, is_game_over
+from .controller import CliController
+from .agent import RandomAgent
 
-from tic_tac_toe.classes import (
-    State,
-    player_to_move,
-    available_moves,
-    is_game_over,
-    O,
-    X,
-    Match,
-    Controller,
-    RandomAgent,
-)
+from .constants import X, O
 
 
 def test_game_state_to_string():
@@ -113,7 +107,7 @@ def test_match_do_move():
 
 
 def test_controller_run_match():
-    controller = Controller(agent_o=RandomAgent(), agent_x=RandomAgent(), match=Match())
+    controller = CliController(agent_o=RandomAgent(), agent_x=RandomAgent(), match=Match())
     controller.run_match()
     # earliest possible win is after 3 O moves, 2 X moves.
     assert len(controller.match.history) > 5
