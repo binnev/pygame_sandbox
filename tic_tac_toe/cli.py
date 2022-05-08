@@ -1,6 +1,8 @@
 import time
 
-from tic_tac_toe.classes import RandomAgent, HumanAgent, Match, CliController
+from tic_tac_toe.controller import CliController
+from tic_tac_toe.agent import RandomAgent, HumanAgent
+from tic_tac_toe.match import Match
 
 
 def main():
