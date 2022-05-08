@@ -13,7 +13,7 @@ class RandomAgent(Agent):
         return random.choice(state.available_moves)
 
 
-class HumanAgent(Agent):
+class CliAgent(Agent):
     def choose_move(self, state: "State") -> int:
         while True:
             print("Current state:")
