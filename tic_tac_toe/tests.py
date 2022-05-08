@@ -112,3 +112,93 @@ def test_controller_run_match():
     controller.run_match()
     # earliest possible win is after 3 O moves, 2 X moves.
     assert len(controller.match.history) > 5
+
+
+@pytest.mark.parametrize(
+    "state_string, expected_score",
+    [
+        (
+            "".join(
+                [
+                    "oox",
+                    "xoo",
+                    "xox",
+                ]
+            ),
+            1,
+        ),
+        (
+            "".join(
+                [
+                    "oox",
+                    "xoo",
+                    "oxx",
+                ]
+            ),
+            0,
+        ),
+        (
+            "".join(
+                [
+                    "o.x",
+                    "oox",
+                    "..x",
+                ]
+            ),
+            -1,
+        ),
+    ],
+)
+def test_minimax_game_over_states(state_string, expected_score):
+    state = State(state_string)
+    assert minimax(state=state, depth=1, team=O) == expected_score
+
+
+@pytest.mark.parametrize(
+    "state_string, expected_score",
+    [
+        (
+            "".join(
+                [
+                    "...",
+                    "xo.",
+                    "...",
+                ]
+            ),
+            1,
+        ),
+        (
+            "".join(
+                [
+                    "...",
+                    "ox.",
+                    "...",
+                ]
+            ),
+            0,
+        ),
+        (
+            "".join(
+                [
+                    "x..",
+                    "oxo",
+                    "...",
+                ]
+            ),
+            -1,
+        ),
+        (
+            "".join(
+                [
+                    "...",
+                    "...",
+                    "...",
+                ]
+            ),
+            0,  # perfect play should always result in a draw
+        ),
+    ],
+)
+def test_minimax(state_string, expected_score):
+    state = State(state_string)
+    assert minimax(state=state, depth=10, team=O) == expected_score
