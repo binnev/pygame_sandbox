@@ -1,10 +1,10 @@
 import time
 
-from tic_tac_toe.classes import Controller, RandomAgent, HumanAgent, Match
+from tic_tac_toe.classes import RandomAgent, HumanAgent, Match, CliController
 
 
 def main():
-    controller = Controller(agent_o=RandomAgent(), agent_x=HumanAgent(), match=Match())
+    controller = CliController(agent_o=RandomAgent(), agent_x=HumanAgent(), match=Match())
     controller.run_match()
 
     replay = input("Do you want to replay the match? [y/n]")
