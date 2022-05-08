@@ -69,12 +69,12 @@ WIN_VECTORS = (
 
 def is_game_over(state: State) -> (bool, str | None):
     """is_over, winner = is_game_over(state)"""
-    if EMPTY not in state:
-        return True, None
     for vector in WIN_VECTORS:
         values = [state[i] for i in vector]
         if values == [X, X, X]:
             return True, X
         if values == [O, O, O]:
             return True, O
+    if EMPTY not in state:
+        return True, None
     return False, None

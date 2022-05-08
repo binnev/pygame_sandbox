@@ -2,7 +2,7 @@ import pytest
 from .match import Match
 from .state import State, player_to_move, available_moves, is_game_over
 from .controller import CliController
-from .agent import RandomAgent
+from .agent import RandomAgent, minimax
 
 from .constants import X, O
 
@@ -79,6 +79,7 @@ def test_available_moves(state, expected_moves):
         ("x...x...x", (True, X)),
         ("x....x..x", (False, None)),
         ("xoxxoxoxo", (True, None)),
+        ("ooxxooxox", (True, O)),
     ],
 )
 def test_is_game_over(state, expected_result):
