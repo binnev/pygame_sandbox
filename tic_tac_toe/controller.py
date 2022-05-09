@@ -49,6 +49,9 @@ class CliController(Controller):
         print("-" * 80)
 
     def handle_match_end(self):
-        winner = self.match.current_state.winner or "no-one"
-        agent = next(a for a in [self.agent_1, self.agent_2] if a.team.win_value == winner)
-        print(f"congratulations to {agent.team.symbol}!")
+        if winner := self.match.current_state.winner:
+            agent = next(a for a in [self.agent_1, self.agent_2] if a.team.win_value == winner)
+            winner = agent.team.symbol
+        else:
+            winner = "no-one"
+        print(f"congratulations to {winner}!")

@@ -9,6 +9,7 @@ from connect_four.state import (
     YELLOW,
     RED,
 )
+from connect_four.team import TEAM_YELLOW, TEAM_RED
 
 
 def test_state_initial():
@@ -83,7 +84,7 @@ def test_get_row_win_vectors():
                     "......",
                 ]
             ),
-            (False, None),
+            (False, 0),
         ),
         (
             "/".join(
@@ -97,7 +98,7 @@ def test_get_row_win_vectors():
                     "x.....",
                 ]
             ),
-            (True, YELLOW),
+            (True, TEAM_YELLOW.win_value),
         ),
         (
             "/".join(
@@ -111,7 +112,7 @@ def test_get_row_win_vectors():
                     "...o..",
                 ]
             ),
-            (True, RED),
+            (True, TEAM_RED.win_value),
         ),
         (
             "/".join(
@@ -125,7 +126,7 @@ def test_get_row_win_vectors():
                     "......",
                 ]
             ),
-            (False, None),
+            (False, 0),
         ),
         (
             "/".join(
@@ -139,7 +140,7 @@ def test_get_row_win_vectors():
                     "xxx.xx",
                 ]
             ),
-            (False, None),
+            (False, 0),
         ),
         (
             "/".join(
@@ -153,7 +154,7 @@ def test_get_row_win_vectors():
                     "xxxooo",
                 ]
             ),
-            (False, None),
+            (False, 0),
         ),
         (
             "/".join(
@@ -167,7 +168,7 @@ def test_get_row_win_vectors():
                     "..xooo",
                 ]
             ),
-            (True, YELLOW),
+            (True, TEAM_YELLOW.win_value),
         ),
         (
             "/".join(
@@ -181,7 +182,7 @@ def test_get_row_win_vectors():
                     "oooooo",
                 ]
             ),
-            (True, RED),
+            (True, TEAM_RED.win_value),
         ),
         (
             "/".join(
@@ -195,7 +196,7 @@ def test_get_row_win_vectors():
                     "x.....",
                 ]
             ),
-            (True, YELLOW),
+            (True, TEAM_YELLOW.win_value),
         ),
         (
             "/".join(
@@ -209,7 +210,7 @@ def test_get_row_win_vectors():
                     "xxx..o",
                 ]
             ),
-            (False, None),
+            (False, 0),
         ),
     ],
 )
@@ -228,3 +229,52 @@ def test_state_do_move():
     assert state == "xox.../....../....../....../....../....../......"
     state = state.do_move(6)
     assert state == "xox.../....../....../....../....../....../o....."
+
+
+"""
+todo: the minimax agent thinks this position is lost, and picks a random losing move. 
+Why doesn't it just block the vertical 4?
+
+Available moves are: (0, 1, 2, 3, 4, 5, 6)
+Choose a move: 4
+Player x has chosen move 4
+. . . . . . .
+. . . . . . .
+. . . . . . .
+. . . x x . .
+. . . o x o .
+. o o x x x o
+
+
+
+also this random blunder: 
+AI: 'You can never defeat me'
+Player o has chosen move 5
+. . . . . . .
+. . . . . . .
+. . . o . . .
+. . . x x . .
+. . x x o o .
+. . o x x o o
+--------------------------------------------------------------------------------
+Available moves are: (0, 1, 2, 3, 4, 5, 6)
+Choose a move: 4
+Player x has chosen move 4
+. . . . . . .
+. . . . . . .
+. . . o x . .
+. . . x x . .
+. . x x o o .
+. . o x x o o
+--------------------------------------------------------------------------------
+AI: 'How is this possible! I never lose!'
+Player o has chosen move 6
+. . . . . . .
+. . . . . . .
+. . . o x . .
+. . . x x . .
+. . x x o o o
+. . o x x o o
+
+maybe something with the caching? that it doesn't include the depth in the cache?
+"""
