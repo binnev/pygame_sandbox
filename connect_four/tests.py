@@ -1,6 +1,11 @@
 import pytest
 
-from connect_four.state import State, available_moves, get_diagonals
+from connect_four.state import (
+    State,
+    available_moves,
+    get_diagonal_win_vectors,
+    get_row_win_vectors,
+)
 
 
 def test_state_initial():
@@ -34,9 +39,9 @@ def test_available_moves(state_string, expected_available_moves):
     assert available_moves(state) == expected_available_moves
 
 
-def test_get_diagonals():
-    diagonals = get_diagonals()
-    assert diagonals == (
+def test_get_diagonal_win_vectors():
+    diagonals = get_diagonal_win_vectors()
+    assert set(diagonals) == {
         (3, 9, 15, 21),
         (4, 10, 16, 22, 28),
         (5, 11, 17, 23, 29, 35),
@@ -49,4 +54,12 @@ def test_get_diagonals():
         (7, 15, 23, 31, 39, 47),
         (14, 22, 30, 38, 46),
         (21, 29, 37, 45),
-    )
+    }
+
+
+def test_get_row_win_vectors():
+    vectors = get_row_win_vectors()
+    assert vectors[0] == (0, 1, 2, 3, 4, 5)
+    assert vectors[6] == (42, 43, 44, 45, 46, 47)
+    assert vectors[7] == (0, 7, 14, 21, 28, 35, 42)
+    assert vectors[12] == (5, 12, 19, 26, 33, 40, 47)

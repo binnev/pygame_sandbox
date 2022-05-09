@@ -43,23 +43,34 @@ def available_moves(state: State) -> tuple[int]:
     return tuple(index for index, column in enumerate(columns) if column[-1] == EMPTY)
 
 
-def get_diagonals():
+def get_diagonal_win_vectors():
     diagonals = []
     for ii in range(3, State.height + State.width - 4):
-        diagonal = tuple(
-            h + w * (State.height + 1)
-            for w in range(State.width)
-            for h in range(State.height)
-            if h + w == ii
+        diagonals.append(
+            tuple(
+                h + w * (State.height + 1)
+                for w in range(State.width)
+                for h in range(State.height)
+                if h + w == ii
+            )
         )
-        diagonals.append(tuple(diagonal))
-
-    for ii in range(3, State.height + State.width - 4):
-        diagonal = tuple(
-            h + w * (State.height + 1)
-            for w in range(State.width)
-            for h in reversed(range(State.height))
-            if (State.height - h - 1) + w == ii
+        diagonals.append(
+            tuple(
+                h + w * (State.height + 1)
+                for w in range(State.width)
+                for h in reversed(range(State.height))
+                if (State.height - h - 1) + w == ii
+            )
         )
-        diagonals.append(tuple(diagonal))
     return tuple(diagonals)
+
+
+def get_row_win_vectors():
+    vectors = []
+    vectors.extend(
+        (tuple(h + w * (State.height + 1) for h in range(State.height)) for w in range(State.width))
+    )
+    vectors.extend(
+        (tuple(h + w * (State.height + 1) for w in range(State.width)) for h in range(State.height))
+    )
+    return tuple(vectors)
