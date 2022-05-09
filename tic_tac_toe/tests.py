@@ -2,7 +2,7 @@ import pytest
 from .match import Match
 from .state import State, player_to_move, available_moves, is_game_over
 from .controller import CliController
-from .agent import RandomAgent, minimax, evaluate_moves
+from .agent import RandomAgent, minimax, evaluate_moves, MinimaxCliAgent, MinimaxAgent
 
 from .constants import X, O
 
@@ -114,6 +114,16 @@ def test_controller_run_match():
     controller.run_match()
     # earliest possible win is after 3 O moves, 2 X moves.
     assert len(controller.match.history) > 5
+
+
+@pytest.mark.parametrize("repeat", range(50))
+def test_minimax_agent_never_loses(repeat):
+    controller = CliController(
+        agent_o=MinimaxAgent(team=O), agent_x=MinimaxAgent(team=X), match=Match()
+    )
+    controller.run_match()
+    assert controller.match.current_state.is_game_over
+    assert controller.match.current_state.winner is None
 
 
 @pytest.mark.parametrize(
