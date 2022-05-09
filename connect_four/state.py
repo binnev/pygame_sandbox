@@ -16,6 +16,11 @@ class State(str):
     height = 6
     width = 7
 
+    def __init__(self, string):
+        self.player_to_move = player_to_move(self)
+        self.available_moves = available_moves(self)
+        self.is_game_over, self.winner = is_game_over(self)
+
     @classmethod
     def initial(cls):
         return cls("/".join(["." * cls.height] * cls.width))
@@ -25,6 +30,15 @@ class State(str):
             "".join(column[row] for column in self.split("/"))
             for row in reversed(range(self.height))
         )
+
+    def print(self):
+        print(self.to_string())
+
+    def do_move(self, move: int):
+        columns = [[char for char in col if char != EMPTY] for col in self.split("/")]
+        columns[move].append(self.player_to_move)
+        new_string = "/".join("".join(col).ljust(State.height, ".") for col in columns)
+        return State(new_string)
 
 
 def player_to_move(state: State) -> str | None:

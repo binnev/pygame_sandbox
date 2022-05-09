@@ -216,3 +216,15 @@ def test_get_row_win_vectors():
 def test_is_game_over(state, expected_result):
     state = State(state)
     assert is_game_over(state) == expected_result
+
+
+def test_state_do_move():
+    state = State.initial()
+    state = state.do_move(0)
+    assert state == "X...../....../....../....../....../....../......"
+    state = state.do_move(0)
+    assert state == "XO..../....../....../....../....../....../......"
+    state = state.do_move(0)
+    assert state == "XOX.../....../....../....../....../....../......"
+    state = state.do_move(6)
+    assert state == "XOX.../....../....../....../....../....../O....."
