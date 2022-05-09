@@ -1,6 +1,6 @@
 import time
 
-from tic_tac_toe.agent import CliAgent, MinimaxCliAgent
+from tic_tac_toe.agent import MinimaxCliAgent
 from tic_tac_toe.constants import X, O
 from tic_tac_toe.controller import CliController
 from tic_tac_toe.match import Match
@@ -9,7 +9,7 @@ from tic_tac_toe.match import Match
 def main():
     controller = CliController(
         agent_o=MinimaxCliAgent(team=O),
-        agent_x=CliAgent(team=X),
+        agent_x=MinimaxCliAgent(team=X),
         match=Match(),
     )
     controller.run_match()
