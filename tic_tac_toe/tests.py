@@ -211,4 +211,4 @@ def test_minimax_game_over_states(state_string, expected_score):
 )
 def test_minimax(state_string, expected_score):
     state = State(state_string)
-    assert minimax(state=state, depth=10, team=O) == expected_score
+    assert minimax(state=state, depth=10, is_o=True) == expected_score

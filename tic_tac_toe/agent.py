@@ -33,32 +33,26 @@ class CliAgent(Agent):
                 print(f"{move} is not a legal move")
 
 
-def minimax(state: State, depth: int, team: str):
+def minimax(state: State, depth: int, is_o: bool) -> int | dict[int:int]:
 
+    # base case: return numerical evaluation
     if state.is_game_over or depth == 0:
         mapping = {None: 0, O: 1, X: -1}
         return mapping[state.winner]
 
-    if team == O:
-        max_score = -inf
-        for move in state.available_moves:
-            new_state = state.do_move(move)
-            score = minimax(new_state, depth - 1, X)
-            max_score = max(score, max_score)
-        return max_score
-
-    else:
-        min_score = inf
-        for move in state.available_moves:
-            new_state = state.do_move(move)
-            score = minimax(new_state, depth - 1, O)
-            min_score = min(score, min_score)
-        return min_score
+    # recursive case: return dictionary of {move: score}
+    best_score = -inf if is_o else inf
+    func = max if is_o else min
+    for move in state.available_moves:
+        new_state = state.do_move(move)
+        score = minimax(state=new_state, depth=depth - 1, is_o=not is_o)
+        best_score = func(score, best_score)
+    return best_score
 
 
 class MinimaxAgent(Agent):
     def choose_move(self, state: State) -> int:
-        current_score = minimax(state=state, depth=10, team=self.team)
+        current_score = minimax(state=state, depth=10, is_o=self.team == O)
         WINNING = "I will end you, puny human"
         LOSING = "How is this possible! I never lose!"
         DRAW = "You can never defeat me"
@@ -71,7 +65,7 @@ class MinimaxAgent(Agent):
         move_scores = {}
         for move in state.available_moves:
             new_state = state.do_move(move)
-            move_scores[move] = minimax(state=new_state, depth=10, team=X if self.team == O else O)
+            move_scores[move] = minimax(state=new_state, depth=10, is_o=self.team != O)
 
         func = max if self.team == O else min
         return func(move_scores, key=lambda k: move_scores[k])
