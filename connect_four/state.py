@@ -46,11 +46,20 @@ def available_moves(state: State) -> tuple[int]:
 def get_diagonals():
     diagonals = []
     for ii in range(3, State.height + State.width - 4):
-        diagonal = []
-        for w in range(State.width):
-            for h in range(State.height):
-                if h + w == ii:
-                    flat_index = h + w * (State.height + 1)
-                    diagonal.append(flat_index)
+        diagonal = tuple(
+            h + w * (State.height + 1)
+            for w in range(State.width)
+            for h in range(State.height)
+            if h + w == ii
+        )
+        diagonals.append(tuple(diagonal))
+
+    for ii in range(3, State.height + State.width - 4):
+        diagonal = tuple(
+            h + w * (State.height + 1)
+            for w in range(State.width)
+            for h in reversed(range(State.height))
+            if (State.height - h - 1) + w == ii
+        )
         diagonals.append(tuple(diagonal))
     return tuple(diagonals)

@@ -36,5 +36,17 @@ def test_available_moves(state_string, expected_available_moves):
 
 def test_get_diagonals():
     diagonals = get_diagonals()
-    assert set(diagonals[0]) == {3, 9, 15, 21}
-    assert set(diagonals[-1]) == {26, 32, 38, 44}
+    assert diagonals == (
+        (3, 9, 15, 21),
+        (4, 10, 16, 22, 28),
+        (5, 11, 17, 23, 29, 35),
+        (12, 18, 24, 30, 36, 42),
+        (19, 25, 31, 37, 43),
+        (26, 32, 38, 44),
+        (2, 10, 18, 26),
+        (1, 9, 17, 25, 33),
+        (0, 8, 16, 24, 32, 40),
+        (7, 15, 23, 31, 39, 47),
+        (14, 22, 30, 38, 46),
+        (21, 29, 37, 45),
+    )
