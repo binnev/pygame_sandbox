@@ -170,6 +170,16 @@ def test_minimax_game_over_states(state_string, expected_score):
         (
             "".join(
                 [
+                    "o..",
+                    "...",
+                    "..x",
+                ]
+            ),
+            1,
+        ),
+        (
+            "".join(
+                [
                     "...",
                     "ox.",
                     "...",

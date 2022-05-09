@@ -6,6 +6,11 @@ from .state import State
 
 
 class Agent:
+    team: str  # O | X
+
+    def __init__(self, team: str):
+        self.team = team
+
     def choose_move(self, state: State) -> int:
         raise NotImplementedError
 
@@ -51,6 +56,22 @@ def minimax(state: State, depth: int, team: str):
         return min_score
 
 
-class BruteForceAgent(Agent):
+class MinimaxAgent(Agent):
     def choose_move(self, state: State) -> int:
-        return minimax(...)
+        current_score = minimax(state=state, depth=10, team=self.team)
+        WINNING = "I will end you, puny human"
+        LOSING = "How is this possible! I never lose!"
+        DRAW = "You can never defeat me"
+        evaluations = {
+            1: WINNING if self.team == O else LOSING,
+            -1: LOSING if self.team == O else WINNING,
+            0: DRAW,
+        }
+        print(evaluations[current_score])
+        move_scores = {}
+        for move in state.available_moves:
+            new_state = state.do_move(move)
+            move_scores[move] = minimax(state=new_state, depth=10, team=X if self.team == O else O)
+
+        func = max if self.team == O else min
+        return func(move_scores, key=lambda k: move_scores[k])
