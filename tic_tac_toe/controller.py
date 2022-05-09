@@ -37,8 +37,14 @@ class Controller:
 
 
 class CliController(Controller):
+
+    def run_match(self):
+        print("Starting position:")
+        self.match.current_state.print()
+        super().run_match()
+
     def display_turn(self):
-        player = self.match.player_to_move
+        player = self.match.history[-2][1].player_to_move
         move = self.match.history[-1][0]
         print(f"Player {player} has chosen move {move}")
         self.match.current_state.print()
