@@ -1,6 +1,6 @@
 EMPTY = "."
-RED = "O"
-YELLOW = "X"
+RED = "o"
+YELLOW = "x"
 
 
 class State(str):

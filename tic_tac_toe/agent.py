@@ -66,8 +66,14 @@ def evaluate_moves(state: State, depth: int, is_o: bool) -> dict[int:int]:
 
 
 class MinimaxAgent(Agent):
+    depth: int
+
+    def __init__(self, team: str, depth=10):
+        self.depth = depth
+        super().__init__(team)
+
     def choose_move(self, state: State) -> int:
-        moves = evaluate_moves(state=state, depth=10, is_o=self.team == O)
+        moves = evaluate_moves(state=state, depth=self.depth, is_o=self.team == O)
         func = max if self.team == O else min
         best_outcome = func(moves.values())
         best_moves = [k for k, v in moves.items() if v == best_outcome]
@@ -76,12 +82,7 @@ class MinimaxAgent(Agent):
 
 class MinimaxCliAgent(MinimaxAgent):
     def choose_move(self, state: State) -> int:
-        # if state.is_empty:
-        #     message = "I'll choose a random starting square and you'll still never beat me!"
-        #     print(f"AI: {message!r}")
-        #     return random.choice(range(9))
-
-        moves = evaluate_moves(state=state, depth=10, is_o=self.team == O)
+        moves = evaluate_moves(state=state, depth=self.depth, is_o=self.team == O)
         func = max if self.team == O else min
         best_outcome = func(moves.values())
         best_moves = [k for k, v in moves.items() if v == best_outcome]

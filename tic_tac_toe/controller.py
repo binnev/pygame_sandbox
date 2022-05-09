@@ -10,12 +10,12 @@ class Controller:
     """Currently this is implicitly running a match for the CLI. Might need to create specific
     subclasses for GUI"""
 
-    agent_o: Agent
-    agent_x: Agent
+    agent_1: Agent
+    agent_2: Agent
     match: Match
 
     def get_agent(self, player: str) -> Agent:
-        return {X: self.agent_x, O: self.agent_o}[player]
+        return next(agent for agent in [self.agent_1, self.agent_2] if agent.team==player)
 
     def display_turn(self):
         raise NotImplementedError
@@ -42,7 +42,7 @@ class CliController(Controller):
         move = self.match.history[-1][0]
         print(f"Player {player} has chosen move {move}")
         self.match.current_state.print()
-        print("-"*80)
+        print("-" * 80)
 
     def handle_match_end(self):
         winner = self.match.current_state.winner or "no-one"

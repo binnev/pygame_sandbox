@@ -89,12 +89,12 @@ def test_get_row_win_vectors():
             "/".join(
                 [
                     "......",
-                    ".....X",
-                    "....X.",
-                    "...X..",
-                    "..X...",
-                    ".X....",
-                    "X.....",
+                    ".....x",
+                    "....x.",
+                    "...x..",
+                    "..x...",
+                    ".x....",
+                    "x.....",
                 ]
             ),
             (True, YELLOW),
@@ -105,10 +105,10 @@ def test_get_row_win_vectors():
                     "......",
                     "......",
                     "......",
-                    "O.....",
-                    ".O....",
-                    "..O...",
-                    "...O..",
+                    "o.....",
+                    ".o....",
+                    "..o...",
+                    "...o..",
                 ]
             ),
             (True, RED),
@@ -116,12 +116,12 @@ def test_get_row_win_vectors():
         (
             "/".join(
                 [
-                    ".O...X",
-                    "....X.",
-                    "...O..",
-                    "..X.O.",
-                    ".X...O",
-                    "X.....",
+                    ".o...x",
+                    "....x.",
+                    "...o..",
+                    "..x.o.",
+                    ".x...o",
+                    "x.....",
                     "......",
                 ]
             ),
@@ -131,12 +131,12 @@ def test_get_row_win_vectors():
             "/".join(
                 [
                     "......",
-                    "O.....",
+                    "o.....",
                     "......",
-                    "O.....",
-                    "O.....",
-                    "O.....",
-                    "XXX.XX",
+                    "o.....",
+                    "o.....",
+                    "o.....",
+                    "xxx.xx",
                 ]
             ),
             (False, None),
@@ -144,13 +144,13 @@ def test_get_row_win_vectors():
         (
             "/".join(
                 [
-                    "XXXOOO",
-                    "XXXOOO",
-                    "XXXOOO",
+                    "xxxooo",
+                    "xxxooo",
+                    "xxxooo",
                     "......",
-                    "XXXOOO",
-                    "XXXOOO",
-                    "XXXOOO",
+                    "xxxooo",
+                    "xxxooo",
+                    "xxxooo",
                 ]
             ),
             (False, None),
@@ -161,10 +161,10 @@ def test_get_row_win_vectors():
                     "......",
                     "......",
                     "......",
-                    ".....X",
-                    "....XO",
-                    "...XOO",
-                    "..XOOO",
+                    ".....x",
+                    "....xo",
+                    "...xoo",
+                    "..xooo",
                 ]
             ),
             (True, YELLOW),
@@ -178,7 +178,7 @@ def test_get_row_win_vectors():
                     "......",
                     "......",
                     "......",
-                    "OOOOOO",
+                    "oooooo",
                 ]
             ),
             (True, RED),
@@ -186,13 +186,13 @@ def test_get_row_win_vectors():
         (
             "/".join(
                 [
-                    "X.....",
-                    "X.....",
-                    "X.....",
-                    "X.....",
-                    "X.....",
-                    "X.....",
-                    "X.....",
+                    "x.....",
+                    "x.....",
+                    "x.....",
+                    "x.....",
+                    "x.....",
+                    "x.....",
+                    "x.....",
                 ]
             ),
             (True, YELLOW),
@@ -204,9 +204,9 @@ def test_get_row_win_vectors():
                     "......",
                     "......",
                     "......",
-                    ".....O",
-                    ".....O",
-                    "XXX..O",
+                    ".....o",
+                    ".....o",
+                    "xxx..o",
                 ]
             ),
             (False, None),
@@ -221,10 +221,10 @@ def test_is_game_over(state, expected_result):
 def test_state_do_move():
     state = State.initial()
     state = state.do_move(0)
-    assert state == "X...../....../....../....../....../....../......"
+    assert state == "x...../....../....../....../....../....../......"
     state = state.do_move(0)
-    assert state == "XO..../....../....../....../....../....../......"
+    assert state == "xo..../....../....../....../....../....../......"
     state = state.do_move(0)
-    assert state == "XOX.../....../....../....../....../....../......"
+    assert state == "xox.../....../....../....../....../....../......"
     state = state.do_move(6)
-    assert state == "XOX.../....../....../....../....../....../O....."
+    assert state == "xox.../....../....../....../....../....../o....."
