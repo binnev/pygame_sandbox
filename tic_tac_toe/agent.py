@@ -51,18 +51,15 @@ def minimax(state: State, depth: int, is_o: bool) -> int:
     return best_score
 
 
-def evaluate_moves(state: State, depth: int, is_o: bool) -> int | dict[int:int]:
-    """Evaluate all possible moves and return a dictionary of move scores"""
-    # base case
-    if state.is_game_over or depth == 0:
-        mapping = {None: 0, O: 1, X: -1}
-        return mapping[state.winner]
-
+def evaluate_moves(state: State, depth: int, is_o: bool) -> dict[int:int]:
+    """Evaluate all possible moves and return a dictionary of move scores.
+    If game is over, return empty dict because no moves are available."""
     moves = {}
-    for move in state.available_moves:
-        new_state = state.do_move(move)
-        score = minimax(state=new_state, depth=depth - 1, is_o=not is_o)
-        moves[move] = score
+    if not state.is_game_over:
+        for move in state.available_moves:
+            new_state = state.do_move(move)
+            score = minimax(state=new_state, depth=depth - 1, is_o=not is_o)
+            moves[move] = score
     return moves
 
 

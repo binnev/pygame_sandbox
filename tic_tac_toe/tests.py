@@ -207,7 +207,7 @@ def test_minimax(state_string, expected_score):
                     "xox",
                 ]
             ),
-            1,
+            {},
         ),
         (
             "".join(
@@ -217,7 +217,7 @@ def test_minimax(state_string, expected_score):
                     "oxx",
                 ]
             ),
-            0,
+            {},
         ),
         (
             "".join(
@@ -227,7 +227,7 @@ def test_minimax(state_string, expected_score):
                     "..x",
                 ]
             ),
-            -1,
+            {},
         ),
         (
             "".join(
