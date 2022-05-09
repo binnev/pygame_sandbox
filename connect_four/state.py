@@ -1,6 +1,5 @@
-EMPTY = "."
-RED = "o"
-YELLOW = "x"
+from connect_four.team import TEAM_YELLOW, TEAM_RED
+from connect_four.constants import YELLOW, RED, EMPTY
 
 
 class State(str):
@@ -94,13 +93,12 @@ def get_row_win_vectors():
 WIN_VECTORS = (*get_row_win_vectors(), *get_diagonal_win_vectors())
 
 
-def is_game_over(state: State) -> (bool, str | None):
+def is_game_over(state: State) -> (bool, int):
     for vector in WIN_VECTORS:
         values = "".join(state[i] for i in vector)
-        if RED * 4 in values:
-            return True, RED
-        if YELLOW * 4 in values:
-            return True, YELLOW
+        for team in TEAM_YELLOW, TEAM_RED:
+            if team.symbol * 4 in values:
+                return True, team.win_value
     if EMPTY not in state:
-        return True, None
-    return False, None
+        return True, 0
+    return False, 0
