@@ -24,8 +24,6 @@ class RandomAgent(Agent):
 class HumanCliAgent(Agent):
     def choose_move(self, state: State) -> int:
         while True:
-            print("Current state:")
-            state.print()
             print(f"Available moves are: {state.available_moves}")
             move = int(input(f"Choose a move: "))
             if move in state.available_moves:

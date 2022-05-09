@@ -9,7 +9,7 @@ from tic_tac_toe.match import Match
 def main():
     controller = CliController(
         agent_1=HumanCliAgent(team=YELLOW),
-        agent_2=MinimaxCliAgent(team=RED, depth=3),
+        agent_2=MinimaxCliAgent(team=RED, depth=6),
         match=Match(initial_state=State.initial()),
     )
     controller.run_match()
