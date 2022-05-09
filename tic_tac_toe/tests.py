@@ -109,7 +109,7 @@ def test_match_do_move():
 
 def test_controller_run_match():
     controller = CliController(
-        agent_o=RandomAgent(team=O), agent_x=RandomAgent(team=X), match=Match()
+        agent_1=RandomAgent(team=O), agent_2=RandomAgent(team=X), match=Match()
     )
     controller.run_match()
     # earliest possible win is after 3 O moves, 2 X moves.
@@ -119,7 +119,7 @@ def test_controller_run_match():
 @pytest.mark.parametrize("repeat", range(50))
 def test_minimax_agent_never_loses(repeat):
     controller = CliController(
-        agent_o=MinimaxAgent(team=O), agent_x=MinimaxAgent(team=X), match=Match()
+        agent_1=MinimaxAgent(team=O), agent_2=MinimaxAgent(team=X), match=Match()
     )
     controller.run_match()
     assert controller.match.current_state.is_game_over
