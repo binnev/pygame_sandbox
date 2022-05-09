@@ -1,4 +1,5 @@
 import random
+from functools import lru_cache
 from math import inf
 
 from .constants import O, X
@@ -20,7 +21,7 @@ class RandomAgent(Agent):
         return random.choice(state.available_moves)
 
 
-class CliAgent(Agent):
+class HumanCliAgent(Agent):
     def choose_move(self, state: State) -> int:
         while True:
             print("Current state:")
@@ -33,6 +34,7 @@ class CliAgent(Agent):
                 print(f"{move} is not a legal move")
 
 
+@lru_cache(maxsize=1000000)
 def minimax(state: State, depth: int, is_o: bool) -> int:
     """Evaluate all possible moves and return a score describing the position."""
 
@@ -65,9 +67,6 @@ def evaluate_moves(state: State, depth: int, is_o: bool) -> dict[int:int]:
 
 class MinimaxAgent(Agent):
     def choose_move(self, state: State) -> int:
-        if state.is_empty:
-            return random.choice(range(9))
-
         moves = evaluate_moves(state=state, depth=10, is_o=self.team == O)
         func = max if self.team == O else min
         best_outcome = func(moves.values())
@@ -77,10 +76,10 @@ class MinimaxAgent(Agent):
 
 class MinimaxCliAgent(MinimaxAgent):
     def choose_move(self, state: State) -> int:
-        if state.is_empty:
-            message = "I'll choose a random starting square and you'll still never beat me!"
-            print(f"AI: {message!r}")
-            return random.choice(range(9))
+        # if state.is_empty:
+        #     message = "I'll choose a random starting square and you'll still never beat me!"
+        #     print(f"AI: {message!r}")
+        #     return random.choice(range(9))
 
         moves = evaluate_moves(state=state, depth=10, is_o=self.team == O)
         func = max if self.team == O else min
