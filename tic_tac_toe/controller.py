@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from tic_tac_toe.agent import Agent
-from tic_tac_toe.constants import X, O
 from .match import Match
 
 
@@ -15,7 +14,7 @@ class Controller:
     match: Match
 
     def get_agent(self, player: str) -> Agent:
-        return next(agent for agent in [self.agent_1, self.agent_2] if agent.team==player)
+        return next(agent for agent in [self.agent_1, self.agent_2] if agent.team.symbol==player)
 
     def display_turn(self):
         raise NotImplementedError

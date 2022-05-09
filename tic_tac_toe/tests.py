@@ -5,6 +5,7 @@ from .controller import CliController
 from .agent import RandomAgent, minimax, evaluate_moves, MinimaxCliAgent, MinimaxAgent
 
 from .constants import X, O
+from .team import TEAM_O, TEAM_X
 
 
 def test_game_state_to_string():
@@ -38,7 +39,7 @@ def test_game_state_do_move(initial_state, move, expected_state):
 def test_game_state_init():
     state = State("ooo......")
     assert state.is_game_over is True
-    assert state.winner == O
+    assert state.winner == TEAM_O.win_value
     assert state.player_to_move == X
     assert state.available_moves == (3, 4, 5, 6, 7, 8)
 
@@ -74,12 +75,12 @@ def test_available_moves(state, expected_moves):
 @pytest.mark.parametrize(
     "state, expected_result",
     [
-        (".........", (False, None)),
-        ("ooo......", (True, O)),
-        ("x...x...x", (True, X)),
-        ("x....x..x", (False, None)),
-        ("xoxxoxoxo", (True, None)),
-        ("ooxxooxox", (True, O)),
+        (".........", (False, 0)),
+        ("ooo......", (True, TEAM_O.win_value)),
+        ("x...x...x", (True, TEAM_X.win_value)),
+        ("x....x..x", (False, 0)),
+        ("xoxxoxoxo", (True, 0)),
+        ("ooxxooxox", (True, TEAM_O.win_value)),
     ],
 )
 def test_is_game_over(state, expected_result):
@@ -109,7 +110,7 @@ def test_match_do_move():
 
 def test_controller_run_match():
     controller = CliController(
-        agent_1=RandomAgent(team=O), agent_2=RandomAgent(team=X), match=Match()
+        agent_1=RandomAgent(team=TEAM_O), agent_2=RandomAgent(team=TEAM_X), match=Match()
     )
     controller.run_match()
     # earliest possible win is after 3 O moves, 2 X moves.
@@ -119,11 +120,11 @@ def test_controller_run_match():
 @pytest.mark.parametrize("repeat", range(50))
 def test_minimax_agent_never_loses(repeat):
     controller = CliController(
-        agent_1=MinimaxAgent(team=O), agent_2=MinimaxAgent(team=X), match=Match()
+        agent_1=MinimaxAgent(team=TEAM_O), agent_2=MinimaxAgent(team=TEAM_X), match=Match()
     )
     controller.run_match()
     assert controller.match.current_state.is_game_over
-    assert controller.match.current_state.winner is None
+    assert controller.match.current_state.winner is 0
 
 
 @pytest.mark.parametrize(
@@ -203,7 +204,7 @@ def test_minimax_agent_never_loses(repeat):
 )
 def test_minimax(state_string, expected_score):
     state = State(state_string)
-    assert minimax(state=state, depth=10, is_o=True) == expected_score
+    assert minimax(state=state, depth=10, team=True) == expected_score
 
 
 @pytest.mark.parametrize(
@@ -313,4 +314,4 @@ def test_minimax(state_string, expected_score):
 )
 def test_evaluate_moves(state_string, expected_score):
     state = State(state_string)
-    assert evaluate_moves(state=state, depth=10, is_o=True) == expected_score
+    assert evaluate_moves(state=state, depth=10, team=True) == expected_score

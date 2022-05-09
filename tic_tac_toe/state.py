@@ -1,4 +1,5 @@
 from tic_tac_toe.constants import X, O, EMPTY
+from tic_tac_toe.team import TEAM_O, TEAM_X
 
 
 class State(str):
@@ -71,14 +72,16 @@ WIN_VECTORS = (
 )
 
 
-def is_game_over(state: State) -> (bool, str | None):
-    """is_over, winner = is_game_over(state)"""
+def is_game_over(state: State) -> (bool, int):
+    """
+    is_over, winner = is_game_over(state)
+    We need the separate bool `is_over` to distinguish drawn games from incomplete games.
+    """
     for vector in WIN_VECTORS:
         values = [state[i] for i in vector]
-        if values == [X, X, X]:
-            return True, X
-        if values == [O, O, O]:
-            return True, O
+        for team in TEAM_O, TEAM_X:
+            if values == [team.symbol]*3:
+                return True, team.win_value
     if EMPTY not in state:
-        return True, None
-    return False, None
+        return True, 0
+    return False, 0
