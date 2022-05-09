@@ -27,7 +27,7 @@ class State(str):
 
     def to_string(self):
         return "\n".join(
-            "".join(column[row] for column in self.split("/"))
+            " ".join(column[row] for column in self.split("/"))
             for row in reversed(range(self.height))
         )
 

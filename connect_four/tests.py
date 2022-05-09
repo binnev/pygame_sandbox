@@ -19,12 +19,12 @@ def test_state_to_string():
     state = State("OOO.../XX..../O...../....../....../....../XXXOOO")
     assert state.to_string() == "\n".join(
         (
-            "......O",
-            "......O",
-            "......O",
-            "O.....X",
-            "OX....X",
-            "OXO...X",
+            ". . . . . . O",
+            ". . . . . . O",
+            ". . . . . . O",
+            "O . . . . . X",
+            "O X . . . . X",
+            "O X O . . . X",
         )
     )
 
