@@ -42,6 +42,7 @@ class CliController(Controller):
         move = self.match.history[-1][0]
         print(f"Player {player} has chosen move {move}")
         self.match.current_state.print()
+        print("-"*80)
 
     def handle_match_end(self):
         winner = self.match.current_state.winner or "no-one"

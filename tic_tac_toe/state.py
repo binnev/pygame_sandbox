@@ -39,7 +39,11 @@ class State(str):
 
     @classmethod
     def initial(cls) -> "State":
-        return cls(".........")
+        return cls(EMPTY * 9)
+
+    @property
+    def is_empty(self):
+        return self == EMPTY * 9
 
 
 def player_to_move(state: State) -> str | None:

@@ -65,7 +65,24 @@ def evaluate_moves(state: State, depth: int, is_o: bool) -> dict[int:int]:
 
 class MinimaxAgent(Agent):
     def choose_move(self, state: State) -> int:
-        current_score = minimax(state=state, depth=10, is_o=self.team == O)
+        moves = evaluate_moves(state=state, depth=10, is_o=self.team == O)
+        func = max if self.team == O else min
+        best_outcome = func(moves.values())
+        best_moves = [k for k, v in moves.items() if v == best_outcome]
+        return random.choice(best_moves)
+
+
+class MinimaxCliAgent(MinimaxAgent):
+    def choose_move(self, state: State) -> int:
+        if state.is_empty:
+            message = "I'll choose a random starting square and you'll still never beat me!"
+            print(f"AI: {message!r}")
+            return random.choice(range(9))
+
+        moves = evaluate_moves(state=state, depth=10, is_o=self.team == O)
+        func = max if self.team == O else min
+        best_outcome = func(moves.values())
+        best_moves = [k for k, v in moves.items() if v == best_outcome]
         WINNING = "I will end you, puny human"
         LOSING = "How is this possible! I never lose!"
         DRAW = "You can never defeat me"
@@ -74,11 +91,5 @@ class MinimaxAgent(Agent):
             -1: LOSING if self.team == O else WINNING,
             0: DRAW,
         }
-        print(evaluations[current_score])
-        move_scores = {}
-        for move in state.available_moves:
-            new_state = state.do_move(move)
-            move_scores[move] = minimax(state=new_state, depth=10, is_o=self.team != O)
-
-        func = max if self.team == O else min
-        return func(move_scores, key=lambda k: move_scores[k])
+        print(f"AI: {evaluations[best_outcome]!r}")
+        return random.choice(best_moves)
