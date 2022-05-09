@@ -5,16 +5,16 @@ from .engine.classes import Token, Deck
 from .utils import parse_player_input, parse_card_group
 from .exceptions import InvalidInputError, IllegalMoveError
 
-class TestToken(unittest.TestCase):
 
+class TestToken(unittest.TestCase):
     def test_intended_use(self):
         # test standard instantiation
         token = Token("gold", 6)
         self.assertEqual(token.name, "gold")
         self.assertEqual(token.value, 6)
 
-class TestDeck(unittest.TestCase):
 
+class TestDeck(unittest.TestCase):
     def setUp(self):
         self.deck = Deck()
         self.deck.default_setup()
@@ -27,24 +27,24 @@ class TestDeck(unittest.TestCase):
     def test_draw_default(self):
         drawn_cards = self.deck.draw()
         self.assertEqual(len(drawn_cards), 1)
-        self.assertEqual(len(self.deck), self.initial_deck_len-1)
+        self.assertEqual(len(self.deck), self.initial_deck_len - 1)
 
     def test_draw_multiple(self):
         drawn_cards = self.deck.draw(3)
         self.assertEqual(len(drawn_cards), 3)
-        self.assertEqual(len(self.deck), self.initial_deck_len-3)
+        self.assertEqual(len(self.deck), self.initial_deck_len - 3)
 
     def test_draw_too_many(self):
         # draw exactly the number of cards left in the deck
         self.deck = Deck.setup_with(camel=5)
         drawn_cards = self.deck.draw(5)
-        self.assertEqual(drawn_cards, ["camel"]*5)
+        self.assertEqual(drawn_cards, ["camel"] * 5)
         self.assertEqual(len(self.deck), 0)
 
         # drawing too many cards should just return available cards
         self.deck = Deck.setup_with(camel=5)
         drawn_cards = self.deck.draw(10)
-        self.assertEqual(drawn_cards, ["camel"]*5)
+        self.assertEqual(drawn_cards, ["camel"] * 5)
         self.assertEqual(len(self.deck), 0)
 
         # draw from an empty deck should return empty list
@@ -70,15 +70,15 @@ class TestDeck(unittest.TestCase):
     def test_take_when_card_not_present(self):
         # try to draw a card that isn't in the deck
         with self.assertRaises(ValueError):
-             self.deck.take("magic carpet")
+            self.deck.take("magic carpet")
 
     def test_take_multiple(self):
         drawn_cards = self.deck.take("silver", 5)
         # check correct number and type of drawn cards
         self.assertEqual(len(drawn_cards), 5)
-        self.assertEqual(drawn_cards, ["silver"]*5)
+        self.assertEqual(drawn_cards, ["silver"] * 5)
         # check deck reduced in size correctly
-        self.assertEqual(len(self.deck), self.initial_deck_len-5)
+        self.assertEqual(len(self.deck), self.initial_deck_len - 5)
 
     def test_shuffle(self):
         unshuffled_deck = self.deck.copy()
@@ -98,7 +98,6 @@ class TestDeck(unittest.TestCase):
 
 
 class Test_parse_player_input(unittest.TestCase):
-
     def test_action(self):
         inp = "trade camel camel leather for diamond gold"
         action, *details = parse_player_input(inp)
@@ -241,30 +240,30 @@ class Test_parse_player_input(unittest.TestCase):
 
         # with numbers
         inp = "trade 2 camel 1 leather for 1 diamond 1 gold"
-        action, player_cards, market_cards  = parse_player_input(inp)
+        action, player_cards, market_cards = parse_player_input(inp)
         self.assertEqual(player_cards, ["camel", "camel", "leather"])
         self.assertEqual(market_cards, ["diamond", "gold"])
 
         # mixture of numbered and non-numbered goods
         inp = "trade camel camel 1 leather for 1 diamond gold"
-        action, player_cards, market_cards  = parse_player_input(inp)
+        action, player_cards, market_cards = parse_player_input(inp)
         self.assertEqual(player_cards, ["camel", "camel", "leather"])
         self.assertEqual(market_cards, ["diamond", "gold"])
 
         inp = "trade camel 2 camel for 1 diamond gold"
-        action, player_cards, market_cards  = parse_player_input(inp)
+        action, player_cards, market_cards = parse_player_input(inp)
         self.assertEqual(player_cards, ["camel", "camel", "camel"])
         self.assertEqual(market_cards, ["diamond", "gold"])
 
         # trading zero goods: not legal but this function should parse it.
         # the caller can check the amounts add up for the trade.
         inp = "trade camel camel 0 leather for 1 diamond gold"
-        action, player_cards, market_cards  = parse_player_input(inp)
+        action, player_cards, market_cards = parse_player_input(inp)
         self.assertEqual(player_cards, ["camel", "camel"])
         self.assertEqual(market_cards, ["diamond", "gold"])
 
         inp = "trade camel camel 0 camel 0 leather for 1 diamond gold"
-        action, player_cards, market_cards  = parse_player_input(inp)
+        action, player_cards, market_cards = parse_player_input(inp)
         self.assertEqual(player_cards, ["camel", "camel"])
         self.assertEqual(market_cards, ["diamond", "gold"])
 

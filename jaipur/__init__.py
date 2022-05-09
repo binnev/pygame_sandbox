@@ -3,7 +3,6 @@ import sys
 import pygame
 
 
-
 def main():
     game = Jaipur()
     game.main()

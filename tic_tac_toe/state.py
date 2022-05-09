@@ -80,7 +80,7 @@ def is_game_over(state: State) -> (bool, int):
     for vector in WIN_VECTORS:
         values = [state[i] for i in vector]
         for team in TEAM_O, TEAM_X:
-            if values == [team.symbol]*3:
+            if values == [team.symbol] * 3:
                 return True, team.win_value
     if EMPTY not in state:
         return True, 0
