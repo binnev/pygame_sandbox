@@ -33,14 +33,15 @@ class CliAgent(Agent):
                 print(f"{move} is not a legal move")
 
 
-def minimax(state: State, depth: int, is_o: bool) -> int | dict[int:int]:
+def minimax(state: State, depth: int, is_o: bool) -> int:
+    """Evaluate all possible moves and return a score describing the position."""
 
-    # base case: return numerical evaluation
+    # base case
     if state.is_game_over or depth == 0:
         mapping = {None: 0, O: 1, X: -1}
         return mapping[state.winner]
 
-    # recursive case: return dictionary of {move: score}
+    # recursive case
     best_score = -inf if is_o else inf
     func = max if is_o else min
     for move in state.available_moves:
@@ -48,6 +49,21 @@ def minimax(state: State, depth: int, is_o: bool) -> int | dict[int:int]:
         score = minimax(state=new_state, depth=depth - 1, is_o=not is_o)
         best_score = func(score, best_score)
     return best_score
+
+
+def evaluate_moves(state: State, depth: int, is_o: bool) -> int | dict[int:int]:
+    """Evaluate all possible moves and return a dictionary of move scores"""
+    # base case
+    if state.is_game_over or depth == 0:
+        mapping = {None: 0, O: 1, X: -1}
+        return mapping[state.winner]
+
+    moves = {}
+    for move in state.available_moves:
+        new_state = state.do_move(move)
+        score = minimax(state=new_state, depth=depth - 1, is_o=not is_o)
+        moves[move] = score
+    return moves
 
 
 class MinimaxAgent(Agent):

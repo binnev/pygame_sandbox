@@ -2,7 +2,7 @@ import pytest
 from .match import Match
 from .state import State, player_to_move, available_moves, is_game_over
 from .controller import CliController
-from .agent import RandomAgent, minimax
+from .agent import RandomAgent, minimax, evaluate_moves
 
 from .constants import X, O
 
@@ -108,7 +108,9 @@ def test_match_do_move():
 
 
 def test_controller_run_match():
-    controller = CliController(agent_o=RandomAgent(), agent_x=RandomAgent(), match=Match())
+    controller = CliController(
+        agent_o=RandomAgent(team=O), agent_x=RandomAgent(team=X), match=Match()
+    )
     controller.run_match()
     # earliest possible win is after 3 O moves, 2 X moves.
     assert len(controller.match.history) > 5
@@ -147,16 +149,6 @@ def test_controller_run_match():
             ),
             -1,
         ),
-    ],
-)
-def test_minimax_game_over_states(state_string, expected_score):
-    state = State(state_string)
-    assert minimax(state=state, depth=1, team=O) == expected_score
-
-
-@pytest.mark.parametrize(
-    "state_string, expected_score",
-    [
         (
             "".join(
                 [
@@ -197,18 +189,118 @@ def test_minimax_game_over_states(state_string, expected_score):
             ),
             -1,
         ),
-        (
-            "".join(
-                [
-                    "...",
-                    "...",
-                    "...",
-                ]
-            ),
-            0,  # perfect play should always result in a draw
-        ),
     ],
 )
 def test_minimax(state_string, expected_score):
     state = State(state_string)
     assert minimax(state=state, depth=10, is_o=True) == expected_score
+
+
+@pytest.mark.parametrize(
+    "state_string, expected_score",
+    [
+        (
+            "".join(
+                [
+                    "oox",
+                    "xoo",
+                    "xox",
+                ]
+            ),
+            1,
+        ),
+        (
+            "".join(
+                [
+                    "oox",
+                    "xoo",
+                    "oxx",
+                ]
+            ),
+            0,
+        ),
+        (
+            "".join(
+                [
+                    "o.x",
+                    "oox",
+                    "..x",
+                ]
+            ),
+            -1,
+        ),
+        (
+            "".join(
+                [
+                    "...",
+                    "xo.",
+                    "...",
+                ]
+            ),
+            {
+                0: 1,
+                1: 1,
+                2: 1,
+                5: 0,
+                6: 1,
+                7: 1,
+                8: 1,
+            },
+        ),
+        (
+            "".join(
+                [
+                    "o..",
+                    "...",
+                    "..x",
+                ]
+            ),
+            {
+                1: -1,
+                2: 1,
+                3: -1,
+                4: 0,
+                5: 0,
+                6: 1,
+                7: 0,
+            },
+        ),
+        (
+            "".join(
+                [
+                    "...",
+                    "ox.",
+                    "...",
+                ]
+            ),
+            {
+                0: 0,
+                1: 0,
+                2: 0,
+                5: -1,
+                6: 0,
+                7: 0,
+                8: 0,
+            },
+        ),
+        (
+            "".join(
+                [
+                    "x..",
+                    "oxo",
+                    "...",
+                ]
+            ),
+            {
+                1: -1,
+                2: -1,
+                6: -1,
+                7: -1,
+                8: -1,
+            },
+        ),
+    ],
+)
+def test_evaluate_moves(state_string, expected_score):
+    state = State(state_string)
+    assert evaluate_moves(state=state, depth=10, is_o=True) == expected_score
