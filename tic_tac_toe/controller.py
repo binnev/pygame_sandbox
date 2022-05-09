@@ -14,7 +14,7 @@ class Controller:
     match: Match
 
     def get_agent(self, player: str) -> Agent:
-        return next(agent for agent in [self.agent_1, self.agent_2] if agent.team.symbol==player)
+        return next(agent for agent in [self.agent_1, self.agent_2] if agent.team.symbol == player)
 
     def display_turn(self):
         raise NotImplementedError
@@ -36,7 +36,6 @@ class Controller:
 
 
 class CliController(Controller):
-
     def run_match(self):
         print("Starting position:")
         self.match.current_state.print()
@@ -51,4 +50,5 @@ class CliController(Controller):
 
     def handle_match_end(self):
         winner = self.match.current_state.winner or "no-one"
-        print(f"congratulations to {winner}!")
+        agent = next(a for a in [self.agent_1, self.agent_2] if a.team.win_value == winner)
+        print(f"congratulations to {agent.team.symbol}!")
