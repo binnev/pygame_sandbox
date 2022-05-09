@@ -5,6 +5,9 @@ from connect_four.state import (
     available_moves,
     get_diagonal_win_vectors,
     get_row_win_vectors,
+    is_game_over,
+    YELLOW,
+    RED,
 )
 
 
@@ -63,3 +66,153 @@ def test_get_row_win_vectors():
     assert vectors[6] == (42, 43, 44, 45, 46, 47)
     assert vectors[7] == (0, 7, 14, 21, 28, 35, 42)
     assert vectors[12] == (5, 12, 19, 26, 33, 40, 47)
+
+
+@pytest.mark.parametrize(
+    "state, expected_result",
+    [
+        (
+            "/".join(
+                [
+                    "......",
+                    "......",
+                    "......",
+                    "......",
+                    "......",
+                    "......",
+                    "......",
+                ]
+            ),
+            (False, None),
+        ),
+        (
+            "/".join(
+                [
+                    "......",
+                    ".....X",
+                    "....X.",
+                    "...X..",
+                    "..X...",
+                    ".X....",
+                    "X.....",
+                ]
+            ),
+            (True, YELLOW),
+        ),
+        (
+            "/".join(
+                [
+                    "......",
+                    "......",
+                    "......",
+                    "O.....",
+                    ".O....",
+                    "..O...",
+                    "...O..",
+                ]
+            ),
+            (True, RED),
+        ),
+        (
+            "/".join(
+                [
+                    ".O...X",
+                    "....X.",
+                    "...O..",
+                    "..X.O.",
+                    ".X...O",
+                    "X.....",
+                    "......",
+                ]
+            ),
+            (False, None),
+        ),
+        (
+            "/".join(
+                [
+                    "......",
+                    "O.....",
+                    "......",
+                    "O.....",
+                    "O.....",
+                    "O.....",
+                    "XXX.XX",
+                ]
+            ),
+            (False, None),
+        ),
+        (
+            "/".join(
+                [
+                    "XXXOOO",
+                    "XXXOOO",
+                    "XXXOOO",
+                    "......",
+                    "XXXOOO",
+                    "XXXOOO",
+                    "XXXOOO",
+                ]
+            ),
+            (False, None),
+        ),
+        (
+            "/".join(
+                [
+                    "......",
+                    "......",
+                    "......",
+                    ".....X",
+                    "....XO",
+                    "...XOO",
+                    "..XOOO",
+                ]
+            ),
+            (True, YELLOW),
+        ),
+        (
+            "/".join(
+                [
+                    "......",
+                    "......",
+                    "......",
+                    "......",
+                    "......",
+                    "......",
+                    "OOOOOO",
+                ]
+            ),
+            (True, RED),
+        ),
+        (
+            "/".join(
+                [
+                    "X.....",
+                    "X.....",
+                    "X.....",
+                    "X.....",
+                    "X.....",
+                    "X.....",
+                    "X.....",
+                ]
+            ),
+            (True, YELLOW),
+        ),
+        (
+            "/".join(
+                [
+                    "......",
+                    "......",
+                    "......",
+                    "......",
+                    ".....O",
+                    ".....O",
+                    "XXX..O",
+                ]
+            ),
+            (False, None),
+        ),
+    ],
+)
+def test_is_game_over(state, expected_result):
+    state = State(state)
+    assert is_game_over(state) == expected_result

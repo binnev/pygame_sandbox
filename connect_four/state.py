@@ -54,6 +54,7 @@ def get_diagonal_win_vectors():
                 if h + w == ii
             )
         )
+    for ii in range(3, State.height + State.width - 4):
         diagonals.append(
             tuple(
                 h + w * (State.height + 1)
@@ -74,3 +75,18 @@ def get_row_win_vectors():
         (tuple(h + w * (State.height + 1) for w in range(State.width)) for h in range(State.height))
     )
     return tuple(vectors)
+
+
+WIN_VECTORS = (*get_row_win_vectors(), *get_diagonal_win_vectors())
+
+
+def is_game_over(state: State) -> (bool, str | None):
+    for vector in WIN_VECTORS:
+        values = "".join(state[i] for i in vector)
+        if RED * 4 in values:
+            return True, RED
+        if YELLOW * 4 in values:
+            return True, YELLOW
+    if EMPTY not in state:
+        return True, None
+    return False, None
