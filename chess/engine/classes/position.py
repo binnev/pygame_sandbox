@@ -4,6 +4,7 @@ from chess.constants import WHITE, Teams
 from chess.engine.classes.move import Move
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.square import Square
+from chess.engine.utils import is_in_check
 from chess.notation import parse_fen_string, parse_fen_position
 
 
@@ -81,30 +82,3 @@ class Position(dict):
         pieces = parse_fen_position(position)
         return cls(pieces)
 
-
-def State(str):
-    """
-    Based on FEN string, e.g. "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-
-    rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR = position
-    w | b = active player
-    KQkq = casting availability (K = white kingside, q = black queenside)
-    - = en passant target square (- is standard)
-    0 = Halfmove clock: The number of halfmoves since the last capture or pawn advance,
-        used for the fifty-move rule
-    1 = Fullmove number: The number of the full move. It starts at 1, and is incremented
-        after Black's move
-    """
-
-    def __init__(self, string):
-        position, active_player, castling, ep, halfmove_clock, fullmove_clock = parse_fen_string()
-        self.active_player = active_player
-        self.white_can_castle_kingside = "K" in castling
-        self.white_can_castle_queenside = "Q" in castling
-        self.black_can_castle_kingside = "k" in castling
-        self.black_can_castle_queenside = "q" in castling
-        self.halfmove_clock = int(halfmove_clock)
-        self.fullmove_clock = int(fullmove_clock)
-
-    def do_move(self, move: Move):
-        pass  # todo

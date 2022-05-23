@@ -1,4 +1,5 @@
 from chess.constants import WHITE, KING, BLACK, QUEEN
+from chess.engine.classes.fen_position import FenPosition
 from chess.engine.classes.move import Move
 from chess.engine.classes.piece import Piece
 from chess.engine.classes.position import Position
@@ -105,3 +106,7 @@ def test_pawn_starting_squares():
         Square(6, 6),
         Square(7, 6),
     }
+
+
+def test_fen_position_init():
+    fen = FenPosition.initial()
