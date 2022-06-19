@@ -47,12 +47,12 @@ class ImageLoader(ABC):
         self.flip_y = flip_y
         self.colormap = colormap or dict()
 
-    def load_images(self):
+    def _load_images(self):
         """Load image files into memory. Can only be called after pygame.display.init. After this
         method has completed, self.images should be populated."""
         raise NotImplementedError()
 
-    def process_images(self):
+    def _process_images(self):
         if self.flip_x or self.flip_y:
             self.flip_images()
         if self.colormap:
@@ -61,8 +61,8 @@ class ImageLoader(ABC):
             self.scale_images()
 
     def load(self):
-        self.load_images()
-        self.process_images()
+        self._load_images()
+        self._process_images()
 
     @property
     def images(self):
@@ -85,7 +85,7 @@ class ImageLoader(ABC):
 class ImageSequence(ImageLoader):
     """Handles loading a sequence of images."""
 
-    def load_images(self):
+    def _load_images(self):
         self._images = load_image_sequence(
             filename=self.filename,
             colorkey=self.colorkey,
@@ -100,7 +100,7 @@ class SpriteSheet(ImageLoader):
         self.image_size = image_size
         super().__init__(filename, **kwargs)
 
-    def load_images(self):
+    def _load_images(self):
         self._images = load_spritesheet(
             filename=self.filename,
             image_size=self.image_size,

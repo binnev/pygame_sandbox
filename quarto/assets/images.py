@@ -1,4 +1,4 @@
-from base.image import relative_folder, SpriteDict
+from base.image import relative_folder, SpriteDict, SpriteAnimation
 from quarto import conf
 
 folder = relative_folder(__file__, "images")
@@ -21,11 +21,6 @@ quarto_pieces = SpriteDict(
 )
 
 
-misc = SpriteDict(
-    folder=folder,
-    size=(32, 16),
-    scale=3.8,
-    file_mapping={
-        "square": "square.png",
-    },
+square = SpriteAnimation.from_spritesheet(
+    filename=folder / "square.png", scale=3.8, image_size=(32, 16)
 )
