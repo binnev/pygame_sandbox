@@ -48,11 +48,19 @@ def scale_image(image: Surface, scale: float):
     return image
 
 
+def scale_images(images: [Surface], scale: float) -> [Surface]:
+    return [scale_image(image, scale) for image in images]
+
+
 def flip_image(image, flip_x=False, flip_y=False):
     return pygame.transform.flip(image, bool(flip_x), bool(flip_y))
 
 
-def recolor_image(surface, color_mapping: dict):
+def flip_images(images: [Surface], flip_x=False, flip_y=False):
+    return [flip_image(image, flip_x, flip_y) for image in images]
+
+
+def recolor_image(surface, color_mapping: dict) -> [Surface]:
 
     # make sure the colourmap has alpha channel on all colours
     color_mapping = {pad_alpha(k): pad_alpha(v) for k, v in color_mapping.items()}
@@ -73,6 +81,10 @@ def recolor_image(surface, color_mapping: dict):
                 new_surface.set_at((x, y), pygame.Color(*color))
 
     return new_surface
+
+
+def recolor_images(images: [Surface], colormap: dict) -> [Surface]:
+    return [recolor_image(image, colormap) for image in images]
 
 
 def load_spritesheet(

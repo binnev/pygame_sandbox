@@ -10,6 +10,9 @@ from base.image.utils import (
     flip_image,
     load_spritesheet,
     load_image_sequence,
+    flip_images,
+    recolor_images,
+    scale_images,
 )
 
 
@@ -234,23 +237,23 @@ class SpriteAnimation:
 
     ############## edit in place ###############
     def flip(self, flip_x: bool, flip_y: bool):
-        self._images = [flip_image(image, flip_x, flip_y) for image in self.images]
+        self._images = flip_images(self.images, flip_x, flip_y)
 
     def recolor(self, colormap: dict):
-        self._images = [recolor_image(image, colormap) for image in self.images]
+        self._images = recolor_images(self.images, colormap)
 
     def scale(self, scale: float):
-        self._images = [scale_image(image, scale) for image in self.images]
+        self._images = scale_images(self.images, scale)
 
     ############## edit and copy ###############
-    def flipped_copy(self, flip_x: bool, flip_y: bool):
-        return deepcopy(self).flip(flip_x, flip_y)
+    def flipped_copy(self, flip_x=False, flip_y=False):
+        return self.__class__(images=flip_images(self.images, flip_x, flip_y))
 
     def recolored_copy(self, colormap: dict):
-        return deepcopy(self).recolor(colormap)
+        return self.__class__(images=recolor_images(self.images, colormap))
 
     def scaled_copy(self, scale: float):
-        return deepcopy(self).scale(scale)
+        return self.__class__(images=scale_images(self.images, scale))
 
     def __len__(self):
         return len(self.images)

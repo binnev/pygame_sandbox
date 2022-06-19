@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from pygame import Surface
+from pygame import Surface, Color
 
 from base.image import SpriteAnimation, load_spritesheet, load_image_sequence, SpriteSheet
 
@@ -82,3 +82,46 @@ def test_spriteanimation_from_image(display_init):
     images = anim.images  # triggers .load()
     assert len(images) == 1
     assert isinstance(images[0], Surface)
+
+
+def test_spriteanimation_copy_methods():
+    pxl = Surface((2, 2))
+    pxl.fill(Color("red"))
+    pxl.set_at((0, 0), Color("black"))
+
+    anim = SpriteAnimation(images=[pxl])
+    assert anim.images[0].get_at((0, 0)) == Color("black")
+    assert anim.images[0].get_at((0, 1)) == Color("red")
+    assert anim.images[0].get_at((1, 0)) == Color("red")
+    assert anim.images[0].get_at((1, 1)) == Color("red")
+
+    hor_flip = anim.flipped_copy(flip_x=True)
+    assert hor_flip.images[0].get_at((0, 0)) == Color("red")
+    assert hor_flip.images[0].get_at((0, 1)) == Color("red")
+    assert hor_flip.images[0].get_at((1, 0)) == Color("black")
+    assert hor_flip.images[0].get_at((1, 1)) == Color("red")
+
+    ver_flip = anim.flipped_copy(flip_y=True)
+    assert ver_flip.images[0].get_at((0, 0)) == Color("red")
+    assert ver_flip.images[0].get_at((0, 1)) == Color("black")
+    assert ver_flip.images[0].get_at((1, 0)) == Color("red")
+    assert ver_flip.images[0].get_at((1, 1)) == Color("red")
+
+    recolored = anim.recolored_copy({(0, 0, 0): Color("blue")})
+    assert recolored.images[0].get_at((0, 0)) == Color("blue")
+    assert recolored.images[0].get_at((0, 1)) == Color("red")
+    assert recolored.images[0].get_at((1, 0)) == Color("red")
+    assert recolored.images[0].get_at((1, 1)) == Color("red")
+
+    scaled = anim.scaled_copy(scale=3)
+    assert anim.images[0].get_rect().width == 2
+    assert anim.images[0].get_rect().height == 2
+    assert scaled.images[0].get_rect().width == 6
+    assert scaled.images[0].get_rect().height == 6
+
+    # original should be unchanged
+    anim = SpriteAnimation(images=[pxl])
+    assert anim.images[0].get_at((0, 0)) == Color("black")
+    assert anim.images[0].get_at((0, 1)) == Color("red")
+    assert anim.images[0].get_at((1, 0)) == Color("red")
+    assert anim.images[0].get_at((1, 1)) == Color("red")
