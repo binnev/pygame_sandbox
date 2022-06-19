@@ -1,115 +1,15 @@
-from abc import ABC
-from copy import deepcopy
 from pathlib import Path
+from typing import Callable
 
 from pygame import Surface
 
 from base.image.utils import (
-    scale_image,
-    recolor_image,
-    flip_image,
     load_spritesheet,
     load_image_sequence,
     flip_images,
     recolor_images,
     scale_images,
 )
-
-
-class ImageLoader(ABC):
-    """A lazy-loader for image files. Can be instantiated -- thus storing the configuration (
-    image size, number of images, etc) -- without actually loading the images yet. This allows us
-    to instantiate the class before calling pygame.display.init. Image loading is triggered by
-    the .load() method."""
-
-    _images: [Surface] = None  # cached list of images
-
-    def __init__(
-        self,
-        filename: Path | str,
-        colorkey=None,
-        num_images: int = 0,
-        scale: float = 0,
-        flip_x: bool = False,
-        flip_y: bool = False,
-        colormap: dict = None,
-    ):
-        """
-        :param colorkey: used to set transparency.
-        :param num_images: can be used to limit the set of images loaded from the spritesheet
-        :param scale: scale images by this factor
-        :param flip_x: flip images horizontally
-        :param flip_y: flip images vertically
-        :param colormap: dictionary mapping {old_colour: new_colour}
-        """
-        self.filename = filename
-        self.colorkey = colorkey
-        self.num_images = num_images
-        self.scale = scale
-        self.flip_x = flip_x
-        self.flip_y = flip_y
-        self.colormap = colormap or dict()
-
-    def _load_images(self):
-        """Load image files into memory. Can only be called after pygame.display.init. After this
-        method has completed, self.images should be populated."""
-        raise NotImplementedError()
-
-    def _process_images(self):
-        if self.flip_x or self.flip_y:
-            self.flip_images()
-        if self.colormap:
-            self.recolor_images()
-        if self.scale:
-            self.scale_images()
-
-    def load(self):
-        self._load_images()
-        self._process_images()
-
-    @property
-    def images(self):
-        """Lazy loading to allow this class to be instantiated before pygame.display.set_mode is
-        called."""
-        if not self._images:
-            self.load()
-        return self._images
-
-    def flip_images(self):
-        self._images = [flip_image(image, self.flip_x, self.flip_y) for image in self._images]
-
-    def recolor_images(self):
-        self._images = [recolor_image(image, self.colormap) for image in self._images]
-
-    def scale_images(self):
-        self._images = [scale_image(image, self.scale) for image in self._images]
-
-
-class ImageSequence(ImageLoader):
-    """Handles loading a sequence of images."""
-
-    def _load_images(self):
-        self._images = load_image_sequence(
-            filename=self.filename,
-            colorkey=self.colorkey,
-            num_images=self.num_images,
-        )
-
-
-class SpriteSheet(ImageLoader):
-    """Handles importing spritesheets and dividing into individual frame images."""
-
-    def __init__(self, filename: Path | str, image_size: (int, int) = None, **kwargs):
-        self.image_size = image_size
-        super().__init__(filename, **kwargs)
-
-    def _load_images(self):
-        self._images = load_spritesheet(
-            filename=self.filename,
-            image_size=self.image_size,
-            colorkey=self.colorkey,
-            num_images=self.num_images,
-        )
 
 
 class SpriteAnimation:
@@ -119,7 +19,7 @@ class SpriteAnimation:
     """
 
     _images: list[Surface] | None
-    source: ImageLoader | None
+    source: Callable | None
 
     def __init__(
         self,
@@ -147,17 +47,15 @@ class SpriteAnimation:
         flip_y: bool = False,
         colormap: dict = None,
     ):
-        instance = cls()
-        source = SpriteSheet(
+        return cls.from_spritesheet(
             filename=filename,
+            image_size=None,
             colorkey=colorkey,
-            scale=scale,
             flip_x=flip_x,
             flip_y=flip_y,
             colormap=colormap,
+            scale=scale,
         )
-        instance.source = source
-        return instance
 
     @classmethod
     def from_spritesheet(
@@ -171,18 +69,20 @@ class SpriteAnimation:
         flip_y: bool = False,
         colormap: dict = None,
     ):
+        def spritesheet_loader():
+            images = load_spritesheet(
+                filename=filename, image_size=image_size, colorkey=colorkey, num_images=num_images
+            )
+            if flip_x or flip_y:
+                images = flip_images(images, flip_x, flip_y)
+            if colormap:
+                images = recolor_images(images, colormap)
+            if scale:
+                images = scale_images(images, scale)
+            return images
+
         instance = cls()
-        source = SpriteSheet(
-            filename=filename,
-            image_size=image_size,
-            colorkey=colorkey,
-            num_images=num_images,
-            scale=scale,
-            flip_x=flip_x,
-            flip_y=flip_y,
-            colormap=colormap,
-        )
-        instance.source = source
+        instance.source = spritesheet_loader
         return instance
 
     @classmethod
@@ -196,21 +96,24 @@ class SpriteAnimation:
         flip_y: bool = False,
         colormap: dict = None,
     ):
+        def image_sequence_loader():
+            images = load_image_sequence(
+                filename=filename, colorkey=colorkey, num_images=num_images
+            )
+            if flip_x or flip_y:
+                images = flip_images(images, flip_x, flip_y)
+            if colormap:
+                images = recolor_images(images, colormap)
+            if scale:
+                images = scale_images(images, scale)
+            return images
+
         instance = cls()
-        source = ImageSequence(
-            filename=filename,
-            colorkey=colorkey,
-            num_images=num_images,
-            scale=scale,
-            flip_x=flip_x,
-            flip_y=flip_y,
-            colormap=colormap,
-        )
-        instance.source = source
+        instance.source = image_sequence_loader
         return instance
 
     def load(self):
-        self._images = self.source.images
+        self._images = self.source()
 
     @property
     def images(self):

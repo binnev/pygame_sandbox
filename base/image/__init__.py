@@ -1,2 +1,2 @@
-from .classes import SpriteSheet, SpriteAnimation, SpriteDict
+from .classes import SpriteAnimation, SpriteDict
 from .utils import *
