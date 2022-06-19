@@ -39,11 +39,7 @@ class ImageLoader(ABC):
         :param flip_y: flip images vertically
         :param colormap: dictionary mapping {old_colour: new_colour}
         """
-        filename = Path(filename)
-        if not filename.exists():
-            raise FileNotFoundError(f"Couldn't find {filename}")
         self.filename = filename
-
         self.colorkey = colorkey
         self.num_images = num_images
         self.scale = scale
@@ -154,6 +150,30 @@ class SpriteAnimation:
         source = SpriteSheet(
             filename=filename,
             image_size=image_size,
+            colorkey=colorkey,
+            num_images=num_images,
+            scale=scale,
+            flip_x=flip_x,
+            flip_y=flip_y,
+            colormap=colormap,
+        )
+        instance.source = source
+        return instance
+
+    @classmethod
+    def from_image_sequence(
+        cls,
+        filename: Path | str,
+        colorkey=None,
+        num_images: int = 0,
+        scale: float = None,
+        flip_x: bool = False,
+        flip_y: bool = False,
+        colormap: dict = None,
+    ):
+        instance = cls()
+        source = ImageSequence(
+            filename=filename,
             colorkey=colorkey,
             num_images=num_images,
             scale=scale,

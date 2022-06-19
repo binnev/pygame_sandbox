@@ -46,12 +46,6 @@ def test_load_image_sequence(num_images, expected_len, display_init):
     assert isinstance(images[0], Surface)
 
 
-def test_spritesheet_init_file_not_found():
-    with pytest.raises(FileNotFoundError) as e:
-        SpriteSheet(filename="foo.bar", image_size=(1, 1))
-    assert str(e.value) == "Couldn't find foo.bar"
-
-
 def test_can_instantiate_empty_spriteanimation():
     """images=None by default and it shouldn't try to flip/recolor/scale"""
     SpriteAnimation()
@@ -60,6 +54,17 @@ def test_can_instantiate_empty_spriteanimation():
 def test_spriteanimation_from_spritesheet(display_init):
     filename = Path(__file__).parent / "test_assets" / "123_spritesheet.png"
     anim = SpriteAnimation.from_spritesheet(filename=filename, image_size=(64, 64))
+    assert isinstance(anim, SpriteAnimation)
+    assert anim._images is None  # not loaded yet
+
+    images = anim.images  # triggers .load()
+    assert len(images) == 3
+    assert isinstance(images[0], Surface)
+
+
+def test_spriteanimation_from_image_sequence(display_init):
+    filename = Path(__file__).parent / "test_assets" / "123_series.png"
+    anim = SpriteAnimation.from_image_sequence(filename=filename)
     assert isinstance(anim, SpriteAnimation)
     assert anim._images is None  # not loaded yet
 
