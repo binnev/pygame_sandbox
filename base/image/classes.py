@@ -9,18 +9,21 @@ from base.image.utils import (
     recolor_image,
     flip_image,
     load_spritesheet,
+    load_image_sequence,
 )
 
 
 class ImageLoader(ABC):
-    """A lazy-loader for image files. Stores the configuration (image size, number of images,
-    etc) without actually loading the images. This allows us to instantiate the class before
-    calling pygame.display.init. Image loading is triggered by the .load() method."""
+    """A lazy-loader for image files. Can be instantiated -- thus storing the configuration (
+    image size, number of images, etc) -- without actually loading the images yet. This allows us
+    to instantiate the class before calling pygame.display.init. Image loading is triggered by
+    the .load() method."""
 
     _images: [Surface] = None  # cached list of images
 
     def __init__(
         self,
+        filename: Path | str,
         colorkey=None,
         num_images: int = 0,
         scale: float = 0,
@@ -36,6 +39,11 @@ class ImageLoader(ABC):
         :param flip_y: flip images vertically
         :param colormap: dictionary mapping {old_colour: new_colour}
         """
+        filename = Path(filename)
+        if not filename.exists():
+            raise FileNotFoundError(f"Couldn't find {filename}")
+        self.filename = filename
+
         self.colorkey = colorkey
         self.num_images = num_images
         self.scale = scale
@@ -43,10 +51,22 @@ class ImageLoader(ABC):
         self.flip_y = flip_y
         self.colormap = colormap or dict()
 
-    def load(self):
+    def load_images(self):
         """Load image files into memory. Can only be called after pygame.display.init. After this
         method has completed, self.images should be populated."""
         raise NotImplementedError()
+
+    def process_images(self):
+        if self.flip_x or self.flip_y:
+            self.flip_images()
+        if self.colormap:
+            self.recolor_images()
+        if self.scale:
+            self.scale_images()
+
+    def load(self):
+        self.load_images()
+        self.process_images()
 
     @property
     def images(self):
@@ -66,58 +86,31 @@ class ImageLoader(ABC):
         self._images = [scale_image(image, self.scale) for image in self._images]
 
 
-class SpriteSheet(ImageLoader):
-    """Handles importing spritesheets and dividing into individual frame images. Implements lazy
-    loading to allow this class to be instantiated before pygame.display.set_mode is called."""
+class ImageSequence(ImageLoader):
+    """Handles loading a sequence of images."""
 
-    sheet: Surface = None  # contains all the images of the animation in a grid
-
-    def __init__(
-        self,
-        filename: Path | str,
-        image_size: (int, int),
-        colorkey=None,
-        num_images: int = 0,
-        scale: float = 0,
-        flip_x: bool = False,
-        flip_y: bool = False,
-        colormap: dict = None,
-    ):
-        """
-        :param filename: complete path to the spritesheet image file
-        :param image_size: size of each individual image
-        :param colorkey:
-        :param num_images: can be used to limit the set of images loaded from the spritesheet
-        """
-        filename = Path(filename)
-        if not filename.exists():
-            raise FileNotFoundError(f"Couldn't find {filename}")
-        self.filename = filename.as_posix()
-        self.image_size = image_size
-        super().__init__(
-            colorkey=colorkey,
-            num_images=num_images,
-            scale=scale,
-            flip_x=flip_x,
-            flip_y=flip_y,
-            colormap=colormap,
+    def load_images(self):
+        self._images = load_image_sequence(
+            filename=self.filename,
+            colorkey=self.colorkey,
+            num_images=self.num_images,
         )
 
-    def load(self) -> [Surface]:
-        images = load_spritesheet(
+
+class SpriteSheet(ImageLoader):
+    """Handles importing spritesheets and dividing into individual frame images."""
+
+    def __init__(self, filename: Path | str, image_size: (int, int), **kwargs):
+        self.image_size = image_size
+        super().__init__(filename, **kwargs)
+
+    def load_images(self):
+        self._images = load_spritesheet(
             filename=self.filename,
             image_size=self.image_size,
             colorkey=self.colorkey,
             num_images=self.num_images,
         )
-        self._images = images
-        if self.flip_x or self.flip_y:
-            self.flip_images()
-        if self.colormap:
-            self.recolor_images()
-        if self.scale:
-            self.scale_images()
-        return self._images
 
 
 class SpriteAnimation:
@@ -172,7 +165,7 @@ class SpriteAnimation:
         return instance
 
     def load(self):
-        self._images = self.source.load()
+        self._images = self.source.images
 
     @property
     def images(self):
