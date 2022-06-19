@@ -96,7 +96,7 @@ class ImageSequence(ImageLoader):
 class SpriteSheet(ImageLoader):
     """Handles importing spritesheets and dividing into individual frame images."""
 
-    def __init__(self, filename: Path | str, image_size: (int, int), **kwargs):
+    def __init__(self, filename: Path | str, image_size: (int, int) = None, **kwargs):
         self.image_size = image_size
         super().__init__(filename, **kwargs)
 
@@ -133,6 +133,28 @@ class SpriteAnimation:
             self.flip(flip_x, flip_y)
         if colormap:
             self.recolor(colormap)
+
+    @classmethod
+    def from_image(
+        cls,
+        filename: Path | str,
+        colorkey=None,
+        scale: float = None,
+        flip_x: bool = False,
+        flip_y: bool = False,
+        colormap: dict = None,
+    ):
+        instance = cls()
+        source = SpriteSheet(
+            filename=filename,
+            colorkey=colorkey,
+            scale=scale,
+            flip_x=flip_x,
+            flip_y=flip_y,
+            colormap=colormap,
+        )
+        instance.source = source
+        return instance
 
     @classmethod
     def from_spritesheet(

@@ -21,6 +21,4 @@ quarto_pieces = SpriteDict(
 )
 
 
-square = SpriteAnimation.from_spritesheet(
-    filename=folder / "square.png", scale=3.8, image_size=(32, 16)
-)
+square = SpriteAnimation.from_image(filename=folder / "square.png", scale=3.8)

@@ -71,3 +71,14 @@ def test_spriteanimation_from_image_sequence(display_init):
     images = anim.images  # triggers .load()
     assert len(images) == 3
     assert isinstance(images[0], Surface)
+
+
+def test_spriteanimation_from_image(display_init):
+    filename = Path(__file__).parent / "test_assets" / "123_spritesheet.png"
+    anim = SpriteAnimation.from_image(filename=filename)
+    assert isinstance(anim, SpriteAnimation)
+    assert anim._images is None  # not loaded yet
+
+    images = anim.images  # triggers .load()
+    assert len(images) == 1
+    assert isinstance(images[0], Surface)

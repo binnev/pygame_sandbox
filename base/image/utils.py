@@ -77,30 +77,35 @@ def recolor_image(surface, color_mapping: dict):
 
 def load_spritesheet(
     filename: Path | str,
-    image_size: (int, int),
+    image_size: (int, int) = None,
     colorkey=None,
     num_images: int = 0,
 ) -> [Surface]:
     """Load the image file. Don't call this until pygame.display has been initiated. Split
-    the spritesheet into images and return a list of images."""
+    the spritesheet into images and return a list of images.
+
+    If image_size is None, load the whole spritesheet as one sprite.
+    """
     filename = Path(filename)
     if not filename.exists():
         raise FileNotFoundError(f"Couldn't find {filename}")
     sheet = load_image(filename.as_posix(), colorkey)
 
-    width, height = image_size
-    num_horizontal = sheet.get_rect().width // width
-    num_vertical = sheet.get_rect().height // height
-    rects = [
-        pygame.Rect((width * i, height * j, width, height))
-        for j in range(num_vertical)
-        for i in range(num_horizontal)
-    ]
-
-    images = [sheet.subsurface(rect) for rect in rects]
-    images = list(filter(not_empty, images))
-    if num_images:
-        images = images[:num_images]
+    if image_size:
+        width, height = image_size
+        num_horizontal = sheet.get_rect().width // width
+        num_vertical = sheet.get_rect().height // height
+        rects = [
+            pygame.Rect((width * i, height * j, width, height))
+            for j in range(num_vertical)
+            for i in range(num_horizontal)
+        ]
+        images = [sheet.subsurface(rect) for rect in rects]
+        images = list(filter(not_empty, images))
+        if num_images:
+            images = images[:num_images]
+    else:
+        images = [sheet]
     return images
 
 
