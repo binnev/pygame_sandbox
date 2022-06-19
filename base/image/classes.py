@@ -73,12 +73,9 @@ class SpriteAnimation:
             images = load_spritesheet(
                 filename=filename, image_size=image_size, colorkey=colorkey, num_images=num_images
             )
-            if flip_x or flip_y:
-                images = flip_images(images, flip_x, flip_y)
-            if colormap:
-                images = recolor_images(images, colormap)
-            if scale:
-                images = scale_images(images, scale)
+            images = cls._process_images(
+                images, flip_x=flip_x, flip_y=flip_y, scale=scale, colormap=colormap
+            )
             return images
 
         instance = cls()
@@ -100,17 +97,24 @@ class SpriteAnimation:
             images = load_image_sequence(
                 filename=filename, colorkey=colorkey, num_images=num_images
             )
-            if flip_x or flip_y:
-                images = flip_images(images, flip_x, flip_y)
-            if colormap:
-                images = recolor_images(images, colormap)
-            if scale:
-                images = scale_images(images, scale)
+            images = cls._process_images(
+                images, flip_x=flip_x, flip_y=flip_y, scale=scale, colormap=colormap
+            )
             return images
 
         instance = cls()
         instance.source = image_sequence_loader
         return instance
+
+    @classmethod
+    def _process_images(cls, images, flip_x, flip_y, colormap, scale):
+        if flip_x or flip_y:
+            images = flip_images(images, flip_x, flip_y)
+        if colormap:
+            images = recolor_images(images, colormap)
+        if scale:
+            images = scale_images(images, scale)
+        return images
 
     def load(self):
         self._images = self.source()
