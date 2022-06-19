@@ -275,12 +275,13 @@ class SpriteDict(dict):
 
     def __init__(
         self,
-        folder: str,
+        folder: Path | str,
         size: (int, int) = None,
         file_mapping: dict = None,
         scale: int = 1,
         colormap: dict = None,
         create_flipped_versions: bool = False,
+        type="spritesheet",
     ):
         """
         Create SpriteSheet for each file, but don't trigger .load() yet.
@@ -292,37 +293,34 @@ class SpriteDict(dict):
         self.create_flipped_versions = create_flipped_versions
         folder = Path(folder)
         self.folder = folder
-
+        self.type = type
         self.sprite_sheets = dict()
-        for key, filename in file_mapping.items():
-            self.register(key, filename)
+        if file_mapping:
+            for key, filename in file_mapping.items():
+                self.register(**{key: filename})
 
-    def register(self, key: str, filename: str, image_size=None):
-        image_size = image_size or self.image_size
-        self.sprite_sheets[key] = SpriteSheet(
-            filename=self.folder / filename, image_size=image_size
-        )
+    def register(self, **kwargs):
+        for key, filename in kwargs.items():
+            if self.type == "spritesheet":  # todo: add other options
+                self[key] = SpriteAnimation.from_spritesheet(
+                    self.folder / filename,
+                    image_size=self.image_size,
+                    colormap=self.colormap,
+                    scale=self.scale,
+                )
+                if self.create_flipped_versions:
+                    self[f"{key}_right"] = self[key]
+                    self[f"{key}_left"] = SpriteAnimation.from_spritesheet(
+                        self.folder / filename,
+                        image_size=self.image_size,
+                        colormap=self.colormap,
+                        scale=self.scale,
+                        flip_x=True,
+                    )
 
     def load(self):
-        for name, sprite_sheet in self.sprite_sheets.items():
-            if self.create_flipped_versions:
-                self[f"{name}_right"] = SpriteAnimation(
-                    sprite_sheet.images,
-                    scale=self.scale,
-                    colormap=self.colormap,
-                )
-                self[f"{name}_left"] = SpriteAnimation(
-                    sprite_sheet.images,
-                    scale=self.scale,
-                    colormap=self.colormap,
-                    flip_x=True,
-                )
-            else:
-                self[name] = SpriteAnimation(
-                    sprite_sheet.images,
-                    scale=self.scale,
-                    colormap=self.colormap,
-                )
+        for key, item in self.items():
+            item.load()
         self._loaded = True
 
     def __getitem__(self, item):
