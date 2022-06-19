@@ -83,8 +83,10 @@ def load_spritesheet(
 ) -> [Surface]:
     """Load the image file. Don't call this until pygame.display has been initiated. Split
     the spritesheet into images and return a list of images."""
-    filename = Path(filename).as_posix()
-    sheet = load_image(filename, colorkey)
+    filename = Path(filename)
+    if not filename.exists():
+        raise FileNotFoundError(f"Couldn't find {filename}")
+    sheet = load_image(filename.as_posix(), colorkey)
 
     width, height = image_size
     num_horizontal = sheet.get_rect().width // width
@@ -108,6 +110,8 @@ def load_image_sequence(filename: Path | str, colorkey=None, num_images: int = 0
     parent_folder = filename.parent
     pattern = filename.stem
     files = glob.glob(f"{parent_folder}/{pattern}*")
+    if not files:
+        raise FileNotFoundError(f"Couldn't find {filename}")
     images = [load_image(file, colorkey) for file in files]
     if num_images:
         images = images[:num_images]

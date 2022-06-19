@@ -56,6 +56,15 @@ class ImageLoader(ABC):
             self.load()
         return self._images
 
+    def flip_images(self):
+        self._images = [flip_image(image, self.flip_x, self.flip_y) for image in self._images]
+
+    def recolor_images(self):
+        self._images = [recolor_image(image, self.colormap) for image in self._images]
+
+    def scale_images(self):
+        self._images = [scale_image(image, self.scale) for image in self._images]
+
 
 class SpriteSheet(ImageLoader):
     """Handles importing spritesheets and dividing into individual frame images. Implements lazy
@@ -80,8 +89,10 @@ class SpriteSheet(ImageLoader):
         :param colorkey:
         :param num_images: can be used to limit the set of images loaded from the spritesheet
         """
-        filename = Path(filename).as_posix()
-        self.filename = filename
+        filename = Path(filename)
+        if not filename.exists():
+            raise FileNotFoundError(f"Couldn't find {filename}")
+        self.filename = filename.as_posix()
         self.image_size = image_size
         super().__init__(
             colorkey=colorkey,
@@ -93,12 +104,20 @@ class SpriteSheet(ImageLoader):
         )
 
     def load(self) -> [Surface]:
-        self._images = load_spritesheet(
+        images = load_spritesheet(
             filename=self.filename,
             image_size=self.image_size,
             colorkey=self.colorkey,
             num_images=self.num_images,
         )
+        self._images = images
+        if self.flip_x or self.flip_y:
+            self.flip_images()
+        if self.colormap:
+            self.recolor_images()
+        if self.scale:
+            self.scale_images()
+        return self._images
 
 
 class SpriteAnimation:
@@ -118,7 +137,7 @@ class SpriteAnimation:
         flip_y: bool = False,
         colormap: dict = None,
     ):
-        self.images = images
+        self._images = images
         if scale:
             self.scale(scale)
         if flip_x or flip_y:
@@ -153,8 +172,7 @@ class SpriteAnimation:
         return instance
 
     def load(self):
-        if not self.images:
-            self.images = self.source.load()
+        self._images = self.source.load()
 
     @property
     def images(self):
@@ -163,10 +181,6 @@ class SpriteAnimation:
         if not self._images:
             self.load()
         return self._images
-
-    @images.setter
-    def images(self, new_images):
-        self._images = new_images
 
     ############## playback ###############
     def play(self, n: int):
@@ -185,13 +199,13 @@ class SpriteAnimation:
 
     ############## edit in place ###############
     def flip(self, flip_x: bool, flip_y: bool):
-        self.images = [flip_image(image, flip_x, flip_y) for image in self.images]
+        self._images = [flip_image(image, flip_x, flip_y) for image in self.images]
 
     def recolor(self, colormap: dict):
-        self.images = [recolor_image(image, colormap) for image in self.images]
+        self._images = [recolor_image(image, colormap) for image in self.images]
 
     def scale(self, scale: float):
-        self.images = [scale_image(image, scale) for image in self.images]
+        self._images = [scale_image(image, scale) for image in self.images]
 
     ############## edit and copy ###############
     def flipped_copy(self, flip_x: bool, flip_y: bool):
