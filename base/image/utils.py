@@ -41,7 +41,7 @@ def pad_alpha(colour_tuple):
         raise Exception("bogus colour, man")
 
 
-def scale_image(image: Surface, scale: int):
+def scale_image(image: Surface, scale: float):
     x_scale = image.get_rect().width * scale
     y_scale = image.get_rect().height * scale
     image = pygame.transform.scale(image, (x_scale, y_scale))
