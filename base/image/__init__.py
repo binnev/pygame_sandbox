@@ -1,3 +1,4 @@
+from copy import deepcopy
 from pathlib import Path
 
 import numpy
@@ -13,7 +14,7 @@ def load_image(filename, colorkey=None) -> Surface:
         raise
 
     if colorkey is not None:
-        if colorkey is -1:
+        if colorkey == -1:
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey, pygame.RLEACCEL)
 
@@ -141,6 +142,8 @@ class SpriteAnimation:
     Can scale, flip, and recolor itself.
     """
 
+    images: list[Surface] | None
+
     def __init__(
         self,
         images: [Surface],
@@ -164,6 +167,7 @@ class SpriteAnimation:
         if colormap:
             self.recolor(colormap)
 
+    ############## playback ###############
     def play(self, n: int):
         """
         Fetch frame with index n. This is used in the game loop (where n is the iteration
@@ -178,6 +182,7 @@ class SpriteAnimation:
         """If n is greater than the number of frames, start again at the beginning."""
         return self.play(n % len(self.images))
 
+    ############## edit in place ###############
     def flip(self, flip_x: bool, flip_y: bool):
         self.images = [flip_image(image, flip_x, flip_y) for image in self.images]
 
@@ -187,8 +192,22 @@ class SpriteAnimation:
     def scale(self, scale: float):
         self.images = [scale_image(image, scale) for image in self.images]
 
+    ############## edit and copy ###############
+    def flipped_copy(self, flip_x: bool, flip_y: bool):
+        return deepcopy(self).flip(flip_x, flip_y)
+
+    def recolored_copy(self, colormap: dict):
+        return deepcopy(self).recolor(colormap)
+
+    def scaled_copy(self, scale: float):
+        return deepcopy(self).scale(scale)
+
     def __len__(self):
         return len(self.images)
+
+    @property
+    def is_loaded(self):
+        return bool(self.images)
 
 
 class SpriteDict(dict):
