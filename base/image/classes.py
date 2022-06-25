@@ -209,14 +209,14 @@ class SpriteDict(dict):
     def register(self, **kwargs):
         for key, filename in kwargs.items():
             if self.type == "spritesheet":  # todo: add other options
-                self[key] = SpriteAnimation.from_spritesheet(
+                self[key] = unflipped = SpriteAnimation.from_spritesheet(
                     self.folder / filename,
                     image_size=self.image_size,
                     colormap=self.colormap,
                     scale=self.scale,
                 )
                 if self.create_flipped_versions:
-                    self[f"{key}_right"] = self[key]
+                    self[f"{key}_right"] = unflipped
                     self[f"{key}_left"] = SpriteAnimation.from_spritesheet(
                         self.folder / filename,
                         image_size=self.image_size,
