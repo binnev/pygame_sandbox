@@ -18,10 +18,5 @@ def test_platform_properties():
     assert plat.rect.centery == 15
     assert plat.y == 15
 
-    assert plat.width == 30
-    plat.width = 3
-    assert plat.width == 3
-
-    assert plat.height == 40
-    plat.height = 4
-    assert plat.height == 4
+    assert plat.rect.width == 30
+    assert plat.rect.height == 40
