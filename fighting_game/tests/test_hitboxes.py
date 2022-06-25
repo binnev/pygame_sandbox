@@ -11,6 +11,13 @@ pygame.display.init()
 window = pygame.display.set_mode((50, 50))
 
 
+class MockPhysicalEntity(PhysicalEntity):
+    damage = 0
+
+    def handle_get_hit(self, hitbox):
+        self.damage += hitbox.damage
+
+
 def test_siblings_set_at_init():
     owner = PhysicalEntity()
     owner.rect = Rect(0, 0, 0, 0)
@@ -132,9 +139,9 @@ def test_owner_position_inheritance():
     assert h1.y == 30
 
 
-@patch("fighting_game.objects.handle_hitbox_collision")
+@patch("fighting_game.hitboxes.Hitbox.handle_hit")
 def test_handle_hits(mock):
-    entity = PhysicalEntity()
+    entity = MockPhysicalEntity()
     entity.rect = Rect(0, 0, 10, 10)
     entity.x = 0
     entity.y = 0
@@ -148,52 +155,55 @@ def test_handle_hits(mock):
     collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
     assert len(collisions) == 1
     hit_handler.handle_hits(hitboxes, [entity])
-    mock.assert_called_with(h1, entity)
+    mock.assert_called_with(entity)
     assert mock.call_count == 1
 
 
-@patch("fighting_game.objects.handle_hitbox_collision")
-def test_handle_hits_sibling_hitboxes_simultaneous(mock):
-    entity = PhysicalEntity()
+@pytest.mark.parametrize(
+    "hitbox_names",
+    [
+        ("h1", "h2"),
+        ("h2", "h1"),
+        ("h1", "h3"),
+        ("h3", "h1"),
+        ("h3", "h2", "h1"),
+        ("h2", "h1", "h3"),
+        ("h1", "h2", "h3"),
+    ],
+)
+@patch("fighting_game.hitboxes.Hitbox.handle_hit")
+def test_handle_hits_sibling_hitboxes_simultaneous(mock, hitbox_names):
+    entity = MockPhysicalEntity()
     entity.rect = Rect(0, 0, 10, 10)
     entity.x = 0
     entity.y = 0
+
     owner = PhysicalEntity()
     owner.rect = Rect(0, 0, 0, 0)
 
-    h1 = Hitbox(width=10, height=10, owner=owner)
-    h2 = Hitbox(width=10, height=10, owner=owner, higher_priority_sibling=h1)
-    h3 = Hitbox(width=10, height=10, owner=owner, higher_priority_sibling=h2)
+    h1 = Hitbox(width=10, height=10, owner=owner, damage=1)
+    h2 = Hitbox(width=10, height=10, owner=owner, higher_priority_sibling=h1, damage=3)
+    h3 = Hitbox(width=10, height=10, owner=owner, higher_priority_sibling=h2, damage=7)
+    _hitbox_lookup = {"h1": h1, "h2": h2, "h3": h3}
+    hitboxes = Group([_hitbox_lookup[name] for name in hitbox_names])
 
-    # the order hitboxes are added to the group shouldn't matter
-    for hitboxes in [
-        Group(h1, h2),
-        Group(h2, h1),
-        Group(h1, h3),
-        Group(h3, h1),
-        Group(h3, h2, h1),
-        Group(h2, h1, h3),
-        Group(h1, h2, h3),
-    ]:
-        hit_handler = HitHandler()
-        collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
-        assert len(collisions) == len(hitboxes)
-        hit_handler.handle_hits(hitboxes, [entity])
-        # h1, the higher priority hitbox, should always take priority
-        mock.assert_called_with(h1, entity)
-        with pytest.raises(AssertionError):
-            mock.assert_called_with(h2, entity)
-        with pytest.raises(AssertionError):
-            mock.assert_called_with(h3, entity)
-        # all hitboxes should be added to the handled list
-        assert (h1, entity) in hit_handler.handled
-        assert (h2, entity) in hit_handler.handled
-        assert (h3, entity) in hit_handler.handled
+    hit_handler = HitHandler()
+    collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
+
+    assert len(collisions) == len(hitboxes)
+    hit_handler.handle_hits(hitboxes, [entity])
+    # h1, the higher priority hitbox, should always take priority
+    assert entity.damage == 1
+    assert mock.call_count == 1
+    # all hitboxes should be added to the handled list
+    assert (h1, entity) in hit_handler.handled
+    assert (h2, entity) in hit_handler.handled
+    assert (h3, entity) in hit_handler.handled
 
 
-@patch("fighting_game.objects.handle_hitbox_collision")
+@patch("fighting_game.hitboxes.Hitbox.handle_hit")
 def test_handle_hits_sibling_hitboxes_later(mock):
-    entity = PhysicalEntity()
+    entity = MockPhysicalEntity()
     entity.rect = Rect(0, 0, 10, 10)
     entity.x = 0
     entity.y = 0
@@ -211,11 +221,7 @@ def test_handle_hits_sibling_hitboxes_later(mock):
     collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
     assert len(collisions) == 1
     hit_handler.handle_hits(hitboxes, [entity])
-    mock.assert_called_with(h1, entity)
-    with pytest.raises(AssertionError):
-        mock.assert_called_with(h2, entity)
-    with pytest.raises(AssertionError):
-        mock.assert_called_with(h3, entity)
+    mock.assert_called_with(entity)
     assert mock.call_count == 1
     assert (h1, entity) in hit_handler.handled
     assert (h2, entity) in hit_handler.handled
@@ -227,8 +233,6 @@ def test_handle_hits_sibling_hitboxes_later(mock):
     collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
     assert len(collisions) == 2
     hit_handler.handle_hits(hitboxes, [entity])
-    with pytest.raises(AssertionError):
-        mock.assert_called_with(h2, entity)
     assert mock.call_count == 1
 
     # the next tick, hitbox 3 is added. It has no siblings so it should connect
@@ -236,7 +240,6 @@ def test_handle_hits_sibling_hitboxes_later(mock):
     collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
     assert len(collisions) == 3
     hit_handler.handle_hits(hitboxes, [entity])
-    mock.assert_called_with(h3, entity)
     assert mock.call_count == 2
     assert (h1, entity) in hit_handler.handled
     assert (h2, entity) in hit_handler.handled
