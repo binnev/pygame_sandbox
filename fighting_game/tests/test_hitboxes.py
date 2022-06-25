@@ -1,10 +1,11 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pygame
 import pytest
 from pygame.rect import Rect
 
 from base.objects import Group, PhysicalEntity
+from fighting_game.characters import Character
 from fighting_game.hitboxes import Hitbox, HitHandler
 
 pygame.display.init()
@@ -246,51 +247,31 @@ def test_handle_hits_sibling_hitboxes_later(mock):
     assert (h3, entity) in hit_handler.handled
 
 
-class HitboxMock:
-    base_knockback = 0
-    fixed_knockback = 0
-    knockback_growth = 0
-    knockback_angle = 0
-    damage = 0
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    def handle_hit(self, object):
-        pass
-
-
-class CharacterMock:
-    damage = 0
-    mass = 4
-    u = 0
-    v = 0
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    def handle_hit(self, hitbox):
-        pass
-
-
 def test_handle_hitbox_collision_fixed_knockback():
 
-    hitbox = HitboxMock(fixed_knockback=10, knockback_angle=90, damage=7)
-    bowser = CharacterMock(mass=10)
-    fox = CharacterMock(mass=3, damage=50)
+    hitbox = Hitbox(
+        owner=MagicMock(),
+        width=1,
+        height=1,
+        fixed_knockback=10,
+        knockback_angle=90,
+        damage=7,
+    )
+    bowser = MagicMock()
+    bowser.mass = 10
+    bowser.damage = 0
+    bowser.v = 0
+    bowser.u = 0
 
-    assert bowser.damage == 0
-    assert bowser.v == 0
-    assert bowser.u == 0
-    assert fox.damage == 50
-    assert fox.v == 0
-    assert fox.u == 0
+    fox = MagicMock()
+    fox.mass = 3
+    fox.damage = 50
+    fox.v = 0
+    fox.u = 0
 
     # fixed knockback hit should apply the same kb irrespective of damage, weight
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, fox)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(fox, hitbox)
     assert bowser.damage == 7
     assert bowser.u == 0
     assert bowser.v < 0  # travelling upwards
@@ -302,8 +283,8 @@ def test_handle_hitbox_collision_fixed_knockback():
     assert abs(first_bowser_kb) == abs(first_fox_kb)
 
     # second fixed knockback hit should apply the same kb irrespective of damage, weight
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, fox)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(fox, hitbox)
     assert bowser.damage == 14
     assert bowser.u == 0
     assert bowser.v < 0
@@ -319,21 +300,31 @@ def test_handle_hitbox_collision_fixed_knockback():
 
 def test_handle_hitbox_collision_base_knockback():
 
-    hitbox = HitboxMock(base_knockback=10, knockback_angle=90, damage=7)
-    bowser = CharacterMock(mass=10)
-    fox = CharacterMock(mass=3, damage=50)
+    hitbox = Hitbox(
+        owner=MagicMock(),
+        width=1,
+        height=1,
+        base_knockback=10,
+        knockback_angle=90,
+        damage=7,
+    )
+    bowser = MagicMock()
+    bowser.mass = 10
+    bowser.damage = 0
+    bowser.v = 0
+    bowser.u = 0
 
-    assert bowser.damage == 0
-    assert bowser.v == 0
-    assert bowser.u == 0
-    assert fox.damage == 50
-    assert fox.v == 0
-    assert fox.u == 0
+    fox = MagicMock()
+    fox.mass = 3
+    fox.damage = 50
+    fox.damage = 50
+    fox.v = 0
+    fox.u = 0
 
     # base knockback hit should apply the same kb irrespective of damage but should be affected
     # by weight, so bowser should take less knockback
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, fox)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(fox, hitbox)
     assert bowser.damage == 7
     assert bowser.u == 0
     assert bowser.v < 0
@@ -346,8 +337,8 @@ def test_handle_hitbox_collision_base_knockback():
 
     # because the hitbox only has base knockback, the second hit should do the same knockback as
     # the first, despite the extra damage.
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, fox)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(fox, hitbox)
     assert bowser.damage == 14
     assert fox.damage == 64
     assert bowser.u == 0
@@ -361,20 +352,29 @@ def test_handle_hitbox_collision_base_knockback():
 
 def test_handle_hitbox_collision_knockback_growth():
 
-    hitbox = HitboxMock(knockback_growth=100, knockback_angle=90, damage=7)
-    bowser = CharacterMock(mass=10)
-    dk = CharacterMock(mass=10, damage=50)
+    hitbox = Hitbox(
+        owner=MagicMock(),
+        width=1,
+        height=1,
+        knockback_growth=100,
+        knockback_angle=90,
+        damage=7,
+    )
+    bowser = MagicMock()
+    bowser.mass = 10
+    bowser.damage = 0
+    bowser.v = 0
+    bowser.u = 0
 
-    assert bowser.damage == 0
-    assert bowser.v == 0
-    assert bowser.u == 0
-    assert dk.damage == 50
-    assert dk.v == 0
-    assert dk.u == 0
+    dk = MagicMock()
+    dk.mass = 10
+    dk.damage = 50
+    dk.v = 0
+    dk.u = 0
 
     # dk has more damage but the same mass, so dk should be get higher knockback
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, dk)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(dk, hitbox)
     assert bowser.damage == 7
     assert bowser.u == 0
     assert bowser.v < 0
@@ -386,8 +386,8 @@ def test_handle_hitbox_collision_knockback_growth():
     assert abs(first_bowser_kb) < abs(first_dk_kb)
 
     # a second hit should increase the knockback even more, because the characters have more damage.
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, dk)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(dk, hitbox)
     assert bowser.damage == 14
     assert bowser.u == 0
     assert bowser.v < 0
