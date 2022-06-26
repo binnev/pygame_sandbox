@@ -4,7 +4,7 @@ from prisoners_dilemma.visualisation import plot_game
 
 
 def one_on_one():
-    ref = Referee(player.MostlyNice(), player.NeverForgive())
+    ref = Referee(player.RandomPlayer(), player.TitForTat())
     ref.play_game(100)
     plot_game(ref)
 

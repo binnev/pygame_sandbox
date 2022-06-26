@@ -36,6 +36,20 @@ class TitForTat(Player):
             return COOPERATE
 
 
+class TitForTwoTat(Player):
+    tolerance = 2
+
+    def play_turn(self, self_history, other_history):
+        if other_history and other_history[-1] == DEFECT:
+            self.tolerance -= 1
+
+        if self.tolerance == 0:
+            self.tolerance = 2
+            return DEFECT
+        else:
+            return COOPERATE
+
+
 class MostlyNice(Player):
     def play_turn(self, self_history, other_history):
         return random.choice([DEFECT] + [COOPERATE] * 9)
