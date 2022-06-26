@@ -38,12 +38,12 @@ class TitForTat(Player):
 
 class MostlyNice(Player):
     def play_turn(self, self_history, other_history):
-        return random.choice([COOPERATE, COOPERATE, DEFECT])
+        return random.choice([DEFECT] + [COOPERATE] * 9)
 
 
 class MostlyNasty(Player):
     def play_turn(self, self_history, other_history):
-        return random.choice([COOPERATE, DEFECT, DEFECT])
+        return random.choice([COOPERATE] + [DEFECT] * 9)
 
 
 class NeverForgive(Player):

@@ -3,11 +3,11 @@ from prisoners_dilemma import player
 from prisoners_dilemma.visualisation import plot_game
 
 
-def main():
-    ref = Referee(player.TitForTat(), player.NeverForgive())
+def one_on_one():
+    ref = Referee(player.MostlyNice(), player.NeverForgive())
     ref.play_game(100)
     plot_game(ref)
 
 
 if __name__ == "__main__":
-    main()
+    one_on_one()
