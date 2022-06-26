@@ -4,7 +4,7 @@ from prisoners_dilemma.player import AlwaysCooperate, RandomPlayer, AlwaysDefect
 
 def main():
     ref = Controller(RandomPlayer(), TitForTat())
-    for turn in range(100):
+    for turn in range(10):
         ref.play_turn()
         print("-" * 20 + f"turn {turn} " + "-" * 20)
         for n in (0, 1):

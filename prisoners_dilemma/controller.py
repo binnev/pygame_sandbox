@@ -33,18 +33,15 @@ class Controller:
         self.points = [[], []]
 
     def play_turn(self):
-        moves = []
-        for n in (0, 1):
-            other_n = int(not bool(n))
-            player: Player = self.players[n]
-            move = player.play_turn(
-                self_history=self.moves[n],
-                other_history=self.moves[other_n],
-            )
-            moves.append(move)
-
+        moves = [
+            self.players[0].play_turn(self.moves[0], self.moves[1]),
+            self.players[1].play_turn(self.moves[1], self.moves[0]),
+        ]
         points = assign_rewards(*moves)
-        for n, move in enumerate(moves):
+        for n, (move, point) in enumerate(zip(moves, points)):
             self.moves[n].append(move)
-        for n, point in enumerate(points):
             self.points[n].append(point)
+
+    def run_game(self, n_turns: int):
+        for turn in range(n_turns):
+            self.play_turn()
