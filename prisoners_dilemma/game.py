@@ -46,7 +46,7 @@ def play_generation(
 ):
     scores = aggregate_round_robin(population, n_turns=n_turns)
     total_points = sum(scores.values())
-    percentages = {name: score / total_points * 100 for name, score in scores.items()}
+    percentages = {name: round(score / total_points * 100) for name, score in scores.items()}
     return percentages
 
 
@@ -58,16 +58,16 @@ def evolution_game():
     population = {
         player.RandomPlayer: 1,
         player.AlwaysCooperate: 1,
-        player.AlwaysDefect: 1,
+        player.AlwaysDefect: 5,
         player.NeverForgive: 1,
         player.TitForTat: 1,
         player.TitForTwoTat: 1,
         player.MostlyNice: 1,
-        player.MostlyNasty: 1,
+        player.MostlyNasty: 10,
     }
-    n_generations = 20
-    turns_per_gen = 10
-    population_history = {contestant: [] for contestant in population}
+    n_generations = 99999999999999
+    turns_per_gen = 100
+    population_history = []
     for gen in range(n_generations):
         print("")
         print(f"--- gen {gen} ---")
@@ -78,15 +78,16 @@ def evolution_game():
         for contestant in sorted(population, key=lambda x: -population[x]):
             print(f"{contestant.__name__:<20}{population[contestant]}")
 
-        for contestant, count in population.items():
-            population_history[contestant].append(count)
-
+        population_history.append({**population})
+        if len(population_history) > 3 and (
+            population_history[-3] == population_history[-2] == population_history[-1]
+        ):
+            break
     fig, ax = plt.subplots()
-    plt.stackplot(
-        range(n_generations),
-        *population_history.values(),
-        labels=[contestant.__name__ for contestant in population],
-    )
+    sorted_population = sorted(population, key=lambda x: -population[x])
+    counts = [[item[contestant] for item in population_history] for contestant in sorted_population]
+    labels = [contestant.__name__ for contestant in sorted_population]
+    plt.stackplot(range(len(population_history)), *counts, labels=labels)
     plt.legend(
         loc="best",
         bbox_to_anchor=(0.35, 0.65, 0.5, 0.5),
