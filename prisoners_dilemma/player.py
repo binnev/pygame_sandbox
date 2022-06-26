@@ -46,7 +46,7 @@ class TitForTat(Player):
             return COOPERATE
 
 
-class TitForTwoTat(Player):
+class TolerateTwoHits(Player):
     tolerance = 2
 
     def play_turn(self, self_history, other_history):
@@ -55,6 +55,20 @@ class TitForTwoTat(Player):
 
         if self.tolerance == 0:
             self.tolerance = 2
+            return DEFECT
+        else:
+            return COOPERATE
+
+
+class RetaliateTwice(Player):
+    rage = 0
+
+    def play_turn(self, self_history, other_history):
+        if other_history and other_history[-1] == DEFECT:
+            self.rage = 2
+
+        if self.rage:
+            self.rage -= 1
             return DEFECT
         else:
             return COOPERATE

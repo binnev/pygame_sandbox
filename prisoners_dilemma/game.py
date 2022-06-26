@@ -1,3 +1,4 @@
+import random
 from functools import lru_cache
 from typing import Type
 
@@ -56,14 +57,15 @@ def census(contestants: list[Player], names: list[str]):
 
 def evolution_game():
     population = {
-        player.RandomPlayer: 1,
-        player.AlwaysCooperate: 1,
-        player.AlwaysDefect: 5,
-        player.NeverForgive: 1,
-        player.TitForTat: 1,
-        player.TitForTwoTat: 1,
-        player.MostlyNice: 1,
-        player.MostlyNasty: 10,
+        player.NeverForgive: 1,  # random.randint(1, 100),
+        player.TitForTat: 1,  # random.randint(1, 100),
+        player.RetaliateTwice: 1,  # random.randint(1, 100),
+        player.TolerateTwoHits: 1,  # random.randint(1, 100),
+        player.AlwaysCooperate: 1,  # random.randint(1, 100),
+        player.MostlyNice: 1,  # random.randint(1, 100),
+        player.RandomPlayer: 1,  # random.randint(1, 100),
+        player.MostlyNasty: 1,  # random.randint(1, 100),
+        player.AlwaysDefect: 1,  # random.randint(1, 100),
     }
     n_generations = 99999999999999
     turns_per_gen = 100
@@ -84,9 +86,8 @@ def evolution_game():
         ):
             break
     fig, ax = plt.subplots()
-    sorted_population = sorted(population, key=lambda x: -population[x])
-    counts = [[item[contestant] for item in population_history] for contestant in sorted_population]
-    labels = [contestant.__name__ for contestant in sorted_population]
+    counts = [[item[contestant] for item in population_history] for contestant in population]
+    labels = [contestant.__name__ for contestant in population]
     plt.stackplot(range(len(population_history)), *counts, labels=labels)
     plt.legend(
         loc="best",
