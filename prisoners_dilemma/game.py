@@ -25,8 +25,17 @@ def round_robin(contestants: list[Player], n_turns=100):
             player_j.score += score_j
 
 
-def play_generation(contestants: list[Player], n_turns=100, reproduction_threshold=1000):
+def play_generation(
+    contestants: list[Player],
+    n_turns=100,
+    reproduction_threshold=1000,
+    penalty_func=lambda pop: 0,
+):
     round_robin(contestants, n_turns=n_turns)
+    penalty = penalty_func(len(contestants))
+    print(f"Population = {len(contestants)} so penalty = {penalty}")
+    for contestant in contestants:
+        contestant.score -= penalty
     for contestant in sorted(contestants, key=lambda c: -c.score):
         print(f"{contestant:<20}{contestant.score}", end="")
         reproductions = 0
@@ -35,11 +44,13 @@ def play_generation(contestants: list[Player], n_turns=100, reproduction_thresho
             contestant.score -= reproduction_threshold
             reproductions += 1
         print(f" --> {reproductions} reproductions!" if reproductions else "")
+        if contestant.score < 0:
+            print(f"{contestant} died")
+            contestants.remove(contestant)
 
 
-def census(contestants: list[Player]):
-    contestant_names = {c.name for c in contestants}
-    return {name: len([c for c in contestants if c.name == name]) for name in contestant_names}
+def census(contestants: list[Player], names: list[str]):
+    return {name: len([c for c in contestants if c.name == name]) for name in names}
 
 
 def evolution_game():
@@ -53,9 +64,11 @@ def evolution_game():
         player.MostlyNice(),
         player.MostlyNasty(),
     ]
-    n_generations = 6
+    contestant_names = {c.name for c in contestants}
+    n_generations = 20
     turns_per_gen = 10
     reproduction_threshold = 500
+    penalty_func = lambda pop: 0.8 * pop**2
     population_history = {c.name: [] for c in contestants}
     for gen in range(n_generations):
         print("")
@@ -64,11 +77,12 @@ def evolution_game():
             contestants,
             n_turns=turns_per_gen,
             reproduction_threshold=reproduction_threshold,
+            penalty_func=penalty_func,
         )
 
         print("")
         print("Population now looks like:")
-        population = census(contestants)
+        population = census(contestants, contestant_names)
         for name in sorted(population, key=lambda x: -population[x]):
             print(f"{name:<20}{population[name]}")
 
