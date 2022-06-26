@@ -8,7 +8,7 @@ from prisoners_dilemma.player import Player
 from prisoners_dilemma.referee import Referee
 
 
-@lru_cache()
+# @lru_cache()
 def one_on_one(player_i: Type[Player], player_j: Type[Player], n_turns=100):
     ref = Referee(player_i(), player_j())
     ref.play_game(n_turns)
@@ -25,28 +25,29 @@ def round_robin(contestants: list[Player], n_turns=100):
             player_j.score += score_j
 
 
+def aggregate_round_robin(
+    population: dict[Type[Player] : int], n_turns: int
+) -> dict[Type[Player] : int]:
+    scores = {contestant: 0 for contestant in population}
+    for player_class_i, count_i in population.items():
+        for player_class_j, count_j in population.items():
+            n_matches = count_i * count_j
+            score_i, score_j = one_on_one(player_class_i, player_class_j, n_turns)
+            total_i = score_i * n_matches
+            total_j = score_j * n_matches
+            scores[player_class_i] += total_i
+            scores[player_class_j] += total_j
+    return scores
+
+
 def play_generation(
-    contestants: list[Player],
+    population: dict[Type[Player] : int],
     n_turns=100,
-    reproduction_threshold=1000,
-    penalty_func=lambda pop: 0,
 ):
-    round_robin(contestants, n_turns=n_turns)
-    penalty = penalty_func(len(contestants))
-    print(f"Population = {len(contestants)} so penalty = {penalty}")
-    for contestant in contestants:
-        contestant.score -= penalty
-    for contestant in sorted(contestants, key=lambda c: -c.score):
-        print(f"{contestant:<20}{contestant.score}", end="")
-        reproductions = 0
-        while contestant.score >= reproduction_threshold:
-            contestants.append(contestant.__class__()),
-            contestant.score -= reproduction_threshold
-            reproductions += 1
-        print(f" --> {reproductions} reproductions!" if reproductions else "")
-        if contestant.score < 0:
-            print(f"{contestant} died")
-            contestants.remove(contestant)
+    scores = aggregate_round_robin(population, n_turns=n_turns)
+    total_points = sum(scores.values())
+    percentages = {name: score / total_points * 100 for name, score in scores.items()}
+    return percentages
 
 
 def census(contestants: list[Player], names: list[str]):
@@ -54,48 +55,44 @@ def census(contestants: list[Player], names: list[str]):
 
 
 def evolution_game():
-    contestants = [
-        player.RandomPlayer(),
-        player.AlwaysCooperate(),
-        player.AlwaysDefect(),
-        player.NeverForgive(),
-        player.TitForTat(),
-        player.TitForTwoTat(),
-        player.MostlyNice(),
-        player.MostlyNasty(),
-    ]
-    contestant_names = {c.name for c in contestants}
+    population = {
+        player.RandomPlayer: 1,
+        player.AlwaysCooperate: 1,
+        player.AlwaysDefect: 1,
+        player.NeverForgive: 1,
+        player.TitForTat: 1,
+        player.TitForTwoTat: 1,
+        player.MostlyNice: 1,
+        player.MostlyNasty: 1,
+    }
     n_generations = 20
     turns_per_gen = 10
-    reproduction_threshold = 500
-    penalty_func = lambda pop: 0.8 * pop**2
-    population_history = {c.name: [] for c in contestants}
+    population_history = {contestant: [] for contestant in population}
     for gen in range(n_generations):
         print("")
         print(f"--- gen {gen} ---")
-        play_generation(
-            contestants,
-            n_turns=turns_per_gen,
-            reproduction_threshold=reproduction_threshold,
-            penalty_func=penalty_func,
-        )
+        population = play_generation(population, n_turns=turns_per_gen)
 
         print("")
         print("Population now looks like:")
-        population = census(contestants, contestant_names)
-        for name in sorted(population, key=lambda x: -population[x]):
-            print(f"{name:<20}{population[name]}")
+        for contestant in sorted(population, key=lambda x: -population[x]):
+            print(f"{contestant.__name__:<20}{population[contestant]}")
 
-        for name, count in population.items():
-            population_history[name].append(count)
+        for contestant, count in population.items():
+            population_history[contestant].append(count)
 
     fig, ax = plt.subplots()
     plt.stackplot(
         range(n_generations),
         *population_history.values(),
-        labels=population_history.keys(),
+        labels=[contestant.__name__ for contestant in population],
     )
-    plt.legend(loc="upper left")
+    plt.legend(
+        loc="best",
+        bbox_to_anchor=(0.35, 0.65, 0.5, 0.5),
+        fontsize="x-small",
+        ncol=3,
+    )
     plt.show()
 
 

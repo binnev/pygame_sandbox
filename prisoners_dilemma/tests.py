@@ -10,4 +10,3 @@ def test_caching(mock):
         one_on_one(player.RandomPlayer, player.RandomPlayer)
 
     assert mock.call_count == 1
-
