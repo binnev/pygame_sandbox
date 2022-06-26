@@ -22,7 +22,7 @@ def assign_rewards(p1_move, p2_move):
         return INDIVIDUAL_COOP, INDIVIDUAL_DEFECT
 
 
-class Controller:
+class Referee:
     players: tuple[Player, Player]
     moves: list[list[str], list[str]]
     points: list[list[int], list[int]]
@@ -42,6 +42,6 @@ class Controller:
             self.moves[n].append(move)
             self.points[n].append(point)
 
-    def run_game(self, n_turns: int):
+    def play_game(self, n_turns: int):
         for turn in range(n_turns):
             self.play_turn()
