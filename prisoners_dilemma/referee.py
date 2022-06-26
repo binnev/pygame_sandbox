@@ -23,6 +23,9 @@ def assign_rewards(p1_move, p2_move):
 
 
 class Referee:
+    """Orchestrates and stores the history (moves, points) of a one-on-one game of prisoner's
+    dilemma."""
+
     players: tuple[Player, Player]
     moves: list[list[str], list[str]]
     points: list[list[int], list[int]]

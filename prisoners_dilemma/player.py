@@ -4,13 +4,23 @@ from prisoners_dilemma.constants import DEFECT, COOPERATE
 
 
 class Player:
-    name: str
+    score: int = 0
 
     def play_turn(self, self_history, other_history):
         raise NotImplementedError()
 
-    def __str__(self):
+    @property
+    def name(self) -> str:
         return self.__class__.__name__
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f"{self.name}(score={self.score})"
+
+    def __format__(self, format_spec):
+        return str.__format__(self.name, format_spec)
 
 
 class RandomPlayer(Player):
