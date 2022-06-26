@@ -1,3 +1,6 @@
+from functools import lru_cache
+from typing import Type
+
 import matplotlib.pyplot as plt
 
 from prisoners_dilemma import player
@@ -5,17 +8,21 @@ from prisoners_dilemma.player import Player
 from prisoners_dilemma.referee import Referee
 
 
-def one_on_one(player_i: Player, player_j: Player, n_turns=100):
-    ref = Referee(player_i, player_j)
+@lru_cache()
+def one_on_one(player_i: Type[Player], player_j: Type[Player], n_turns=100):
+    ref = Referee(player_i(), player_j())
     ref.play_game(n_turns)
-    player_i.score += sum(ref.points[0])
-    player_j.score += sum(ref.points[1])
+    score_i = sum(ref.points[0])
+    score_j = sum(ref.points[1])
+    return score_i, score_j
 
 
 def round_robin(contestants: list[Player], n_turns=100):
-    for ii, contestant_i in enumerate(contestants):
-        for jj, contestant_j in enumerate(contestants):
-            one_on_one(contestant_i, contestant_j, n_turns)
+    for ii, player_i in enumerate(contestants):
+        for jj, player_j in enumerate(contestants):
+            score_i, score_j = one_on_one(player_i.__class__, player_j.__class__, n_turns)
+            player_i.score += score_i
+            player_j.score += score_j
 
 
 def play_generation(contestants: list[Player], n_turns=100, reproduction_threshold=1000):
@@ -46,7 +53,7 @@ def evolution_game():
         player.MostlyNice(),
         player.MostlyNasty(),
     ]
-    n_generations = 5
+    n_generations = 6
     turns_per_gen = 10
     reproduction_threshold = 500
     population_history = {c.name: [] for c in contestants}
