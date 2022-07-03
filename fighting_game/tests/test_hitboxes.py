@@ -1,14 +1,22 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pygame
 import pytest
 from pygame.rect import Rect
 
 from base.objects import Group, PhysicalEntity
+from fighting_game.characters import Character
 from fighting_game.hitboxes import Hitbox, HitHandler
 
 pygame.display.init()
 window = pygame.display.set_mode((50, 50))
+
+
+class MockPhysicalEntity(PhysicalEntity):
+    damage = 0
+
+    def handle_get_hit(self, hitbox):
+        self.damage += hitbox.damage
 
 
 def test_siblings_set_at_init():
@@ -132,9 +140,9 @@ def test_owner_position_inheritance():
     assert h1.y == 30
 
 
-@patch("fighting_game.objects.handle_hitbox_collision")
+@patch("fighting_game.hitboxes.Hitbox.handle_hit")
 def test_handle_hits(mock):
-    entity = PhysicalEntity()
+    entity = MockPhysicalEntity()
     entity.rect = Rect(0, 0, 10, 10)
     entity.x = 0
     entity.y = 0
@@ -148,52 +156,55 @@ def test_handle_hits(mock):
     collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
     assert len(collisions) == 1
     hit_handler.handle_hits(hitboxes, [entity])
-    mock.assert_called_with(h1, entity)
+    mock.assert_called_with(entity)
     assert mock.call_count == 1
 
 
-@patch("fighting_game.objects.handle_hitbox_collision")
-def test_handle_hits_sibling_hitboxes_simultaneous(mock):
-    entity = PhysicalEntity()
+@pytest.mark.parametrize(
+    "hitbox_names",
+    [
+        ("h1", "h2"),
+        ("h2", "h1"),
+        ("h1", "h3"),
+        ("h3", "h1"),
+        ("h3", "h2", "h1"),
+        ("h2", "h1", "h3"),
+        ("h1", "h2", "h3"),
+    ],
+)
+@patch("fighting_game.hitboxes.Hitbox.handle_hit")
+def test_handle_hits_sibling_hitboxes_simultaneous(mock, hitbox_names):
+    entity = MockPhysicalEntity()
     entity.rect = Rect(0, 0, 10, 10)
     entity.x = 0
     entity.y = 0
+
     owner = PhysicalEntity()
     owner.rect = Rect(0, 0, 0, 0)
 
-    h1 = Hitbox(width=10, height=10, owner=owner)
-    h2 = Hitbox(width=10, height=10, owner=owner, higher_priority_sibling=h1)
-    h3 = Hitbox(width=10, height=10, owner=owner, higher_priority_sibling=h2)
+    h1 = Hitbox(width=10, height=10, owner=owner, damage=1)
+    h2 = Hitbox(width=10, height=10, owner=owner, higher_priority_sibling=h1, damage=3)
+    h3 = Hitbox(width=10, height=10, owner=owner, higher_priority_sibling=h2, damage=7)
+    _hitbox_lookup = {"h1": h1, "h2": h2, "h3": h3}
+    hitboxes = Group([_hitbox_lookup[name] for name in hitbox_names])
 
-    # the order hitboxes are added to the group shouldn't matter
-    for hitboxes in [
-        Group(h1, h2),
-        Group(h2, h1),
-        Group(h1, h3),
-        Group(h3, h1),
-        Group(h3, h2, h1),
-        Group(h2, h1, h3),
-        Group(h1, h2, h3),
-    ]:
-        hit_handler = HitHandler()
-        collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
-        assert len(collisions) == len(hitboxes)
-        hit_handler.handle_hits(hitboxes, [entity])
-        # h1, the higher priority hitbox, should always take priority
-        mock.assert_called_with(h1, entity)
-        with pytest.raises(AssertionError):
-            mock.assert_called_with(h2, entity)
-        with pytest.raises(AssertionError):
-            mock.assert_called_with(h3, entity)
-        # all hitboxes should be added to the handled list
-        assert (h1, entity) in hit_handler.handled
-        assert (h2, entity) in hit_handler.handled
-        assert (h3, entity) in hit_handler.handled
+    hit_handler = HitHandler()
+    collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
+
+    assert len(collisions) == len(hitboxes)
+    hit_handler.handle_hits(hitboxes, [entity])
+    # h1, the higher priority hitbox, should always take priority
+    assert entity.damage == 1
+    assert mock.call_count == 1
+    # all hitboxes should be added to the handled list
+    assert (h1, entity) in hit_handler.handled
+    assert (h2, entity) in hit_handler.handled
+    assert (h3, entity) in hit_handler.handled
 
 
-@patch("fighting_game.objects.handle_hitbox_collision")
+@patch("fighting_game.hitboxes.Hitbox.handle_hit")
 def test_handle_hits_sibling_hitboxes_later(mock):
-    entity = PhysicalEntity()
+    entity = MockPhysicalEntity()
     entity.rect = Rect(0, 0, 10, 10)
     entity.x = 0
     entity.y = 0
@@ -211,11 +222,7 @@ def test_handle_hits_sibling_hitboxes_later(mock):
     collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
     assert len(collisions) == 1
     hit_handler.handle_hits(hitboxes, [entity])
-    mock.assert_called_with(h1, entity)
-    with pytest.raises(AssertionError):
-        mock.assert_called_with(h2, entity)
-    with pytest.raises(AssertionError):
-        mock.assert_called_with(h3, entity)
+    mock.assert_called_with(entity)
     assert mock.call_count == 1
     assert (h1, entity) in hit_handler.handled
     assert (h2, entity) in hit_handler.handled
@@ -227,8 +234,6 @@ def test_handle_hits_sibling_hitboxes_later(mock):
     collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
     assert len(collisions) == 2
     hit_handler.handle_hits(hitboxes, [entity])
-    with pytest.raises(AssertionError):
-        mock.assert_called_with(h2, entity)
     assert mock.call_count == 1
 
     # the next tick, hitbox 3 is added. It has no siblings so it should connect
@@ -236,58 +241,37 @@ def test_handle_hits_sibling_hitboxes_later(mock):
     collisions = pygame.sprite.spritecollide(entity, hitboxes, dokill=False)
     assert len(collisions) == 3
     hit_handler.handle_hits(hitboxes, [entity])
-    mock.assert_called_with(h3, entity)
     assert mock.call_count == 2
     assert (h1, entity) in hit_handler.handled
     assert (h2, entity) in hit_handler.handled
     assert (h3, entity) in hit_handler.handled
 
 
-class HitboxMock:
-    base_knockback = 0
-    fixed_knockback = 0
-    knockback_growth = 0
-    knockback_angle = 0
-    damage = 0
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    def handle_hit(self, object):
-        pass
-
-
-class CharacterMock:
-    damage = 0
-    mass = 4
-    u = 0
-    v = 0
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    def handle_hit(self, hitbox):
-        pass
-
-
 def test_handle_hitbox_collision_fixed_knockback():
 
-    hitbox = HitboxMock(fixed_knockback=10, knockback_angle=90, damage=7)
-    bowser = CharacterMock(mass=10)
-    fox = CharacterMock(mass=3, damage=50)
+    hitbox = Hitbox(
+        owner=MagicMock(),
+        width=1,
+        height=1,
+        fixed_knockback=10,
+        knockback_angle=90,
+        damage=7,
+    )
+    bowser = MagicMock()
+    bowser.mass = 10
+    bowser.damage = 0
+    bowser.v = 0
+    bowser.u = 0
 
-    assert bowser.damage == 0
-    assert bowser.v == 0
-    assert bowser.u == 0
-    assert fox.damage == 50
-    assert fox.v == 0
-    assert fox.u == 0
+    fox = MagicMock()
+    fox.mass = 3
+    fox.damage = 50
+    fox.v = 0
+    fox.u = 0
 
     # fixed knockback hit should apply the same kb irrespective of damage, weight
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, fox)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(fox, hitbox)
     assert bowser.damage == 7
     assert bowser.u == 0
     assert bowser.v < 0  # travelling upwards
@@ -299,8 +283,8 @@ def test_handle_hitbox_collision_fixed_knockback():
     assert abs(first_bowser_kb) == abs(first_fox_kb)
 
     # second fixed knockback hit should apply the same kb irrespective of damage, weight
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, fox)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(fox, hitbox)
     assert bowser.damage == 14
     assert bowser.u == 0
     assert bowser.v < 0
@@ -316,21 +300,31 @@ def test_handle_hitbox_collision_fixed_knockback():
 
 def test_handle_hitbox_collision_base_knockback():
 
-    hitbox = HitboxMock(base_knockback=10, knockback_angle=90, damage=7)
-    bowser = CharacterMock(mass=10)
-    fox = CharacterMock(mass=3, damage=50)
+    hitbox = Hitbox(
+        owner=MagicMock(),
+        width=1,
+        height=1,
+        base_knockback=10,
+        knockback_angle=90,
+        damage=7,
+    )
+    bowser = MagicMock()
+    bowser.mass = 10
+    bowser.damage = 0
+    bowser.v = 0
+    bowser.u = 0
 
-    assert bowser.damage == 0
-    assert bowser.v == 0
-    assert bowser.u == 0
-    assert fox.damage == 50
-    assert fox.v == 0
-    assert fox.u == 0
+    fox = MagicMock()
+    fox.mass = 3
+    fox.damage = 50
+    fox.damage = 50
+    fox.v = 0
+    fox.u = 0
 
     # base knockback hit should apply the same kb irrespective of damage but should be affected
     # by weight, so bowser should take less knockback
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, fox)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(fox, hitbox)
     assert bowser.damage == 7
     assert bowser.u == 0
     assert bowser.v < 0
@@ -343,8 +337,8 @@ def test_handle_hitbox_collision_base_knockback():
 
     # because the hitbox only has base knockback, the second hit should do the same knockback as
     # the first, despite the extra damage.
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, fox)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(fox, hitbox)
     assert bowser.damage == 14
     assert fox.damage == 64
     assert bowser.u == 0
@@ -358,20 +352,29 @@ def test_handle_hitbox_collision_base_knockback():
 
 def test_handle_hitbox_collision_knockback_growth():
 
-    hitbox = HitboxMock(knockback_growth=100, knockback_angle=90, damage=7)
-    bowser = CharacterMock(mass=10)
-    dk = CharacterMock(mass=10, damage=50)
+    hitbox = Hitbox(
+        owner=MagicMock(),
+        width=1,
+        height=1,
+        knockback_growth=100,
+        knockback_angle=90,
+        damage=7,
+    )
+    bowser = MagicMock()
+    bowser.mass = 10
+    bowser.damage = 0
+    bowser.v = 0
+    bowser.u = 0
 
-    assert bowser.damage == 0
-    assert bowser.v == 0
-    assert bowser.u == 0
-    assert dk.damage == 50
-    assert dk.v == 0
-    assert dk.u == 0
+    dk = MagicMock()
+    dk.mass = 10
+    dk.damage = 50
+    dk.v = 0
+    dk.u = 0
 
     # dk has more damage but the same mass, so dk should be get higher knockback
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, dk)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(dk, hitbox)
     assert bowser.damage == 7
     assert bowser.u == 0
     assert bowser.v < 0
@@ -383,8 +386,8 @@ def test_handle_hitbox_collision_knockback_growth():
     assert abs(first_bowser_kb) < abs(first_dk_kb)
 
     # a second hit should increase the knockback even more, because the characters have more damage.
-    handle_hitbox_collision(hitbox, bowser)
-    handle_hitbox_collision(hitbox, dk)
+    Character.handle_get_hit(bowser, hitbox)
+    Character.handle_get_hit(dk, hitbox)
     assert bowser.damage == 14
     assert bowser.u == 0
     assert bowser.v < 0

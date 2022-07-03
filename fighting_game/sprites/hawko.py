@@ -9,23 +9,21 @@ hawko_sprites = SpriteDict(
     size=conf.SPRITE_SIZE,
     scale=conf.SCALE_SPRITES,
     create_flipped_versions=True,
-    file_mapping=dict(
-        crouch="hawko_crouch.png",
-        run="hawko_run.png",
-        stand="hawko_stand.png",
-        fall="hawko_fall.png",
-        special_fall="hawko_special_fall.png",
-        air_dodge="hawko_air_dodge.png",
-        nair="hawko_nair.png",
-        dair="hawko_dair.png",
-        bair="hawko_bair.png",
-        fair="hawko_fair.png",
-        uair="hawko_uair.png",
-        dash_attack="hawko_nair.png",
-        jab="hawko_jab.png",
-    ),
 )
-hawko_sprites.register("aerial_laser", "hawko_aerial_laser.png")
-hawko_sprites.register("dtilt", "hawko_dtilt.png")
-hawko_sprites.register("utilt", "hawko_utilt.png")
-hawko_sprites.register("ftilt", "hawko_ftilt.png")
+hawko_sprites.register(crouch="hawko_crouch.png")
+hawko_sprites.register(run="hawko_run.png")
+hawko_sprites.register(stand="hawko_stand.png")
+hawko_sprites.register(fall="hawko_fall.png")
+hawko_sprites.register(special_fall="hawko_special_fall.png")
+hawko_sprites.register(air_dodge="hawko_air_dodge.png")
+hawko_sprites.register(nair="hawko_nair.png")
+hawko_sprites.register(dair="hawko_dair.png")
+hawko_sprites.register(bair="hawko_bair.png")
+hawko_sprites.register(fair="hawko_fair.png")
+hawko_sprites.register(uair="hawko_uair.png")
+hawko_sprites.register(dash_attack="hawko_nair.png")
+hawko_sprites.register(jab="hawko_jab.png")
+hawko_sprites.register(aerial_laser="hawko_aerial_laser.png")
+hawko_sprites.register(dtilt="hawko_dtilt.png")
+hawko_sprites.register(utilt="hawko_utilt.png")
+hawko_sprites.register(ftilt="hawko_ftilt.png")

@@ -18,6 +18,7 @@ class Hitbox(PhysicalEntity):
 
     debug_color = (60, 0, 0)
     sound = sounds.hit
+    owner: PhysicalEntity
 
     def __init__(
         self,
@@ -168,6 +169,7 @@ class HitHandler:
         for object in objects:
             colliding_hitboxes = pygame.sprite.spritecollide(object, hitboxes, dokill=False)
             for hitbox in colliding_hitboxes:
+                hitbox: Hitbox
                 # hitboxes should never hit their owner
                 if hitbox.owner == object:
                     continue

@@ -7,7 +7,7 @@ from base.image import recolor_image, scale_image
 from base.objects import PhysicalEntity, Entity, Group
 from base.utils import outline_image
 from fighting_game.particles import Particle, random_float, random_int
-from quarto.assets.images import quarto_pieces, misc
+from quarto.assets.images import quarto_pieces, square
 from quarto.utils import common_attribute
 
 
@@ -115,7 +115,7 @@ class Square(PhysicalEntity):
         self.rect.center = (x, y)
 
         self.black = black
-        self.image = misc["square"].play(0)
+        self.image = square.play(0)
         if self.black:
             self.image = recolor_image(self.image, {(255, 255, 255): (100, 100, 100)})
 
@@ -216,5 +216,5 @@ class UnusedPiecePad(PhysicalEntity):
         super().__init__(*groups)
         self.rect = Rect(0, 0, self.width, self.height)
         self.rect.center = (x, y)
-        self.image = misc["square"].play(0)
+        self.image = square.play(0)
         self.image = scale_image(self.image, 4)
