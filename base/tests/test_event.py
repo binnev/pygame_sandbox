@@ -7,7 +7,7 @@ from base.input.event import EventQueue
 
 
 @patch("pygame.event.get")
-def test_event_queue(mock):
+def test_update(mock):
     assert EventQueue.events == []
 
     mock.return_value = ["foo"]
@@ -33,6 +33,9 @@ def test_add_event_pygame_style(display_init):
     EventQueue.update()
     event = EventQueue.get(type=TEST_EVENT, foo="foo", bar=69)
     assert isinstance(event, EventType)
+
+    # we trust that the event listener knows what attributes to look for
     assert event.foo == "foo"
     assert event.bar == 69
     assert event.type == TEST_EVENT
+
