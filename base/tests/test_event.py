@@ -39,3 +39,28 @@ def test_add_event_pygame_style(display_init):
     assert event.bar == 69
     assert event.type == TEST_EVENT
 
+
+def test_add_custom_dataclass_event_is_converted_to_event(display_init):
+    @dataclass
+    class MyCustomEvent:
+        type = pygame.event.custom_type()
+        foo: str
+        bar: int = 0
+
+    event1 = MyCustomEvent(foo="foo")
+    event2 = MyCustomEvent(foo="foo", bar=420)
+
+    EventQueue.add(event1)
+    EventQueue.add(event2)
+
+    EventQueue.update()
+
+    assert len(EventQueue.filter(type=MyCustomEvent.type, foo="foo")) == 2
+    result1 = EventQueue.get(type=MyCustomEvent.type, foo="foo", bar=0)
+    assert isinstance(result1, EventType)
+    assert result1.foo == "foo"
+    assert result1.bar == 0
+    result2 = EventQueue.get(type=MyCustomEvent.type, foo="foo", bar=420)
+    assert isinstance(result2, EventType)
+    assert result2.foo == "foo"
+    assert result2.bar == 420

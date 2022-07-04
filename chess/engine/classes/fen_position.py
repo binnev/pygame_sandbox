@@ -45,7 +45,6 @@ class FenPosition(str):
     def to_string(self) -> str:
         position = self.split(" ")[0]
 
-
     @classmethod
     def initial(cls):
         return cls("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")

@@ -1,5 +1,8 @@
+from dataclasses import dataclass, is_dataclass, asdict
+from typing import Union
+
 import pygame
-from pygame.event import Event
+from pygame.event import EventType, Event
 
 
 class EventQueue:
@@ -11,7 +14,7 @@ class EventQueue:
     events = []
 
     @classmethod
-    def add(cls, event: Event):
+    def add(cls, event: Union[EventType, "dataclass"]):
         """
         Add the event to pygame's event queue, where it will stay until the .update() method
         is called to load it into cls.events.
@@ -19,6 +22,8 @@ class EventQueue:
         This prevents race conditions / order dependency where an event is added to the event
         queue and processed in the same tick.
         """
+        if is_dataclass(event):
+            event = Event(event.type, **asdict(event))
         pygame.event.post(event)
 
     @classmethod

@@ -81,4 +81,3 @@ class Position(dict):
         position, *_ = parse_fen_string(string)
         pieces = parse_fen_position(position)
         return cls(pieces)
-
