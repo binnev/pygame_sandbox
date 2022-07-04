@@ -3,7 +3,13 @@ from pathlib import Path
 import pytest
 from pygame import Surface, Color
 
-from base.image import SpriteAnimation, load_spritesheet, load_image_sequence, SpriteSheet
+from base.image import (
+    SpriteAnimation,
+    load_spritesheet,
+    load_image_sequence,
+    load_image,
+    relative_folder,
+)
 
 
 @pytest.mark.parametrize(
@@ -125,3 +131,41 @@ def test_spriteanimation_copy_methods():
     assert anim.images[0].get_at((0, 1)) == Color("red")
     assert anim.images[0].get_at((1, 0)) == Color("red")
     assert anim.images[0].get_at((1, 1)) == Color("red")
+
+
+def test_load_image_with_per_pixel_transparency(display_init):
+    folder = relative_folder(__file__, "test_assets")
+    filename = folder / "per_pixel_alpha.png"
+    image = load_image(filename.as_posix())
+
+    # white and red pixels should have full alpha
+    for red_pixel in [(0, 0), (0, 1), (1, 0), (1, 1)]:
+        assert image.get_at(red_pixel) == (255, 0, 0, 255)
+    for white_pixel in [(2, 2), (2, 3), (3, 2), (3, 3)]:
+        assert image.get_at(white_pixel) == (255, 255, 255, 255)
+
+    # green pixels should have alpha = 100
+    for green_pixel in [(2, 0), (2, 1), (3, 1), (1, 3), (1, 2), (0, 2)]:
+        assert image.get_at(green_pixel) == (0, 255, 0, 100)
+
+    # corner pixels should be fully transparent
+    for corner_pixel in [(3, 0), (0, 3)]:
+        assert image.get_at(corner_pixel) == (0, 0, 0, 0)
+
+
+def test_load_image_with_global_transparency(display_init):
+    folder = relative_folder(__file__, "test_assets")
+    filename = folder / "global_alpha.png"
+    image = load_image(filename.as_posix())
+
+    # white and red and green pixels should have full alpha
+    for red_pixel in [(0, 0), (0, 1), (1, 0), (1, 1)]:
+        assert image.get_at(red_pixel) == (255, 0, 0, 255)
+    for white_pixel in [(2, 2), (2, 3), (3, 2), (3, 3)]:
+        assert image.get_at(white_pixel) == (255, 255, 255, 255)
+    for green_pixel in [(2, 0), (2, 1), (3, 1), (1, 3), (1, 2), (0, 2)]:
+        assert image.get_at(green_pixel) == (0, 255, 0, 255)
+
+    # corner pixels should be fully transparent
+    for corner_pixel in [(3, 0), (0, 3)]:
+        assert image.get_at(corner_pixel) == (0, 0, 0, 0)
