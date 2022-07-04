@@ -8,3 +8,9 @@ def display_init():
     window = pygame.display.set_mode((1, 1))
     yield window
     pygame.quit()
+
+
+@pytest.fixture(autouse=True)
+def event_queue(monkeypatch):
+    """auto-clear the event queue before every test"""
+    monkeypatch.setattr("base.input.event.EventQueue.events", [])
