@@ -8,7 +8,7 @@
   - Then just need to re-blit the sprites to screen; updating only the parts of the screen under their rects.
   - DirtySprite?
   - LayeredDirty has some clip functionality
-- pymunk physics
+- pymunk physics http://www.pymunk.org/en/latest/
 
 
 ## Entity / Group structure
