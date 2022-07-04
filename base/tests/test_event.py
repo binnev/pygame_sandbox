@@ -41,20 +41,20 @@ def test_add_event_pygame_style(display_init):
 
 
 def test_add_custom_dataclass_event_is_converted_to_event(display_init):
+    # in events.py
     @dataclass
     class MyCustomEvent:
         type = pygame.event.custom_type()
         foo: str
         bar: int = 0
 
-    event1 = MyCustomEvent(foo="foo")
-    event2 = MyCustomEvent(foo="foo", bar=420)
-
-    EventQueue.add(event1)
-    EventQueue.add(event2)
+    # somewhere in the code
+    EventQueue.add(MyCustomEvent(foo="foo"))
+    EventQueue.add(MyCustomEvent(foo="foo", bar=420))
 
     EventQueue.update()
 
+    # dataclasses should be converted to Events by EventQueue
     assert len(EventQueue.filter(type=MyCustomEvent.type, foo="foo")) == 2
     result1 = EventQueue.get(type=MyCustomEvent.type, foo="foo", bar=0)
     assert isinstance(result1, EventType)
