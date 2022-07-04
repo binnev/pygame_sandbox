@@ -6,6 +6,4 @@
 - dirty rect blitting (only updating parts of the screen that have changed) 
   - Group.clear() can remove sprites from the screen (overwrite them with BG image). 
   - Then just need to re-blit the sprites to screen; updating only the parts of the screen under their rects.
-- Colorkey / alpha / `.convert()`
-  - get a MWE using `.convert()` with as little extra guff as possible
 - pymunk physics
