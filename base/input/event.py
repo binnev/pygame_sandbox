@@ -1,4 +1,5 @@
 import pygame
+from pygame.event import Event
 
 
 class EventQueue:
@@ -10,9 +11,23 @@ class EventQueue:
     events = []
 
     @classmethod
+    def add(cls, event: Event):
+        """
+        Add the event to pygame's event queue, where it will stay until the .update() method
+        is called to load it into cls.events.
+
+        This prevents race conditions / order dependency where an event is added to the event
+        queue and processed in the same tick.
+        """
+        pygame.event.post(event)
+
+    @classmethod
     def update(cls):
-        events = pygame.event.get()
-        cls.events = events
+        """
+        Read all the events from pygame's event queue into cls.events
+        (also clears pygame's event queue)
+        """
+        cls.events = pygame.event.get()
 
     @classmethod
     def filter(cls, **kwargs):
