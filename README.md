@@ -10,3 +10,4 @@
 - dirty rect blitting (only updating parts of the screen that have changed) 
 - Colorkey / alpha / `.convert()`
   - get a MWE using `.convert()` with as little extra guff as possible
+- pymunk physics
