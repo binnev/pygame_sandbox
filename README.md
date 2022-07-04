@@ -3,11 +3,9 @@
   - event timers (`pygame.time.set_timer(event_id: int, countdown: int)`)
   - use events to trigger stuff like screen shake where the object creating the event doesn't necessarily have access to the object that implements the event behaviour.
   - integrate events in stuff like KeyHandler to reduce the overhead in their read /update actions?
-  - Have EventQueue manage 
-    - [x] adding new events (to a separate list)
-    - [x] reading current events from pygame.events queue
-    - [x] update (moving all events from pygame's queue to EH's queue)
 - dirty rect blitting (only updating parts of the screen that have changed) 
+  - Group.clear() can remove sprites from the screen (overwrite them with BG image). 
+  - Then just need to re-blit the sprites to screen; updating only the parts of the screen under their rects.
 - Colorkey / alpha / `.convert()`
   - get a MWE using `.convert()` with as little extra guff as possible
 - pymunk physics
