@@ -81,7 +81,7 @@ class Glow(Entity):
 
     def draw(self, surface, debug=False):
         radii = sin_values(self.radius, self.variance, self.period)
-        radius = int(radii[self.game_tick % len(radii)])
+        radius = int(radii[self.tick % len(radii)])
         surf = circle_surf(radius, self.color)
         image_rect = surf.get_rect()
         image_rect.center = self.rect.center
