@@ -21,11 +21,11 @@ class GuiExample(Game):
         self.child_groups += [self.buttons, self.particles]
         self.buttons.add(
             Button(
-                x=100,
+                x=200,
                 y=100,
-                width=100,
+                width=400,
                 height=50,
-                text="up",
+                text="press and hold for smoke",
                 on_press=(
                     lambda button: (
                         self.particles.add(Flash(x=button.x, y=button.y)),
