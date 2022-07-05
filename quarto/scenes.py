@@ -1,6 +1,4 @@
 import math
-from random import randint
-from typing import TYPE_CHECKING
 
 import pygame
 from pygame.sprite import AbstractGroup, spritecollide
@@ -8,16 +6,11 @@ from pygame.sprite import AbstractGroup, spritecollide
 from base.input import EventQueue
 from base.objects import Entity, Group
 from base.utils import mouse_hovering_over
-from quarto.objects import QuartoBoard, Piece, UnusedPiecePad, Square
+from quarto.objects import QuartoBoard, Piece, UnusedPiecePad
 from quarto.utils import distance
-
-if TYPE_CHECKING:
-    from quarto.game import QuartoGame
 
 
 class QuartoMatch(Entity):
-    game: "QuartoGame"
-
     def __init__(self, *groups: AbstractGroup) -> None:
         super().__init__(*groups)
 

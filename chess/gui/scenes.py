@@ -1,10 +1,5 @@
-from typing import TYPE_CHECKING
-
 from base.objects import Entity, Group
 from chess.gui.classes.board import GuiBoard
-
-if TYPE_CHECKING:
-    from chess.gui.game import ChessGame
 
 
 class ChessMatch(Entity):
