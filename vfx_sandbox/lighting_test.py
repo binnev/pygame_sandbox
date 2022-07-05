@@ -7,7 +7,7 @@ from pygame import Color, Surface
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 
-from base.objects import Entity, Group, PhysicalEntity
+from base.objects import Group, PhysicalEntity
 
 
 def sin_values(mean, variance, n_points):

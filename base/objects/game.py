@@ -5,7 +5,7 @@ from pygame.color import Color
 from pygame.surface import Surface
 
 from base.input import EventQueue
-from base.objects import Entity, Group
+from base.objects.entity import Entity, Group
 from base.objects.helpers import FpsTracker
 
 

@@ -1,3 +1,4 @@
+import random
 import enum
 from collections import namedtuple
 from math import sin
@@ -179,3 +180,22 @@ class MyEnumMeta(enum.EnumMeta):
 
 class Enum(enum.Enum, metaclass=MyEnumMeta):
     pass
+
+
+def circle_surf(radius, color):
+    radius = int(radius)
+    surf = Surface((radius * 2, radius * 2))
+    pygame.draw.circle(surf, color, (radius, radius), radius)
+    surf.set_colorkey((0, 0, 0))
+    return surf
+
+
+def random_float(min, max):
+    assert min < max
+    spread = max - min
+    value = min + random.random() * spread
+    return value
+
+
+def random_int(min, max):
+    return random.randint(min, max)

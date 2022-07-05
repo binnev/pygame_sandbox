@@ -6,12 +6,11 @@ from pygame.rect import Rect
 
 from base.image import recolor_image
 from base.animation import ease_in_out
-from base.objects import PhysicalEntity, Group
-from base.utils import mouse_hovering_over
+from base.objects import PhysicalEntity, Group, Particle
+from base.utils import mouse_hovering_over, random_float, random_int
 from chess import conf
 from chess.assets.pieces import chess_pieces
 from chess.constants import WHITE, BLACK, Teams, PieceTypes
-from fighting_game.particles import random_float, Particle, random_int
 
 if TYPE_CHECKING:
     from chess.gui.classes.board import GuiBoard, GuiSquare

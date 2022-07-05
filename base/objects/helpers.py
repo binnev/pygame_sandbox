@@ -5,7 +5,7 @@ import pygame
 from pygame.color import Color
 from pygame.surface import Surface
 
-from base.objects import Entity
+from base.objects.entity import Entity
 
 
 class FpsTracker(Entity):
