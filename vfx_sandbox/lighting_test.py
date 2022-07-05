@@ -7,7 +7,7 @@ from pygame import Color, Surface
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 
-from base.objects import Entity, Group
+from base.objects import Entity, Group, PhysicalEntity
 
 
 def sin_values(mean, variance, n_points):
@@ -28,7 +28,7 @@ def random_int(min, max):
     return int(random_float(min, max))
 
 
-class Character(Entity):
+class Character(PhysicalEntity):
     width = 40
     height = 60
     color = Color("orange")
@@ -55,7 +55,7 @@ class Character(Entity):
             self.x += self.speed
 
 
-class Block(Entity):
+class Block(PhysicalEntity):
     color = Color("gray")
 
     def __init__(self, x, y, width, height, color=None):
@@ -67,7 +67,7 @@ class Block(Entity):
         self.image.fill(self.color)
 
 
-class Glow(Entity):
+class Glow(PhysicalEntity):
     color = (50, 50, 50)
 
     def __init__(self, x, y, radius, color=None, variance=0, period=0):
@@ -88,7 +88,7 @@ class Glow(Entity):
         surface.blit(surf, image_rect, special_flags=pygame.BLEND_RGB_ADD)
 
 
-class Spark(Entity):
+class Spark(PhysicalEntity):
     gravity = 0.8
     friction = 0.1
     decay = 1
@@ -138,7 +138,7 @@ class Spark(Entity):
         surface.blit(surf, image_rect, special_flags=self.blit_flag)
 
 
-class Fountain(Entity):
+class Fountain(PhysicalEntity):
     color = (20, 20, 20)
 
     def __init__(self, x, y, color=None):
@@ -183,7 +183,7 @@ class Fire(Fountain):
         self.particles.update()
 
 
-class Torch(Entity):
+class Torch(PhysicalEntity):
     color = Color("orangered3")
 
     def __init__(self, x, y, color=None):
@@ -229,7 +229,7 @@ class Faucet(Fountain):
         self.particles.update()
 
 
-class Shadow(Entity):
+class Shadow(PhysicalEntity):
     blit_flag = pygame.BLEND_RGB_MULT
     gravity = 0
     decay = 0
