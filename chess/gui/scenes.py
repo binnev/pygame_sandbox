@@ -8,9 +8,6 @@ if TYPE_CHECKING:
 
 
 class ChessMatch(Entity):
-
-    game: "ChessGame"
-
     def __init__(self, *groups):
         super().__init__(*groups)
 
