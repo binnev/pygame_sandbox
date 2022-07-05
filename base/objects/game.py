@@ -28,7 +28,7 @@ class Game(Entity):
         self.scenes = Group()
         self.scenes.add()
         self.debug_helpers = Group()
-        FpsTracker(self.debug_helpers)
+        self.debug_helpers.add(FpsTracker())
         self.child_groups = [self.scenes, self.debug_helpers]
 
         pygame.font.init()
