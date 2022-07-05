@@ -12,8 +12,8 @@ class Button(PhysicalEntity):
     # These attributes are set by whatever is managing the buttons. The button itself doesn't
     # check these. This allows the menu to use keyboard/controller inputs to shift focus,
     # as well as the mouse.
-    is_focused: bool  # is the button currently selected?
-    is_pressed: bool  # is the button currently being clicked?
+    is_focused: bool  # does the button have focus? (e.g. mouse hovering over)
+    is_pressed: bool  # is the button down right now
     font_name = "ubuntu"
     font_size = 20
 
@@ -21,21 +21,22 @@ class Button(PhysicalEntity):
     # functionality.
     on_press: Callable
     on_focus: Callable
+    on_release: Callable
+    on_unfocus: Callable
 
     text_color: Color
-    idle_color: Color
-    focus_color: Color
-    press_color: Color
 
     def __init__(
         self,
-        x: int,
-        y: int,
-        width: int,
-        height: int,
+        x,
+        y,
+        width,
+        height,
         text=None,
-        on_press: Callable = None,
-        on_focus: Callable = None,
+        on_press=None,
+        on_focus=None,
+        on_release=None,
+        on_unfocus=None,
     ):
         self.width = width
         self.height = height
@@ -46,46 +47,59 @@ class Button(PhysicalEntity):
         self.is_pressed = False
         self.on_press = on_press or (lambda: None)
         self.on_focus = on_focus or (lambda: None)
+        self.on_release = on_release or (lambda: None)
+        self.on_unfocus = on_unfocus or (lambda: None)
         self.font = pygame.font.Font(pygame.font.get_default_font(), self.font_size)
-        self.color = self.idle_color
         self.state = self.state_idle
-        super().__init__()
-
-    @property
-    def image(self):
-        image = pygame.Surface((self.width, self.height)).convert_alpha()
-        image.fill(self.color)
+        self.image = pygame.Surface(self.rect.size)
+        self.image.fill(Color("red"))
         if self.text:
-            text = self.font.render(self.text, True, self.text_color)
+            text = self.font.render(self.text, True, Color("black"))
             textRect = text.get_rect()
-            textRect.center = image.get_rect().center
-            image.blit(text, textRect)
-        return image
+            textRect.center = self.image.get_rect().center
+            self.image.blit(text, textRect)
+        super().__init__()
 
     def draw(self, surface, debug=False):
         super().draw(surface, debug)
 
     def update(self):
-        self.color = self.idle_color
         super().update()
 
     def state_idle(self):
         if self.is_focused:
-            self.state = self.state_focus
+            self.focus()
         if self.is_pressed:
-            self.state = self.state_press
+            self.press()
+        # subclasses can override to provide additional functionality
 
     def state_focus(self):
-        self.on_focus()
         if not self.is_focused:
-            self.state = self.state_idle
+            self.unfocus()
         if self.is_pressed:
-            self.state = self.state_press
+            self.press()
+        # subclasses can override to provide additional functionality
 
     def state_press(self):
-        self.on_press()
         if not self.is_pressed:
-            self.state = self.state_idle
+            self.release()
+        # subclasses can override to provide additional functionality
+
+    def press(self):
+        self.on_press(self)
+        self.state = self.state_press
+
+    def focus(self):
+        self.on_focus(self)
+        self.state = self.state_focus
+
+    def release(self):
+        self.on_release(self)
+        self.state = self.state_focus if self.is_focused else self.state_idle
+
+    def unfocus(self):
+        self.on_unfocus(self)
+        self.state = self.state_idle
 
 
 class ColoredButton(Button):
