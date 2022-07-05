@@ -1,5 +1,4 @@
 import random
-import sys
 
 import numpy
 import pygame
@@ -8,7 +7,7 @@ from pygame.rect import Rect
 from pygame.sprite import Sprite
 
 from base.input import EventQueue
-from base.objects import Group, PhysicalEntity, FpsTracker, Game, Entity
+from base.objects import Group, PhysicalEntity, Game, Entity
 from base.utils import circle_surf
 
 
@@ -432,15 +431,16 @@ class VfxTestScene(Entity):
 
     def draw(self, surface: Surface, debug: bool = False):
         if self.screen_shake:
-            temp_surf = Surface(surface.get_size())
-            temp_surf.fill((50, 50, 50))  # why is this necessary?
+            temp_surf = surface.copy()
             magnitude = 10
             dx = random.randrange(-magnitude, magnitude)
             dy = random.randrange(-magnitude, magnitude)
             rect = temp_surf.get_rect()
             rect.centerx += dx
             rect.centery += dy
+            # draw everything as normal on the temp surf
             super().draw(temp_surf, debug)
+            # but offset the temp surf onto the main surf
             surface.blit(temp_surf, rect)
         else:
             super().draw(surface, debug)
