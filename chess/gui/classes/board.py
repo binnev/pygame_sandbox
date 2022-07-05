@@ -65,7 +65,6 @@ class SquareAnnotation(PhysicalEntity):
 
 
 class GuiBoard(Entity):
-    parental_name = "board"
 
     def __init__(self, *groups):
         super().__init__(*groups)

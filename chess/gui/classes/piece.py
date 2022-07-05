@@ -22,7 +22,6 @@ class GuiPiece(PhysicalEntity):
     width = conf.SQUARE_SIZE
     height = conf.SQUARE_SIZE
     sprite_name: str
-    board: "GuiBoard"
     square: "GuiSquare"
 
     def __init__(self, x, y, team: Teams, type=PieceTypes, *groups):
