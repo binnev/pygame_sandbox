@@ -26,6 +26,7 @@ class Game(Entity):
         pygame.init()
 
         self.scenes = Group()
+        self.scenes.add()
         self.debug_helpers = Group()
         FpsTracker(self.debug_helpers)
         self.child_groups = [self.scenes, self.debug_helpers]
@@ -41,8 +42,6 @@ class Game(Entity):
         loop. Here's where you should put your main event state machine."""
         self.debug = False
         self.running = True
-        if not self.scenes:
-            raise Exception("You need to add an initial scene")
         while self.running:
             self._update()
             self._draw(self.window, debug=self.debug)
@@ -76,10 +75,6 @@ class Game(Entity):
         self.update()
         if self.fps:
             self.clock.tick(self.fps)
-
-        # if there are no scenes to play, exit
-        if not self.scenes:
-            self.running = False
 
     def _draw(self, surface: Surface, debug: bool = False):
         surface.fill(self.screen_color)  # clear the screen
