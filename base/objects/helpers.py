@@ -19,12 +19,9 @@ class FpsTracker(Entity):
     def update(self):
         t = time.time()
         self.queue.append(t)
-        n_frames = len(self.queue)
+        frames = len(self.queue)
         seconds = self.queue[-1] - self.queue[0]
-        if n_frames and seconds:
-            self.fps = int(n_frames / seconds)
-        else:
-            self.fps = 0
+        self.fps = int(frames / seconds) if (frames and seconds) else 0
 
     def draw(self, surface: Surface, debug: bool = False):
         if debug:
