@@ -1,23 +1,21 @@
 import pygame.mouse
-from pygame import Color
-from pygame.event import Event
 
 from base.gui.button import Button
-from base.input import EventQueue
 from base.objects import Game, Group, Particle
 from base.utils import mouse_hovering_over, random_int
 
 
-class events:
-    INCREMENT_VALUE = pygame.event.custom_type()
-
-
 class GuiExample(Game):
+    """
+    This is an example where the on_press hook adds particles to the outer Game class at the
+    position of the Button instance. To do this it needs access to both the Game and Button
+    instances.
+    """
+
     screen_color = (50, 50, 50)
 
     def __init__(self):
         super().__init__()
-        self.value = 0
         self.buttons = Group()
         self.particles = Group()
         self.child_groups += [self.buttons, self.particles]
@@ -30,24 +28,18 @@ class GuiExample(Game):
                 text="up",
                 on_press=(
                     lambda button: (
-                        EventQueue.add(Event(events.INCREMENT_VALUE)),
                         self.particles.add(Flash(x=button.x, y=button.y)),
                         [self.particles.add(Glow(x=button.x, y=button.y)) for _ in range(10)],
                     )
                 ),
-                on_focus=(lambda button: print("on_focus")),
-                on_unfocus=(lambda button: print("on_unfocus")),
-                on_release=(lambda button: print("on_release")),
+                on_release=(lambda button: self.particles.kill()),
             )
         )
 
     def update(self):
         super().update()
-        if EventQueue.get(type=events.INCREMENT_VALUE):
-            self.value += 1
-        print(f"{self.value=}")
 
-        # doing button manager stuff here
+        # button manager stuff
         for button in self.buttons:
             if mouse_hovering_over(button):
                 button.is_focused = True

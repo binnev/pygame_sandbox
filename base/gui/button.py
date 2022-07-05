@@ -16,14 +16,6 @@ class Button(PhysicalEntity):
     is_pressed: bool  # is the button down right now
     font_name = "ubuntu"
     font_size = 20
-
-    # callable hooks passed by the creator/owner of the Button that trigger some external
-    # functionality.
-    on_press: Callable
-    on_focus: Callable
-    on_release: Callable
-    on_unfocus: Callable
-
     text_color: Color
 
     def __init__(
@@ -45,10 +37,10 @@ class Button(PhysicalEntity):
         self.rect.center = (x, y)
         self.is_focused = False
         self.is_pressed = False
-        self.on_press = on_press or (lambda: None)
-        self.on_focus = on_focus or (lambda: None)
-        self.on_release = on_release or (lambda: None)
-        self.on_unfocus = on_unfocus or (lambda: None)
+        self._on_press = on_press or (lambda button: None)
+        self._on_focus = on_focus or (lambda button: None)
+        self._on_release = on_release or (lambda button: None)
+        self._on_unfocus = on_unfocus or (lambda button: None)
         self.font = pygame.font.Font(pygame.font.get_default_font(), self.font_size)
         self.state = self.state_idle
         self.image = pygame.Surface(self.rect.size)
@@ -66,6 +58,9 @@ class Button(PhysicalEntity):
     def update(self):
         super().update()
 
+    # =============================================================================================
+    # state functions handle behaviour that happens *every tick* the button is in that state
+    # =============================================================================================
     def state_idle(self):
         if self.is_focused:
             self.focus()
@@ -85,20 +80,46 @@ class Button(PhysicalEntity):
             self.release()
         # subclasses can override to provide additional functionality
 
+    # =============================================================================================
+    # on_* functions handle behaviour that happens *once* at the transition to a new state.
+    # By default they just call the hook passed in by the button creator, but Button
+    # subclasses can also extend the method to add additional custom behaviour. External effects
+    # (e.g. incrementing some value stored in a parent class) should be handled by the hook.
+    # Internal effects (i.e. those that require access to the button instance) should be handled
+    # by an overridden method on a subclass. A mix of both (e.g. adding particles to the parent
+    # class at the button's position) could be solved using an Event.
+    # =============================================================================================
+
+    def on_press(self):
+        self._on_press(self)
+
+    def on_release(self):
+        self._on_release(self)
+
+    def on_focus(self):
+        self._on_focus(self)
+
+    def on_unfocus(self):
+        self._on_unfocus(self)
+
+    # =============================================================================================
+    # courtesy methods to make switching states easy
+    # =============================================================================================
+
     def press(self):
-        self.on_press(self)
+        self.on_press()
         self.state = self.state_press
 
     def focus(self):
-        self.on_focus(self)
+        self.on_focus()
         self.state = self.state_focus
 
     def release(self):
-        self.on_release(self)
+        self.on_release()
         self.state = self.state_focus if self.is_focused else self.state_idle
 
     def unfocus(self):
-        self.on_unfocus(self)
+        self.on_unfocus()
         self.state = self.state_idle
 
 
