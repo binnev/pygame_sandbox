@@ -11,7 +11,13 @@
   - pymunk physics http://www.pymunk.org/en/latest/
 
 ## Reusable GUI buttons / input fields
-- Button
+- [ ] Button implementing reliable on_press etc
+  - [ ] Test states that do a constant thing e.g. glow
+  - [ ] Or a button that flashes ONCE when hovered over / clicked
+- Menu class that tells the buttons when they are hovered/pressed
+  - mouse menu
+  - keyboard menu
+  - controller menu 
 - Draggable thing
 - Text input field
 
