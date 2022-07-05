@@ -1,15 +1,19 @@
 # todo: 
-- events
+## events
   - event timers (`pygame.time.set_timer(event_id: int, countdown: int)`)
   - use events to trigger stuff like screen shake where the object creating the event doesn't necessarily have access to the object that implements the event behaviour.
-  - integrate events in stuff like KeyHandler to reduce the overhead in their read /update actions?
-- dirty rect blitting (only updating parts of the screen that have changed) 
+  - integrate events in stuff like KeyHandler to reduce the overhead in their read /update actions? 
+## dirty rect blitting (only updating parts of the screen that have changed) 
   - Group.clear() can remove sprites from the screen (overwrite them with BG image). 
   - Then just need to re-blit the sprites to screen; updating only the parts of the screen under their rects.
   - DirtySprite?
   - LayeredDirty has some clip functionality
-- pymunk physics http://www.pymunk.org/en/latest/
+  - pymunk physics http://www.pymunk.org/en/latest/
 
+## Reusable GUI buttons / input fields
+- Button
+- Draggable thing
+- Text input field
 
 ## Entity / Group structure
 - Groups contain Entities 
