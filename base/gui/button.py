@@ -20,10 +20,10 @@ class Button(PhysicalEntity):
 
     def __init__(
         self,
-        x,
-        y,
-        width,
-        height,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
         text=None,
         on_press=None,
         on_focus=None,
