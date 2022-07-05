@@ -7,7 +7,9 @@ from pygame import Color, Surface
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 
-from base.objects import Group, PhysicalEntity
+from base.input import EventQueue
+from base.objects import Group, PhysicalEntity, FpsTracker, Game, Entity
+from base.utils import circle_surf
 
 
 def sin_values(mean, variance, n_points):
@@ -286,13 +288,6 @@ class Shadow(PhysicalEntity):
         surface.blit(shadow_surface, shadow_surface.get_rect(), special_flags=self.blit_flag)
 
 
-def circle_surf(radius, color):
-    surf = Surface((radius * 2, radius * 2))
-    pygame.draw.circle(surf, color, (radius, radius), radius)
-    surf.set_colorkey((0, 0, 0))
-    return surf
-
-
 class Explosion(Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -364,98 +359,92 @@ class Explosion(Sprite):
         self.particles.draw(surface, debug)
 
 
-def main():
-    pygame.init()
-    pygame.display.init()
-    clock = pygame.time.Clock()
-    window = pygame.display.set_mode([1600, 900])
+class VfxTestGame(Game):
+    fps = 60
+    window_width = 1600
+    window_height = 900
+    window_caption = "VFX test"
+    screen_color = (50, 50, 50)
 
-    # "layers"
-    background = Group()
-    midground = Group()
-    foreground = Group()
-    shadows = Group()
-    groups = [
-        background,
-        midground,
-        foreground,
-        shadows,
-    ]
+    def __init__(self):
+        super().__init__()
+        self.add_scene(VfxTestScene())
 
-    # add static stuff
-    background.add(
-        Block(300, 300, 100, 100, Color("cornsilk4")),
-        Block(600, 300, 100, 100, Color("cornsilk4")),
-        Torch(900, 600),
-        Fountain(400, 300, color=Color("greenyellow")),
-    )
-    midground.add(
-        Glow(400, 400, radius=100, variance=20, period=360),
-        Glow(400, 400, radius=80, variance=20, period=360),
-        Glow(400, 400, radius=70, variance=20, period=360),
-        Glow(350, 350, radius=50, variance=10, period=100),
-        Glow(400, 340, radius=40, variance=5, period=50),
-        Character(100, 100),
-        Torch(800, 750),
-    )
-    foreground.add(
-        Fire(500, 300),
-        Faucet(600, 300),
-        Torch(800, 600),
-        Block(450, 450, 333, 99, Color("dodgerblue4")),
-    )
-    shadows.add(Shadow(150, 150, radius=200))
 
-    run = True
-    pygame.draw.rect(window, Color("cyan"), (30, 40, 100, 200))
-    max_num_entities = 0
-    screen_shake = 0
-    while run:
+class VfxTestScene(Entity):
+    def __init__(self, *groups):
+        super().__init__(*groups)
+        # "layers"
+        self.background = Group()
+        self.midground = Group()
+        self.foreground = Group()
+        self.shadows = Group()
+        self.child_groups = [
+            self.background,
+            self.midground,
+            self.foreground,
+            self.shadows,
+        ]
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
+        # add static stuff
+        self.background.add(
+            Block(300, 300, 100, 100, Color("cornsilk4")),
+            Block(600, 300, 100, 100, Color("cornsilk4")),
+            Torch(900, 600),
+            Fountain(400, 300, color=Color("greenyellow")),
+        )
+        self.midground.add(
+            Glow(400, 400, radius=100, variance=20, period=360),
+            Glow(400, 400, radius=80, variance=20, period=360),
+            Glow(400, 400, radius=70, variance=20, period=360),
+            Glow(350, 350, radius=50, variance=10, period=100),
+            Glow(400, 340, radius=40, variance=5, period=50),
+            Character(100, 100),
+            Torch(800, 750),
+        )
+        self.foreground.add(
+            Fire(500, 300),
+            Faucet(600, 300),
+            Torch(800, 600),
+            Block(450, 450, 333, 99, Color("dodgerblue4")),
+        )
+        self.shadows.add(Shadow(150, 150, radius=200))
+
+        self.max_num_entities = 0
+        self.screen_shake = 0
+
+    def update(self):
+        super().update()
+        for event in EventQueue.events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 left, middle, right = pygame.mouse.get_pressed()
                 if left:
                     x, y = pygame.mouse.get_pos()
-                    midground.add(Explosion(x, y))
-                    screen_shake = 10
-
-        for group in groups:
-            group.update()
-
-        num_entities = sum(map(len, groups))
-        if num_entities > max_num_entities:
+                    self.midground.add(Explosion(x, y))
+                    self.screen_shake = 10
+        num_entities = sum(map(len, self.child_groups))
+        if num_entities > self.max_num_entities:
             max_num_entities = num_entities
             print(max_num_entities)
 
-        # draw stuff
-        if screen_shake:
-            temp_surf = Surface(window.get_size())
-            temp_surf.fill((50, 50, 50))
-            screen_shake -= 1
+        if self.screen_shake:
+            self.screen_shake -= 1
+
+    def draw(self, surface: Surface, debug: bool = False):
+        if self.screen_shake:
+            temp_surf = Surface(surface.get_size())
+            temp_surf.fill((50, 50, 50))  # why is this necessary?
             magnitude = 10
             dx = random.randrange(-magnitude, magnitude)
             dy = random.randrange(-magnitude, magnitude)
             rect = temp_surf.get_rect()
             rect.centerx += dx
             rect.centery += dy
-            for group in groups:
-                group.draw(temp_surf)
-            window.blit(temp_surf, rect)
+            super().draw(temp_surf, debug)
+            surface.blit(temp_surf, rect)
         else:
-            window.fill((50, 50, 50))
-            for group in groups:
-                group.draw(window)
-        pygame.display.update()
-        clock.tick(60)
+            super().draw(surface, debug)
 
 
 if __name__ == "__main__":
-    main()
+    VfxTestGame().main()
