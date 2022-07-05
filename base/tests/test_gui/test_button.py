@@ -5,8 +5,6 @@ from pygame import Color
 
 from base.gui.button import Button
 
-HOOK_NAMES = ["on_press", "on_release", "on_focus", "on_unfocus"]
-
 
 def test_button_instantiation_default_values(font_init):
     button = Button(x=0, y=0, width=100, height=50)
@@ -25,7 +23,7 @@ def test_default_empty_hooks_dont_break_anything(font_init):
     button.on_release()
 
 
-@pytest.mark.parametrize("hook_name", HOOK_NAMES)
+@pytest.mark.parametrize("hook_name", ["on_press", "on_release", "on_focus", "on_unfocus"])
 def test_button_state_switching_calls_hooks_passing_button_instance(hook_name, font_init):
     """
     If we pass `on_press=our_hook` to Button, and we call button.on_press, we expect our hook to

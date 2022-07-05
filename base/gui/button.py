@@ -66,19 +66,16 @@ class Button(PhysicalEntity):
             self.focus()
         if self.is_pressed:
             self.press()
-        # subclasses can override to provide additional functionality
 
     def state_focus(self):
         if not self.is_focused:
             self.unfocus()
         if self.is_pressed:
             self.press()
-        # subclasses can override to provide additional functionality
 
     def state_press(self):
         if not self.is_pressed:
             self.release()
-        # subclasses can override to provide additional functionality
 
     # =============================================================================================
     # on_* functions handle behaviour that happens *once* at the transition to a new state.
