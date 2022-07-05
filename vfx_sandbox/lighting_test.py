@@ -369,6 +369,12 @@ class VfxTestGame(Game):
         super().__init__()
         self.add_scene(VfxTestScene())
 
+    def draw(self, surface: Surface, debug: bool = False):
+        green_rect = Surface((100, 100))
+        green_rect.fill((0, 255, 0))
+        surface.blit(green_rect, green_rect.get_rect())
+        super().draw(surface, debug)
+
 
 class VfxTestScene(Entity):
     def __init__(self, *groups):
