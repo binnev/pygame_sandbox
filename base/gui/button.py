@@ -1,3 +1,5 @@
+from typing import Callable
+
 import pygame
 from pygame import Color
 from pygame.rect import Rect
@@ -14,10 +16,11 @@ class Button(PhysicalEntity):
     is_pressed: bool  # is the button currently being clicked?
     font_name = "ubuntu"
     font_size = 20
+
     # callable hooks passed by the creator/owner of the Button that trigger some external
     # functionality.
-    on_press: callable
-    on_focus: callable
+    on_press: Callable
+    on_focus: Callable
 
     text_color: Color
     idle_color: Color
@@ -31,8 +34,8 @@ class Button(PhysicalEntity):
         width: int,
         height: int,
         text=None,
-        on_press: callable = None,
-        on_focus: callable = None,
+        on_press: Callable = None,
+        on_focus: Callable = None,
     ):
         self.width = width
         self.height = height
