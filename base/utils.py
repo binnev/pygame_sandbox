@@ -1,10 +1,15 @@
 import enum
 from collections import namedtuple
 from math import sin
+from typing import TYPE_CHECKING
 
 import numpy
 import pygame
 from pygame.surface import Surface
+
+
+if TYPE_CHECKING:
+    from base.objects.entity import Entity
 
 Point = namedtuple("Point", ["x", "y"])
 

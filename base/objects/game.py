@@ -6,6 +6,7 @@ from pygame.surface import Surface
 
 from base.input import EventQueue
 from base.objects import Entity, Group
+from base.objects.helpers import FpsTracker
 
 
 class Game(Entity):
@@ -25,7 +26,9 @@ class Game(Entity):
         pygame.init()
 
         self.scenes = Group()
-        self.child_groups = [self.scenes]
+        self.debug_helpers = Group()
+        FpsTracker(self.debug_helpers)
+        self.child_groups = [self.scenes, self.debug_helpers]
 
         pygame.font.init()
         self.font = pygame.font.Font(pygame.font.match_font(self.font_name), self.font_size)
