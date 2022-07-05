@@ -5,7 +5,7 @@ from base.objects import Game, Group, Particle
 from base.utils import mouse_hovering_over, random_int
 
 
-class GuiExample(Game):
+class ComplicatedOnPressHookExample(Game):
     """
     This is an example where the on_press hook adds particles to the outer Game class at the
     position of the Button instance. To do this it needs access to both the Game and Button
@@ -69,4 +69,4 @@ class Glow(Particle):
 
 
 if __name__ == "__main__":
-    GuiExample().main()
+    ComplicatedOnPressHookExample().main()
