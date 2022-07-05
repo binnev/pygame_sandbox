@@ -15,8 +15,6 @@
 - Draggable thing
 - Text input field
 
-## FPS tracker
-
 ## Entity / Group structure
 - Groups contain Entities 
 - An Entity can have Groups containing child Entities (e.g. particle effects or projectiles belonging to it)
