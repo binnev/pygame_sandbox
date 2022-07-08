@@ -1,4 +1,5 @@
 import pygame.mouse
+from pygame import Surface
 
 from base.animation import damping_response
 from base.examples.gui_examples.assets import flashy_button_sprites
@@ -6,6 +7,7 @@ from base.gui.button import Button
 from base.image import scale_image, brighten, SpriteAnimation
 from base.objects import Game, Group, Particle
 from base.utils import mouse_hovering_over, random_int
+from pygame.color import Color
 
 
 class ButtonWithImages(Button):
@@ -16,22 +18,19 @@ class ButtonWithImages(Button):
         super().__init__(x, y, width, height, **kwargs)
         self.image_idle = self.sprites.flash.play(0)
         self.image_pressed = brighten(scale_image(self.image_idle.copy(), 0.9), amount=30)
-        sizes = [damping_response(t) for t in range(30)]
-        images = [scale_image(self.image_idle.copy(), s) for s in sizes]
-        self.animation_on_release = SpriteAnimation(images=images)
-        self.animation = SpriteAnimation(images=[self.image_idle])
+        self.image = self.image_idle
 
     def state_idle(self):
+        self.image = self.image_idle
         super().state_idle()
-        self.image = self.animation.play_once(self.animation_frame)
 
     def state_focus(self):
+        self.image = self.animation.play_once(self.animation_frame, repeat_frame=0)
         super().state_focus()
-        self.image = self.animation.play_once(self.animation_frame)
 
     def state_press(self):
+        self.image = self.image_pressed
         super().state_press()
-        self.image = self.animation_on_release.play(0)
 
     def on_focus(self):
         super().on_focus()
@@ -39,7 +38,7 @@ class ButtonWithImages(Button):
 
     def on_release(self):
         super().on_release()
-        self.animation = self.animation_on_release
+        self.animation = SpriteAnimation(images=[self.image_idle])
 
 
 class ColoredButtonEffectsExample(Game):
