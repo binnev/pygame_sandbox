@@ -24,11 +24,6 @@ def ease_in_out(start, stop, num, power=3) -> numpy.array:
     return ease(start, stop, num, function=lambda x: _in_out(x, power))
 
 
-def damping_response(t):
-    baseline = 1
-    amp = -0.2
-    damping = 0.4
-    phase = 0
-    freq = 0.9
+def damping_response(t, baseline=1, amp=0.5, damping=0.4, phase=0, freq=0.3):
     decay = damping * freq
     return baseline + amp * numpy.e ** (-decay * t) * numpy.cos(freq * t - phase)

@@ -1,5 +1,4 @@
 import pygame.mouse
-from pygame import Surface
 
 from base.animation import damping_response
 from base.examples.gui_examples.assets import flashy_button_sprites
@@ -7,7 +6,6 @@ from base.gui.button import Button
 from base.image import scale_image, brighten, SpriteAnimation
 from base.objects import Game, Group, Particle
 from base.utils import mouse_hovering_over, random_int
-from pygame.color import Color
 
 
 class ButtonWithImages(Button):
@@ -41,6 +39,40 @@ class ButtonWithImages(Button):
         self.animation = SpriteAnimation(images=[self.image_idle])
 
 
+class BouncyButton(Button):
+    sprites = flashy_button_sprites
+    frame_duration = 3
+
+    def __init__(self, x: int, y: int, width: int, height: int, **kwargs):
+        super().__init__(x, y, width, height, **kwargs)
+        self.image = self.sprites.flash.play(0)
+        sizes = [damping_response(t) for t in range(20)]
+        self.animation = self.sprites.flash
+        self.animation_timer = 99
+        self.physics_timer = 0
+        self.amplitude = 0
+
+    def on_press(self):
+        super().on_press()
+        self.physics_timer = 0
+        self.amplitude = -0.4
+
+    def on_focus(self):
+        super().on_focus()
+        self.animation_timer = 0
+
+    def update(self):
+        super().update()
+        self.image = self.animation.play_once(
+            self.animation_timer // self.frame_duration, repeat_frame=0
+        )
+        scaling = damping_response(self.physics_timer, amp=self.amplitude)
+        if abs(1 - scaling) > 0.01:
+            self.image = scale_image(self.image.copy(), scaling)
+        self.physics_timer += 1
+        self.animation_timer += 1
+
+
 class ColoredButtonEffectsExample(Game):
     """
     This is an example where the Buttons have different colours/animations for each state and
@@ -48,6 +80,8 @@ class ColoredButtonEffectsExample(Game):
     """
 
     screen_color = (50, 50, 50)
+    window_width = 500
+    window_height = 500
 
     def __init__(self):
         super().__init__()
@@ -68,7 +102,8 @@ class ColoredButtonEffectsExample(Game):
                     )
                 ),
                 on_unfocus=(lambda button: self.particles.kill()),
-            )
+            ),
+            BouncyButton(x=200, y=300, width=200, height=100),
         )
 
     def update(self):
