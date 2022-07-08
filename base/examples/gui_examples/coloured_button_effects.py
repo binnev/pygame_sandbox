@@ -1,7 +1,7 @@
 import pygame.mouse
 
 from base.animation import damping_response
-from base.examples.gui_examples.assets import flashy_button_sprites
+from base.examples.gui_examples.assets import button_flash
 from base.gui.button import Button
 from base.image import scale_image, brighten, SpriteAnimation
 from base.objects import Game, Group, Particle
@@ -9,12 +9,11 @@ from base.utils import mouse_hovering_over, random_int
 
 
 class ButtonWithImages(Button):
-    sprites = flashy_button_sprites
     frame_duration = 3
 
     def __init__(self, x: int, y: int, width: int, height: int, **kwargs):
         super().__init__(x, y, width, height, **kwargs)
-        self.image_idle = self.sprites.flash.play(0)
+        self.image_idle = button_flash.images[-1]
         self.image_pressed = brighten(scale_image(self.image_idle.copy(), 0.9), amount=30)
         self.image = self.image_idle
 
@@ -32,7 +31,7 @@ class ButtonWithImages(Button):
 
     def on_focus(self):
         super().on_focus()
-        self.animation = self.sprites.flash
+        self.animation = button_flash
 
     def on_release(self):
         super().on_release()
@@ -40,36 +39,38 @@ class ButtonWithImages(Button):
 
 
 class BouncyButton(Button):
-    sprites = flashy_button_sprites
     frame_duration = 3
 
     def __init__(self, x: int, y: int, width: int, height: int, **kwargs):
         super().__init__(x, y, width, height, **kwargs)
-        self.image = self.sprites.flash.play(0)
+        self.image = button_flash.play(0)
         sizes = [damping_response(t) for t in range(20)]
-        self.animation = self.sprites.flash
+        self.animation = button_flash
         self.animation_timer = 99
         self.physics_timer = 0
         self.amplitude = 0
+        self.damping = 0.4
 
-    def on_press(self):
-        super().on_press()
-        self.physics_timer = 0
-        self.amplitude = -0.4
+    def state_press(self):
+        super().state_press()
+        self.amplitude = -0.5
+        self.physics_timer = 0  # holds the physics on "frame" 1
+        # self.damping = 0.4
 
     def on_focus(self):
         super().on_focus()
         self.animation_timer = 0
         self.physics_timer = 0
         self.amplitude = 0.1
+        # self.damping = 0.15
 
     def update(self):
         super().update()
-        self.image = self.animation.play_once(
-            self.animation_timer // self.frame_duration, repeat_frame=0
+        self.image = self.animation.play_once(self.animation_timer // self.frame_duration)
+        scale_factor = damping_response(
+            self.physics_timer, amp=self.amplitude, damping=self.damping, freq=0.2
         )
-        scale_factor = damping_response(self.physics_timer, amp=self.amplitude)
-        if abs(scale_factor) > 0.01:
+        if abs(scale_factor) > 0.005:  # prevents jittering
             self.image = scale_image(self.image.copy(), 1 + scale_factor)
         self.physics_timer += 1
         self.animation_timer += 1
@@ -100,7 +101,7 @@ class ColoredButtonEffectsExample(Game):
                 on_release=(
                     lambda button: (
                         self.particles.add(Flash(x=button.x, y=button.y)),
-                        self.particles.add(Glow(x=button.x, y=button.y) for _ in range(10)),
+                        self.particles.add(Glow(x=button.x, y=button.y) for _ in range(50)),
                     )
                 ),
                 on_unfocus=(lambda button: self.particles.kill()),
