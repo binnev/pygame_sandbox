@@ -142,6 +142,14 @@ class SpriteAnimation:
         """If n is greater than the number of frames, start again at the beginning."""
         return self.play(n % len(self.images))
 
+    def play_once(self, n: int, repeat_frame=-1):
+        """Run the animation once and then continue returning the specified frame (default=last
+        frame)."""
+        try:
+            return self.images[n]
+        except IndexError:
+            return self.images[repeat_frame]
+
     ############## edit in place ###############
     def flip(self, flip_x: bool, flip_y: bool):
         self._images = flip_images(self.images, flip_x, flip_y)

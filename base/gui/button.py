@@ -9,9 +9,14 @@ from base.utils import pulsing_value
 
 
 class Button(PhysicalEntity):
-    # These attributes are set by whatever is managing the buttons. The button itself doesn't
-    # check these. This allows the menu to use keyboard/controller inputs to shift focus,
-    # as well as the mouse.
+    """
+    GUI button entity. Reacts to changes in the is_focused and is_pressed booleans, but doesn't
+    set them (a parent menu class or something else should set them). This is so that each Button
+    doesn't have to do its own input detection. It also allows a parent menu class to take into
+    account additional context e.g. shifting focus from one button to another using a keyboard or
+    joystick input. Operations like this would be beyond the scope of a single Button instance.
+    """
+
     is_focused: bool  # does the button have focus? (e.g. mouse hovering over)
     is_pressed: bool  # is the button down right now
     font_name = "ubuntu"

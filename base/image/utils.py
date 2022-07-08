@@ -70,7 +70,7 @@ def brighten(image: Surface, amount: int):
             else:
                 new_image.set_at((x, y), pygame.Color(*color))
 
-    return new_surface
+    return new_image
 
 
 def scale_image(image: Surface, scale: float):
