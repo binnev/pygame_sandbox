@@ -14,6 +14,7 @@
 - [ ] Button implementing reliable on_press etc
   - [ ] Test states that do a constant thing e.g. glow
   - [ ] Or a button that flashes ONCE when hovered over / clicked
+- Subclass ClickableButton that does its own mouse detection
 - Menu class that tells the buttons when they are hovered/pressed
   - mouse menu
   - keyboard menu

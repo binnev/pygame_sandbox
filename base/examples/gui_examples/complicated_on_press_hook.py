@@ -29,7 +29,7 @@ class ComplicatedOnPressHookExample(Game):
                 on_press=(
                     lambda button: (
                         self.particles.add(Flash(x=button.x, y=button.y)),
-                        [self.particles.add(Glow(x=button.x, y=button.y)) for _ in range(10)],
+                        self.particles.add(Glow(x=button.x, y=button.y) for _ in range(10)),
                     )
                 ),
                 on_release=(lambda button: self.particles.kill()),
