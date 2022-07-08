@@ -12,10 +12,10 @@ from base.objects.helpers import FpsTracker
 class Game(Entity):
     """Special case of Entity; it is at the very top of the object tree."""
 
-    fps = 60
-    window_width: int
-    window_height: int
-    window_caption: str
+    fps: int = 60
+    window_width: int = 500
+    window_height: int = 500
+    window_caption: str = ""
     font_name: str = "ubuntucondensed"
     font_size: int = 30
     parental_name = "game"
@@ -28,7 +28,7 @@ class Game(Entity):
         self.scenes = Group()
         self.scenes.add()
         self.debug_helpers = Group()
-        FpsTracker(self.debug_helpers)
+        self.debug_helpers.add(FpsTracker())
         self.child_groups = [self.scenes, self.debug_helpers]
 
         pygame.font.init()

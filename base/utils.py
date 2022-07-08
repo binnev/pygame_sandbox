@@ -2,7 +2,7 @@ import random
 import enum
 from collections import namedtuple
 from math import sin
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple, Any
 
 import numpy
 import pygame
@@ -199,3 +199,8 @@ def random_float(min, max):
 
 def random_int(min, max):
     return random.randint(min, max)
+
+
+def limit_value(value, between: Tuple[Any, Any]):
+    _min, _max = between
+    return max(_min, min(value, _max))

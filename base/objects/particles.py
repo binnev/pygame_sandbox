@@ -18,9 +18,9 @@ class Particle(PhysicalEntity):
         self,
         x,
         y,
-        u,
-        v,
-        radius,
+        u=0,
+        v=0,
+        radius=None,
         color=None,
         gravity=None,
         friction=None,
@@ -28,21 +28,21 @@ class Particle(PhysicalEntity):
         blit_flag=None,
     ):
         super().__init__()
-        self.color = color if color is not None else self.color
-        self.gravity = gravity if gravity is not None else self.gravity
-        self.friction = friction if friction is not None else self.friction
-        self.decay = decay if decay is not None else self.decay
-        self.blit_flag = blit_flag if blit_flag is not None else self.blit_flag
+        self.color = self.color if color is None else color
+        self.gravity = self.gravity if gravity is None else gravity
+        self.friction = self.friction if friction is None else friction
+        self.decay = self.decay if decay is None else decay
+        self.blit_flag = self.blit_flag if blit_flag is None else blit_flag
+        self.radius = self.radius if radius is None else radius
         self.rect = Rect(0, 0, 0, 0)
         self.x = x
         self.y = y
         self.u = u
         self.v = v
-        self.radius = radius
 
     def update(self):
-        self.x = self.x + self.u
-        self.y = self.y + self.v
+        self.x += self.u
+        self.y += self.v
         self.v += self.gravity
         self.u *= 1 - self.friction
         self.v *= 1 - self.friction

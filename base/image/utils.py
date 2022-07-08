@@ -1,8 +1,11 @@
+from pygame.color import Color
 import glob
 from pathlib import Path
 
 import pygame
 from pygame import Surface
+
+from base.utils import limit_value
 
 
 def load_image(filename, colorkey=None) -> Surface:
@@ -41,6 +44,34 @@ def pad_alpha(colour_tuple):
         raise Exception("bogus colour, man")
 
 
+def brighten_color(color: Color, amount: int) -> Color:
+    color = Color(color)
+    r = limit_value(color.r + amount, between=(0, 255))
+    g = limit_value(color.g + amount, between=(0, 255))
+    b = limit_value(color.b + amount, between=(0, 255))
+    return Color(r, g, b, color.a)
+
+
+def brighten(image: Surface, amount: int):
+    width, height = image.get_size()
+    # surface.copy() inherits surface's colorkey; preserving transparency
+    new_image = image.copy()
+
+    # iterate over all the pixels in the old surface, and write a pixel to the new surface in the
+    # corresponding position. If the colour of the present pixel has an entry in the
+    # color_mapping dict, then write the new colour instead of the old one.
+    for x in range(width):
+        for y in range(height):
+            color = image.get_at((x, y))[:]
+            new_color = brighten_color(color, amount)
+            if new_color:
+                new_image.set_at((x, y), pygame.Color(*new_color))
+            else:
+                new_image.set_at((x, y), pygame.Color(*color))
+
+    return new_image
+
+
 def scale_image(image: Surface, scale: float):
     x_scale = image.get_rect().width * scale
     y_scale = image.get_rect().height * scale
@@ -52,7 +83,7 @@ def scale_images(images: [Surface], scale: float) -> [Surface]:
     return [scale_image(image, scale) for image in images]
 
 
-def flip_image(image, flip_x=False, flip_y=False):
+def flip_image(image: Surface, flip_x=False, flip_y=False):
     return pygame.transform.flip(image, bool(flip_x), bool(flip_y))
 
 
@@ -60,7 +91,7 @@ def flip_images(images: [Surface], flip_x=False, flip_y=False):
     return [flip_image(image, flip_x, flip_y) for image in images]
 
 
-def recolor_image(surface, color_mapping: dict) -> [Surface]:
+def recolor_image(surface: Surface, color_mapping: dict) -> [Surface]:
 
     # make sure the colourmap has alpha channel on all colours
     color_mapping = {pad_alpha(k): pad_alpha(v) for k, v in color_mapping.items()}

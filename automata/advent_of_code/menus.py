@@ -10,7 +10,7 @@ class MainMenu(MyMenu):
         self.day11_button = ColoredButton(-999, 260, *self.button_size, text="Day 11 (octopi)")
         self.day17_button = ColoredButton(-999, 260, *self.button_size, text="Day 17 (ballistics)")
         self.quit_button = ColoredButton(-999, 400, *self.button_size, text="quit")
-        self.add_button(
+        self.buttons.add(
             self.day9_button,
             self.day11_button,
             self.day17_button,

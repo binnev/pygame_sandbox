@@ -9,8 +9,6 @@ from base.utils import mouse_hovering_over
 class Menu(Entity):
     """Base menu class."""
 
-    parental_name = "menu"
-
     def __init__(self, *groups):
         super().__init__(*groups)
         self.buttons = Group()

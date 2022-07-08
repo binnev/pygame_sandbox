@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 from pygame import Surface, Color
 
@@ -9,7 +7,10 @@ from base.image import (
     load_image_sequence,
     load_image,
     relative_folder,
+    brighten_color,
 )
+
+mocks = relative_folder(__file__, "mocks")
 
 
 @pytest.mark.parametrize(
@@ -20,7 +21,7 @@ from base.image import (
     ],
 )
 def test_load_spritesheet(num_images, expected_len, display_init):
-    filename = Path(__file__).parent / "test_assets" / "123_spritesheet.png"
+    filename = mocks / "123_spritesheet.png"
     images = load_spritesheet(filename=filename, image_size=(64, 64), num_images=num_images)
     assert len(images) == expected_len
     assert isinstance(images[0], Surface)
@@ -46,7 +47,7 @@ def test_load_image_sequence_not_found():
     ],
 )
 def test_load_image_sequence(num_images, expected_len, display_init):
-    filename = Path(__file__).parent / "test_assets" / "123_series.png"
+    filename = mocks / "123_series.png"
     images = load_image_sequence(filename=filename, num_images=num_images)
     assert len(images) == expected_len
     assert isinstance(images[0], Surface)
@@ -58,7 +59,7 @@ def test_can_instantiate_empty_spriteanimation():
 
 
 def test_spriteanimation_from_spritesheet(display_init):
-    filename = Path(__file__).parent / "test_assets" / "123_spritesheet.png"
+    filename = mocks / "123_spritesheet.png"
     anim = SpriteAnimation.from_spritesheet(filename=filename, image_size=(64, 64))
     assert isinstance(anim, SpriteAnimation)
     assert anim._images is None  # not loaded yet
@@ -69,7 +70,7 @@ def test_spriteanimation_from_spritesheet(display_init):
 
 
 def test_spriteanimation_from_image_sequence(display_init):
-    filename = Path(__file__).parent / "test_assets" / "123_series.png"
+    filename = mocks / "123_series.png"
     anim = SpriteAnimation.from_image_sequence(filename=filename)
     assert isinstance(anim, SpriteAnimation)
     assert anim._images is None  # not loaded yet
@@ -80,7 +81,7 @@ def test_spriteanimation_from_image_sequence(display_init):
 
 
 def test_spriteanimation_from_image(display_init):
-    filename = Path(__file__).parent / "test_assets" / "123_spritesheet.png"
+    filename = mocks / "123_spritesheet.png"
     anim = SpriteAnimation.from_image(filename=filename)
     assert isinstance(anim, SpriteAnimation)
     assert anim._images is None  # not loaded yet
@@ -134,8 +135,7 @@ def test_spriteanimation_copy_methods():
 
 
 def test_load_image_with_per_pixel_transparency(display_init):
-    folder = relative_folder(__file__, "test_assets")
-    filename = folder / "per_pixel_alpha.png"
+    filename = mocks / "per_pixel_alpha.png"
     image = load_image(filename.as_posix())
 
     # white and red pixels should have full alpha
@@ -154,8 +154,7 @@ def test_load_image_with_per_pixel_transparency(display_init):
 
 
 def test_load_image_with_global_transparency(display_init):
-    folder = relative_folder(__file__, "test_assets")
-    filename = folder / "global_alpha.png"
+    filename = mocks / "global_alpha.png"
     image = load_image(filename.as_posix())
 
     # white and red and green pixels should have full alpha
@@ -169,3 +168,57 @@ def test_load_image_with_global_transparency(display_init):
     # corner pixels should be fully transparent
     for corner_pixel in [(3, 0), (0, 3)]:
         assert image.get_at(corner_pixel) == (0, 0, 0, 0)
+
+
+@pytest.mark.parametrize(
+    "amount, old_color, new_color",
+    [
+        (
+            20,
+            (0, 0, 0),
+            (20, 20, 20),
+        ),
+        (
+            20,
+            Color(0, 0, 0),
+            (20, 20, 20),
+        ),
+        (
+            20,
+            (250, 250, 250),
+            (255, 255, 255),
+        ),
+        (
+            20,
+            (255, 255, 255),
+            (255, 255, 255),
+        ),
+        (
+            20,
+            (0, 250, 255),
+            (20, 255, 255),
+        ),
+        (
+            20,
+            (0, 0, 0, 0),
+            (20, 20, 20, 0),
+        ),
+        (
+            20,
+            Color(0, 0, 0, 0),
+            (20, 20, 20, 0),
+        ),
+        (
+            -50,
+            Color(0, 0, 0, 0),
+            (0, 0, 0, 0),
+        ),
+        (
+            -50,
+            Color(0, 30, 55, 0),
+            (0, 0, 5, 0),
+        ),
+    ],
+)
+def test_brighten_color(amount, old_color, new_color):
+    assert brighten_color(old_color, amount=amount) == new_color
