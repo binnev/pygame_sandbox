@@ -68,9 +68,9 @@ class BouncyButton(Button):
         self.image = self.animation.play_once(
             self.animation_timer // self.frame_duration, repeat_frame=0
         )
-        scaling = damping_response(self.physics_timer, amp=self.amplitude)
-        if abs(1 - scaling) > 0.01:
-            self.image = scale_image(self.image.copy(), scaling)
+        scale_factor = damping_response(self.physics_timer, amp=self.amplitude)
+        if abs(scale_factor) > 0.01:
+            self.image = scale_image(self.image.copy(), 1 + scale_factor)
         self.physics_timer += 1
         self.animation_timer += 1
 
