@@ -60,6 +60,8 @@ class BouncyButton(Button):
     def on_focus(self):
         super().on_focus()
         self.animation_timer = 0
+        self.physics_timer = 0
+        self.amplitude = 0.1
 
     def update(self):
         super().update()
