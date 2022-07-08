@@ -52,12 +52,6 @@ class Button(PhysicalEntity):
             self.image.blit(text, textRect)
         super().__init__()
 
-    def draw(self, surface, debug=False):
-        super().draw(surface, debug)
-
-    def update(self):
-        super().update()
-
     # =============================================================================================
     # state functions handle behaviour that happens *every tick* the button is in that state
     # =============================================================================================
