@@ -171,16 +171,54 @@ def test_load_image_with_global_transparency(display_init):
 
 
 @pytest.mark.parametrize(
-    "old_color, new_color",
+    "amount, old_color, new_color",
     [
-        ((0, 0, 0), (20, 20, 20)),
-        (Color(0, 0, 0), (20, 20, 20)),
-        ((250, 250, 250), (255, 255, 255)),
-        ((255, 255, 255), (255, 255, 255)),
-        ((0, 250, 255), (20, 255, 255)),
-        ((0, 0, 0, 0), (20, 20, 20, 0)),  # alpha channel shouldn't change
-        (Color(0, 0, 0, 0), (20, 20, 20, 0)),  # alpha channel shouldn't change
+        (
+            20,
+            (0, 0, 0),
+            (20, 20, 20),
+        ),
+        (
+            20,
+            Color(0, 0, 0),
+            (20, 20, 20),
+        ),
+        (
+            20,
+            (250, 250, 250),
+            (255, 255, 255),
+        ),
+        (
+            20,
+            (255, 255, 255),
+            (255, 255, 255),
+        ),
+        (
+            20,
+            (0, 250, 255),
+            (20, 255, 255),
+        ),
+        (
+            20,
+            (0, 0, 0, 0),
+            (20, 20, 20, 0),
+        ),
+        (
+            20,
+            Color(0, 0, 0, 0),
+            (20, 20, 20, 0),
+        ),
+        (
+            -50,
+            Color(0, 0, 0, 0),
+            (0, 0, 0, 0),
+        ),
+        (
+            -50,
+            Color(0, 30, 55, 0),
+            (0, 0, 5, 0),
+        ),
     ],
 )
-def test_brighten_color(old_color, new_color):
-    assert brighten_color(old_color, amount=20) == new_color
+def test_brighten_color(amount, old_color, new_color):
+    assert brighten_color(old_color, amount=amount) == new_color

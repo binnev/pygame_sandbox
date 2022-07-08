@@ -5,6 +5,8 @@ from pathlib import Path
 import pygame
 from pygame import Surface
 
+from base.utils import limit_value
+
 
 def load_image(filename, colorkey=None) -> Surface:
     try:
@@ -44,13 +46,10 @@ def pad_alpha(colour_tuple):
 
 def brighten_color(color: Color, amount: int) -> Color:
     color = Color(color)
-    return Color(
-        # why does Color force positional arguments and ignore kwargs?!
-        min(color.r + amount, 255),  # r
-        min(color.g + amount, 255),  # g
-        min(color.b + amount, 255),  # b
-        color.a,  # alpha
-    )
+    r = limit_value(color.r + amount, between=(0, 255))
+    g = limit_value(color.g + amount, between=(0, 255))
+    b = limit_value(color.b + amount, between=(0, 255))
+    return Color(r, g, b, color.a)
 
 
 def brighten(image: Surface, amount: int):
