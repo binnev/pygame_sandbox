@@ -21,6 +21,9 @@
 - Draggable thing
 - Text input field
 
+## Other
+- Composition for Entity/PhysicalEntity -- e.g. Visible, Physical as interfaces that can be used in composing an entity. 
+
 ## Entity / Group structure
 - Groups contain Entities 
 - An Entity can have Groups containing child Entities (e.g. particle effects or projectiles belonging to it)
