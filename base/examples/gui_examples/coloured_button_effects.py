@@ -14,7 +14,7 @@ class ButtonWithImages(Button):
     def __init__(self, x: int, y: int, width: int, height: int, **kwargs):
         super().__init__(x, y, width, height, **kwargs)
         self.image_idle = button_flash.images[-1]
-        self.image_pressed = brighten(scale_image(self.image_idle.copy(), 0.9), amount=30)
+        self.image_pressed = brighten(scale_image(self.image_idle.copy(), 0.9), amount=-50)
         self.image = self.image_idle
 
     def state_idle(self):
@@ -132,7 +132,7 @@ class Flash(Particle):
 
 class Glow(Particle):
     gravity = 0.1
-    friction = 0.1
+    friction = 0.05
     decay = 0.1
     color = (20, 20, 20)
     radius = 50
