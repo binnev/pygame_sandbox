@@ -7,6 +7,7 @@ from base.image import (
     load_image_sequence,
     load_image,
     relative_folder,
+    brighten_color,
 )
 
 mocks = relative_folder(__file__, "mocks")
@@ -167,3 +168,19 @@ def test_load_image_with_global_transparency(display_init):
     # corner pixels should be fully transparent
     for corner_pixel in [(3, 0), (0, 3)]:
         assert image.get_at(corner_pixel) == (0, 0, 0, 0)
+
+
+@pytest.mark.parametrize(
+    "old_color, new_color",
+    [
+        ((0, 0, 0), (20, 20, 20)),
+        (Color(0, 0, 0), (20, 20, 20)),
+        ((250, 250, 250), (255, 255, 255)),
+        ((255, 255, 255), (255, 255, 255)),
+        ((0, 250, 255), (20, 255, 255)),
+        ((0, 0, 0, 0), (20, 20, 20, 0)),  # alpha channel shouldn't change
+        (Color(0, 0, 0, 0), (20, 20, 20, 0)),  # alpha channel shouldn't change
+    ],
+)
+def test_brighten_color(old_color, new_color):
+    assert brighten_color(old_color, amount=20) == new_color
