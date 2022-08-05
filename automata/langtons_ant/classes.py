@@ -52,25 +52,24 @@ class Board(Entity):
 
     def map_to_screen(self, xy, scaling, x_offset, y_offset) -> tuple[int, int]:
         x, y = xy
-        screen_x = (x_offset + x) * scaling
-        screen_y = (y_offset + y) * scaling
+        screen_x = x_offset + x * scaling
+        screen_y = y_offset + y * scaling
         return screen_x, screen_y
 
     def draw(self, surface: Surface, debug: bool = False):
-
+        screen_width, screen_height = screen_size = surface.get_size()
+        self.scaling, self.x_offset, self.y_offset = self.contents.scale_to_screen(screen_size)
         pixel_info = {
             self.map_to_screen(xy, self.scaling, self.x_offset, self.y_offset): self.colours[
                 colour_index
             ]
             for xy, colour_index in self.contents.items()
         }
-        screen_width, screen_height = screen_size = surface.get_size()
-        autoscale = any(
-            0 > x or x > screen_width or 0 > y or y > screen_height for x, y in pixel_info
-        )
-        if autoscale:
-            self.scaling, self.x_offset, self.y_offset = self.contents.scale_to_screen(screen_size)
-            self.scaling = int(self.scaling)
+        # autoscale = any(
+        #     0 > x or x > screen_width or 0 > y or y > screen_height for x, y in pixel_info
+        # )
+        # if autoscale:
+            # self.scaling = int(self.scaling)
         for screen_xy, colour in pixel_info.items():
             pixel = Surface((self.scaling, self.scaling))
             pixel.fill(colour[:3])
