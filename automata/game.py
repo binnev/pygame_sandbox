@@ -41,14 +41,15 @@ class AutomataGame(Game):
         super().read_inputs()
         for event in EventQueue.events:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
-                if event.key == pygame.K_DOWN:
-                    self.ticks_per_frame = max([1, self.ticks_per_frame // 2])
-                if event.key == pygame.K_UP:
-                    self.ticks_per_frame *= 2
-                if event.key == pygame.K_RIGHT:
-                    self.fps *= 2
-                if event.key == pygame.K_LEFT:
-                    self.fps = max(1, self.fps//2)
+                match event.key:
+                    case pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
+                    case pygame.K_DOWN:
+                        self.ticks_per_frame = max([1, self.ticks_per_frame // 2])
+                    case pygame.K_UP:
+                        self.ticks_per_frame *= 2
+                    case pygame.K_RIGHT:
+                        self.fps *= 2
+                    case pygame.K_LEFT:
+                        self.fps = max(1, self.fps//2)
