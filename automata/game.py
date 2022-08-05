@@ -30,6 +30,10 @@ class AutomataGame(Game):
             f"ticks per frame: {self.ticks_per_frame}", True, Color("black")
         )
         surface.blit(text_bitmap, (0, 60))
+        text_bitmap = self.font.render(
+            f"fps: {self.fps}", True, Color("black")
+        )
+        surface.blit(text_bitmap, (0, 90))
         t2 = time.perf_counter()
         print(f"draw time =   {t2-t1}")
 
