@@ -53,16 +53,12 @@ class Board(Entity):
     def set_colour(self, xy: Tuple[int], colour: int):
         self.contents[xy] = colour
 
-    def map_to_screen(self, xy, scaling, x_offset, y_offset) -> tuple[int, int]:
-        x, y = xy
-        screen_x = x_offset + x * scaling
-        screen_y = y_offset + y * scaling
-        return screen_x, screen_y
-
     def draw(self, surface: Surface, debug: bool = False):
         self.scaling, x_offset, y_offset = self.contents.scale_to_screen(surface.get_size())
         pixel_info = {
-            self.map_to_screen(xy, self.scaling, x_offset, y_offset): self.colours[colour_index]
+            self.contents.map_to_screen(xy, self.scaling, x_offset, y_offset): self.colours[
+                colour_index
+            ]
             for xy, colour_index in self.contents.items()
         }
         for screen_xy, colour in pixel_info.items():

@@ -267,20 +267,22 @@ class SparseMatrix(dict):
 
     def scale_to_screen(self, screen_size: (int, int)) -> (float, int, int):
         """
-        self.screen_origin_x = (self.game.window_width / 2) - self.scaling * (
-            self.contents.width / 2 + self.contents.xlim[0]
-        )
-        self.screen_origin_y = (self.game.window_height / 2) - self.scaling * (
-            self.contents.height / 2 + self.contents.ylim[0]
-        )
-
+        Calculate the scaling factor and x/y offset required to blit a group of pixels
+        representing self onto a screen
         """
         screen_width, screen_height = screen_size
         self_width, self_height = self.size
+        xlim, ylim = self.limits
         x_scaling = screen_width // self_width
         y_scaling = screen_height // self_height
         scaling = min(x_scaling, y_scaling)
 
-        x_offset = screen_width // 2 - (self.xlim[0] + self_width // 2) * scaling
-        y_offset = screen_height // 2 - (self.ylim[0] + self_height // 2) * scaling
+        x_offset = screen_width // 2 - (xlim[0] + self_width // 2) * scaling
+        y_offset = screen_height // 2 - (ylim[0] + self_height // 2) * scaling
         return scaling, x_offset, y_offset
+
+    def map_to_screen(self, xy, scaling, x_offset, y_offset) -> tuple[int, int]:
+        x, y = xy
+        screen_x = x_offset + x * scaling
+        screen_y = y_offset + y * scaling
+        return screen_x, screen_y
