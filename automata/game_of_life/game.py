@@ -13,6 +13,7 @@ class GameOfLife(AutomataGame):
     screen_color = Color("black")
     ticks_per_frame = 1
     debug_color = Color("white")
+    debug = True
 
     def __init__(self):
         super().__init__()

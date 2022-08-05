@@ -13,7 +13,7 @@ class InfiniteBoard(Entity):
     scaling = 100
     x_offset = 50
     y_offset = 50
-    num_colors = 100
+    num_colors = 50
     colormap = matplotlib.cm.viridis_r
 
     def __init__(self, contents=None, *groups: AbstractGroup) -> None:

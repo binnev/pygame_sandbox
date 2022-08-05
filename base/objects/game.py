@@ -20,6 +20,7 @@ class Game(Entity):
     font_size: int = 30
     parental_name = "game"
     screen_color = Color("black")
+    debug = False
 
     def __init__(self):
         super().__init__()
@@ -40,7 +41,6 @@ class Game(Entity):
     def main(self):
         """This is the outermost game function which runs once. It contains the outermost game
         loop. Here's where you should put your main event state machine."""
-        self.debug = False
         self.running = True
         while self.running:
             self._update()
