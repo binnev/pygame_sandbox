@@ -22,16 +22,16 @@ class AutomataGame(Game):
     def draw(self, surface: Surface, debug: bool = False):
         t1 = time.perf_counter()
         super().draw(surface, debug)
-        text_bitmap = self.font.render(f"iterations: {self.tick}", True, Color("black"))
+        text_bitmap = self.font.render(f"iterations: {self.tick}", True, self.debug_color)
         surface.blit(text_bitmap, (0, 0))
-        text_bitmap = self.font.render(f"scaling: {self.board.scaling}", True, Color("black"))
+        text_bitmap = self.font.render(f"scaling: {self.board.scaling}", True, self.debug_color)
         surface.blit(text_bitmap, (0, 30))
         text_bitmap = self.font.render(
-            f"ticks per frame: {self.ticks_per_frame}", True, Color("black")
+            f"ticks per frame: {self.ticks_per_frame}", True, self.debug_color
         )
         surface.blit(text_bitmap, (0, 60))
         text_bitmap = self.font.render(
-            f"fps: {self.fps}", True, Color("black")
+            f"fps: {self.fps}", True, self.debug_color
         )
         surface.blit(text_bitmap, (0, 90))
         t2 = time.perf_counter()

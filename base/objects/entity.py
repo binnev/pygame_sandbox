@@ -24,6 +24,7 @@ class Entity(pygame.sprite.Sprite):
     parent_groups: list  # groups of which this Entity is a member
     tick: int = 0  # iterations of the main game loop
     parental_name = "parent"
+    debug_color = Color("red")
 
     def update(self):
         self.state()
@@ -82,7 +83,6 @@ class PhysicalEntity(Entity):
 
     level: Entity  # parent Entity
     image: Surface = None
-    debug_color = Color("red")
     rect: Rect
     frame_duration: int  # higher = slower animation framerate
 
