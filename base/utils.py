@@ -275,7 +275,7 @@ class SparseMatrix(dict):
         xlim, ylim = self.limits
         x_scaling = screen_width // self_width
         y_scaling = screen_height // self_height
-        scaling = min(x_scaling, y_scaling)
+        scaling = max(1, min(x_scaling, y_scaling))
 
         x_offset = screen_width // 2 - (xlim[0] + self_width // 2) * scaling
         y_offset = screen_height // 2 - (ylim[0] + self_height // 2) * scaling
