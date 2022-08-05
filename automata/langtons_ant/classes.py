@@ -5,7 +5,7 @@ import numpy
 from pygame.surface import Surface
 
 from automata.langtons_ant.game import LangtonsAntGame
-from automata.utils import SparseMatrix
+from base.utils import SparseMatrix
 from base.objects import Entity, Group
 
 
@@ -15,7 +15,7 @@ class Board(Entity):
     game: LangtonsAntGame
     parental_name = "board"
     colormap = matplotlib.cm.viridis
-    scaling = 15
+    scaling = 50
     contents: SparseMatrix
 
     def __init__(self, game):
@@ -27,9 +27,9 @@ class Board(Entity):
         self.contents = SparseMatrix()
         self.ants = Group()
         self.child_groups = [self.ants]
-        self.add_ants(Ant(x=0, y=0, rules_string="rl"))
+        self.add_ants(Ant(x=0, y=0, rules_string="rlllrllr"*10))
+        self.add_ants(Ant(x=2, y=10, rules_string="rllr"))
         super().__init__()
-        self.calculate_screen_mapping()
 
     def add_ants(self, *ants):
         self.add_to_group(*ants, group=self.ants)
@@ -48,51 +48,24 @@ class Board(Entity):
     def set_colour(self, xy: Tuple[int], colour: int):
         self.contents[xy] = colour
 
-    def map_self_to_screen(self, x, y):
-        screen_x = self.screen_origin_x + (x * self.scaling)
-        screen_y = self.screen_origin_y + (y * self.scaling)
+    def map_to_screen(self, xy, scaling, x_offset, y_offset) -> tuple[int, int]:
+        x, y = xy
+        screen_x = (x_offset + x) * scaling
+        screen_y = (y_offset + y) * scaling
         return screen_x, screen_y
 
-    def calculate_screen_mapping(self):
-        self.screen_origin_x = (self.game.window_width / 2) - self.scaling * (
-            self.contents.width / 2 + self.contents.xlim[0]
-        )
-        self.screen_origin_y = (self.game.window_height / 2) - self.scaling * (
-            self.contents.height / 2 + self.contents.ylim[0]
-        )
-
     def draw(self, surface: Surface, debug: bool = False):
-        xlim = self.contents.xlim
-        ylim = self.contents.ylim
-        screen_x_min, screen_y_min = self.map_self_to_screen(xlim[0], ylim[0])
-        screen_x_max, screen_y_max = self.map_self_to_screen(xlim[1], ylim[1])
-        if (
-            screen_x_max > self.game.window_width
-            or screen_x_min < 0
-            or screen_y_max > self.game.window_height
-            or screen_y_min < 0
-        ):
-            self.scaling = max([1, self.scaling - 1])
-            self.calculate_screen_mapping()
+        self.scaling, x_offset, y_offset = self.contents.scale_to_screen(surface.get_size())
+        self.scaling = int(self.scaling)
 
-        for (x, y), colour_index in self.contents.items():
+        for xy, colour_index in self.contents.items():
             pixel = Surface((self.scaling, self.scaling))
             colour = self.colours[colour_index]
             pixel.fill(colour[:3])
-            screen_x, screen_y = self.map_self_to_screen(x, y)
-            surface.blit(pixel, (screen_x, screen_y))
+            screen_xy = self.map_to_screen(xy, self.scaling, x_offset, y_offset)
+            surface.blit(pixel, screen_xy)
 
         super().draw(surface, debug)
-
-    # def map_mouse_to_self(self, x_mouse, y_mouse):
-    #     x_self = linear_map(x_mouse, (0, self.game.window_width), self.xlim)
-    #     y_self = linear_map(y_mouse, (0, self.game.window_height), self.ylim)
-    #     return x_self, y_self
-    #
-    # def handle_click(self, mouse_xy):
-    #     x, y = self.map_mouse_to_self(*mouse_xy)
-    #     # x, y =
-    #     self.add_ants(Ant(x, y, rules_string="rrrlr"))
 
 
 class Ant(Entity):
