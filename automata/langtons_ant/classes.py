@@ -27,8 +27,8 @@ class Board(Entity):
         self.contents = SparseMatrix()
         self.ants = Group()
         self.child_groups = [self.ants]
-        self.add_ants(Ant(x=0, y=0, rules_string="rlllr" * 20))
-        self.add_ants(Ant(x=2, y=10, rules_string="rllr" * 1))
+        # self.add_ants(Ant(x=0, y=0, rules_string="rlllr" * 20))
+        self.add_ants(Ant(x=2, y=10, rules_string="rrrlllrlllrr" * 1))
         super().__init__()
         self.x_offset = self.game.window_width / self.scaling // 2
         self.y_offset = self.game.window_height / self.scaling // 2
@@ -57,24 +57,15 @@ class Board(Entity):
         return screen_x, screen_y
 
     def draw(self, surface: Surface, debug: bool = False):
-        screen_width, screen_height = screen_size = surface.get_size()
-        self.scaling, self.x_offset, self.y_offset = self.contents.scale_to_screen(screen_size)
+        self.scaling, x_offset, y_offset = self.contents.scale_to_screen(surface.get_size())
         pixel_info = {
-            self.map_to_screen(xy, self.scaling, self.x_offset, self.y_offset): self.colours[
-                colour_index
-            ]
+            self.map_to_screen(xy, self.scaling, x_offset, y_offset): self.colours[colour_index]
             for xy, colour_index in self.contents.items()
         }
-        # autoscale = any(
-        #     0 > x or x > screen_width or 0 > y or y > screen_height for x, y in pixel_info
-        # )
-        # if autoscale:
-            # self.scaling = int(self.scaling)
         for screen_xy, colour in pixel_info.items():
             pixel = Surface((self.scaling, self.scaling))
             pixel.fill(colour[:3])
             surface.blit(pixel, screen_xy)
-
         super().draw(surface, debug)
 
 

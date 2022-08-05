@@ -16,7 +16,7 @@ class LangtonsAntGame(Game):
     font_name = "ubuntu"
     font_size = 20
     parental_name = "game"
-    ticks_per_frame = 256  # how many iterations to do between draws
+    ticks_per_frame = 1  # how many iterations to do between draws
     screen_color = Color("white")
 
     def __init__(self):
