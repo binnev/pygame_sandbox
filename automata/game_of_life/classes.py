@@ -1,11 +1,11 @@
 import matplotlib
 import numpy
-from pygame import Surface
+from pygame import Surface, Color
 from pygame.sprite import AbstractGroup
 
 from automata.game_of_life import threshold
 from base.objects import Entity
-from base.utils import SparseMatrix, Coord
+from base.utils import SparseMatrix, Coord, draw_text
 
 
 class InfiniteBoard(Entity):
@@ -13,13 +13,23 @@ class InfiniteBoard(Entity):
     scaling = 100
     x_offset = 50
     y_offset = 50
-    num_colors = 50
+    num_colors = 100
     colormap = matplotlib.cm.viridis_r
 
-    def __init__(self, contents=None, *groups: AbstractGroup) -> None:
+    def __init__(
+        self,
+        contents=None,
+        overpopulation_threshold=threshold.OVERPOPULATION,
+        underpopulation_threshold=threshold.UNDERPOPULATION,
+        reproduction_threshold=threshold.REPRODUCTION,
+        *groups: AbstractGroup,
+    ) -> None:
         super().__init__(*groups)
         self.contents = SparseMatrix(contents or {})
         self.calculate_colors()
+        self.overpopulation_threshold = overpopulation_threshold
+        self.underpopulation_threshold = underpopulation_threshold
+        self.reproduction_threshold = reproduction_threshold
 
     def update(self):
         super().update()
@@ -34,7 +44,7 @@ class InfiniteBoard(Entity):
             # 2. Any live cell with two or three live neighbours lives on to the next generation.
             # 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
             live_neighbours = len(self.live_neighbours(coord))
-            if threshold.UNDERPOPULATION <= live_neighbours <= threshold.OVERPOPULATION:
+            if self.underpopulation_threshold <= live_neighbours <= self.overpopulation_threshold:
                 new[coord] = age + 1
 
             # Gather dead neighbours for later analysis. Put them in a set to avoid duplicates.
@@ -46,7 +56,7 @@ class InfiniteBoard(Entity):
         for coord in dead_neighbours:
             # 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by
             # reproduction.
-            if len(self.live_neighbours(coord)) == threshold.REPRODUCTION:
+            if len(self.live_neighbours(coord)) == self.reproduction_threshold:
                 new[coord] = 1
 
         self.contents = new
@@ -84,6 +94,20 @@ class InfiniteBoard(Entity):
             surface.blit(pixel, (sx, sy))
         if autoscale:
             self.scaling, self.x_offset, self.y_offset = self.contents.scale_to_screen(screen_size)
+
+        for text, y in [
+            (f"{self.underpopulation_threshold=}", 0),
+            (f"{self.overpopulation_threshold=}", 30),
+            (f"{self.reproduction_threshold=}", 60),
+        ]:
+            draw_text(
+                text,
+                surface,
+                (surface.get_rect().centerx-50, y),
+                font=self.game.font,
+                color=Color("white"),
+            )
+
         super().draw(surface, debug)
 
     def calculate_colors(self):

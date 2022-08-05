@@ -2,10 +2,11 @@ import sys
 import time
 
 import pygame
-from pygame import Surface, Color
+from pygame import Surface
 
 from base.input import EventQueue
 from base.objects import Game
+from base.utils import draw_text
 
 
 class AutomataGame(Game):
@@ -22,18 +23,25 @@ class AutomataGame(Game):
     def draw(self, surface: Surface, debug: bool = False):
         t1 = time.perf_counter()
         super().draw(surface, debug)
-        text_bitmap = self.font.render(f"iterations: {self.tick}", True, self.debug_color)
-        surface.blit(text_bitmap, (0, 0))
-        text_bitmap = self.font.render(f"scaling: {self.board.scaling}", True, self.debug_color)
-        surface.blit(text_bitmap, (0, 30))
-        text_bitmap = self.font.render(
-            f"ticks per frame: {self.ticks_per_frame}", True, self.debug_color
+        draw_text(
+            f"iterations: {self.tick}", surface, (0, 0), font=self.font, color=self.debug_color
         )
-        surface.blit(text_bitmap, (0, 60))
-        text_bitmap = self.font.render(
-            f"fps: {self.fps}", True, self.debug_color
+        draw_text(
+            f"scaling: {self.board.scaling}",
+            surface,
+            (0, 30),
+            font=self.font,
+            color=self.debug_color,
         )
-        surface.blit(text_bitmap, (0, 90))
+        draw_text(
+            f"ticks per frame: {self.ticks_per_frame}",
+            surface,
+            (0, 60),
+            font=self.font,
+            color=self.debug_color,
+        )
+        draw_text(f"fps: {self.fps}", surface, (0, 90), font=self.font, color=self.debug_color)
+
         t2 = time.perf_counter()
         print(f"draw time =   {t2-t1}")
 
@@ -52,4 +60,4 @@ class AutomataGame(Game):
                     case pygame.K_RIGHT:
                         self.fps *= 2
                     case pygame.K_LEFT:
-                        self.fps = max(1, self.fps//2)
+                        self.fps = max(1, self.fps // 2)

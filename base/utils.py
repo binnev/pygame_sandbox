@@ -289,3 +289,8 @@ class SparseMatrix(dict):
         screen_x = x_offset + x * scaling
         screen_y = y_offset + y * scaling
         return screen_x, screen_y
+
+
+def draw_text(s: str, surface: Surface, position, font, color, antialias=False):
+    text_bitmap = font.render(s, antialias, color)
+    surface.blit(text_bitmap, position)
