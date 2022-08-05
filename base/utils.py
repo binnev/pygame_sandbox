@@ -204,3 +204,73 @@ def random_int(min, max):
 def limit_value(value, between: Tuple[Any, Any]):
     _min, _max = between
     return max(_min, min(value, _max))
+
+
+Coord = tuple[int, int]
+
+
+def unzip(zipped):
+    return tuple(zip(*zipped))
+
+
+class SparseMatrix(dict):
+    """
+    Dictionary of the form {(x, y): value}. Can be used to simulate an infinite grid.
+    Each entry represents a cell with width and height of 1 (i.e. NOT a dimensionless point)
+    """
+
+    Limit = tuple[int, int] | tuple[None, None]
+
+    @property
+    def limits(self) -> tuple[Limit, Limit]:
+        """The min and max x/y coords of all entries"""
+        if self:
+            xs, ys = unzip(self.keys())
+            xlim = min(xs), max(xs)
+            ylim = min(ys), max(ys)
+        else:
+            xlim = ylim = None, None
+        return xlim, ylim
+
+    @property
+    def size(self) -> (int, int):
+        if self:
+            xlim, ylim = self.limits
+            width = xlim[1] - xlim[0] + 1
+            height = ylim[1] - ylim[0] + 1
+        else:
+            width = height = 0
+        return width, height
+
+    @property
+    def xlim(self) -> Limit:
+        xlim, _ = self.limits
+        return xlim
+
+    @property
+    def ylim(self) -> Limit:
+        _, ylim = self.limits
+        return ylim
+
+    @property
+    def width(self) -> int:
+        width, _ = self.size
+        return width
+
+    @property
+    def height(self) -> int:
+        _, height = self.size
+        return height
+
+    def copy(self) -> "SparseMatrix":
+        return SparseMatrix(super().copy())
+
+    def scale_to_screen(self, screen_size: (int, int)) -> (float, int, int):
+        screen_width, screen_height = screen_size
+        self_width, self_height = self.size
+        x_scaling = screen_width / self_width
+        y_scaling = screen_height / self_height
+        scaling = min(x_scaling, y_scaling)
+        x_offset = -self.xlim[0]
+        y_offset = -self.ylim[1]
+        return scaling, x_offset, y_offset
