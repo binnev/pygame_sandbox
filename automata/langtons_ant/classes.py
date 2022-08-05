@@ -5,6 +5,7 @@ import numpy
 from pygame.surface import Surface
 
 from automata.langtons_ant.game import LangtonsAntGame
+from automata.utils import SparseMatrix
 from base.objects import Entity, Group
 
 
@@ -15,6 +16,7 @@ class Board(Entity):
     parental_name = "board"
     colormap = matplotlib.cm.viridis
     scaling = 15
+    contents: SparseMatrix
 
     def __init__(self, game):
         self.max_x = 0
@@ -22,7 +24,7 @@ class Board(Entity):
         self.max_y = 0
         self.min_y = 0
         self.game = game
-        self.contents = dict()
+        self.contents = SparseMatrix()
         self.ants = Group()
         self.child_groups = [self.ants]
         self.add_ants(Ant(x=0, y=0, rules_string="rl"))
@@ -53,15 +55,15 @@ class Board(Entity):
 
     def calculate_screen_mapping(self):
         self.screen_origin_x = (self.game.window_width / 2) - self.scaling * (
-            self.width / 2 + self.xlim[0]
+            self.contents.width / 2 + self.contents.xlim[0]
         )
         self.screen_origin_y = (self.game.window_height / 2) - self.scaling * (
-            self.height / 2 + self.ylim[0]
+            self.contents.height / 2 + self.contents.ylim[0]
         )
 
     def draw(self, surface: Surface, debug: bool = False):
-        xlim = self.xlim
-        ylim = self.ylim
+        xlim = self.contents.xlim
+        ylim = self.contents.ylim
         screen_x_min, screen_y_min = self.map_self_to_screen(xlim[0], ylim[0])
         screen_x_max, screen_y_max = self.map_self_to_screen(xlim[1], ylim[1])
         if (
@@ -81,24 +83,6 @@ class Board(Entity):
             surface.blit(pixel, (screen_x, screen_y))
 
         super().draw(surface, debug)
-
-    @property
-    def xlim(self):
-        xs = [x for x, y in self.contents.keys()] or [0]
-        return min(xs), max(xs)
-
-    @property
-    def ylim(self):
-        ys = [y for x, y in self.contents.keys()] or [0]
-        return min(ys), max(ys)
-
-    @property
-    def width(self):
-        return self.xlim[1] - self.xlim[0]
-
-    @property
-    def height(self):
-        return self.ylim[1] - self.ylim[0]
 
     # def map_mouse_to_self(self, x_mouse, y_mouse):
     #     x_self = linear_map(x_mouse, (0, self.game.window_width), self.xlim)
