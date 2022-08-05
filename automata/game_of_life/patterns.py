@@ -3,12 +3,43 @@ import numpy
 from base.utils import SparseMatrix
 
 
-def load_pattern(pattern: str) -> SparseMatrix:
-    return SparseMatrix(
-        {(x, y): True for y, row in enumerate(pattern) for x, value in enumerate(row) if value}
+def load_pattern(pattern: str, shift: tuple[int, int] = (0, 0)) -> SparseMatrix:
+    arr = numpy.array(
+        [(x, y) for y, row in enumerate(pattern) for x, value in enumerate(row) if value]
     )
+    arr += shift
+    arr = [tuple(item) for item in arr]
+    return SparseMatrix({coord: True for coord in arr})
 
 
+GLIDER = """
+.x.
+..x
+xxx
+"""
+
+LIGHTWEIGHT_SPACESHIP = """
+.xxxx
+x...x
+....x
+x..x.
+"""
+
+MEDIUM_SPACESHIP = """
+.xxxxx
+x....x
+.....x
+x...x.
+..x...
+"""
+
+HEAVY_SPACESHIP = """
+.xxxxxx
+x.....x
+......x
+x....x.
+..xx...
+"""
 INFINITE_GROWER = """
 XXX.X
 X....
@@ -24,6 +55,12 @@ INFINITE_GROWER2 = """
 ....x...
 ..x.....
 x.x.....
+"""
+
+ACORN = """
+.x.....
+...x...
+xx..xxx
 """
 
 R_PENTOMINO = """
