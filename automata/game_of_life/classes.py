@@ -1,6 +1,6 @@
 import matplotlib
 import numpy
-from pygame import Surface, Color
+from pygame import Surface
 from pygame.sprite import AbstractGroup
 
 from automata.game_of_life import threshold
