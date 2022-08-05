@@ -1,3 +1,17 @@
+INFINITE_GROWER = (
+    "XXX X",
+    "X    ",
+    "   XX",
+    " XX X",
+    "X X X",
+)
+INFINITE_GROWER = """
+XXX.X
+X....
+...XX
+.XX.X
+X.X.X
+"""
 INFINITE_GROWER = [
     (0, 0),
     (2, 0),
@@ -13,6 +27,7 @@ INFINITE_GROWER = [
     (2, 4),
     (4, 4),
 ]
+
 
 INFINITE_GROWER_1HIGH = [
     (0, 0),
