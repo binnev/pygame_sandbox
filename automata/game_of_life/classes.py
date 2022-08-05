@@ -10,7 +10,7 @@ from base.utils import SparseMatrix, Coord
 
 class InfiniteBoard(Entity):
     contents: SparseMatrix[Coord:int]
-    scaling = 10
+    scaling = 100
     x_offset = 50
     y_offset = 50
     num_colors = 100

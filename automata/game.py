@@ -48,3 +48,7 @@ class AutomataGame(Game):
                     self.ticks_per_frame = max([1, self.ticks_per_frame // 2])
                 if event.key == pygame.K_UP:
                     self.ticks_per_frame *= 2
+                if event.key == pygame.K_RIGHT:
+                    self.fps *= 2
+                if event.key == pygame.K_LEFT:
+                    self.fps = max(1, self.fps//2)
