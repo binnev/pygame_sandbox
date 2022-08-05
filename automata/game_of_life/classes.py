@@ -25,6 +25,8 @@ class InfiniteBoard(Entity):
         super().update()
         new = SparseMatrix()
 
+        dead_neighbours = set()
+
         # iterate over live cells
         for coord, age in self.contents.items():
 
@@ -35,14 +37,18 @@ class InfiniteBoard(Entity):
             if threshold.UNDERPOPULATION <= live_neighbours <= threshold.OVERPOPULATION:
                 new[coord] = age + 1
 
-            # 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by
-            # reproduction.
+            # Gather dead neighbours for later analysis. Put them in a set to avoid duplicates.
             # Here because we are using a sparse matrix that doesn't store "dead" values,
             # we iterate over the neighbours of live cells, since these are the only dead cells
             # that can become alive
-            for neighbour in self.dead_neighbours(coord):
-                if len(self.live_neighbours(neighbour)) == threshold.REPRODUCTION:
-                    new[neighbour] = 1
+            dead_neighbours.update(self.dead_neighbours(coord))
+
+        for coord in dead_neighbours:
+            # 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by
+            # reproduction.
+            if len(self.live_neighbours(coord)) == threshold.REPRODUCTION:
+                new[coord] = 1
+
         self.contents = new
 
     def neighbours(self, coord: Coord) -> dict[Coord:bool]:
