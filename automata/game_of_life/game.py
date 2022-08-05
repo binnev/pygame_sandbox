@@ -1,3 +1,5 @@
+from collections import deque
+
 import pygame
 from pygame import Color
 
@@ -32,6 +34,7 @@ class GameOfLife(AutomataGame):
             **kwargs,
         )
         self.add_scene(self.board)
+        self.history = deque(maxlen=50)
 
     def read_inputs(self):
         super().read_inputs()
@@ -39,7 +42,18 @@ class GameOfLife(AutomataGame):
             if event.type == pygame.KEYDOWN:
                 match event.key:
                     case pygame.K_SPACE:
-                        raise NextGame()
+                        raise NextGame
+
+    def update(self):
+        super().update()
+        if not self.board.contents:
+            raise NextGame
+
+        for h in self.history:
+            if set(self.board.contents) == h:
+                raise NextGame
+
+        self.history.append(set(self.board.contents))
 
 
 class NextGame(Exception):
@@ -47,9 +61,28 @@ class NextGame(Exception):
 
 
 if __name__ == "__main__":
-    for o in range(9):
+    """
+    Interesting ones:
+    (u, o, r)
+    351 lots of squares
+    042 static crystal
+    142 static crystal 2
+    242 crystal with marching ants
+    332 lots of glider like things
+    342 lots of glider like things
+    032 constant activity; slow growing (133, 243)
+    043 maze-like circle (143)
+    053 fungal with staircase features
+    064 fungal with vertical highways (163, 263, 373)
+    073 fungal with horizontal highways (173, 183, 273, 283, 383)
+    153 eye of sauron, staircase features
+    253 self-similar fractal growth
+    363 snowflake like growth
+    353 extremely slow growing, rippling edges (483)
+    """
+    for r in range(9):
         for u in range(9):
-            for r in range(9):
+            for o in range(9):
                 if u > o:
                     continue
                 try:
