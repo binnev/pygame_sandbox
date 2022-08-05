@@ -206,11 +206,11 @@ def limit_value(value, between: Tuple[Any, Any]):
     return max(_min, min(value, _max))
 
 
-Coord = tuple[int, int]
-
-
 def unzip(zipped):
     return tuple(zip(*zipped))
+
+
+Coord = tuple[int, int]
 
 
 class SparseMatrix(dict):

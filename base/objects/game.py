@@ -45,6 +45,8 @@ class Game(Entity):
         while self.running:
             self._update()
             self._draw(self.window, debug=self.debug)
+        pygame.quit()
+        sys.exit()
 
     def add_scene(self, *objects):
         self.add_to_group(*objects, group=self.scenes)
