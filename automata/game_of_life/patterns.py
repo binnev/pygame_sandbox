@@ -1,10 +1,14 @@
-INFINITE_GROWER = (
-    "XXX X",
-    "X    ",
-    "   XX",
-    " XX X",
-    "X X X",
-)
+import numpy
+
+from base.utils import SparseMatrix
+
+
+def load_pattern(pattern: str) -> SparseMatrix:
+    return SparseMatrix(
+        {(x, y): True for y, row in enumerate(pattern) for x, value in enumerate(row) if value}
+    )
+
+
 INFINITE_GROWER = """
 XXX.X
 X....
@@ -12,50 +16,34 @@ X....
 .XX.X
 X.X.X
 """
-INFINITE_GROWER = [
-    (0, 0),
-    (2, 0),
-    (4, 0),
-    (1, 1),
-    (2, 1),
-    (4, 1),
-    (3, 2),
-    (4, 2),
-    (0, 3),
-    (0, 4),
-    (1, 4),
-    (2, 4),
-    (4, 4),
-]
 
+INFINITE_GROWER2 = """
+......x.
+....x.xx
+....x.x.
+....x...
+..x.....
+x.x.....
+"""
 
-INFINITE_GROWER_1HIGH = [
-    (0, 0),
-    (1, 0),
-    (2, 0),
-    (3, 0),
-    (4, 0),
-    (5, 0),
-    (6, 0),
-    (7, 0),
-    (9, 0),
-    (10, 0),
-    (11, 0),
-    (12, 0),
-    (13, 0),
-    (17, 0),
-    (18, 0),
-    (19, 0),
-    (26, 0),
-    (27, 0),
-    (28, 0),
-    (29, 0),
-    (30, 0),
-    (31, 0),
-    (32, 0),
-    (34, 0),
-    (35, 0),
-    (36, 0),
-    (37, 0),
-    (38, 0),
-]
+R_PENTOMINO = """
+.XX
+XX.
+.X.
+"""
+
+DIE_HARD = """
+......X.
+XX......
+.X...XXX
+"""
+l = locals().copy()
+for k, v in l.items():
+    if isinstance(k, str) and k.isupper():
+        strings = list(filter(None, v.split("\n")))
+        arr = numpy.array([[int(char != ".") for char in row] for row in strings])
+        locals()[k] = arr
+
+INFINITE_GROWER_1HIGH = """
+xxxxxxxx.xxxxx...xxx......xxxxxxx.xxxxx
+"""

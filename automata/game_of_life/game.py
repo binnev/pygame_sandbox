@@ -2,6 +2,7 @@ from pygame import Color
 
 from automata.game import AutomataGame
 from automata.game_of_life import patterns
+from automata.game_of_life.patterns import load_pattern
 
 
 class GameOfLife(AutomataGame):
@@ -16,7 +17,8 @@ class GameOfLife(AutomataGame):
         super().__init__()
         from automata.game_of_life.classes import InfiniteBoard
 
-        self.board = InfiniteBoard({coord: True for coord in patterns.INFINITE_GROWER_1HIGH})
+        p = patterns.INFINITE_GROWER2
+        self.board = InfiniteBoard(load_pattern(p))
         self.add_scene(self.board)
 
 
