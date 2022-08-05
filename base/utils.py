@@ -281,7 +281,10 @@ class SparseMatrix(dict):
         y_offset = screen_height // 2 - (ylim[0] + self_height // 2) * scaling
         return scaling, x_offset, y_offset
 
-    def map_to_screen(self, xy, scaling, x_offset, y_offset) -> tuple[int, int]:
+    def screen_coords(self, xy, scaling, x_offset, y_offset) -> tuple[int, int]:
+        """
+        Convert col/row number (xy) into screen coordinates (in pixels)
+        """
         x, y = xy
         screen_x = x_offset + x * scaling
         screen_y = y_offset + y * scaling

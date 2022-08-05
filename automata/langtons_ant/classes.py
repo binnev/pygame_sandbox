@@ -57,7 +57,7 @@ class Board(Entity):
         screen_width, screen_height = screen_size = surface.get_size()
         autoscale = False
         for xy, colour_index in self.contents.items():
-            sx, sy = self.contents.map_to_screen(xy, self.scaling, self.x_offset, self.y_offset)
+            sx, sy = self.contents.screen_coords(xy, self.scaling, self.x_offset, self.y_offset)
             if not autoscale and (sx < 0 or sx > screen_width or sy < 0 or sy > screen_height):
                 autoscale = True
             colour = self.colours[colour_index]
