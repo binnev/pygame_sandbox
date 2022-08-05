@@ -16,13 +16,11 @@ class Board(Entity):
     parental_name = "board"
     colormap = matplotlib.cm.viridis
     scaling = 10
+    x_offset = 0
+    y_offset = 0
     contents: SparseMatrix
 
     def __init__(self, game):
-        self.max_x = 0
-        self.min_x = 0
-        self.max_y = 0
-        self.min_y = 0
         self.game = game
         self.contents = SparseMatrix()
         self.ants = Group()
@@ -33,8 +31,6 @@ class Board(Entity):
         self.add_ants(Ant(x=10, y=10, rules_string="rlllr" * 60))
         self.add_ants(Ant(x=5, y=5, rules_string="rllr" * 60))
         super().__init__()
-        self.x_offset = self.game.window_width / self.scaling // 2
-        self.y_offset = self.game.window_height / self.scaling // 2
 
     def add_ants(self, *ants):
         self.add_to_group(*ants, group=self.ants)
