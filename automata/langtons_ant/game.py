@@ -1,4 +1,5 @@
 import sys
+import time
 
 import pygame
 from pygame.color import Color
@@ -10,13 +11,13 @@ from base.objects import Game
 
 class LangtonsAntGame(Game):
     fps = 0
-    window_width = 600
-    window_height = 600
+    window_width = 1200
+    window_height = 1200
     window_caption = "Langton's Ant Simulator"
     font_name = "ubuntu"
     font_size = 20
     parental_name = "game"
-    ticks_per_frame = 1  # how many iterations to do between draws
+    ticks_per_frame = 256  # how many iterations to do between draws
     screen_color = Color("white")
 
     def __init__(self):
@@ -35,18 +36,28 @@ class LangtonsAntGame(Game):
                     sys.exit()
                 if event.key == pygame.K_DOWN:
                     self.ticks_per_frame = max([1, self.ticks_per_frame // 2])
-                    print(f"self.ticks_per_frame: {self.ticks_per_frame}")
                 if event.key == pygame.K_UP:
                     self.ticks_per_frame *= 2
-                    print(f"self.ticks_per_frame: {self.ticks_per_frame}")
 
     def update(self):
+        t1 = time.perf_counter()
         for _ in range(self.ticks_per_frame):
             super().update()
+        t2 = time.perf_counter()
+        print(f"update time = {t2-t1}")
+
 
     def draw(self, surface: Surface, debug: bool = False):
+        t1 = time.perf_counter()
         super().draw(surface, debug)
         text_bitmap = self.font.render(f"iterations: {self.tick}", True, Color("black"))
         surface.blit(text_bitmap, (0, 0))
         text_bitmap = self.font.render(f"scaling: {self.board.scaling}", True, Color("black"))
         surface.blit(text_bitmap, (0, 30))
+        text_bitmap = self.font.render(
+            f"ticks per frame: {self.ticks_per_frame}", True, Color("black")
+        )
+        surface.blit(text_bitmap, (0, 60))
+        t2 = time.perf_counter()
+        print(f"draw time =   {t2-t1}")
+

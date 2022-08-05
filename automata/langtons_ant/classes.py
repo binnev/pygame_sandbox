@@ -5,8 +5,8 @@ import numpy
 from pygame.surface import Surface
 
 from automata.langtons_ant.game import LangtonsAntGame
-from base.utils import SparseMatrix
 from base.objects import Entity, Group
+from base.utils import SparseMatrix
 
 
 class Board(Entity):
@@ -27,8 +27,11 @@ class Board(Entity):
         self.contents = SparseMatrix()
         self.ants = Group()
         self.child_groups = [self.ants]
-        # self.add_ants(Ant(x=0, y=0, rules_string="rlllr" * 20))
-        self.add_ants(Ant(x=2, y=10, rules_string="rrrlllrlllrr" * 1))
+        self.add_ants(Ant(x=0, y=0, rules_string="rlllr" * 60))
+        self.add_ants(Ant(x=0, y=10, rules_string="rlllr" * 60))
+        self.add_ants(Ant(x=10, y=0, rules_string="rlllr" * 60))
+        self.add_ants(Ant(x=10, y=10, rules_string="rlllr" * 60))
+        self.add_ants(Ant(x=5, y=5, rules_string="rllr" * 60))
         super().__init__()
         self.x_offset = self.game.window_width / self.scaling // 2
         self.y_offset = self.game.window_height / self.scaling // 2
@@ -73,10 +76,10 @@ class Ant(Entity):
     board: Board
     position: tuple
     directions = (
-        numpy.array([-1, 0]),  # up
-        numpy.array([0, 1]),  # right
-        numpy.array([1, 0]),  # down
-        numpy.array([0, -1]),  # left
+        numpy.array([0, -1]),  # up
+        numpy.array([1, 0]),  # right
+        numpy.array([0, 1]),  # down
+        numpy.array([-1, 0]),  # left
     )
 
     def __init__(self, x, y, rules_string: str):
