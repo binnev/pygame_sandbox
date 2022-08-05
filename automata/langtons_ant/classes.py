@@ -54,17 +54,22 @@ class Board(Entity):
         self.contents[xy] = colour
 
     def draw(self, surface: Surface, debug: bool = False):
-        self.scaling, x_offset, y_offset = self.contents.scale_to_screen(surface.get_size())
+        screen_width, screen_height = screen_size = surface.get_size()
         pixel_info = {
-            self.contents.map_to_screen(xy, self.scaling, x_offset, y_offset): self.colours[
-                colour_index
-            ]
+            self.contents.map_to_screen(
+                xy, self.scaling, self.x_offset, self.y_offset
+            ): self.colours[colour_index]
             for xy, colour_index in self.contents.items()
         }
-        for screen_xy, colour in pixel_info.items():
+        autoscale = False
+        for (sx, sy), colour in pixel_info.items():
+            if sx < 0 or sx > screen_width or sy < 0 or sy > screen_height:
+                autoscale = True
             pixel = Surface((self.scaling, self.scaling))
             pixel.fill(colour[:3])
-            surface.blit(pixel, screen_xy)
+            surface.blit(pixel, (sx, sy))
+        if autoscale:
+            self.scaling, self.x_offset, self.y_offset = self.contents.scale_to_screen(screen_size)
         super().draw(surface, debug)
 
 
