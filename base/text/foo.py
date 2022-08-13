@@ -83,6 +83,7 @@ class FontTest(Game):
                 + string.ascii_lowercase
                 + "1234567890-=!@#$%^&*()_+[]\;',./{}|:\"<>?~`"
             ),
+            xpad=-6
         )
         filename = Path(__file__).parent / "assets/charmap-cellphone_white.png"
         assert filename.exists()
@@ -103,8 +104,8 @@ class FontTest(Game):
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        # self.font.render(surface, code_snippet)
-        self.cellphone.render(surface, code_snippet, scale=2)
+        self.font.render(surface, code_snippet)
+        # self.cellphone.render(surface, code_snippet, scale=2)
 
 
 if __name__ == "__main__":
