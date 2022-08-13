@@ -28,18 +28,24 @@ class Font:
     xpad: int
     ypad: int
 
-    def __init__(self, filename: str | Path, image_size, letters: str = None, xpad=0, ypad=0):
+    def __init__(
+        self, filename: str | Path, image_size, letters: str = None, xpad=0, ypad=0, **kwargs
+    ):
         """`letters` is the letters in the spritesheet, in the same order."""
+        print(kwargs)
         self.image_size = image_size
         self.xpad = xpad
         self.ypad = ypad
         self.letters = dict()
-        self.letters[" "] = Surface(image_size)
+        space = Surface(image_size).convert_alpha()
+        space.fill((0, 0, 0, 0))
+        self.letters[" "] = space
         self.not_found = Surface(image_size)
         self.not_found.fill(Color("red"))
         letters = letters or string.ascii_uppercase + string.ascii_lowercase
         filename = Path(filename)
-        images = load_spritesheet(filename, image_size=image_size)
+        images = load_spritesheet(filename, image_size=image_size, **kwargs)
+        print(f"{len(images)=}")
         self.letters.update({letter: image for letter, image in zip(letters, images)})
 
     def render(self, surf: Surface, text: str, x: int = 0, y: int = 0, scale: int = 1) -> Surface:
@@ -70,6 +76,7 @@ class Font:
 
 class FontTest(Game):
     window_width = 1500
+    screen_color = (150, 150, 150)
 
     def __init__(self):
         super().__init__()
@@ -83,7 +90,7 @@ class FontTest(Game):
                 + string.ascii_lowercase
                 + "1234567890-=!@#$%^&*()_+[]\;',./{}|:\"<>?~`"
             ),
-            xpad=-6
+            xpad=-9,
         )
         filename = Path(__file__).parent / "assets/charmap-cellphone_white.png"
         assert filename.exists()
@@ -91,20 +98,19 @@ class FontTest(Game):
             filename=filename,
             image_size=(7, 9),
             letters=(
-                " !"
-                + '"'
-                + "#$%&'()*+,-./0123456789:'<=>?@"
+                """ !"#$%&'()*+,-./0123456789:'<=>?@"""
                 + string.ascii_uppercase
                 + "[\]^_`"
                 + string.ascii_lowercase
                 + "{|}~"
             ),
-            xpad=-1,
+            xpad=0,
+            # colorkey=-1,
         )
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        self.font.render(surface, code_snippet)
+        self.font.render(surface, code_snippet, scale=2)
         # self.cellphone.render(surface, code_snippet, scale=2)
 
 
