@@ -10,16 +10,19 @@ from base.utils import limit_value
 
 def load_image(filename, colorkey=None) -> Surface:
     try:
-        image = pygame.image.load(filename).convert_alpha()
+        image = pygame.image.load(filename)
     except pygame.error:
         print("Unable to load image:", filename)
         raise
 
+    # colorkey needs to be set before .convert_alpha() is called, because Surfaces with a
+    # per-pixel transparency (i.e. after convert_alpha) ignore colorkey.
     if colorkey is not None:
         if colorkey == -1:
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey, pygame.RLEACCEL)
 
+    image = image.convert_alpha()
     return image
 
 
@@ -28,6 +31,12 @@ def not_empty(surface: Surface) -> bool:
     smallest rectangle on the surface containing data. If the surface is empty, it will return
     Rect(0, 0, 0, 0), for which `any` returns False"""
     return any(surface.get_bounding_rect())
+
+
+def empty_image(*args, **kwargs) -> Surface:
+    img = Surface(*args, **kwargs).convert_alpha()
+    img.fill((0, 0, 0, 0))
+    return img
 
 
 def relative_folder(current_file: str, folder: str) -> Path:
