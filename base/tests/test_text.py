@@ -5,40 +5,22 @@ from pygame.surface import Surface
 
 from base.text.foo import Font
 
+TESTFONT = Path(__file__).parent.parent / "text/assets/test_font.png"
+assert TESTFONT.exists()
+
 
 def test_trim(display_init):
-    filename = Path(__file__).parent.parent / "text/assets/test_font.png"
-    assert filename.exists()
-    font = Font(
-        filename=filename,
-        image_size=(16, 16),
-        letters=(
-            string.ascii_uppercase
-            + string.ascii_lowercase
-            + "1234567890-=!@#$%^&*()_+[]\;',./{}|:\"<>?~`"
-        ),
-        trim=True,
-    )
-    image = font.get("a")
-    assert image.get_width() == 9  # trimmed width
-    assert image.get_height() == 16  # original height
-    assert image.get_rect() == (0, 0, 9, 16)
-
-
-def test_render(display_init):
-    filename = Path(__file__).parent.parent / "text/assets/test_font.png"
-    assert filename.exists()
-    font = Font(
-        filename=filename,
-        image_size=(16, 16),
-        letters="A",
-        trim=True,
-    )
+    font = Font(filename=TESTFONT, image_size=(16, 16), letters="A", trim=True)
     A = font.get("A")
-    x, y, w, h_original = A.get_rect()
-    assert x == y == 0
-    assert w == 11  # width affected by trim
-    assert h_original == 16  # original height not affected by trim
+    assert A.get_width() == 11  # trimmed width
+    assert A.get_height() == 16  # original height
+
+
+def test_render_respects_trimmed_character_size(display_init):
+    font = Font(filename=TESTFONT, image_size=(16, 16), letters="A", trim=True)
+    A = font.get("A")
+    assert A.get_width() == 11  # trimmed width
+    assert A.get_height() == 16  # original height
 
     x, y, w, h = A.get_bounding_rect()
     assert w == 11
