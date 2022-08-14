@@ -222,3 +222,19 @@ def test_load_image_with_global_transparency(display_init):
 )
 def test_brighten_color(amount, old_color, new_color):
     assert brighten_color(old_color, amount=amount) == new_color
+
+
+def test_subsurface(display_init):
+    filename = mocks / "padded.png"
+    image = load_image(filename.as_posix())
+    assert image.get_width() == 16
+    assert image.get_height() == 6
+
+    x, y, w, h = image.get_bounding_rect()
+    assert x == 7
+    assert y == 2
+    assert w == 2
+    assert h == 2
+
+    new = image.subsurface(image.get_bounding_rect())
+    assert new.get_rect() == (0, 0, 2, 2)

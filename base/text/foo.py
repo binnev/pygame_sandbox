@@ -7,14 +7,23 @@ from pygame.surface import Surface
 from base.image import load_spritesheet, scale_image
 from base.objects import Game
 
+"""
+todo:
+- auto-wrap at width 
+- trim (un-monospace) characters
+"""
 snippet = """
-De bekendste voorbeelden zitten in de bandnamen Motörhead, Blue Öyster Cult, 
-Mötley Crüe en Queensrÿche. Dit gebruik werd geparodieerd door de groep Spin̈al Tap, 
-die een umlaut op de medeklinker n plaatste. (Een n met umlaut komt in een beperkt aantal talen 
-voor: het Jacalteeks en het Malagasy. Het is echter hoogst onwaarschijnlijk dat de leden van 
-Spin̈al Tap dit wisten.) 
-
-Het is tevens de achternaam van de fictieve Lars Ümlaüt uit Guitar Hero III: Legends of Rock.
+def render(self, surf: Surface, text: str, x: int = 0, y: int = 0, scale: int = 1) -> Surface:
+    lines = text.splitlines()
+    for line in lines:
+        cursor = x
+        for letter in line:
+            image = self.get(letter)
+            image = scale_image(image, scale)
+            surf.blit(image, (cursor, y))
+            cursor += self.image_size[0] * scale
+        y += self.image_size[1] * scale
+    return surf
 """
 
 
@@ -25,10 +34,16 @@ class Font:
     ypad: int
 
     def __init__(
-        self, filename: str | Path, image_size, letters: str = None, xpad=0, ypad=0, **kwargs
+        self,
+        filename: str | Path,
+        image_size: tuple[int, int],
+        letters: str = None,
+        xpad=0,
+        ypad=0,
+        trim=False,
+        **kwargs,
     ):
         """`letters` is the letters in the spritesheet, in the same order."""
-        print(kwargs)
         self.image_size = image_size
         self.xpad = xpad
         self.ypad = ypad
@@ -41,7 +56,8 @@ class Font:
         letters = letters or string.ascii_uppercase + string.ascii_lowercase
         filename = Path(filename)
         images = load_spritesheet(filename, image_size=image_size, **kwargs)
-        print(f"{len(images)=}")
+        if trim:
+            images = self.trim_images(images)
         self.letters.update({letter: image for letter, image in zip(letters, images)})
 
     def render(self, surf: Surface, text: str, x: int = 0, y: int = 0, scale: int = 1) -> Surface:
@@ -51,9 +67,19 @@ class Font:
                 image = self.get(letter)
                 image = scale_image(image, scale)
                 surf.blit(image, (cursor, y))
-                cursor += (self.xsize + self.xpad) * scale
+                w = image.get_width()
+                cursor += w + self.xpad * scale
             y += (self.ysize + self.ypad) * scale
         return surf
+
+    def trim_images(self, images: list[Surface]) -> list[Surface]:
+        trimmed = []
+        for image in images:
+            x, _, w, _ = image.get_bounding_rect()  # trim x to bounding rect
+            _, y, _, h = image.get_rect()  # maintain original y position of character
+            new = image.subsurface((x, y, w, h))
+            trimmed.append(new)
+        return trimmed
 
     def get(self, letter: str) -> Surface:
         try:
@@ -86,7 +112,8 @@ class FontTest(Game):
                 + string.ascii_lowercase
                 + "1234567890-=!@#$%^&*()_+[]\;',./{}|:\"<>?~`"
             ),
-            xpad=-9,
+            trim=True,
+            xpad=1
         )
         filename = Path(__file__).parent / "assets/charmap-cellphone_white.png"
         assert filename.exists()
@@ -100,8 +127,9 @@ class FontTest(Game):
                 + string.ascii_lowercase
                 + "{|}~"
             ),
-            xpad=-2,
+            xpad=1,
             colorkey=-1,
+            trim=True,
         )
 
     def draw(self, surface: Surface, debug: bool = False):
