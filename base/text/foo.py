@@ -1,6 +1,7 @@
 import string
 from pathlib import Path
 
+import pygame.draw
 from pygame.color import Color
 from pygame.surface import Surface
 
@@ -13,17 +14,7 @@ todo:
 - trim (un-monospace) characters
 """
 snippet = """
-def render(self, surf: Surface, text: str, x: int = 0, y: int = 0, scale: int = 1) -> Surface:
-    lines = text.splitlines()
-    for line in lines:
-        cursor = x
-        for letter in line:
-            image = self.get(letter)
-            image = scale_image(image, scale)
-            surf.blit(image, (cursor, y))
-            cursor += self.image_size[0] * scale
-        y += self.image_size[1] * scale
-    return surf
+Ook in de spelling van sommige andere talen wordt de umlaut gebruikt, bijvoorbeeld in verwante talen als het IJslands en het Zweeds, om een soortgelijk klankverschijnsel weer te geven, of in niet-verwante talen als het Fins, het Hongaars of het Turks, om dezelfde e-, eu- en u-klank weer te geven, die echter niet het resultaat van hetzelfde klankverschijnsel zijn.
 """
 
 
@@ -57,18 +48,49 @@ class Font:
             images = self.trim_images(images)
         self.letters.update({letter: image for letter, image in zip(letters, images)})
 
-    def render(self, surf: Surface, text: str, x: int = 0, y: int = 0, scale: int = 1) -> Surface:
+    def render(
+        self,
+        surf: Surface,
+        text: str,
+        x: int = 0,
+        y: int = 0,
+        scale: int = 1,
+        wrap: int = 0,
+    ) -> Surface:
         _, ysize = self.image_size
         for line in text.splitlines():
-            cursor = x
-            for letter in line:
-                image = self.get(letter)
-                image = scale_image(image, scale)
-                surf.blit(image, (cursor, y))
-                w = image.get_width()
-                cursor += w + self.xpad * scale
-            y += (ysize + self.ypad) * scale
+            if wrap:
+                wrapped_lines = self.wrap_words(line, wrap, x, scale)
+            else:
+                wrapped_lines = [line]
+
+            for aaaaaaaaaa in wrapped_lines:
+                cursor = x
+                for letter in aaaaaaaaaa:
+                    image = self.get(letter)
+                    image = scale_image(image, scale)
+                    surf.blit(image, (cursor, y))
+                    w = image.get_width()
+                    cursor += w + self.xpad * scale
+                y += (ysize + self.ypad) * scale
         return surf
+
+    def wrap_words(self, text: str, wrap: int, x: int = 0, scale: int = 1) -> list[str]:
+        width = wrap - x
+        lines = []
+        line = ""
+        for word in text.split():
+            new_line = f"{line} {word}" if line else word
+            if self.printed_width(new_line, scale) <= width:
+                line = new_line
+            else:
+                lines.append(line)
+                line = word
+        lines.append(line)  # last line
+        return lines
+
+    def printed_width(self, text: str, scale: int) -> int:
+        return sum((self.get(letter).get_width() + self.xpad) * scale for letter in text)
 
     def trim_images(self, images: list[Surface]) -> list[Surface]:
         trimmed = []
@@ -126,7 +148,9 @@ class FontTest(Game):
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        self.font.render(surface, snippet, scale=2)
+        WRAP = 500
+        self.cellphone.render(surface, snippet, scale=3, wrap=WRAP)
+        pygame.draw.rect(surface, color=Color("red"), rect=(0, 0, WRAP, WRAP), width=1)
 
 
 if __name__ == "__main__":
