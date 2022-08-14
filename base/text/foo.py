@@ -64,30 +64,11 @@ class Font:
         align: -1=left, 0=center, 1=right
         wrap: x width at which to wrap text
         """
-        if align == 0 and not wrap:
-            raise TextError("Can't center text without specifying a wrap width.")
-
         _, ysize = self.image_size
         for line in text.splitlines():
-            if wrap:
-                wrapped_lines = self.wrap_words(line, wrap, x, scale)
-            else:
-                wrapped_lines = [line]
-
+            wrapped_lines = self.wrap_words(line, wrap, x, scale) if wrap else [line]
             for line in wrapped_lines:
-                match align:
-                    case -1 | None:
-                        cursor = x
-                    case 0:
-                        line_width = self.printed_width(line, scale)
-                        slack = wrap - line_width
-                        cursor = x + slack // 2
-                    case 1:
-                        line_width = self.printed_width(line, scale)
-                        cursor = x + wrap - line_width
-                    case _:
-                        raise TextError(f"Bad alignment value: {align}")
-
+                cursor = self.align_cursor(line, x, align, scale, wrap)
                 for letter in line:
                     image = self.get(letter)
                     image = scale_image(image, scale)
@@ -96,6 +77,23 @@ class Font:
                     cursor += w + self.xpad * scale
                 y += (ysize + self.ypad) * scale
         return surf
+
+    def align_cursor(self, line: str, x: int, align: int, scale: int, wrap: int) -> int:
+        match align:
+            case -1 | None:
+                cursor = x
+            case 0:
+                if not wrap:
+                    raise TextError("Can't center text without specifying a wrap width.")
+                line_width = self.printed_width(line, scale)
+                slack = wrap - line_width
+                cursor = x + slack // 2
+            case 1:
+                line_width = self.printed_width(line, scale)
+                cursor = x + wrap - line_width
+            case _:
+                raise TextError(f"Bad alignment value: {align}")
+        return cursor
 
     def wrap_words(self, text: str, wrap: int, x: int = 0, scale: int = 1) -> list[str]:
         lines = []
@@ -177,7 +175,7 @@ class FontTest(Game):
             wrap=WRAP,
             x=X,
             y=Y,
-            align=1,
+            align=-1,
         )
         pygame.draw.rect(surface, color=Color("red"), rect=(X, Y, WRAP, WRAP), width=1)
 
