@@ -17,7 +17,7 @@ class FpsTracker(Entity):
         self.font = pygame.font.Font(pygame.font.get_default_font(), 12)
 
     def update(self):
-        t = time.time()
+        t = time.perf_counter()
         self.queue.append(t)
         frames = len(self.queue)
         seconds = self.queue[-1] - self.queue[0]
