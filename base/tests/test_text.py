@@ -3,7 +3,6 @@ from pathlib import Path
 
 from pygame.surface import Surface
 
-from base.image import load_spritesheet
 from base.text.foo import Font
 
 
@@ -29,8 +28,6 @@ def test_trim(display_init):
 def test_render(display_init):
     filename = Path(__file__).parent.parent / "text/assets/test_font.png"
     assert filename.exists()
-    [A] = load_spritesheet(filename, image_size=(16, 16), num_images=1)
-
     font = Font(
         filename=filename,
         image_size=(16, 16),
