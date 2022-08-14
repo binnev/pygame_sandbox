@@ -62,6 +62,7 @@ class Font:
     ) -> Surface:
         """
         align: -1=left, 0=center, 1=right
+        wrap: x width at which to wrap text
         """
         if align == 0 and not wrap:
             raise TextError("Can't center text without specifying a wrap width.")
@@ -79,11 +80,13 @@ class Font:
                         cursor = x
                     case 0:
                         line_width = self.printed_width(line, scale)
-                        column_width = (wrap - x) - line_width
-                        cursor = x + column_width // 2
+                        slack = wrap - line_width
+                        cursor = x + slack // 2
                     case 1:
                         line_width = self.printed_width(line, scale)
-                        cursor = (wrap or x) - line_width
+                        cursor = x + wrap - line_width
+                    case _:
+                        raise TextError(f"Bad alignment value: {align}")
 
                 for letter in line:
                     image = self.get(letter)
@@ -95,12 +98,11 @@ class Font:
         return surf
 
     def wrap_words(self, text: str, wrap: int, x: int = 0, scale: int = 1) -> list[str]:
-        width = wrap - x
         lines = []
         line = ""
         for word in text.split():
             new_line = f"{line} {word}" if line else word
-            if self.printed_width(new_line, scale) <= width:
+            if self.printed_width(new_line, scale) <= wrap:
                 line = new_line
             else:
                 lines.append(line)
@@ -165,18 +167,19 @@ class FontTest(Game):
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        INDENT = 500
-        WRAP = 1000
+        X = 500
+        Y = 30
+        WRAP = 500
         self.cellphone.render(
             surface,
             snippet,
             scale=2,
             wrap=WRAP,
-            x=INDENT,
-            align=0,
+            x=X,
+            y=Y,
+            align=1,
         )
-        pygame.draw.rect(surface, color=Color("red"), rect=(0, 0, WRAP, WRAP), width=1)
-        pygame.draw.rect(surface, color=Color("blue"), rect=(0, 0, INDENT, WRAP), width=1)
+        pygame.draw.rect(surface, color=Color("red"), rect=(X, Y, WRAP, WRAP), width=1)
 
 
 if __name__ == "__main__":
