@@ -7,18 +7,14 @@ from pygame.surface import Surface
 from base.image import load_spritesheet, scale_image
 from base.objects import Game
 
-code_snippet = """
-def render(self, surf: Surface, text: str, x: int = 0, y: int = 0, scale: int = 1) -> Surface:
-    lines = text.splitlines()
-    for line in lines:
-        cursor = x
-        for letter in line:
-            image = self.get(letter)
-            image = scale_image(image, scale)
-            surf.blit(image, (cursor, y))
-            cursor += self.image_size[0] * scale
-        y += self.image_size[1] * scale
-    return surf
+snippet = """
+De bekendste voorbeelden zitten in de bandnamen Motörhead, Blue Öyster Cult, 
+Mötley Crüe en Queensrÿche. Dit gebruik werd geparodieerd door de groep Spin̈al Tap, 
+die een umlaut op de medeklinker n plaatste. (Een n met umlaut komt in een beperkt aantal talen 
+voor: het Jacalteeks en het Malagasy. Het is echter hoogst onwaarschijnlijk dat de leden van 
+Spin̈al Tap dit wisten.) 
+
+Het is tevens de achternaam van de fictieve Lars Ümlaüt uit Guitar Hero III: Legends of Rock.
 """
 
 
@@ -104,13 +100,13 @@ class FontTest(Game):
                 + string.ascii_lowercase
                 + "{|}~"
             ),
-            xpad=-3,
+            xpad=-2,
             colorkey=-1,
         )
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        self.cellphone.render(surface, code_snippet, scale=2)
+        self.cellphone.render(surface, snippet, scale=2)
 
 
 if __name__ == "__main__":
