@@ -7,6 +7,7 @@ from pygame.surface import Surface
 
 from base.image import load_spritesheet, scale_image, empty_image
 from base.objects import Game
+from base.text.exceptions import TextError
 
 snippet = """
 Ook in de spelling van sommige andere talen wordt de umlaut gebruikt, bijvoorbeeld in verwante talen als het IJslands en het Zweeds, om een soortgelijk 
@@ -16,7 +17,7 @@ weer
 te
 
 geven, of in niet-verwante talen als het Fins, het Hongaars of het Turks, om dezelfde e-, eu- en u-klank weer te geven, die echter niet het resultaat van hetzelfde klankverschijnsel zijn.
-"""
+""".strip()
 
 
 class Font:
@@ -57,7 +58,14 @@ class Font:
         y: int = 0,
         scale: int = 1,
         wrap: int = 0,
+        align: int = None,
     ) -> Surface:
+        """
+        align: -1=left, 0=center, 1=right
+        """
+        if align == 0 and not wrap:
+            raise TextError("Can't center text without specifying a wrap width.")
+
         _, ysize = self.image_size
         for line in text.splitlines():
             if wrap:
@@ -66,7 +74,17 @@ class Font:
                 wrapped_lines = [line]
 
             for line in wrapped_lines:
-                cursor = x
+                match align:
+                    case -1 | None:
+                        cursor = x
+                    case 0:
+                        line_width = self.printed_width(line, scale)
+                        column_width = (wrap - x) - line_width
+                        cursor = x + column_width // 2
+                    case 1:
+                        line_width = self.printed_width(line, scale)
+                        cursor = (wrap or x) - line_width
+
                 for letter in line:
                     image = self.get(letter)
                     image = scale_image(image, scale)
@@ -147,9 +165,18 @@ class FontTest(Game):
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        WRAP = 500
-        self.cellphone.render(surface, snippet, scale=2, wrap=WRAP)
+        INDENT = 500
+        WRAP = 1000
+        self.cellphone.render(
+            surface,
+            snippet,
+            scale=2,
+            wrap=WRAP,
+            x=INDENT,
+            align=0,
+        )
         pygame.draw.rect(surface, color=Color("red"), rect=(0, 0, WRAP, WRAP), width=1)
+        pygame.draw.rect(surface, color=Color("blue"), rect=(0, 0, INDENT, WRAP), width=1)
 
 
 if __name__ == "__main__":
