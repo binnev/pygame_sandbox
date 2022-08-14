@@ -28,9 +28,8 @@ class Game(Entity):
 
         self.scenes = Group()
         self.scenes.add()
-        self.debug_helpers = Group()
-        self.debug_helpers.add(FpsTracker())
-        self.child_groups = [self.scenes, self.debug_helpers]
+        self.fps_tracker = FpsTracker()
+        self.child_groups = [self.scenes]
 
         pygame.font.init()
         self.font = pygame.font.Font(pygame.font.match_font(self.font_name), self.font_size)
@@ -75,10 +74,13 @@ class Game(Entity):
         if self.debug:
             self.print_debug_info()
         self.update()
+        self.fps_tracker.update()
+        print("fps_tracker updated")
         if self.fps:
             self.clock.tick(self.fps)
 
     def _draw(self, surface: Surface, debug: bool = False):
         surface.fill(self.screen_color)  # clear the screen
         self.draw(surface, debug)
+        self.fps_tracker.draw(surface, debug)
         pygame.display.update()  # print to screen
