@@ -98,20 +98,19 @@ class FontTest(Game):
             filename=filename,
             image_size=(7, 9),
             letters=(
-                """ !"#$%&'()*+,-./0123456789:'<=>?@"""
+                """!"#$%&'()*+,-./0123456789:'<=>?@"""
                 + string.ascii_uppercase
                 + "[\]^_`"
                 + string.ascii_lowercase
                 + "{|}~"
             ),
-            xpad=0,
-            # colorkey=-1,
+            xpad=-3,
+            colorkey=-1,
         )
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        self.font.render(surface, code_snippet, scale=2)
-        # self.cellphone.render(surface, code_snippet, scale=2)
+        self.cellphone.render(surface, code_snippet, scale=2)
 
 
 if __name__ == "__main__":

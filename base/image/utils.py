@@ -10,16 +10,19 @@ from base.utils import limit_value
 
 def load_image(filename, colorkey=None) -> Surface:
     try:
-        image = pygame.image.load(filename).convert_alpha()
+        image = pygame.image.load(filename)
     except pygame.error:
         print("Unable to load image:", filename)
         raise
 
+    # colorkey needs to be set before .convert_alpha() is called, because Surfaces with a
+    # per-pixel transparency (i.e. after convert_alpha) ignore colorkey.
     if colorkey is not None:
         if colorkey == -1:
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey, pygame.RLEACCEL)
 
+    image = image.convert_alpha()
     return image
 
 
