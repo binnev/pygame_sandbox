@@ -8,13 +8,14 @@ from pygame.surface import Surface
 from base.image import load_spritesheet, scale_image, empty_image
 from base.objects import Game
 
-"""
-todo:
-- auto-wrap at width 
-- trim (un-monospace) characters
-"""
 snippet = """
-Ook in de spelling van sommige andere talen wordt de umlaut gebruikt, bijvoorbeeld in verwante talen als het IJslands en het Zweeds, om een soortgelijk klankverschijnsel weer te geven, of in niet-verwante talen als het Fins, het Hongaars of het Turks, om dezelfde e-, eu- en u-klank weer te geven, die echter niet het resultaat van hetzelfde klankverschijnsel zijn.
+Ook in de spelling van sommige andere talen wordt de umlaut gebruikt, bijvoorbeeld in verwante talen als het IJslands en het Zweeds, om een soortgelijk 
+
+klankverschijnsel
+weer
+te
+
+geven, of in niet-verwante talen als het Fins, het Hongaars of het Turks, om dezelfde e-, eu- en u-klank weer te geven, die echter niet het resultaat van hetzelfde klankverschijnsel zijn.
 """
 
 
@@ -64,9 +65,9 @@ class Font:
             else:
                 wrapped_lines = [line]
 
-            for aaaaaaaaaa in wrapped_lines:
+            for line in wrapped_lines:
                 cursor = x
-                for letter in aaaaaaaaaa:
+                for letter in line:
                     image = self.get(letter)
                     image = scale_image(image, scale)
                     surf.blit(image, (cursor, y))
@@ -115,7 +116,6 @@ class FontTest(Game):
     def __init__(self):
         super().__init__()
         filename = Path(__file__).parent / "assets/test_font.png"
-        assert filename.exists()
         self.font = Font(
             filename=filename,
             image_size=(16, 16),
@@ -129,7 +129,6 @@ class FontTest(Game):
             space_width=8,
         )
         filename = Path(__file__).parent / "assets/charmap-cellphone_white.png"
-        assert filename.exists()
         self.cellphone = Font(
             filename=filename,
             image_size=(7, 9),
@@ -149,7 +148,7 @@ class FontTest(Game):
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
         WRAP = 500
-        self.cellphone.render(surface, snippet, scale=3, wrap=WRAP)
+        self.cellphone.render(surface, snippet, scale=2, wrap=WRAP)
         pygame.draw.rect(surface, color=Color("red"), rect=(0, 0, WRAP, WRAP), width=1)
 
 
