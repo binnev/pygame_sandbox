@@ -58,6 +58,7 @@ class Font:
         self.letters.update({letter: image for letter, image in zip(letters, images)})
 
     def render(self, surf: Surface, text: str, x: int = 0, y: int = 0, scale: int = 1) -> Surface:
+        _, ysize = self.image_size
         for line in text.splitlines():
             cursor = x
             for letter in line:
@@ -66,7 +67,7 @@ class Font:
                 surf.blit(image, (cursor, y))
                 w = image.get_width()
                 cursor += w + self.xpad * scale
-            y += (self.ysize + self.ypad) * scale
+            y += (ysize + self.ypad) * scale
         return surf
 
     def trim_images(self, images: list[Surface]) -> list[Surface]:
@@ -83,14 +84,6 @@ class Font:
             return self.letters[letter]
         except KeyError:
             return self.not_found
-
-    @property
-    def xsize(self):
-        return self.image_size[0]
-
-    @property
-    def ysize(self):
-        return self.image_size[1]
 
 
 class FontTest(Game):
