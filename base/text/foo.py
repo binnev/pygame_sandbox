@@ -4,7 +4,7 @@ from pathlib import Path
 from pygame.color import Color
 from pygame.surface import Surface
 
-from base.image import load_spritesheet, scale_image
+from base.image import load_spritesheet, scale_image, empty_image
 from base.objects import Game
 
 """
@@ -37,24 +37,21 @@ class Font:
         self,
         filename: str | Path,
         image_size: tuple[int, int],
-        letters: str = None,
+        letters: str,
         xpad=0,
         ypad=0,
         trim=False,
+        space_width=None,
         **kwargs,
     ):
         """`letters` is the letters in the spritesheet, in the same order."""
-        self.image_size = image_size
+        self.image_size = width, height = image_size
         self.xpad = xpad
         self.ypad = ypad
         self.letters = dict()
-        space = Surface(image_size).convert_alpha()
-        space.fill((0, 0, 0, 0))
-        self.letters[" "] = space
+        self.letters[" "] = empty_image((space_width or width, height))
         self.not_found = Surface(image_size)
         self.not_found.fill(Color("red"))
-        letters = letters or string.ascii_uppercase + string.ascii_lowercase
-        filename = Path(filename)
         images = load_spritesheet(filename, image_size=image_size, **kwargs)
         if trim:
             images = self.trim_images(images)
@@ -113,7 +110,8 @@ class FontTest(Game):
                 + "1234567890-=!@#$%^&*()_+[]\;',./{}|:\"<>?~`"
             ),
             trim=True,
-            xpad=1
+            xpad=1,
+            space_width=8,
         )
         filename = Path(__file__).parent / "assets/charmap-cellphone_white.png"
         assert filename.exists()
@@ -130,11 +128,12 @@ class FontTest(Game):
             xpad=1,
             colorkey=-1,
             trim=True,
+            space_width=4,
         )
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        self.cellphone.render(surface, snippet, scale=2)
+        self.font.render(surface, snippet, scale=2)
 
 
 if __name__ == "__main__":

@@ -33,6 +33,12 @@ def not_empty(surface: Surface) -> bool:
     return any(surface.get_bounding_rect())
 
 
+def empty_image(*args, **kwargs) -> Surface:
+    img = Surface(*args, **kwargs).convert_alpha()
+    img.fill((0, 0, 0, 0))
+    return img
+
+
 def relative_folder(current_file: str, folder: str) -> Path:
     return Path(current_file).parent.absolute() / folder
 
