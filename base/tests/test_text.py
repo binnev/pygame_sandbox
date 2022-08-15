@@ -1,9 +1,8 @@
-import string
 from pathlib import Path
 
 from pygame.surface import Surface
 
-from base.text.foo import Font
+from base.text.font import Font
 
 TESTFONT = Path(__file__).parent.parent / "text/assets/test_font.png"
 assert TESTFONT.exists()
