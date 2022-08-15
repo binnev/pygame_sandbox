@@ -27,10 +27,11 @@ class FpsTracker(Entity):
 
     def draw(self, surface: Surface, debug: bool = False):
         if debug:
-            width = 75
-            surf = Surface((width, 15))
+            scale = 2
+            width = 50 * scale
+            surf = Surface((width, width // 4))
             surf.fill(Color("white"))
-            self.font.render(surf, f"FPS: {self.fps}", wrap=width, align=0, scale=1.5)
+            self.font.render(surf, f"FPS: {self.fps}", wrap=width, align=0, scale=scale)
             rect = surf.get_rect()
             rect.right = surface.get_rect().right - 10
             rect.top = surface.get_rect().top + 10

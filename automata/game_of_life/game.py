@@ -12,7 +12,7 @@ from base.input import EventQueue
 class GameOfLife(AutomataGame):
     fps = 64
     window_width = 1200
-    window_height = 1200
+    window_height = 800
     window_caption = "Conway's Game of Life"
     screen_color = Color("black")
     ticks_per_frame = 1

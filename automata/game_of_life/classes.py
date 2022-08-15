@@ -5,6 +5,7 @@ from pygame.sprite import AbstractGroup
 
 from automata.game_of_life import threshold
 from base.objects import Entity
+from base.text.font import fonts
 from base.utils import SparseMatrix, Coord, draw_text
 
 
@@ -95,19 +96,14 @@ class InfiniteBoard(Entity):
         if autoscale:
             self.scaling, self.x_offset, self.y_offset = self.contents.scale_to_screen(screen_size)
 
-        for text, y in [
-            (f"{self.underpopulation_threshold=}", 0),
-            (f"{self.overpopulation_threshold=}", 30),
-            (f"{self.reproduction_threshold=}", 60),
-        ]:
-            draw_text(
-                text,
-                surface,
-                (surface.get_rect().centerx-50, y),
-                font=self.game.font,
-                color=Color("white"),
-            )
-
+        text = "\n".join(
+            [
+                f"{self.underpopulation_threshold=}",
+                f"{self.overpopulation_threshold=}",
+                f"{self.reproduction_threshold=}",
+            ]
+        )
+        fonts.cellphone_white.render(surface, text, x=surface.get_rect().centerx - 50, scale=2)
         super().draw(surface, debug)
 
     def calculate_colors(self):

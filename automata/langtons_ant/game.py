@@ -5,7 +5,7 @@ from automata.game import AutomataGame
 
 class LangtonsAntGame(AutomataGame):
     window_width = 1200
-    window_height = 1200
+    window_height = 800
     window_caption = "Langton's Ant Simulator"
     font_name = "ubuntu"
     font_size = 20

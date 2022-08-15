@@ -6,7 +6,7 @@ from pygame import Surface
 
 from base.input import EventQueue
 from base.objects import Game
-from base.utils import draw_text
+from base.text.font import fonts
 
 
 class AutomataGame(Game):
@@ -23,25 +23,15 @@ class AutomataGame(Game):
     def draw(self, surface: Surface, debug: bool = False):
         t1 = time.perf_counter()
         super().draw(surface, debug)
-        draw_text(
-            f"iterations: {self.tick}", surface, (0, 0), font=self.font, color=self.debug_color
+        text = "\n".join(
+            [
+                f"iterations: {self.tick}",
+                f"scaling: {self.board.scaling}",
+                f"ticks per frame: {self.ticks_per_frame}",
+                f"fps: {self.fps}",
+            ]
         )
-        draw_text(
-            f"scaling: {self.board.scaling}",
-            surface,
-            (0, 30),
-            font=self.font,
-            color=self.debug_color,
-        )
-        draw_text(
-            f"ticks per frame: {self.ticks_per_frame}",
-            surface,
-            (0, 60),
-            font=self.font,
-            color=self.debug_color,
-        )
-        draw_text(f"fps: {self.fps}", surface, (0, 90), font=self.font, color=self.debug_color)
-
+        fonts.cellphone_white.render(surface, text, scale=2)
         t2 = time.perf_counter()
         print(f"draw time =   {t2-t1}")
 
