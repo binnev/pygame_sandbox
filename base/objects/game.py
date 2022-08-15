@@ -75,7 +75,6 @@ class Game(Entity):
             self.print_debug_info()
         self.update()
         self.fps_tracker.update()
-        print("fps_tracker updated")
         if self.fps:
             self.clock.tick(self.fps)
 
