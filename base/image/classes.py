@@ -137,13 +137,8 @@ class SpriteAnimation:
 
 class SpriteDict(dict):
     """
-    Manages a collection of sprite animations.
-    Takes a folder and list of files as input, and handles the creation of SpriteSheets and
-    SpriteAnimations.
-    Lazy loading to allow this class to be instantiated before pygame display is initialised.
+    Takes a folder and list of files as input, and handles the creation of SpriteAnimations.
     """
-
-    _loaded: bool = False  # have the images been loaded yet
 
     def __init__(
         self,
@@ -189,14 +184,3 @@ class SpriteDict(dict):
                         scale=self.scale,
                         flip_x=True,
                     )
-
-    def load(self):
-        for key, item in self.items():
-            # item.load()
-            pass
-        self._loaded = True
-
-    def __getitem__(self, item):
-        if not self._loaded:
-            self.load()
-        return super().__getitem__(item)
