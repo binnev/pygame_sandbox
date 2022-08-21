@@ -19,7 +19,7 @@ def test_update(mock):
     assert EventQueue.events == ["bar"]
 
 
-def test_add_event_pygame_style(display_init):
+def test_add_event_pygame_style():
     # in events.py we store an int representing the event type
     TEST_EVENT = pygame.event.custom_type()
 
@@ -40,7 +40,7 @@ def test_add_event_pygame_style(display_init):
     assert event.type == TEST_EVENT
 
 
-def test_add_custom_dataclass_event_is_converted_to_event(display_init):
+def test_add_custom_dataclass_event_is_converted_to_event():
     # in events.py
     @dataclass
     class MyCustomEvent:

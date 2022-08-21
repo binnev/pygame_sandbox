@@ -4,6 +4,10 @@ from typing import Union
 import pygame
 from pygame.event import EventType, Event
 
+from base.image import init_display
+
+init_display()
+
 
 class EventQueue:
     """Pygame's pygame.event.get() gets the events in the queue, but also empties the queue. This

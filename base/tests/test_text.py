@@ -8,14 +8,14 @@ TESTFONT = Path(__file__).parent.parent / "text/assets/test_font.png"
 assert TESTFONT.exists()
 
 
-def test_trim(display_init):
+def test_trim():
     font = Font(filename=TESTFONT, image_size=(16, 16), letters="A", trim=True)
     A = font.get("A")
     assert A.get_width() == 11  # trimmed width
     assert A.get_height() == 16  # original height
 
 
-def test_render_respects_trimmed_character_size(display_init):
+def test_render_respects_trimmed_character_size():
     font = Font(filename=TESTFONT, image_size=(16, 16), letters="A", trim=True)
     A = font.get("A")
     assert A.get_width() == 11  # trimmed width

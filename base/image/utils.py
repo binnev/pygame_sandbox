@@ -8,7 +8,16 @@ from pygame import Surface
 from base.utils import limit_value
 
 
+def init_display() -> Surface:
+    if not pygame.display.get_init():
+        pygame.display.init()
+        return pygame.display.set_mode((1, 1))
+    else:
+        return pygame.display.get_surface()
+
+
 def load_image(filename, colorkey=None) -> Surface:
+    init_display()
     try:
         image = pygame.image.load(filename)
     except pygame.error:
