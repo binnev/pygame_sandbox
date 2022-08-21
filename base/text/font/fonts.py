@@ -1,12 +1,10 @@
 import string
 from pathlib import Path
 
-import pygame
-
+from base.image import init_display
 from base.text.font import Font
 
-pygame.display.init()
-window = pygame.display.set_mode((1, 1))
+window = init_display()
 
 assets = Path(__file__).parent.parent / "assets"
 

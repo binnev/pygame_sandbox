@@ -18,7 +18,7 @@ class SpriteAnimation:
     Can scale, flip, and recolor itself.
     """
 
-    _images: list[Surface] | None
+    images: list[Surface] | None
     source: Callable | None
 
     def __init__(
@@ -29,7 +29,7 @@ class SpriteAnimation:
         flip_y: bool = False,
         colormap: dict = None,
     ):
-        self._images = images
+        self.images = images
         if scale:
             self.scale(scale)
         if flip_x or flip_y:
@@ -69,18 +69,10 @@ class SpriteAnimation:
         flip_y: bool = False,
         colormap: dict = None,
     ):
-        def spritesheet_loader():
-            images = load_spritesheet(
-                filename=filename, image_size=image_size, colorkey=colorkey, num_images=num_images
-            )
-            images = cls._process_images(
-                images, flip_x=flip_x, flip_y=flip_y, scale=scale, colormap=colormap
-            )
-            return images
-
-        instance = cls()
-        instance.source = spritesheet_loader
-        return instance
+        images = load_spritesheet(
+            filename=filename, image_size=image_size, colorkey=colorkey, num_images=num_images
+        )
+        return cls(images=images, scale=scale, flip_x=flip_x, flip_y=flip_y, colormap=colormap)
 
     @classmethod
     def from_image_sequence(
@@ -93,39 +85,8 @@ class SpriteAnimation:
         flip_y: bool = False,
         colormap: dict = None,
     ):
-        def image_sequence_loader():
-            images = load_image_sequence(
-                filename=filename, colorkey=colorkey, num_images=num_images
-            )
-            images = cls._process_images(
-                images, flip_x=flip_x, flip_y=flip_y, scale=scale, colormap=colormap
-            )
-            return images
-
-        instance = cls()
-        instance.source = image_sequence_loader
-        return instance
-
-    @classmethod
-    def _process_images(cls, images, flip_x, flip_y, colormap, scale):
-        if flip_x or flip_y:
-            images = flip_images(images, flip_x, flip_y)
-        if colormap:
-            images = recolor_images(images, colormap)
-        if scale:
-            images = scale_images(images, scale)
-        return images
-
-    def load(self):
-        self._images = self.source()
-
-    @property
-    def images(self):
-        """Lazy loading to allow this class to be instantiated before pygame.display.set_mode is
-        called."""
-        if not self._images:
-            self.load()
-        return self._images
+        images = load_image_sequence(filename=filename, colorkey=colorkey, num_images=num_images)
+        return cls(images=images, scale=scale, flip_x=flip_x, flip_y=flip_y, colormap=colormap)
 
     ############## playback ###############
     def play(self, n: int):
@@ -152,13 +113,13 @@ class SpriteAnimation:
 
     ############## edit in place ###############
     def flip(self, flip_x: bool, flip_y: bool):
-        self._images = flip_images(self.images, flip_x, flip_y)
+        self.images = flip_images(self.images, flip_x, flip_y)
 
     def recolor(self, colormap: dict):
-        self._images = recolor_images(self.images, colormap)
+        self.images = recolor_images(self.images, colormap)
 
     def scale(self, scale: float):
-        self._images = scale_images(self.images, scale)
+        self.images = scale_images(self.images, scale)
 
     ############## edit and copy ###############
     def flipped_copy(self, flip_x=False, flip_y=False):
@@ -173,20 +134,11 @@ class SpriteAnimation:
     def __len__(self):
         return len(self.images)
 
-    @property
-    def is_loaded(self):
-        return bool(self.images)
-
 
 class SpriteDict(dict):
     """
-    Manages a collection of sprite animations.
-    Takes a folder and list of files as input, and handles the creation of SpriteSheets and
-    SpriteAnimations.
-    Lazy loading to allow this class to be instantiated before pygame display is initialised.
+    Takes a folder and list of files as input, and handles the creation of SpriteAnimations.
     """
-
-    _loaded: bool = False  # have the images been loaded yet
 
     def __init__(
         self,
@@ -232,13 +184,3 @@ class SpriteDict(dict):
                         scale=self.scale,
                         flip_x=True,
                     )
-
-    def load(self):
-        for key, item in self.items():
-            item.load()
-        self._loaded = True
-
-    def __getitem__(self, item):
-        if not self._loaded:
-            self.load()
-        return super().__getitem__(item)

@@ -20,7 +20,7 @@ mocks = relative_folder(__file__, "mocks")
         (2, 2),
     ],
 )
-def test_load_spritesheet(num_images, expected_len, display_init):
+def test_load_spritesheet(num_images, expected_len):
     filename = mocks / "123_spritesheet.png"
     images = load_spritesheet(filename=filename, image_size=(64, 64), num_images=num_images)
     assert len(images) == expected_len
@@ -46,7 +46,7 @@ def test_load_image_sequence_not_found():
         (2, 2),
     ],
 )
-def test_load_image_sequence(num_images, expected_len, display_init):
+def test_load_image_sequence(num_images, expected_len):
     filename = mocks / "123_series.png"
     images = load_image_sequence(filename=filename, num_images=num_images)
     assert len(images) == expected_len
@@ -58,37 +58,28 @@ def test_can_instantiate_empty_spriteanimation():
     SpriteAnimation()
 
 
-def test_spriteanimation_from_spritesheet(display_init):
+def test_spriteanimation_from_spritesheet():
     filename = mocks / "123_spritesheet.png"
     anim = SpriteAnimation.from_spritesheet(filename=filename, image_size=(64, 64))
     assert isinstance(anim, SpriteAnimation)
-    assert anim._images is None  # not loaded yet
-
-    images = anim.images  # triggers .load()
-    assert len(images) == 3
-    assert isinstance(images[0], Surface)
+    assert len(anim.images) == 3
+    assert isinstance(anim.images[0], Surface)
 
 
-def test_spriteanimation_from_image_sequence(display_init):
+def test_spriteanimation_from_image_sequence():
     filename = mocks / "123_series.png"
     anim = SpriteAnimation.from_image_sequence(filename=filename)
     assert isinstance(anim, SpriteAnimation)
-    assert anim._images is None  # not loaded yet
-
-    images = anim.images  # triggers .load()
-    assert len(images) == 3
-    assert isinstance(images[0], Surface)
+    assert len(anim.images) == 3
+    assert isinstance(anim.images[0], Surface)
 
 
-def test_spriteanimation_from_image(display_init):
+def test_spriteanimation_from_image():
     filename = mocks / "123_spritesheet.png"
     anim = SpriteAnimation.from_image(filename=filename)
     assert isinstance(anim, SpriteAnimation)
-    assert anim._images is None  # not loaded yet
-
-    images = anim.images  # triggers .load()
-    assert len(images) == 1
-    assert isinstance(images[0], Surface)
+    assert len(anim.images) == 1
+    assert isinstance(anim.images[0], Surface)
 
 
 def test_spriteanimation_copy_methods():
@@ -134,7 +125,7 @@ def test_spriteanimation_copy_methods():
     assert anim.images[0].get_at((1, 1)) == Color("red")
 
 
-def test_load_image_with_per_pixel_transparency(display_init):
+def test_load_image_with_per_pixel_transparency():
     filename = mocks / "per_pixel_alpha.png"
     image = load_image(filename.as_posix())
 
@@ -153,7 +144,7 @@ def test_load_image_with_per_pixel_transparency(display_init):
         assert image.get_at(corner_pixel) == (0, 0, 0, 0)
 
 
-def test_load_image_with_global_transparency(display_init):
+def test_load_image_with_global_transparency():
     filename = mocks / "global_alpha.png"
     image = load_image(filename.as_posix())
 
@@ -224,7 +215,7 @@ def test_brighten_color(amount, old_color, new_color):
     assert brighten_color(old_color, amount=amount) == new_color
 
 
-def test_subsurface(display_init):
+def test_subsurface():
     filename = mocks / "padded.png"
     image = load_image(filename.as_posix())
     assert image.get_width() == 16
