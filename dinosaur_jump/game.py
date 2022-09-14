@@ -17,8 +17,10 @@ class DinoJump(Game):
         super().__init__()
         self.entities = Group()
         self.background = Group()
-        self.child_groups.append(self.background)
-        self.child_groups.append(self.entities)
+        self.child_groups = [
+            self.background,
+            self.entities,
+        ]
         self.entities.add(Dino(x=100, y=450))
         self.background.add(ScrollingBackground(0, 250, images.mountains2, speed=5))
         self.background.add(ScrollingBackground(0, 250, images.mountains1, speed=10))
