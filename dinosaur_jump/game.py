@@ -1,4 +1,7 @@
+from pygame import Surface
+
 from base.objects import Game, Group
+from base.text.font import fonts
 from dinosaur_jump import images
 from dinosaur_jump.objects.background import ScrollingBackground
 from dinosaur_jump.objects.dino import Dino
@@ -21,6 +24,11 @@ class DinoJump(Game):
         self.background.add(ScrollingBackground(0, 250, images.mountains1, speed=10))
         self.background.add(ScrollingBackground(0, 250, images.grass, speed=20))
 
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+        fonts.cellphone_white.render(
+            surface, "Run for your life", x=0, y=0, wrap=self.window_width, align=0, scale=5
+        )
 
 
 if __name__ == "__main__":
