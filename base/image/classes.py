@@ -46,7 +46,7 @@ class SpriteAnimation:
         flip_x: bool = False,
         flip_y: bool = False,
         colormap: dict = None,
-    ):
+    ) -> "SpriteAnimation":
         return cls.from_spritesheet(
             filename=filename,
             image_size=None,
@@ -68,7 +68,7 @@ class SpriteAnimation:
         flip_x: bool = False,
         flip_y: bool = False,
         colormap: dict = None,
-    ):
+    ) -> "SpriteAnimation":
         images = load_spritesheet(
             filename=filename, image_size=image_size, colorkey=colorkey, num_images=num_images
         )
@@ -84,7 +84,7 @@ class SpriteAnimation:
         flip_x: bool = False,
         flip_y: bool = False,
         colormap: dict = None,
-    ):
+    ) -> "SpriteAnimation":
         images = load_image_sequence(filename=filename, colorkey=colorkey, num_images=num_images)
         return cls(images=images, scale=scale, flip_x=flip_x, flip_y=flip_y, colormap=colormap)
 

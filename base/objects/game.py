@@ -27,7 +27,6 @@ class Game(Entity):
         pygame.init()
 
         self.scenes = Group()
-        self.scenes.add()
         self.fps_tracker = FpsTracker()
         self.child_groups = [self.scenes]
 
