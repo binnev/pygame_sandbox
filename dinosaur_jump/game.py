@@ -29,7 +29,7 @@ class DinoJump(Game):
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
         fonts.cellphone_white.render(
-            surface, "Run for your life", x=0, y=0, wrap=self.window_width, align=0, scale=5
+            surface, "Dino Jump", x=0, y=0, wrap=self.window_width, align=0, scale=5
         )
 
 
