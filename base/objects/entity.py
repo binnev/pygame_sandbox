@@ -73,6 +73,10 @@ class Entity(pygame.sprite.Sprite):
     def groups(self):
         raise Exception("NO")
 
+    def __repr__(self):
+        # The `_Sprite__g` is necessary because of name mangling in subclasses I think
+        return f"<{self.__class__.__name__} Entity(in {len(self._Sprite__g)} groups)>"
+
 
 class PhysicalEntity(Entity):
     """
