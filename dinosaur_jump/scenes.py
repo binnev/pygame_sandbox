@@ -1,10 +1,9 @@
 import pygame.key
-from pygame import Surface
 
 from base.input import EventQueue
 from base.objects import Entity, Group
-from base.text.font import fonts
 from dinosaur_jump import images, conf
+from dinosaur_jump.menu import PauseMenu
 from dinosaur_jump.objects.background import ScrollingBackground
 from dinosaur_jump.objects.characters import Dino, Ptero
 
@@ -51,15 +50,9 @@ class DinoJumpManager(Entity):
         if EventQueue.filter(type=pygame.KEYDOWN, key=pygame.K_ESCAPE):
             self.dino_scene.paused = True
             self.state = self.state_pause
+            self.menus.add(PauseMenu())
 
     def state_pause(self):
         if EventQueue.filter(type=pygame.KEYDOWN, key=pygame.K_ESCAPE):
             self.dino_scene.paused = False
             self.state = self.state_play
-
-    def draw(self, surface: Surface, debug: bool = False):
-        super().draw(surface, debug)
-        if self.dino_scene.paused:
-            fonts.cellphone_white.render(
-                surface, "PAUSED", x=0, y=0, wrap=conf.WINDOW_WIDTH, align=0, scale=5
-            )
