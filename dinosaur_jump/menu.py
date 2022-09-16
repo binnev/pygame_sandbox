@@ -1,42 +1,77 @@
-import pygame
 from pygame import Surface
 
-from base.animation import ease_in_out, ease_in, ease_out
+from base.animation import ease_in, ease_out
 from base.gui.button import Button
 from base.gui.menu import Menu
-from base.input import EventQueue
+from base.objects import Entity, Group
 from base.text.font import fonts
 from dinosaur_jump import conf
 
 
-class PauseMenu(Menu):
-    def __init__(self):
+class Toast(Entity):
+    def __init__(self, text, y=10):
         super().__init__()
-        self.buttons.add(Button(0, 0, 100, 50, "test"))
-        self.pause_text_y = 0
+        self.target_y = y
+        self.y = -35
+        self.text = text
         self.state = self.state_animate_in
 
     def draw(self, surface: Surface, debug: bool = False):
         fonts.cellphone_white.render(
             surface,
-            "PAUSED",
+            text=self.text,
             x=0,
-            y=self.pause_text_y,
+            y=self.y,
             wrap=conf.WINDOW_WIDTH,
             align=0,
             scale=5,
         )
 
     def state_animate_in(self):
-        self.pause_text_y = ease_out(start=-35, stop=10, num=15)[self.tick]
+        self.y = ease_out(start=-35, stop=self.target_y, num=15)[self.tick]
         if self.tick == 14:
             self.state = self.state_idle
 
     def state_animate_out(self):
-        self.pause_text_y = ease_in(start=self.pause_text_y, stop=-35, num=15)[self.tick]
+        self.y = ease_in(start=self.target_y, stop=-35, num=15)[self.tick]
         if self.tick == 14:
             self.kill()
 
     def state_idle(self):
-        if EventQueue.filter(type=pygame.KEYDOWN, key=pygame.K_ESCAPE):
-            self.state = self.state_animate_out
+        pass
+
+    def exit(self):
+        self.state = self.state_animate_out
+
+
+class DinoMenu(Menu):
+    def exit(self):
+        for group in self.child_groups:
+            for entity in group:
+                try:
+                    entity.exit()
+                except AttributeError:
+                    pass
+        self.state = self.state_exit
+
+    def state_exit(self):
+        """Die when all entities have finished animating out"""
+        if not any(self.child_groups):
+            self.kill()
+
+
+class PauseMenu(DinoMenu):
+    def __init__(self):
+        super().__init__()
+        self.entities = Group()
+        self.child_groups += [self.entities]
+        self.entities.add(Toast("PAUSED"))
+
+
+class GameOverMenu(DinoMenu):
+    def __init__(self):
+        super().__init__()
+        self.entities = Group()
+        self.child_groups += [self.entities]
+        self.entities.add(Toast("DEAD"))
+        self.entities.add(Toast("PRESS SPACE TO CONTINUE", y=100))

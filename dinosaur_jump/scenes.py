@@ -1,10 +1,11 @@
 import pygame.key
+from pygame.event import Event
 from pygame.sprite import groupcollide
 
 from base.input import EventQueue
 from base.objects import Entity, Group
-from dinosaur_jump import images, conf, sounds
-from dinosaur_jump.menu import PauseMenu
+from dinosaur_jump import images, conf, sounds, events
+from dinosaur_jump.menu import PauseMenu, GameOverMenu
 from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus
 
 
@@ -57,9 +58,10 @@ class DinoJumpScene(Entity):
 
     def check_collisions(self):
         if groupcollide(self.players, self.obstacles, False, False):
-            self.paused = True
             sounds.hit.play()
             sounds.crowd_ohh.play()
+            self.paused = True
+            EventQueue.add(Event(events.game_over))
 
 
 class DinoJumpManager(Entity):
@@ -73,6 +75,9 @@ class DinoJumpManager(Entity):
             self.scenes,
             self.menus,
         ]
+        self.start_new_game()
+
+    def start_new_game(self):
         self.dino_scene = DinoJumpScene()
         self.scenes.add(self.dino_scene)
         self.state = self.state_play
@@ -81,9 +86,21 @@ class DinoJumpManager(Entity):
         if EventQueue.filter(type=pygame.KEYDOWN, key=pygame.K_ESCAPE):
             self.dino_scene.paused = True
             self.state = self.state_pause
-            self.menus.add(PauseMenu())
+            self.menu = PauseMenu()
+            self.menus.add(self.menu)
+        if EventQueue.filter(type=events.game_over):
+            self.state = self.state_game_over
+            self.menu = GameOverMenu()
+            self.menus.add(self.menu)
 
     def state_pause(self):
         if EventQueue.filter(type=pygame.KEYDOWN, key=pygame.K_ESCAPE):
             self.dino_scene.paused = False
             self.state = self.state_play
+            self.menu.exit()
+
+    def state_game_over(self):
+        if EventQueue.filter(type=pygame.KEYDOWN, key=pygame.K_SPACE):
+            self.menu.exit()
+            self.scenes.kill()
+            self.start_new_game()
