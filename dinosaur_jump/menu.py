@@ -9,23 +9,18 @@ from dinosaur_jump import conf
 
 
 class Toast(Entity):
-    def __init__(self, text, y=10):
+    def __init__(self, text, y=10, **font_params):
         super().__init__()
         self.target_y = y
         self.y = -35
         self.text = text
         self.state = self.state_animate_in
+        self.font_params = font_params
 
     def draw(self, surface: Surface, debug: bool = False):
-        fonts.cellphone_white.render(
-            surface,
-            text=self.text,
-            x=0,
-            y=self.y,
-            wrap=conf.WINDOW_WIDTH,
-            align=0,
-            scale=5,
-        )
+        params = dict(wrap=conf.WINDOW_WIDTH, align=0, scale=5)
+        params.update(self.font_params)
+        fonts.cellphone_white.render(surface, text=self.text, x=0, y=self.y, **params)
 
     def state_animate_in(self):
         self.y = ease_out(start=-35, stop=self.target_y, num=15)[self.tick]
@@ -73,5 +68,5 @@ class GameOverMenu(DinoMenu):
         super().__init__()
         self.entities = Group()
         self.child_groups += [self.entities]
-        self.entities.add(Toast("DEAD"))
+        self.entities.add(Toast("R.I.P.", scale=10))
         self.entities.add(Toast("PRESS SPACE TO CONTINUE", y=100))
