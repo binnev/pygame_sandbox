@@ -1,4 +1,5 @@
 import pygame.key
+from pygame.sprite import groupcollide
 
 from base.input import EventQueue
 from base.objects import Entity, Group
@@ -16,13 +17,15 @@ class DinoJumpScene(Entity):
     def __init__(self):
         super().__init__()
         self.paused = False
-        self.entities = Group()
+        self.players = Group()
+        self.obstacles = Group()
         self.background = Group()
         self.child_groups = [
             self.background,
-            self.entities,
+            self.obstacles,
+            self.players,
         ]
-        self.entities.add(Dino(x=100, y=475))
+        self.players.add(Dino(x=100, y=475))
         self.background.add(ScrollingBackground(0, 250, images.mountains2, speed=2))
         self.background.add(ScrollingBackground(0, 250, images.mountains1, speed=5))
         self.background.add(ScrollingBackground(0, 250, images.grass, speed=10))
@@ -42,13 +45,19 @@ class DinoJumpScene(Entity):
         if self.ptero_timer == 0:
             self.spawn_ptero()
 
+        self.check_collisions()
+
     def spawn_cactus(self):
         self.cactus_timer = self.cactus_cooldown
-        self.entities.add(Cactus(x=conf.WINDOW_WIDTH + 50, y=475))
+        self.obstacles.add(Cactus(x=conf.WINDOW_WIDTH + 50, y=475))
 
     def spawn_ptero(self):
         self.ptero_timer = self.ptero_cooldown
-        self.entities.add(Ptero(x=conf.WINDOW_WIDTH + 16, y=150))
+        self.obstacles.add(Ptero(x=conf.WINDOW_WIDTH + 16, y=150))
+
+    def check_collisions(self):
+        if groupcollide(self.players, self.obstacles, False, False):
+            self.paused = True
 
 
 class DinoJumpManager(Entity):
