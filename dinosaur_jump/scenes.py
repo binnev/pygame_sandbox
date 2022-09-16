@@ -10,6 +10,9 @@ from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus
 class DinoJumpScene(Entity):
     """The actual game with the running dino. Doesn't include any menus etc."""
 
+    cactus_timer = cactus_cooldown = 120
+    ptero_timer = ptero_cooldown = 360
+
     def __init__(self):
         super().__init__()
         self.paused = False
@@ -19,16 +22,33 @@ class DinoJumpScene(Entity):
             self.background,
             self.entities,
         ]
-        self.entities.add(Dino(x=100, y=450))
-        self.entities.add(Ptero(x=conf.WINDOW_WIDTH + 16, y=150))
-        self.entities.add(Cactus(x=conf.WINDOW_WIDTH + 50, y=450))
-        self.background.add(ScrollingBackground(0, 250, images.mountains2, speed=5))
-        self.background.add(ScrollingBackground(0, 250, images.mountains1, speed=10))
-        self.background.add(ScrollingBackground(0, 250, images.grass, speed=20))
+        self.entities.add(Dino(x=100, y=475))
+        self.background.add(ScrollingBackground(0, 250, images.mountains2, speed=2))
+        self.background.add(ScrollingBackground(0, 250, images.mountains1, speed=5))
+        self.background.add(ScrollingBackground(0, 250, images.grass, speed=10))
+        self.state = self.state_day
 
     def update(self):
         if not self.paused:
             super().update()
+
+    def state_day(self):
+        self.ptero_timer -= 1
+        self.cactus_timer -= 1
+
+        if self.cactus_timer == 0:
+            self.spawn_cactus()
+
+        if self.ptero_timer == 0:
+            self.spawn_ptero()
+
+    def spawn_cactus(self):
+        self.cactus_timer = self.cactus_cooldown
+        self.entities.add(Cactus(x=conf.WINDOW_WIDTH + 50, y=475))
+
+    def spawn_ptero(self):
+        self.ptero_timer = self.ptero_cooldown
+        self.entities.add(Ptero(x=conf.WINDOW_WIDTH + 16, y=150))
 
 
 class DinoJumpManager(Entity):

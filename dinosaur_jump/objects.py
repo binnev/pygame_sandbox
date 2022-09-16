@@ -31,7 +31,7 @@ class Dino(PhysicalEntity):
     def __init__(self, x, y) -> None:
         super().__init__()
         self.rect = pygame.rect.Rect(0, 0, 60, 60)
-        self.rect.center = (x, y)
+        self.rect.midbottom = (x, y)
         self.state = self.state_run
 
     def state_run(self):
@@ -48,6 +48,7 @@ class Dino(PhysicalEntity):
 
 class Ptero(PhysicalEntity):
     frame_duration = 5
+    speed = 10
 
     def __init__(self, x, y):
         super().__init__()
@@ -58,7 +59,7 @@ class Ptero(PhysicalEntity):
 
     def state_fly(self):
         self.image = images.ptero.loop(self.animation_frame)
-        self.x -= 10
+        self.x -= self.speed
         self.y = self.height + math.sin(self.tick / 15) * 60
         # if fly off edge of screen; die
         if self.x < -10:
@@ -67,16 +68,18 @@ class Ptero(PhysicalEntity):
 
 class Cactus(PhysicalEntity):
     frame_duration = 5
+    speed = 10
 
     def __init__(self, x, y):
         super().__init__()
-        self.rect = pygame.rect.Rect(0, 0, 16 * 5, 16 * 5)
-        self.rect.center = (x, y)
-        self.state = self.state_idle
         self.image = random.choice(images.cacti.images)
+        self.image = self.image.subsurface(self.image.get_bounding_rect())
+        self.rect = self.image.get_bounding_rect()
+        self.rect.midbottom = (x, y)
+        self.state = self.state_idle
 
     def state_idle(self):
-        self.x -= 10
+        self.x -= self.speed
         # if fly off edge of screen; die
         if self.x < -10:
             self.kill()
