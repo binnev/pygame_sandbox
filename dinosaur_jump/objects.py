@@ -27,23 +27,30 @@ class ScrollingBackground(Entity):
 
 class Dino(PhysicalEntity):
     frame_duration = 5
+    gravity = 1.5
 
     def __init__(self, x, y) -> None:
         super().__init__()
         self.rect = pygame.rect.Rect(0, 0, 60, 60)
         self.rect.midbottom = (x, y)
+        self.ground_height = y  # the height you fall back down to
         self.state = self.state_run
 
     def state_run(self):
         self.image = images.dino.loop(self.animation_frame)
-        if pygame.key.get_pressed()[pygame.K_RIGHT]:
-            self.x += 5
-        if pygame.key.get_pressed()[pygame.K_LEFT]:
-            self.x -= 5
-        if pygame.key.get_pressed()[pygame.K_DOWN]:
-            self.y += 5
-        if pygame.key.get_pressed()[pygame.K_UP]:
-            self.y -= 5
+        if pygame.key.get_pressed()[pygame.K_SPACE]:
+            self.jump()
+
+    def jump(self):
+        self.v = -20
+        self.state = self.state_jump
+
+    def state_jump(self):
+        self.y += self.v
+        self.v += self.gravity
+        if self.rect.bottom >= self.ground_height:
+            self.rect.bottom = self.ground_height
+            self.state = self.state_run
 
 
 class Ptero(PhysicalEntity):
