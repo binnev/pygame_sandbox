@@ -3,7 +3,7 @@ from pygame.sprite import groupcollide
 
 from base.input import EventQueue
 from base.objects import Entity, Group
-from dinosaur_jump import images, conf
+from dinosaur_jump import images, conf, sounds
 from dinosaur_jump.menu import PauseMenu
 from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus
 
@@ -58,6 +58,8 @@ class DinoJumpScene(Entity):
     def check_collisions(self):
         if groupcollide(self.players, self.obstacles, False, False):
             self.paused = True
+            sounds.hit.play()
+            sounds.crowd_ohh.play()
 
 
 class DinoJumpManager(Entity):
