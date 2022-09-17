@@ -19,6 +19,11 @@ class Score:
     def __repr__(self):
         return f"Score(score={self.score}, name={self.name}, date={self.date})"
 
+    def save(self):
+        scores = load_scores()
+        scores.append(self)
+        save_scores(scores)
+
 
 def save_scores(scores: list[Score]):
     scores = [s.to_dict() for s in scores]
@@ -28,5 +33,23 @@ def save_scores(scores: list[Score]):
 
 def load_scores() -> list[Score]:
     with open(filename) as file:
-        scores = json.load(file)
-    return [Score.from_dict(s) for s in scores]
+        contents = file.read()
+
+    if contents:
+        scores = json.loads(contents)
+        return [Score.from_dict(s) for s in scores]
+    else:
+        return []
+
+
+def highscores() -> list[Score]:
+    return list(sorted(load_scores(), key=lambda s: -s.score))[:10]
+
+
+def is_highscore(score: int) -> bool:
+    scores = highscores()
+    if len(scores) < 10:
+        return True
+    print(scores)
+    if score > scores[-1].score:
+        return True
