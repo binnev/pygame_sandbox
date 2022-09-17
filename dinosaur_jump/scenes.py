@@ -101,7 +101,7 @@ class DinoJumpManager(Entity):
             self.menus.add(self.menu)
         if EventQueue.filter(type=events.game_over):
             self.state = self.state_game_over
-            self.menu = GameOverMenu()
+            self.menu = GameOverMenu(score=self.dino_scene.score)
             self.menus.add(self.menu)
 
     def state_pause(self):

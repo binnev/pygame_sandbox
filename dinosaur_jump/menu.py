@@ -64,9 +64,10 @@ class PauseMenu(DinoMenu):
 
 
 class GameOverMenu(DinoMenu):
-    def __init__(self):
+    def __init__(self, score: int):
         super().__init__()
         self.entities = Group()
         self.child_groups += [self.entities]
         self.entities.add(Toast("R.I.P.", scale=10))
-        self.entities.add(Toast("PRESS SPACE TO CONTINUE", y=100))
+        self.entities.add(Toast(f"Score: {score}", y=100))
+        self.entities.add(Toast("PRESS SPACE TO CONTINUE", y=300))
