@@ -10,13 +10,14 @@ from dinosaur_jump import images, conf, sounds, events
 from dinosaur_jump.menu import PauseMenu, GameOverMenu
 from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus
 from dinosaur_jump.score import Score
+from dinosaur_jump.utils import should_spawn
 
 
 class DinoJumpScene(Entity):
     """The actual game with the running dino. Doesn't include any menus etc."""
 
-    cactus_timer = cactus_cooldown = 120
-    ptero_timer = ptero_cooldown = 360
+    cactus_timer = cactus_cooldown = 5000
+    ptero_timer = ptero_cooldown = 5000
 
     def __init__(self):
         super().__init__()
@@ -43,23 +44,23 @@ class DinoJumpScene(Entity):
             self.score += 1
 
     def state_day(self):
-        self.ptero_timer -= 1
-        self.cactus_timer -= 1
+        self.ptero_timer += 1
+        self.cactus_timer += 1
 
-        if self.cactus_timer == 0:
+        if should_spawn(self.cactus_cooldown, self.cactus_timer):
             self.spawn_cactus()
 
-        if self.ptero_timer == 0:
+        if should_spawn(self.ptero_cooldown, self.ptero_timer):
             self.spawn_ptero()
 
         self.check_collisions()
 
     def spawn_cactus(self):
-        self.cactus_timer = self.cactus_cooldown
+        self.cactus_timer = 0
         self.obstacles.add(Cactus(x=conf.WINDOW_WIDTH + 50, y=475))
 
     def spawn_ptero(self):
-        self.ptero_timer = self.ptero_cooldown
+        self.ptero_timer = 0
         self.obstacles.add(Ptero(x=conf.WINDOW_WIDTH + 16, y=150))
 
     def check_collisions(self):
