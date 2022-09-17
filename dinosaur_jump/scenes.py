@@ -1,9 +1,11 @@
 import pygame.key
+from pygame import Surface
 from pygame.event import Event
 from pygame.sprite import groupcollide
 
 from base.input import EventQueue
 from base.objects import Entity, Group
+from base.text.font import fonts
 from dinosaur_jump import images, conf, sounds, events
 from dinosaur_jump.menu import PauseMenu, GameOverMenu
 from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus
@@ -31,10 +33,13 @@ class DinoJumpScene(Entity):
         self.background.add(ScrollingBackground(0, 250, images.mountains1, speed=5))
         self.background.add(ScrollingBackground(0, 250, images.grass, speed=10))
         self.state = self.state_day
+        self.score = 0
 
     def update(self):
         if not self.paused:
             super().update()
+        if self.tick % 10 == 0:
+            self.score += 1
 
     def state_day(self):
         self.ptero_timer -= 1
@@ -62,6 +67,12 @@ class DinoJumpScene(Entity):
             sounds.crowd_ohh.play()
             self.paused = True
             EventQueue.add(Event(events.game_over))
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+        fonts.cellphone_white.render(
+            surface, text=f"score: {self.score}", wrap=conf.WINDOW_WIDTH, align=1, scale=2
+        )
 
 
 class DinoJumpManager(Entity):
