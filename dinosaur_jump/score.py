@@ -32,14 +32,14 @@ def save_scores(scores: list[Score]):
 
 
 def load_scores() -> list[Score]:
-    with open(filename) as file:
-        contents = file.read()
+    if filename.exists():
+        with open(filename) as file:
+            contents = file.read()
+        if contents:
+            scores = json.loads(contents)
+            return [Score.from_dict(s) for s in scores]
 
-    if contents:
-        scores = json.loads(contents)
-        return [Score.from_dict(s) for s in scores]
-    else:
-        return []
+    return []
 
 
 def highscores() -> list[Score]:
