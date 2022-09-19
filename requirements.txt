@@ -5,3 +5,4 @@ pytest
 matplotlib
 coverage
 pytest-cov
+dataclasses-json
