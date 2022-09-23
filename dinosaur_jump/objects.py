@@ -1,11 +1,14 @@
 import math
 import random
-import pygame
-from pygame import Surface
 
-from base.objects import Entity
+import pygame
+from pygame import Surface, Color
+
+from base.image import scale_image
+from base.input import EventQueue
+from base.objects import Entity, Group
 from base.objects import PhysicalEntity
-from dinosaur_jump import images
+from dinosaur_jump import images, sounds
 
 
 class ScrollingBackground(Entity):
@@ -35,6 +38,15 @@ class Dino(PhysicalEntity):
         self.rect.midbottom = (x, y)
         self.ground_height = y  # the height you fall back down to
         self.state = self.state_run
+        self.inventory = Group()
+        self.child_groups = [self.inventory]
+        self.gun = Gun(x=self.x, y=self.y)
+        self.inventory.add(self.gun)
+
+    def update(self):
+        super().update()
+        if self.gun:
+            self.gun.rect.center = self.rect.midright
 
     def state_run(self):
         self.image = images.dino.loop(self.animation_frame)
@@ -90,3 +102,37 @@ class Cactus(PhysicalEntity):
         # if fly off edge of screen; die
         if self.x < -10:
             self.kill()
+
+
+class Gun(PhysicalEntity):
+    def __init__(self, x, y) -> None:
+        super().__init__()
+        image = images.gun
+        self.image = image.subsurface(image.get_bounding_rect())
+        self.rect = self.image.get_bounding_rect()
+        self.rect.center = (x, y)
+        self.bullets = Group()
+        self.child_groups = [self.bullets]
+
+    def update(self):
+        super().update()
+        if EventQueue.get(type=pygame.KEYDOWN, key=pygame.K_g):
+            sounds.gunshot.play()
+            self.bullets.add(Bullet(x=self.rect.right, y=self.rect.centery, u=10, v=0))
+
+
+class Bullet(PhysicalEntity):
+    def __init__(self, x, y, u, v) -> None:
+        super().__init__()
+        image = images.gun
+        self.image = scale_image(Surface((2, 1)), 5)
+        self.image.fill(Color("gray"))
+        self.rect = self.image.get_bounding_rect()
+        self.rect.center = (x, y)
+        self.u = u
+        self.v = v
+        self.state = self.state_fly
+
+    def state_fly(self):
+        self.x += self.u
+        self.y += self.v

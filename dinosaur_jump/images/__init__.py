@@ -11,3 +11,4 @@ cacti = SpriteAnimation.from_spritesheet(folder / "cacti.png", image_size=(16, 1
 grass = scale_image(load_image(folder / "grass.png"), 5)
 mountains1 = scale_image(load_image(folder / "mountains1.png"), 5)
 mountains2 = scale_image(load_image(folder / "mountains2.png"), 5)
+gun = scale_image(load_image(folder / "gun.png"), 5)

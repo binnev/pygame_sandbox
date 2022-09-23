@@ -7,7 +7,7 @@ def init_sound(
     frequency=44100,
     size=-16,
     channels=2,
-    buffer=512,
+    buffer=0,
 ):
     if not pygame.mixer.get_init():
         pygame.mixer.pre_init(frequency, size, channels, buffer)
