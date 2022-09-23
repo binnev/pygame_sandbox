@@ -9,9 +9,12 @@ from base.input import EventQueue
 from base.objects import Entity, Group
 from base.objects import PhysicalEntity
 from dinosaur_jump import images, sounds
+from dinosaur_jump.particles import GunShot
 
 
 class ScrollingBackground(Entity):
+    repeats = 3
+
     def __init__(self, x, y, image: Surface, speed: int):
         super().__init__()
         self.x = x
@@ -21,8 +24,10 @@ class ScrollingBackground(Entity):
         self.progress = 0
 
     def draw(self, surface: Surface, debug: bool = False):
-        surface.blit(self.image, (self.x - self.progress, self.y))
-        surface.blit(self.image, (self.x - self.progress + self.image.get_width(), self.y))
+        for repeat in range(self.repeats):
+            surface.blit(
+                self.image, (self.x - self.progress + repeat * self.image.get_width(), self.y)
+            )
 
     def update(self):
         self.progress = (self.progress + self.speed) % self.image.get_width()
@@ -139,6 +144,7 @@ class Gun(PhysicalEntity):
     def shoot(self):
         sounds.gunshot.play()
         self.bullets.add(Bullet(x=self.rect.right, y=self.rect.centery, u=10, v=0))
+        self.entities.add(GunShot(x=self.rect.right, y=self.rect.centery, angle_deg=0))
         self.ammo.bullets -= 1
 
 
@@ -146,7 +152,7 @@ class Bullet(PhysicalEntity):
     def __init__(self, x, y, u, v):
         super().__init__()
         self.image = scale_image(Surface((2, 1)), 5)
-        self.image.fill(Color("gray"))
+        self.image.fill(Color("black"))
         self.rect = self.image.get_bounding_rect()
         self.rect.center = (x, y)
         self.u = u
