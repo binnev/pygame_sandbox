@@ -88,7 +88,7 @@ class Font:
         """Break one long line into multiple lines based on the wrap width."""
         lines = []
         line = ""
-        for word in text.split():
+        for word in text.split(" "):
             new_line = f"{line} {word}" if line else word
             if self.printed_width(new_line, scale) <= wrap:
                 line = new_line
