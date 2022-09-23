@@ -14,10 +14,12 @@ def init_sound(
         pygame.mixer.init()
 
 
-def load_sound(filename: str | Path, **sound_kwargs):
+def load_sound(filename: str | Path, volume=.5, **sound_kwargs):
     filename = Path(filename)
     if not filename.exists():
         raise FileNotFoundError(filename.as_posix())
 
     init_sound(**sound_kwargs)
-    return pygame.mixer.Sound(filename.as_posix())
+    sound = pygame.mixer.Sound(filename.as_posix())
+    sound.set_volume(volume)
+    return sound
