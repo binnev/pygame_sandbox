@@ -53,3 +53,10 @@ def is_highscore(score: int) -> bool:
     print(scores)
     if score > scores[-1].score:
         return True
+
+
+def highscores_table():
+    scores = highscores()
+    name_width = 20
+    format_string = f"{{:<4}} {{:<{name_width}}} {{}}"
+    return "\n".join(format_string.format(s.score, s.name[:name_width], s.date) for s in scores)

@@ -8,16 +8,19 @@ from base.objects import Entity, Group
 from base.text.font import fonts
 from dinosaur_jump import images, conf, sounds, events
 from dinosaur_jump.menu import PauseMenu, GameOverMenu
-from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus
-from dinosaur_jump.score import Score
+from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus, Bullet
 from dinosaur_jump.utils import should_spawn
 
 
 class DinoJumpScene(Entity):
     """The actual game with the running dino. Doesn't include any menus etc."""
 
-    cactus_timer = cactus_cooldown = 5000
-    ptero_timer = ptero_cooldown = 5000
+    cactus_timer = 0
+    cactus_chance = 0.02
+    cactus_cooldown = 30
+    ptero_timer = 0
+    ptero_chance = 0.001
+    ptero_cooldown = 600
 
     def __init__(self):
         super().__init__()
@@ -25,10 +28,12 @@ class DinoJumpScene(Entity):
         self.players = Group()
         self.obstacles = Group()
         self.background = Group()
+        self.bullets = Group()
         self.child_groups = [
             self.background,
             self.obstacles,
             self.players,
+            self.bullets,
         ]
         self.players.add(Dino(x=100, y=475))
         self.background.add(ScrollingBackground(0, 250, images.mountains2, speed=2))
@@ -47,10 +52,13 @@ class DinoJumpScene(Entity):
         self.ptero_timer += 1
         self.cactus_timer += 1
 
-        if should_spawn(self.cactus_cooldown, self.cactus_timer):
+        if event := EventQueue.get(type=events.AddBullet.type):
+            self.bullets.add(Bullet(x=event.x, y=event.y, u=event.u, v=event.v))
+
+        if should_spawn(self.cactus_cooldown, self.cactus_timer, self.cactus_chance):
             self.spawn_cactus()
 
-        if should_spawn(self.ptero_cooldown, self.ptero_timer):
+        if should_spawn(self.ptero_cooldown, self.ptero_timer, self.ptero_chance):
             self.spawn_ptero()
 
         self.check_collisions()
@@ -69,6 +77,10 @@ class DinoJumpScene(Entity):
             sounds.crowd_ohh.play()
             self.paused = True
             EventQueue.add(Event(events.game_over))
+
+        if groupcollide(self.bullets, self.obstacles, True, True):
+            sounds.bullet_hit.play()
+            self.score += 10
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
@@ -104,7 +116,6 @@ class DinoJumpManager(Entity):
         if EventQueue.filter(type=events.game_over):
             self.state = self.state_game_over
             self.menu = GameOverMenu(score=self.dino_scene.score)
-            Score(self.dino_scene.score).save()
             self.menus.add(self.menu)
 
     def state_pause(self):
