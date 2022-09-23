@@ -8,7 +8,7 @@ from base.objects import Entity, Group
 from base.text.font import fonts
 from dinosaur_jump import images, conf, sounds, events
 from dinosaur_jump.menu import PauseMenu, GameOverMenu
-from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus
+from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus, Bullet
 from dinosaur_jump.utils import should_spawn
 
 
@@ -28,10 +28,12 @@ class DinoJumpScene(Entity):
         self.players = Group()
         self.obstacles = Group()
         self.background = Group()
+        self.bullets = Group()
         self.child_groups = [
             self.background,
             self.obstacles,
             self.players,
+            self.bullets,
         ]
         self.players.add(Dino(x=100, y=475))
         self.background.add(ScrollingBackground(0, 250, images.mountains2, speed=2))
@@ -49,6 +51,9 @@ class DinoJumpScene(Entity):
     def state_day(self):
         self.ptero_timer += 1
         self.cactus_timer += 1
+
+        if event := EventQueue.get(type=events.AddBullet.type):
+            self.bullets.add(Bullet(x=event.x, y=event.y, u=event.u, v=event.v))
 
         if should_spawn(self.cactus_cooldown, self.cactus_timer, self.cactus_chance):
             self.spawn_cactus()
@@ -72,6 +77,11 @@ class DinoJumpScene(Entity):
             sounds.crowd_ohh.play()
             self.paused = True
             EventQueue.add(Event(events.game_over))
+
+        if groupcollide(self.bullets, self.obstacles, True, True):
+            sounds.applause.play()
+            sounds.bullet_hit.play()
+            self.score += 10
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)

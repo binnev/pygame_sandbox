@@ -8,7 +8,7 @@ from base.image import scale_image
 from base.input import EventQueue
 from base.objects import Entity, Group
 from base.objects import PhysicalEntity
-from dinosaur_jump import images, sounds
+from dinosaur_jump import images, sounds, events
 from dinosaur_jump.particles import GunShot
 
 
@@ -143,7 +143,7 @@ class Gun(PhysicalEntity):
 
     def shoot(self):
         sounds.gunshot.play()
-        self.bullets.add(Bullet(x=self.rect.right, y=self.rect.centery, u=10, v=0))
+        EventQueue.add(events.AddBullet(x=self.rect.right, y=self.rect.centery, u=10, v=0))
         self.entities.add(GunShot(x=self.rect.right, y=self.rect.centery, angle_deg=0))
         self.ammo.bullets -= 1
 
