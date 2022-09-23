@@ -2,6 +2,7 @@ import pygame
 from pygame import Color
 from pygame import Surface
 from pygame.rect import Rect
+from pygame.sprite import AbstractGroup
 
 from base.objects.group import Group
 
@@ -20,11 +21,15 @@ class Entity(pygame.sprite.Sprite):
     """
 
     _state: "method" = lambda *args, **kwargs: None
-    child_groups: list = []  # groups of child Entities belonging to this entity
+    child_groups: list  # groups of child Entities belonging to this entity
     parent_groups: list  # groups of which this Entity is a member
     tick: int = 0  # iterations of the main game loop
     parental_name = "parent"
     debug_color = Color("red")
+
+    def __init__(self, *groups: AbstractGroup) -> None:
+        super().__init__(*groups)
+        self.child_groups = []
 
     def update(self):
         self.state()
