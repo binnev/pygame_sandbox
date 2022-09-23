@@ -117,19 +117,34 @@ class Gun(PhysicalEntity):
         self.rect = self.image.get_bounding_rect()
         self.rect.center = (x, y)
         self.bullets = Group()
-        self.child_groups = [self.bullets]
+        self.entities = Group()
+        self.child_groups = [self.bullets, self.entities]
+        self.ammo = AmmoIndicator(x=100, y=100)
+        self.entities.add(self.ammo)
 
     def update(self):
         super().update()
         if EventQueue.get(type=pygame.KEYDOWN, key=pygame.K_g):
-            sounds.gunshot.play()
-            self.bullets.add(Bullet(x=self.rect.right, y=self.rect.centery, u=10, v=0))
+            self.shoot_or_reload()
+
+    def shoot_or_reload(self):
+        if self.ammo.bullets > 0:
+            self.shoot()
+        else:
+            self.reload()
+
+    def reload(self):
+        self.ammo.reload()
+
+    def shoot(self):
+        sounds.gunshot.play()
+        self.bullets.add(Bullet(x=self.rect.right, y=self.rect.centery, u=10, v=0))
+        self.ammo.bullets -= 1
 
 
 class Bullet(PhysicalEntity):
-    def __init__(self, x, y, u, v) -> None:
+    def __init__(self, x, y, u, v):
         super().__init__()
-        image = images.gun
         self.image = scale_image(Surface((2, 1)), 5)
         self.image.fill(Color("gray"))
         self.rect = self.image.get_bounding_rect()
@@ -141,3 +156,39 @@ class Bullet(PhysicalEntity):
     def state_fly(self):
         self.x += self.u
         self.y += self.v
+
+
+class AmmoIndicator(Entity):
+    def __init__(self, x, y):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.bullets = 6
+        self.state = self.state_idle
+        self.angle = 0
+        self.velocity = 0
+
+    def state_idle(self):
+        pass
+
+    def reload(self):
+        if self.state != self.state_reload:
+            sounds.revolver_spin.play()
+            self.velocity = 60
+            self.state = self.state_reload
+
+    def state_reload(self):
+        self.angle += self.velocity
+        self.velocity -= 1
+        if self.velocity <= 0:
+            self.state = self.state_idle
+            self.bullets = 6
+            self.angle = 0
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+        image = images.revolver_chamber.images[self.bullets]
+        image = pygame.transform.rotate(image, self.angle)
+        rect = image.get_rect()
+        rect.center = (self.x, self.y)
+        surface.blit(image, rect)
