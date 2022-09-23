@@ -79,7 +79,6 @@ class DinoJumpScene(Entity):
             EventQueue.add(Event(events.game_over))
 
         if groupcollide(self.bullets, self.obstacles, True, True):
-            sounds.applause.play()
             sounds.bullet_hit.play()
             self.score += 10
 

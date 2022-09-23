@@ -139,6 +139,7 @@ class Gun(PhysicalEntity):
             self.reload()
 
     def reload(self):
+        sounds.gun_click.play()
         self.ammo.reload()
 
     def shoot(self):
