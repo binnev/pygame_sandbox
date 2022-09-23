@@ -51,3 +51,15 @@ cellphone_white = Font(
     trim=True,
     space_width=4,
 )
+cellphone_white_mono = Font(
+    filename=assets / "cellphone-white.png",
+    image_size=(7, 9),
+    letters=(
+        """!"#$%&'()*+,-./0123456789:'<=>?@"""
+        + string.ascii_uppercase
+        + "[\]^_`"
+        + string.ascii_lowercase
+        + "{|}~"
+    ),
+    colorkey=-1,
+)

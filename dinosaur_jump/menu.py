@@ -1,34 +1,36 @@
 from pygame import Surface
 
 from base.animation import ease_in, ease_out
-from base.gui.button import Button
 from base.gui.menu import Menu
 from base.objects import Entity, Group
 from base.text.font import fonts
 from dinosaur_jump import conf
+from dinosaur_jump.score import highscores_table
 
 
 class Toast(Entity):
-    def __init__(self, text, y=10, **font_params):
+    def __init__(self, text, y=10, from_above=True, font=fonts.cellphone_white, **font_params):
         super().__init__()
+        self.from_above = from_above
         self.target_y = y
-        self.y = -35
+        self.start_y = -35 if from_above else conf.WINDOW_HEIGHT + 20
         self.text = text
         self.state = self.state_animate_in
+        self.font = font
         self.font_params = font_params
 
     def draw(self, surface: Surface, debug: bool = False):
         params = dict(wrap=conf.WINDOW_WIDTH, align=0, scale=5)
         params.update(self.font_params)
-        fonts.cellphone_white.render(surface, text=self.text, x=0, y=self.y, **params)
+        self.font.render(surface, text=self.text, x=0, y=self.y, **params)
 
     def state_animate_in(self):
-        self.y = ease_out(start=-35, stop=self.target_y, num=15)[self.tick]
+        self.y = ease_out(start=self.start_y, stop=self.target_y, num=15)[self.tick]
         if self.tick == 14:
             self.state = self.state_idle
 
     def state_animate_out(self):
-        self.y = ease_in(start=self.target_y, stop=-35, num=15)[self.tick]
+        self.y = ease_in(start=self.target_y, stop=self.start_y, num=15)[self.tick]
         if self.tick == 14:
             self.kill()
 
@@ -60,7 +62,7 @@ class PauseMenu(DinoMenu):
         super().__init__()
         self.entities = Group()
         self.child_groups += [self.entities]
-        self.entities.add(Toast("PAUSED"))
+        self.entities.add(Toast("PAUSED", from_above=False))
 
 
 class GameOverMenu(DinoMenu):
@@ -70,4 +72,15 @@ class GameOverMenu(DinoMenu):
         self.child_groups += [self.entities]
         self.entities.add(Toast("R.I.P.", scale=10))
         self.entities.add(Toast(f"Score: {score}", y=100))
-        self.entities.add(Toast("PRESS SPACE TO CONTINUE", y=300))
+        self.entities.add(Toast("PRESS SPACE TO CONTINUE", y=150))
+        self.entities.add(Toast("Highscores", y=200, from_above=False))
+        self.entities.add(
+            Toast(
+                highscores_table(),
+                y=250,
+                from_above=False,
+                font=fonts.cellphone_white_mono,
+                scale=3,
+                align=0,
+            )
+        )

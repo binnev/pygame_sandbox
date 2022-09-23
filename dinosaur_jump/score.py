@@ -53,3 +53,8 @@ def is_highscore(score: int) -> bool:
     print(scores)
     if score > scores[-1].score:
         return True
+
+
+def highscores_table():
+    scores = highscores()
+    return "\n".join(f"{s.score:<4} {s.name[:10]:<10} {s.date}" for s in scores)
