@@ -1,11 +1,15 @@
-from pygame import Surface
+import string
+
+import pygame
+from pygame import Surface, Rect, Color
 
 from base.animation import ease_in, ease_out
 from base.gui.menu import Menu
+from base.input import EventQueue
 from base.objects import Entity, Group
-from base.text.font import fonts
+from base.text.font import fonts, Font
 from dinosaur_jump import conf
-from dinosaur_jump.score import highscores_table
+from dinosaur_jump.score import highscores_table, Score
 
 
 class Toast(Entity):
@@ -68,19 +72,75 @@ class PauseMenu(DinoMenu):
 class GameOverMenu(DinoMenu):
     def __init__(self, score: int):
         super().__init__()
+        self.score = score
         self.entities = Group()
         self.child_groups += [self.entities]
         self.entities.add(Toast("R.I.P.", scale=10))
         self.entities.add(Toast(f"Score: {score}", y=100))
         self.entities.add(Toast("PRESS SPACE TO CONTINUE", y=150))
-        self.entities.add(Toast("Highscores", y=200, from_above=False))
+        self.text_field = TextField(
+            initial_text="Enter your name",
+            x=conf.WINDOW_WIDTH // 2 - 150,
+            y=200,
+            width=300,
+            height=50,
+            font=fonts.cellphone_white,
+            scale=5,
+        )
+        self.entities.add(self.text_field)
+        self.entities.add(Toast("Highscores", y=250, from_above=False))
         self.entities.add(
             Toast(
                 highscores_table(),
-                y=250,
+                y=300,
                 from_above=False,
                 font=fonts.cellphone_white_mono,
                 scale=3,
                 align=0,
             )
         )
+
+    def exit(self):
+        super().exit()
+        name = self.text_field.text.strip() or "anonymous"
+        Score(score=self.score, name=name).save()
+
+
+class TextField(Entity):
+    ALLOWED_CHARS = (
+        string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation + "-_"
+    )
+
+    def __init__(self, x, y, width, height, font: Font, initial_text: str, **font_kwargs) -> None:
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.font = font
+        self.rect = Rect((x, y, width, height))
+        self.initial_text = initial_text
+        self.text = ""
+        self.state = self.state_active
+        self.font_kwargs = font_kwargs
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+        pygame.draw.rect(surface, Color("gray"), self.rect, 5)
+        self.font.render(
+            surface,
+            self.text if self.text else self.initial_text,
+            x=self.x + 10,
+            y=self.y,
+            **self.font_kwargs,
+        )
+
+    def state_active(self):
+        if event := EventQueue.get(type=pygame.KEYDOWN):
+            if event.key == pygame.K_BACKSPACE:
+                self.text = self.text[:-1]
+            elif event.unicode in self.ALLOWED_CHARS:
+                self.text += event.unicode
+
+    def exit(self):
+        self.kill()

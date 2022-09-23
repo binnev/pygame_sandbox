@@ -14,7 +14,7 @@ def init_sound(
         pygame.mixer.init()
 
 
-def load_sound(filename: str | Path, volume=.5, **sound_kwargs):
+def load_sound(filename: str | Path, volume=0.5, **sound_kwargs):
     filename = Path(filename)
     if not filename.exists():
         raise FileNotFoundError(filename.as_posix())

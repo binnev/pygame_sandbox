@@ -7,7 +7,7 @@ from base.input import EventQueue
 from base.objects import Entity, Group
 from base.text.font import fonts
 from dinosaur_jump import images, conf, sounds, events
-from dinosaur_jump.menu import PauseMenu, GameOverMenu
+from dinosaur_jump.menu import PauseMenu, GameOverMenu, TextField
 from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus
 from dinosaur_jump.score import Score
 from dinosaur_jump.utils import should_spawn
@@ -103,7 +103,6 @@ class DinoJumpManager(Entity):
             self.menus.add(self.menu)
         if EventQueue.filter(type=events.game_over):
             self.state = self.state_game_over
-            Score(self.dino_scene.score).save()
             self.menu = GameOverMenu(score=self.dino_scene.score)
             self.menus.add(self.menu)
 
