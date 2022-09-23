@@ -40,8 +40,8 @@ class Dino(PhysicalEntity):
         self.state = self.state_run
         self.inventory = Group()
         self.child_groups = [self.inventory]
-        self.gun = Gun(x=self.x, y=self.y)
-        self.inventory.add(self.gun)
+        self.gun = None
+        self.add_gun()
 
     def update(self):
         super().update()
@@ -63,6 +63,11 @@ class Dino(PhysicalEntity):
         if self.rect.bottom >= self.ground_height:
             self.rect.bottom = self.ground_height
             self.state = self.state_run
+
+    def add_gun(self):
+        sounds.revolver_spin.play()
+        self.gun = Gun(x=self.x, y=self.y)
+        self.inventory.add(self.gun)
 
 
 class Ptero(PhysicalEntity):
