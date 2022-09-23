@@ -110,6 +110,7 @@ class TextField(Entity):
     ALLOWED_CHARS = (
         string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation + "-_"
     )
+    cursor_blink_speed = 30
 
     def __init__(self, x, y, width, height, font: Font, initial_text: str, **font_kwargs) -> None:
         super().__init__()
@@ -123,19 +124,32 @@ class TextField(Entity):
         self.text = ""
         self.state = self.state_active
         self.font_kwargs = font_kwargs
+        self.draw_cursor = True
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
         pygame.draw.rect(surface, Color("gray"), self.rect, 5)
-        self.font.render(
+        cursor_x = self.font.render(
             surface,
-            self.text if self.text else self.initial_text,
+            self.text,
             x=self.x + 10,
             y=self.y,
             **self.font_kwargs,
         )
+        if not self.text:
+            self.font.render(
+                surface,
+                self.initial_text,
+                x=self.x + 10,
+                y=self.y,
+                **self.font_kwargs,
+            )
+        if self.draw_cursor:
+            pygame.draw.rect(surface, Color("white"), (cursor_x, self.y, 2, 50), 5)
 
     def state_active(self):
+        if self.tick % self.cursor_blink_speed == 0:
+            self.draw_cursor = not self.draw_cursor
         if event := EventQueue.get(type=pygame.KEYDOWN):
             if event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]

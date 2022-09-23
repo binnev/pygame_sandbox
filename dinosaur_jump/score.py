@@ -57,4 +57,6 @@ def is_highscore(score: int) -> bool:
 
 def highscores_table():
     scores = highscores()
-    return "\n".join(f"{s.score:<4} {s.name[:10]:<10} {s.date}" for s in scores)
+    name_width = 20
+    format_string = f"{{:<4}} {{:<{name_width}}} {{}}"
+    return "\n".join(format_string.format(s.score, s.name[:name_width], s.date) for s in scores)

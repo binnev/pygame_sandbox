@@ -46,12 +46,13 @@ class Font:
         scale: int = 1,
         wrap: int = 0,
         align: int = None,
-    ) -> Surface:
+    ) -> int:
         """
         align: -1=left, 0=center, 1=right
         wrap: x width at which to wrap text
         """
         _, ysize = self.image_size
+        cursor = x
         for line in text.splitlines():
             wrapped_lines = self.wrap_words(line, wrap, x, scale) if wrap else [line]
             for line in wrapped_lines:
@@ -63,7 +64,7 @@ class Font:
                     w = image.get_width()
                     cursor += w + self.xpad * scale
                 y += (ysize + self.ypad) * scale
-        return surf
+        return cursor
 
     def align_cursor(self, line: str, x: int, align: int, scale: int, wrap: int) -> int:
         """Used for left/right/centered text alignmnent"""
