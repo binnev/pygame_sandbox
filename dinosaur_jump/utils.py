@@ -1,10 +1,13 @@
 import random
 
 
-def should_spawn(cooldown: int, current: int) -> bool:
+def should_spawn(cooldown: int, tick: int, chance: float) -> bool:
     """
     Decide semi-randomly whether to spawn something. Cooldown is the maximum number of ticks
-    between spawns. Current is the elapsed ticks. When current == cooldown, return True.
+    between spawns. Current is the elapsed ticks. When tick == cooldown, return True.
     Before that, use random chance.
     """
-    return current >= random.randint(1, cooldown)
+    if tick < cooldown:
+        return False
+
+    return random.random() < chance

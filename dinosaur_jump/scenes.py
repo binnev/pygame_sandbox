@@ -15,8 +15,12 @@ from dinosaur_jump.utils import should_spawn
 class DinoJumpScene(Entity):
     """The actual game with the running dino. Doesn't include any menus etc."""
 
-    cactus_timer = cactus_cooldown = 5000
-    ptero_timer = ptero_cooldown = 5000
+    cactus_timer = 0
+    cactus_chance = 0.02
+    cactus_cooldown = 30
+    ptero_timer = 0
+    ptero_chance = 0.001
+    ptero_cooldown = 600
 
     def __init__(self):
         super().__init__()
@@ -46,10 +50,10 @@ class DinoJumpScene(Entity):
         self.ptero_timer += 1
         self.cactus_timer += 1
 
-        if should_spawn(self.cactus_cooldown, self.cactus_timer):
+        if should_spawn(self.cactus_cooldown, self.cactus_timer, self.cactus_chance):
             self.spawn_cactus()
 
-        if should_spawn(self.ptero_cooldown, self.ptero_timer):
+        if should_spawn(self.ptero_cooldown, self.ptero_timer, self.ptero_chance):
             self.spawn_ptero()
 
         self.check_collisions()
