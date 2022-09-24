@@ -62,13 +62,20 @@ class Dino(PhysicalEntity):
     def jump(self):
         self.v = -20
         self.state = self.state_jump
+        if self.gun:
+            self.gun.angle = -45
 
     def state_jump(self):
         self.y += self.v
         self.v += self.gravity
         if self.rect.bottom >= self.ground_height:
-            self.rect.bottom = self.ground_height
-            self.state = self.state_run
+            self.land()
+
+    def land(self):
+        self.rect.bottom = self.ground_height
+        self.state = self.state_run
+        if self.gun:
+            self.gun.angle = 45
 
     def add_gun(self):
         sounds.revolver_spin.play()
@@ -181,7 +188,7 @@ class Bullet(PhysicalEntity):
         self.rect = self.image.get_bounding_rect()
         self.rect.center = (x, y)
         self.u = speed * math.cos(angle)
-        self.v = - speed * math.sin(angle)
+        self.v = -speed * math.sin(angle)
         self.state = self.state_fly
 
     def state_fly(self):
