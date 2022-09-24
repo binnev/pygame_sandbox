@@ -1,6 +1,7 @@
 import math
 import random
 
+import numpy
 import pygame
 from pygame import Surface, Color
 
@@ -63,7 +64,7 @@ class Dino(PhysicalEntity):
         self.v = -20
         self.state = self.state_jump
         if self.gun:
-            self.gun.angle = -45
+            self.gun.pointing_up = False
 
     def state_jump(self):
         self.y += self.v
@@ -75,7 +76,7 @@ class Dino(PhysicalEntity):
         self.rect.bottom = self.ground_height
         self.state = self.state_run
         if self.gun:
-            self.gun.angle = 45
+            self.gun.pointing_up = True
 
     def add_gun(self):
         sounds.revolver_spin.play()
@@ -129,9 +130,7 @@ class Gun(Entity):
         self.y = self.target_y = y
         image = images.gun
         self.image = image.subsurface(image.get_bounding_rect())
-        self.rect = self.image.get_bounding_rect()
-        self.rect.center = (x, y)
-        self.angle = 45
+        self.pointing_up = True
         self.bullets = Group()
         self.entities = Group()
         self.child_groups = [self.bullets, self.entities]
@@ -139,6 +138,10 @@ class Gun(Entity):
         self.entities.add(self.ammo)
         self.state = self.state_idle
         self.recoil = 0
+
+    @property
+    def angle(self):
+        return 45 if self.pointing_up else -20
 
     def state_idle(self):
         if EventQueue.get(type=pygame.KEYDOWN, key=pygame.K_g):
@@ -162,8 +165,8 @@ class Gun(Entity):
 
     def shoot(self):
         sounds.gunshot.play()
-        EventQueue.add(events.AddBullet(x=self.rect.right, y=self.rect.centery, angle=self.angle))
-        self.entities.add(GunShot(x=self.rect.right, y=self.rect.centery, angle_deg=0))
+        EventQueue.add(events.AddBullet(x=self.x, y=self.y, angle=self.angle, speed=20))
+        self.entities.add(GunShot(x=self.x, y=self.y, angle_deg=self.angle))
         self.ammo.bullets -= 1
         self.state = self.state_recoil
         self.recoil = 30
@@ -187,8 +190,8 @@ class Bullet(PhysicalEntity):
         self.image.fill(Color("black"))
         self.rect = self.image.get_bounding_rect()
         self.rect.center = (x, y)
-        self.u = speed * math.cos(angle)
-        self.v = -speed * math.sin(angle)
+        self.u = speed * math.cos(numpy.deg2rad(angle))
+        self.v = -speed * math.sin(numpy.deg2rad(angle))
         self.state = self.state_fly
 
     def state_fly(self):
