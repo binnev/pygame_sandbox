@@ -51,7 +51,8 @@ class Dino(PhysicalEntity):
     def update(self):
         super().update()
         if self.gun:
-            self.gun.rect.center = self.rect.midright
+            self.gun.x = self.rect.right
+            self.gun.y = self.rect.centery
 
     def state_run(self):
         self.image = images.dino.loop(self.animation_frame)
@@ -114,23 +115,33 @@ class Cactus(PhysicalEntity):
             self.kill()
 
 
-class Gun(PhysicalEntity):
+class Gun(Entity):
     def __init__(self, x, y) -> None:
         super().__init__()
+        self.x = self.target_x = x
+        self.y = self.target_y = y
         image = images.gun
         self.image = image.subsurface(image.get_bounding_rect())
         self.rect = self.image.get_bounding_rect()
         self.rect.center = (x, y)
+        self.angle = 45
         self.bullets = Group()
         self.entities = Group()
         self.child_groups = [self.bullets, self.entities]
         self.ammo = AmmoIndicator(x=100, y=100)
         self.entities.add(self.ammo)
+        self.state = self.state_idle
+        self.recoil = 0
 
-    def update(self):
-        super().update()
+    def state_idle(self):
         if EventQueue.get(type=pygame.KEYDOWN, key=pygame.K_g):
             self.shoot_or_reload()
+
+    def state_recoil(self):
+        self.recoil -= 1
+        if self.tick == 20:
+            self.state = self.state_idle
+            self.recoil = 0
 
     def shoot_or_reload(self):
         if self.ammo.bullets > 0:
@@ -147,6 +158,19 @@ class Gun(PhysicalEntity):
         EventQueue.add(events.AddBullet(x=self.rect.right, y=self.rect.centery, u=10, v=0))
         self.entities.add(GunShot(x=self.rect.right, y=self.rect.centery, angle_deg=0))
         self.ammo.bullets -= 1
+        self.state = self.state_recoil
+        self.recoil = 30
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+        image = images.gun
+        image = pygame.transform.rotate(image, self.angle + self.recoil)
+        rect = image.get_rect()
+        rect.center = (
+            self.x - self.recoil/2 - 10,
+            self.y - self.recoil/2,
+        )
+        surface.blit(image, rect)
 
 
 class Bullet(PhysicalEntity):
