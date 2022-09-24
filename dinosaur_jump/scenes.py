@@ -53,7 +53,7 @@ class DinoJumpScene(Entity):
         self.cactus_timer += 1
 
         if event := EventQueue.get(type=events.AddBullet.type):
-            self.bullets.add(Bullet(x=event.x, y=event.y, u=event.u, v=event.v))
+            self.bullets.add(Bullet(x=event.x, y=event.y, angle=event.angle, speed=event.speed))
 
         if should_spawn(self.cactus_cooldown, self.cactus_timer, self.cactus_chance):
             self.spawn_cactus()

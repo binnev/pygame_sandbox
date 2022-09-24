@@ -11,5 +11,5 @@ class AddBullet:
     type = pygame.event.custom_type()
     x: int
     y: int
-    u: int
-    v: int
+    angle: int
+    speed: int = 10

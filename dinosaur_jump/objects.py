@@ -155,7 +155,7 @@ class Gun(Entity):
 
     def shoot(self):
         sounds.gunshot.play()
-        EventQueue.add(events.AddBullet(x=self.rect.right, y=self.rect.centery, u=10, v=0))
+        EventQueue.add(events.AddBullet(x=self.rect.right, y=self.rect.centery, angle=self.angle))
         self.entities.add(GunShot(x=self.rect.right, y=self.rect.centery, angle_deg=0))
         self.ammo.bullets -= 1
         self.state = self.state_recoil
@@ -167,21 +167,21 @@ class Gun(Entity):
         image = pygame.transform.rotate(image, self.angle + self.recoil)
         rect = image.get_rect()
         rect.center = (
-            self.x - self.recoil/2 - 10,
-            self.y - self.recoil/2,
+            self.x - self.recoil / 2 - 10,
+            self.y - self.recoil / 2,
         )
         surface.blit(image, rect)
 
 
 class Bullet(PhysicalEntity):
-    def __init__(self, x, y, u, v):
+    def __init__(self, x, y, angle, speed):
         super().__init__()
         self.image = scale_image(Surface((2, 1)), 5)
         self.image.fill(Color("black"))
         self.rect = self.image.get_bounding_rect()
         self.rect.center = (x, y)
-        self.u = u
-        self.v = v
+        self.u = speed * math.cos(angle)
+        self.v = - speed * math.sin(angle)
         self.state = self.state_fly
 
     def state_fly(self):
