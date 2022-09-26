@@ -85,9 +85,13 @@ class PauseMenu(DinoMenu):
         self.entities = Group()
         self.child_groups += [self.entities]
         self.entities.add(Toast("PAUSED", from_above=False))
-        self.entities.add(Toast("Controls:", y=100, from_above=False))
-        self.entities.add(Key(x=100, y=100, character="F"))
-        self.entities.add(Key(x=100, y=200, character="Space"))
+        self.entities.add(Toast("Controls:", y=100, from_above=False, font=fonts.cellphone_black))
+        self.entities.add(KeyBind(x=150, y=200, key_text="G", description="shoot"))
+        self.entities.add(KeyBind(x=150, y=300, key_text="Space", description="jump"))
+        self.entities.add(KeyBind(x=150, y=400, key_text="up", description="aim"))
+        self.entities.add(KeyBind(x=550, y=200, key_text="left", description="aim"))
+        self.entities.add(KeyBind(x=550, y=300, key_text="right", description="aim"))
+        self.entities.add(KeyBind(x=550, y=400, key_text="down", description="aim"))
 
 
 class GameOverMenu(DinoMenu):
@@ -212,3 +216,26 @@ class Key(Entity):
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
         surface.blit(self.image, (self.x, self.y))
+
+
+class KeyBind(Entity):
+    def __init__(self, x, y, key_text: str, description: str):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.key_text = key_text
+        self.description = description
+        self.entities = Group()
+        self.child_groups = [self.entities]
+        self.key = Key(x, y, key_text)
+        self.entities.add(self.key)
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+        fonts.cellphone_black.render(
+            surface,
+            text=f"= {self.description}",
+            x=self.x + self.key.image.get_width() + 20,
+            y=self.y + 10,
+            scale=5,
+        )
