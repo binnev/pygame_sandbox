@@ -1,7 +1,29 @@
+import math
+
 import numpy
 
-from base.objects import Particle, Group, Entity
+from base.objects import SquareParticle, Group, Entity
 from base.utils import random_float, random_int
+
+
+class Particle(SquareParticle):
+    def __init__(
+        self,
+        x,
+        y,
+        velocity=0,
+        angle=0,
+        radius=None,
+        color=None,
+        gravity=None,
+        friction=None,
+        decay=None,
+        blit_flag=None,
+    ):
+        angle = math.degrees(angle)
+        u = velocity * math.cos(angle)
+        v = velocity * math.sin(angle)
+        super().__init__(x, y, u, v, radius, color, gravity, friction, decay, blit_flag)
 
 
 class GunShot(Entity):
@@ -19,12 +41,12 @@ class GunShot(Entity):
         # smoke
         for _ in range(10):
             self.particles.add(
-                Particle(
-                    x,
+                SquareParticle(
+                    x + 20 * x_unit,
                     y,
-                    u=-2 * x_unit + random_float(-1, 1),
+                    u=5 * x_unit + random_float(-1, 1),
                     v=0 * y_unit + random_float(-1, 1),
-                    radius=random_int(5, 20),
+                    radius=random_int(5, 20) * 2,
                     color=[random_int(10, 80)] * 3,
                     gravity=-0.3,
                     friction=0.05,
@@ -35,12 +57,12 @@ class GunShot(Entity):
         # flames
         for _ in range(10):
             self.particles.add(
-                Particle(
+                SquareParticle(
                     x,
                     y,
                     u=30 * x_unit + random_float(-5, 5),
                     v=5 * y_unit + random_float(-5, 5),
-                    radius=random_int(10, 20),
+                    radius=random_int(10, 20) * 2,
                     color=(random_int(150, 175), random_int(60, 80), random_int(0, 30)),
                     gravity=-0.5,
                     decay=1,
@@ -50,12 +72,12 @@ class GunShot(Entity):
         # white flashes
         for _ in range(2):
             self.particles.add(
-                Particle(
+                SquareParticle(
                     x=x + 15,
                     y=y,
                     u=random_float(5, 10),
                     v=0,
-                    radius=random_int(20, 30),
+                    radius=random_int(20, 30) * 2,
                     color=(150, 150, 100),
                     gravity=0,
                     decay=50,
@@ -65,12 +87,12 @@ class GunShot(Entity):
         # sparks
         for _ in range(20):
             self.particles.add(
-                Particle(
-                    x=x + random_int(-5, 5),
-                    y=y + random_int(-5, 5),
-                    u=40 * x_unit + random_float(-15, 15),
-                    v=40 * y_unit + random_float(-15, 15),
-                    radius=random_int(2, 7),
+                SquareParticle(
+                    x=x + random_int(-1, 1) * x_unit,
+                    y=y + random_int(-1, 1) * y_unit,
+                    u=40 * x_unit + random_float(-2, 2),
+                    v=40 * y_unit + random_float(-2, 2),
+                    radius=random_int(2, 7) * 2,
                     color=(200, 200, 200),
                     gravity=0.1,
                     decay=0.2,
