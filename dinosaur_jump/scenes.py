@@ -20,7 +20,7 @@ class DinoJumpScene(Entity):
     cactus_cooldown = 30
     ptero_timer = 0
     ptero_chance = 0.001
-    ptero_cooldown = 600
+    ptero_cooldown = 150
 
     def __init__(self):
         super().__init__()
@@ -78,9 +78,16 @@ class DinoJumpScene(Entity):
             self.paused = True
             EventQueue.add(Event(events.game_over))
 
-        if groupcollide(self.bullets, self.obstacles, True, True):
+        if objects := groupcollide(self.bullets, self.obstacles, False, False):
             sounds.bullet_hit.play()
-            self.score += 10
+            for bullet, hit_objects in objects.items():
+                for object in hit_objects:
+                    if isinstance(object, Cactus):
+                        self.score -= 10
+                    if isinstance(object, Ptero):
+                        self.score += 100
+                    object.kill()
+                    bullet.kill()
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
