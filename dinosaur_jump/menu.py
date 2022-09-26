@@ -1,3 +1,4 @@
+import math
 import string
 from collections.abc import Callable
 
@@ -189,16 +190,8 @@ class Key(Entity):
         self.character = character
 
         text_width = self.font.printed_width(self.character, scale=5)
-        self.parts = [
-            images.keycap_left,
-            images.keycap_mid,
-            images.keycap_right,
-        ]
-        while (
-            sum(part.get_width() for part in self.parts)
-            < text_width + images.keycap_left.get_width() * 2
-        ):
-            self.parts.insert(1, images.keycap_mid)
+        n_mid = math.ceil(text_width / images.keycap_mid.get_width())
+        self.parts = [images.keycap_left] + [images.keycap_mid] * n_mid + [images.keycap_right]
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
