@@ -192,19 +192,23 @@ class Key(Entity):
         text_width = self.font.printed_width(self.character, scale=5)
         n_mid = math.ceil(text_width / images.keycap_mid.get_width())
         self.parts = [images.keycap_left] + [images.keycap_mid] * n_mid + [images.keycap_right]
+        total_width = sum(part.get_width() for part in self.parts)
+        self.image = Surface((total_width, images.keycap_mid.get_height())).convert_alpha()
+        self.image.fill((0, 0, 0, 0))
+        x = 0
+        for image in self.parts:
+            self.image.blit(image, (x, 0))
+            x += image.get_width()
+        self.font.render(
+            surf=self.image,
+            text=self.character,
+            x=0,
+            y=10,
+            scale=5,
+            wrap=total_width,
+            align=0,
+        )
 
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        cursor = self.x
-        for image in self.parts:
-            surface.blit(image, (cursor, self.y))
-            cursor += image.get_width()
-        self.font.render(
-            surface,
-            self.character,
-            self.x,
-            self.y + 10,
-            scale=5,
-            wrap=cursor - self.x,
-            align=0,
-        )
+        surface.blit(self.image, (self.x, self.y))
