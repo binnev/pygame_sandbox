@@ -59,12 +59,3 @@ class Particle(PhysicalEntity):
     @property
     def death_condition(self):
         return self.radius <= 0
-
-
-class SquareParticle(Particle):
-    def draw(self, surface, debug=False):
-        surf = pygame.Surface((self.radius, self.radius)).convert_alpha()
-        surf.fill(self.color)
-        image_rect = surf.get_rect()
-        image_rect.center = self.rect.center
-        surface.blit(surf, image_rect, special_flags=self.blit_flag)
