@@ -8,7 +8,7 @@ from base.gui.menu import Menu
 from base.input import EventQueue
 from base.objects import Entity, Group
 from base.text.font import fonts, Font
-from dinosaur_jump import conf
+from dinosaur_jump import conf, images
 from dinosaur_jump.score import highscores_table, Score
 
 
@@ -49,10 +49,10 @@ class DinoMenu(Menu):
     def exit(self):
         for group in self.child_groups:
             for entity in group:
-                try:
+                if hasattr(entity, "exit"):
                     entity.exit()
-                except AttributeError:
-                    pass
+                else:
+                    entity.kill()
         self.state = self.state_exit
 
     def state_exit(self):
@@ -67,6 +67,7 @@ class PauseMenu(DinoMenu):
         self.entities = Group()
         self.child_groups += [self.entities]
         self.entities.add(Toast("PAUSED", from_above=False))
+        self.entities.add(Key(x=100, y=100, character="F"))
 
 
 class GameOverMenu(DinoMenu):
@@ -158,3 +159,26 @@ class TextField(Entity):
 
     def exit(self):
         self.kill()
+
+
+class Key(Entity):
+    def __init__(self, x, y, character: str):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.font = fonts.cellphone_black
+        self.character = character
+
+    def draw(self, surface: Surface, debug: bool = False):
+        super().draw(surface, debug)
+        image = images.keycaps.images[0]
+        surface.blit(image, (self.x, self.y))
+        self.font.render(
+            surface,
+            self.character,
+            self.x,
+            self.y + 10,
+            scale=5,
+            wrap=image.get_width(),
+            align=0,
+        )
