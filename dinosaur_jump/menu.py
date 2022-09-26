@@ -1,4 +1,5 @@
 import string
+from collections.abc import Callable
 
 import pygame
 from pygame import Surface, Rect, Color
@@ -12,30 +13,30 @@ from dinosaur_jump import conf, images
 from dinosaur_jump.score import highscores_table, Score
 
 
-class Toast(Entity):
-    def __init__(self, text, y=10, from_above=True, font=fonts.cellphone_white, **font_params):
-        super().__init__()
-        self.from_above = from_above
-        self.target_y = y
-        self.start_y = -35 if from_above else conf.WINDOW_HEIGHT + 20
-        self.text = text
-        self.state = self.state_animate_in
-        self.font = font
-        self.font_params = font_params
+class FlyingGuiMixin(Entity):
+    start_x: int
+    start_y: int
+    target_x: int
+    target_y: int
+    state_idle: Callable
+    animation_duration: int = 15
 
-    def draw(self, surface: Surface, debug: bool = False):
-        params = dict(wrap=conf.WINDOW_WIDTH, align=0, scale=5)
-        params.update(self.font_params)
-        self.font.render(surface, text=self.text, x=0, y=self.y, **params)
+    def __init__(self):
+        super().__init__()
+        self.state = self.state_animate_in
 
     def state_animate_in(self):
-        self.y = ease_out(start=self.start_y, stop=self.target_y, num=15)[self.tick]
-        if self.tick == 14:
+        self.y = ease_out(start=self.start_y, stop=self.target_y, num=self.animation_duration)[
+            self.tick
+        ]
+        if self.tick == self.animation_duration - 1:
             self.state = self.state_idle
 
     def state_animate_out(self):
-        self.y = ease_in(start=self.target_y, stop=self.start_y, num=15)[self.tick]
-        if self.tick == 14:
+        self.y = ease_in(start=self.target_y, stop=self.start_y, num=self.animation_duration)[
+            self.tick
+        ]
+        if self.tick == self.animation_duration - 1:
             self.kill()
 
     def state_idle(self):
@@ -43,6 +44,22 @@ class Toast(Entity):
 
     def exit(self):
         self.state = self.state_animate_out
+
+
+class Toast(FlyingGuiMixin):
+    def __init__(self, text, y=10, from_above=True, font=fonts.cellphone_white, **font_params):
+        super().__init__()
+        self.from_above = from_above
+        self.target_y = y
+        self.start_y = -35 if from_above else conf.WINDOW_HEIGHT + 20
+        self.text = text
+        self.font = font
+        self.font_params = font_params
+
+    def draw(self, surface: Surface, debug: bool = False):
+        params = dict(wrap=conf.WINDOW_WIDTH, align=0, scale=5)
+        params.update(self.font_params)
+        self.font.render(surface, text=self.text, x=0, y=self.y, **params)
 
 
 class DinoMenu(Menu):
@@ -67,7 +84,9 @@ class PauseMenu(DinoMenu):
         self.entities = Group()
         self.child_groups += [self.entities]
         self.entities.add(Toast("PAUSED", from_above=False))
+        self.entities.add(Toast("Controls:", y=100, from_above=False))
         self.entities.add(Key(x=100, y=100, character="F"))
+        self.entities.add(Key(x=100, y=200, character="Space"))
 
 
 class GameOverMenu(DinoMenu):
@@ -169,16 +188,30 @@ class Key(Entity):
         self.font = fonts.cellphone_black
         self.character = character
 
+        text_width = self.font.printed_width(self.character, scale=5)
+        self.parts = [
+            images.keycap_left,
+            images.keycap_mid,
+            images.keycap_right,
+        ]
+        while (
+            sum(part.get_width() for part in self.parts)
+            < text_width + images.keycap_left.get_width() * 2
+        ):
+            self.parts.insert(1, images.keycap_mid)
+
     def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
-        image = images.keycaps.images[0]
-        surface.blit(image, (self.x, self.y))
+        cursor = self.x
+        for image in self.parts:
+            surface.blit(image, (cursor, self.y))
+            cursor += image.get_width()
         self.font.render(
             surface,
             self.character,
             self.x,
             self.y + 10,
             scale=5,
-            wrap=image.get_width(),
+            wrap=cursor - self.x,
             align=0,
         )
