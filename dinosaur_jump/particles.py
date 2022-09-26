@@ -51,7 +51,7 @@ class GunShot(Entity):
         for _ in range(2):
             self.particles.add(
                 Particle(
-                    x=x+15,
+                    x=x + 15,
                     y=y,
                     u=random_float(5, 10),
                     v=0,

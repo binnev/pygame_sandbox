@@ -130,7 +130,6 @@ class Gun(Entity):
         self.y = self.target_y = y
         image = images.gun
         self.image = image.subsurface(image.get_bounding_rect())
-        self.pointing_up = True
         self.bullets = Group()
         self.entities = Group()
         self.child_groups = [self.bullets, self.entities]
@@ -139,13 +138,16 @@ class Gun(Entity):
         self.state = self.state_idle
         self.recoil = 0
 
-    @property
-    def angle(self):
-        return 45 if self.pointing_up else -20
-
     def state_idle(self):
+        self.calculate_angle()
         if EventQueue.get(type=pygame.KEYDOWN, key=pygame.K_g):
             self.shoot_or_reload()
+
+    def calculate_angle(self):
+        right = pygame.key.get_pressed()[pygame.K_RIGHT]
+        up = pygame.key.get_pressed()[pygame.K_UP]
+        down = pygame.key.get_pressed()[pygame.K_DOWN]
+        self.angle = numpy.rad2deg(numpy.arctan2(up - down, right))
 
     def state_recoil(self):
         self.recoil -= 1
