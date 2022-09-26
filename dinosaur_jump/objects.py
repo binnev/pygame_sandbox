@@ -124,6 +124,8 @@ class Cactus(PhysicalEntity):
 
 
 class Gun(Entity):
+    recoil_duration = 20
+
     def __init__(self, x, y) -> None:
         super().__init__()
         self.x = self.target_x = x
@@ -151,7 +153,7 @@ class Gun(Entity):
 
     def state_recoil(self):
         self.recoil -= 1
-        if self.tick == 20:
+        if self.tick == self.recoil_duration:
             self.state = self.state_idle
             self.recoil = 0
 
