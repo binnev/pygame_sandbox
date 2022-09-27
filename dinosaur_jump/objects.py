@@ -237,3 +237,13 @@ class AmmoIndicator(Entity):
         rect = image.get_rect()
         rect.center = (self.x, self.y)
         surface.blit(image, rect)
+
+
+class Cursor(Entity):
+
+    def update(self):
+        self.x, self.y = pygame.mouse.get_pos()
+
+    def draw(self, surface: Surface, debug: bool = False):
+        img = images.cursors.images[3]
+        surface.blit(img, (self.x, self.y))

@@ -11,6 +11,7 @@ from base.input import EventQueue
 from base.objects import Entity, Group
 from base.text.font import fonts, Font
 from dinosaur_jump import conf, images
+from dinosaur_jump.objects import Cursor
 from dinosaur_jump.score import highscores_table, Score
 
 
@@ -92,6 +93,7 @@ class PauseMenu(DinoMenu):
         self.entities.add(KeyBind(x=550, y=200, key_text="left", description="aim"))
         self.entities.add(KeyBind(x=550, y=300, key_text="right", description="aim"))
         self.entities.add(KeyBind(x=550, y=400, key_text="down", description="aim"))
+        self.entities.add(Cursor())
 
 
 class GameOverMenu(DinoMenu):

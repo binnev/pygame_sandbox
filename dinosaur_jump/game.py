@@ -1,3 +1,5 @@
+import pygame
+
 from base.objects import Game
 from dinosaur_jump import conf
 from dinosaur_jump.scenes import DinoJumpManager
@@ -11,6 +13,7 @@ class DinoJump(Game):
 
     def __init__(self):
         super().__init__()
+        pygame.mouse.set_visible(0)
         self.scenes.add(DinoJumpManager())
 
 

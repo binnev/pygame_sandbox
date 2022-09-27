@@ -9,6 +9,7 @@ dino = SpriteAnimation.from_spritesheet(folder / "dino.png", image_size=(16, 16)
 ptero = SpriteAnimation.from_spritesheet(folder / "pterodactyl.png", image_size=(16, 16), scale=5)
 cacti = SpriteAnimation.from_spritesheet(folder / "cacti.png", image_size=(16, 16), scale=5)
 keycaps = SpriteAnimation.from_spritesheet(folder / "keycap.png", image_size=(16, 16), scale=5)
+cursors = SpriteAnimation.from_spritesheet(folder / "cursor.png", image_size=(16, 16), scale=5)
 keycap_left = scale_image(
     load_image(folder / "keycap.png").subsurface((0, 0, 4, 16)),
     5,
