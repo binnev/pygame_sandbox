@@ -1,4 +1,4 @@
-from base.image import relative_folder, SpriteDict, SpriteAnimation
+from robingame.image import relative_folder, SpriteDict, SpriteAnimation
 from quarto import conf
 
 folder = relative_folder(__file__, "images")

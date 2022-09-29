@@ -1,6 +1,6 @@
 from pygame.rect import Rect
 
-from base.objects import PhysicalEntity
+from robingame.objects import PhysicalEntity
 
 
 class Projectile(PhysicalEntity):

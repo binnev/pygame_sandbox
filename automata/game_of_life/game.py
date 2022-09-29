@@ -6,7 +6,7 @@ from pygame import Color
 from automata.game import AutomataGame
 from automata.game_of_life import patterns
 from automata.game_of_life.patterns import load_pattern
-from base.input import EventQueue
+from robingame.input import EventQueue
 
 
 class GameOfLife(AutomataGame):

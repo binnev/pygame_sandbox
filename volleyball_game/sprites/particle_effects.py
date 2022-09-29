@@ -1,4 +1,4 @@
-from base.image import SpriteDict, relative_folder
+from robingame.image import SpriteDict, relative_folder
 from volleyball_game import conf
 
 folder = relative_folder(__file__, "particle_effects")

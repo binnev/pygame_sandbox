@@ -1,2 +1,0 @@
-class TextError(Exception):
-    pass

@@ -1,6 +1,6 @@
 import pygame
 
-from base.input.keyboard import KeyboardInputQueue
+from robingame.input.keyboard import KeyboardInputQueue
 
 
 class FightingGameInput:

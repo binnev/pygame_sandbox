@@ -5,11 +5,11 @@ from collections.abc import Callable
 import pygame
 from pygame import Surface, Rect, Color
 
-from base.animation import ease_in, ease_out
-from base.gui.menu import Menu
-from base.input import EventQueue
-from base.objects import Entity, Group
-from base.text.font import fonts, Font
+from robingame.animation import ease_in, ease_out
+from robingame.gui.menu import Menu
+from robingame.input import EventQueue
+from robingame.objects import Entity, Group
+from robingame.text.font import fonts, Font
 from dinosaur_jump import conf, images
 from dinosaur_jump.objects import Cursor
 from dinosaur_jump.score import highscores_table, Score

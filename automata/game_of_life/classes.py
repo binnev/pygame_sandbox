@@ -4,9 +4,9 @@ from pygame import Surface, Color
 from pygame.sprite import AbstractGroup
 
 from automata.game_of_life import threshold
-from base.objects import Entity
-from base.text.font import fonts
-from base.utils import SparseMatrix, Coord, draw_text
+from robingame.objects import Entity
+from robingame.text.font import fonts
+from robingame.utils import SparseMatrix, Coord, draw_text
 
 
 class InfiniteBoard(Entity):

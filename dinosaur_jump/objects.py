@@ -5,10 +5,10 @@ import numpy
 import pygame
 from pygame import Surface, Color
 
-from base.image import scale_image
-from base.input import EventQueue
-from base.objects import Entity, Group
-from base.objects import PhysicalEntity
+from robingame.image import scale_image
+from robingame.input import EventQueue
+from robingame.objects import Entity, Group
+from robingame.objects import PhysicalEntity
 from dinosaur_jump import images, sounds, events
 from dinosaur_jump.particles import GunShot
 
@@ -240,7 +240,6 @@ class AmmoIndicator(Entity):
 
 
 class Cursor(Entity):
-
     def update(self):
         self.x, self.y = pygame.mouse.get_pos()
 

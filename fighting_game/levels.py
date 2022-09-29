@@ -4,8 +4,8 @@ import pygame
 from pygame import Color, Surface
 from pygame.rect import Rect
 
-from base.objects import Group, Entity
-from base.objects import PhysicalEntity
+from robingame.objects import Group, Entity
+from robingame.objects import PhysicalEntity
 from fighting_game import sounds
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 from fighting_game.hitboxes import HitHandler

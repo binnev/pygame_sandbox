@@ -5,10 +5,10 @@ import pygame
 from numpy.core._multiarray_umath import sign
 from pygame import Color
 
-from base.animation import SpriteDict, SpriteAnimation, ease_out
-from base.stuff.entities import Entity, CollisionMixin, Hitbox
-from base.stuff.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
-from base.utils import get_overlap_between_objects, un_overlap
+from robingame.animation import SpriteDict, SpriteAnimation, ease_out
+from robingame.stuff.entities import Entity, CollisionMixin, Hitbox
+from robingame.stuff.mixins import HistoryMixin, AnimationMixin, PhysicsMixin
+from robingame.utils import get_overlap_between_objects, un_overlap
 from vfx_sandbox.lighting_test import Explosion
 from volleyball_game import conf
 from volleyball_game.inputs import GamecubeController

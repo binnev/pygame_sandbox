@@ -1,5 +1,5 @@
-from base.input import GamecubeController
-from base.objects import Game
+from robingame.input import GamecubeController
+from robingame.objects import Game
 from fighting_game.conf import *
 from fighting_game.inputs import Keyboard0, Keyboard1
 

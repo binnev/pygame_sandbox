@@ -6,7 +6,7 @@ from collections import deque
 import numpy as np
 import pygame
 
-from base.input import KeyboardInputQueue
+from robingame.input import KeyboardInputQueue
 from tetris import shapes
 from tetris.exceptions import (
     CollisionError,

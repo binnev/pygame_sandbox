@@ -1,4 +1,4 @@
-from base.utils import Enum
+from robingame.utils import Enum
 
 DIAMOND = "diamond"
 SILVER = "silver"

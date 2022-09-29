@@ -1,6 +1,6 @@
 import pygame
 
-from base.objects import Game
+from robingame.objects import Game
 from dinosaur_jump import conf
 from dinosaur_jump.scenes import DinoJumpManager
 

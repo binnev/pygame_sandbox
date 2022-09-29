@@ -2,8 +2,8 @@ import pygame
 from pygame.color import Color
 from pygame.surface import Surface
 
-from base.input import EventQueue
-from base.objects import Game
+from robingame.input import EventQueue
+from robingame.objects import Game
 
 
 class AdventOfCodeGame(Game):

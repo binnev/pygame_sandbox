@@ -13,4 +13,4 @@ def font_init():
 @pytest.fixture(autouse=True)
 def event_queue(monkeypatch):
     """auto-clear the event queue before every test"""
-    monkeypatch.setattr("base.input.event.EventQueue.events", [])
+    monkeypatch.setattr("robingame.input.event.EventQueue.events", [])

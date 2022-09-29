@@ -1,5 +1,5 @@
-from base.groups import Level
-from base.stuff.entities import Platform
+from robingame.groups import Level
+from robingame.stuff.entities import Platform
 from volleyball_game import conf
 
 

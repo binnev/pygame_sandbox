@@ -5,8 +5,8 @@ import numpy
 from pygame.surface import Surface
 
 from automata.langtons_ant.game import LangtonsAntGame
-from base.objects import Entity, Group
-from base.utils import SparseMatrix
+from robingame.objects import Entity, Group
+from robingame.utils import SparseMatrix
 
 
 class Board(Entity):

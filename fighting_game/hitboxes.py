@@ -3,8 +3,8 @@ from collections import deque
 import pygame
 from pygame.rect import Rect
 
-from base.objects import PhysicalEntity
-from base.utils import draw_arrow
+from robingame.objects import PhysicalEntity
+from robingame.utils import draw_arrow
 from fighting_game import sounds
 from fighting_game.conf import HITSTUN_CONSTANT, HITPAUSE_CONSTANT
 from fighting_game.projectiles import Projectile

@@ -2,9 +2,9 @@ import pygame
 from pygame import Surface, Color
 from pygame.rect import Rect
 
-from base.input import EventQueue
-from base.objects import Entity, PhysicalEntity, Group
-from base.utils import mouse_hovering_over
+from robingame.input import EventQueue
+from robingame.objects import Entity, PhysicalEntity, Group
+from robingame.utils import mouse_hovering_over
 from chess import conf, sounds
 from chess.constants import KNIGHT, QUEEN, ROOK, BISHOP
 from chess.engine.classes.board import ChessBoard

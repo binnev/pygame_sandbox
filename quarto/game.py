@@ -1,4 +1,4 @@
-from base.objects import Game
+from robingame.objects import Game
 from quarto.scenes import QuartoMatch
 
 

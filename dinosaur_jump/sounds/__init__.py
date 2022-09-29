@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from base.sound import load_sound
+from robingame.sound import load_sound
 
 folder = Path(__file__).parent
 

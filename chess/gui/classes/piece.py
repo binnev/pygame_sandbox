@@ -4,10 +4,10 @@ import pygame
 from pygame import Surface, Color
 from pygame.rect import Rect
 
-from base.image import recolor_image
-from base.animation import ease_in_out
-from base.objects import PhysicalEntity, Group, Particle
-from base.utils import mouse_hovering_over, random_float, random_int
+from robingame.image import recolor_image
+from robingame.animation import ease_in_out
+from robingame.objects import PhysicalEntity, Group, Particle
+from robingame.utils import mouse_hovering_over, random_float, random_int
 from chess import conf
 from chess.assets.pieces import chess_pieces
 from chess.constants import WHITE, BLACK, Teams, PieceTypes

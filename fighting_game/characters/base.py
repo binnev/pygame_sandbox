@@ -4,9 +4,9 @@ from numpy import sign
 from pygame import Color, Surface
 from pygame.rect import Rect
 
-from base.image import SpriteDict
-from base.input.gamecube import GamecubeController
-from base.objects import PhysicalEntity
+from robingame.image import SpriteDict
+from robingame.input.gamecube import GamecubeController
+from robingame.objects import PhysicalEntity
 from fighting_game import sounds
 from fighting_game.conf import BOUNCE_LOSS, INPUT_BUFFER
 from fighting_game.platforms import Platform

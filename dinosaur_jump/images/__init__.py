@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-from base.image import SpriteAnimation, load_image, scale_image
+from robingame.image import SpriteAnimation, load_image, scale_image
 
 folder = Path(__file__).parent
 

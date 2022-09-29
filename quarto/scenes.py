@@ -3,9 +3,9 @@ import math
 import pygame
 from pygame.sprite import AbstractGroup, spritecollide
 
-from base.input import EventQueue
-from base.objects import Entity, Group
-from base.utils import mouse_hovering_over
+from robingame.input import EventQueue
+from robingame.objects import Entity, Group
+from robingame.utils import mouse_hovering_over
 from quarto.objects import QuartoBoard, Piece, UnusedPiecePad
 from quarto.utils import distance
 

@@ -4,9 +4,9 @@ import time
 import pygame
 from pygame import Surface
 
-from base.input import EventQueue
-from base.objects import Game
-from base.text.font import fonts
+from robingame.input import EventQueue
+from robingame.objects import Game
+from robingame.text.font import fonts
 
 
 class AutomataGame(Game):

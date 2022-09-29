@@ -4,7 +4,7 @@ import pygame
 import pytest
 from pygame.rect import Rect
 
-from base.objects import Group, PhysicalEntity
+from robingame.objects import Group, PhysicalEntity
 from fighting_game.characters import Character
 from fighting_game.hitboxes import Hitbox, HitHandler
 

@@ -3,9 +3,9 @@ from pygame import Surface, Rect
 from pygame.color import Color
 from pygame.sprite import AbstractGroup
 
-from base.image import recolor_image, scale_image
-from base.objects import PhysicalEntity, Entity, Group
-from base.utils import outline_image
+from robingame.image import recolor_image, scale_image
+from robingame.objects import PhysicalEntity, Entity, Group
+from robingame.utils import outline_image
 from fighting_game.particles import Particle, random_float, random_int
 from quarto.assets.images import quarto_pieces, square
 from quarto.utils import common_attribute

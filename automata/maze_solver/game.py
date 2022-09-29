@@ -5,8 +5,8 @@ from pygame.color import Color
 from pygame.surface import Surface
 
 from automata.maze_solver.test_mazes import MAZES
-from base.input import EventQueue
-from base.objects import Game
+from robingame.input import EventQueue
+from robingame.objects import Game
 
 
 class MazeSolverGame(Game):

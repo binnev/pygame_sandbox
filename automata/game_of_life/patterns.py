@@ -1,6 +1,6 @@
 import numpy
 
-from base.utils import SparseMatrix
+from robingame.utils import SparseMatrix
 
 
 def load_pattern(pattern: str, shift: tuple[int, int] = (0, 0)) -> SparseMatrix:

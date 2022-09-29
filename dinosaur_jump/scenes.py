@@ -3,9 +3,9 @@ from pygame import Surface
 from pygame.event import Event
 from pygame.sprite import groupcollide
 
-from base.input import EventQueue
-from base.objects import Entity, Group
-from base.text.font import fonts
+from robingame.input import EventQueue
+from robingame.objects import Entity, Group
+from robingame.text.font import fonts
 from dinosaur_jump import images, conf, sounds, events
 from dinosaur_jump.menu import PauseMenu, GameOverMenu
 from dinosaur_jump.objects import ScrollingBackground, Dino, Ptero, Cactus, Bullet

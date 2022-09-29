@@ -3,8 +3,8 @@ import math
 import numpy
 import pygame
 
-from base.objects import Particle, Group, Entity
-from base.utils import random_float, random_int
+from robingame.objects import Particle, Group, Entity
+from robingame.utils import random_float, random_int
 
 
 class Particle(Particle):

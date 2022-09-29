@@ -6,12 +6,12 @@ import pygame
 from pygame import Color
 from pygame.sprite import Sprite
 
-from base.animation import ease_in_out
-from base.draw import Canvas
-from base.game import Game
-from base.groups import EntityGroup
-from base.stuff.gui_elements import GuiButton
-from base.stuff.menu_test import Menu
+from robingame.animation import ease_in_out
+from robingame.draw import Canvas
+from robingame.game import Game
+from robingame.groups import EntityGroup
+from robingame.stuff.gui_elements import GuiButton
+from robingame.stuff.menu_test import Menu
 from volleyball_game import conf
 from volleyball_game.inputs import GamecubeController, Keyboard1, Keyboard0
 from volleyball_game.levels import VolleyballCourt

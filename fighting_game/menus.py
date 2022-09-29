@@ -1,8 +1,8 @@
 from random import random
 
-from base.gui.button import ColoredButton
-from base.gui.menu import MyMenu
-from base.objects import Group
+from robingame.gui.button import ColoredButton
+from robingame.gui.menu import MyMenu
+from robingame.objects import Group
 from fighting_game.conf import SCREEN_WIDTH, SCREEN_HEIGHT
 from fighting_game.particles import Plume
 from fighting_game.scenes import SandBox

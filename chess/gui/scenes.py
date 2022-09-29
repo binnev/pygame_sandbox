@@ -1,4 +1,4 @@
-from base.objects import Entity, Group
+from robingame.objects import Entity, Group
 from chess.gui.classes.board import GuiBoard
 
 

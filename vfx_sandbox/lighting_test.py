@@ -6,9 +6,9 @@ from pygame import Color, Surface
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 
-from base.input import EventQueue
-from base.objects import Group, PhysicalEntity, Game, Entity
-from base.utils import circle_surf
+from robingame.input import EventQueue
+from robingame.objects import Group, PhysicalEntity, Game, Entity
+from robingame.utils import circle_surf
 
 
 def sin_values(mean, variance, n_points):

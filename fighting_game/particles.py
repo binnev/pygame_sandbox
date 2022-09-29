@@ -1,7 +1,7 @@
 import numpy
 
-from base.objects import Entity, Group, Particle
-from base.utils import random_float, random_int
+from robingame.objects import Entity, Group, Particle
+from robingame.utils import random_float, random_int
 
 
 class Plume(Entity):

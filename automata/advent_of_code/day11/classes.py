@@ -4,8 +4,8 @@ import pygame
 from pygame.surface import Surface
 
 from automata.advent_of_code.game import AdventOfCodeGame
-from base.input import EventQueue
-from base.objects import Entity
+from robingame.input import EventQueue
+from robingame.objects import Entity
 
 raw = """7777838353
 2217272478

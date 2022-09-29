@@ -1,7 +1,7 @@
 from pygame import Color, Surface
 from pygame.rect import Rect
 
-from base.objects import PhysicalEntity
+from robingame.objects import PhysicalEntity
 
 
 class Platform(PhysicalEntity):
