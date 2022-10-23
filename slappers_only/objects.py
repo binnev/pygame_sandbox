@@ -1,8 +1,8 @@
 import pygame
-from robingame.input import EventQueue
 from robingame.objects import PhysicalEntity
 
 from slappers_only.images import character_sprites, character_sprites_flipped
+from slappers_only.inputs import KeyboardPlayer1, KeyboardPlayer2
 
 
 class Character(PhysicalEntity):
@@ -14,25 +14,26 @@ class Character(PhysicalEntity):
         self.x = x
         self.y = y
         self.facing_right = facing_right
+        self.input = KeyboardPlayer1() if facing_right else KeyboardPlayer2()
         self.state = self.state_idle
         self.sprites = character_sprites if facing_right else character_sprites_flipped
-        self.k_slap = pygame.K_d if facing_right else pygame.K_j
-        self.k_dodge = pygame.K_s if facing_right else pygame.K_k
-        self.k_feint = pygame.K_a if facing_right else pygame.K_l
+
+    def update(self):
+        super().update()
+        self.input.read_new_inputs()
 
     def state_idle(self):
         self.image = self.sprites.stand.loop(self.animation_frame)
-        for event in EventQueue.filter(type=pygame.KEYDOWN):
-            if event.key == self.k_slap:
-                self.state = self.state_windup
-            if event.key == self.k_dodge:
-                self.dodge()
-            if event.key == self.k_feint:
-                self.feint()
+        if self.input.slap.is_pressed:
+            self.slap()
+        if self.input.dodge.is_pressed:
+            self.dodge()
+        if self.input.feint.is_pressed:
+            self.feint()
 
     def state_windup(self):
         self.image = self.sprites.windup.play_once(self.animation_frame)
-        if self.tick > 10 and (not pygame.key.get_pressed()[self.k_slap] or self.tick > 40):
+        if self.tick > 10 and (not self.input.slap.is_down or self.tick > 40):
             self.state = self.state_slap
 
     def state_slap(self):
@@ -43,7 +44,7 @@ class Character(PhysicalEntity):
 
     def state_dodge(self):
         self.image = self.sprites.dodge.play_once(self.animation_frame)
-        if not pygame.key.get_pressed()[self.k_dodge] or self.tick > 40:
+        if not self.input.dodge.is_down or self.tick > 40:
             self.state = self.state_dodge_recovery
 
     def state_dodge_recovery(self):

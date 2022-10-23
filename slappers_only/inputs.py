@@ -1,5 +1,5 @@
 import pygame
-from robingame.input import KeyboardInputQueue, ButtonInput, EventQueue
+from robingame.input import KeyboardInputQueue, ButtonInput
 
 
 class KeyboardPlayer(KeyboardInputQueue):
