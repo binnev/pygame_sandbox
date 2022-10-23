@@ -1,5 +1,4 @@
 import pygame
-from pygame.sprite import AbstractGroup
 from robingame.input import EventQueue
 from robingame.objects import PhysicalEntity
 
@@ -7,7 +6,7 @@ from slappers_only import images
 
 
 class Character(PhysicalEntity):
-    frame_duration = 5
+    frame_duration = 3
 
     def __init__(self, x, y, facing_right=True):
         super().__init__()
@@ -28,7 +27,39 @@ class Character(PhysicalEntity):
                 case pygame.K_a:
                     self.feint()
 
+    def state_slap(self):
+        self.image = images.character_slap.play(self.animation_frame)
+        if not self.image:
+            self.image = images.character_stand.play(0)
+            self.state = self.state_idle
+
+    def state_dodge(self):
+        self.image = images.character_dodge.play_once(self.animation_frame)
+        if not pygame.key.get_pressed()[pygame.K_s] or self.tick > 40:
+            self.state = self.state_dodge_recovery
+
+    def state_dodge_recovery(self):
+        self.image = images.character_dodge_recovery.play(self.animation_frame)
+        if not self.image:
+            self.image = images.character_stand.play(0)
+            self.state = self.state_idle
+
     def slap(self):
+        """
+        Todo:
+        - add hitbox
+        - play swing sound
+        """
+        print("slap")
+        self.state = self.state_slap
+
+    def dodge(self):
+        print("dodge")
+        self.state = self.state_dodge
+
+    def feint(self):
+        print("feint")
+
 
 class Slap(PhysicalEntity):
     frame_duration = 5
