@@ -4,6 +4,7 @@ from robingame.input import KeyboardInputQueue, ButtonInput, EventQueue
 
 class KeyboardPlayer(KeyboardInputQueue):
     def __init__(self):
+        super().__init__()
         # for each parentless SingleInput declared on the class, create a new SingleInput
         # instance with self as parent.
         button_inputs = {

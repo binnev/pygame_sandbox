@@ -10,7 +10,7 @@ class SlappersOnly(Game):
     window_height = 500
     window_caption = "Slappers Only"
     screen_color = (255, 255, 255)
-    fps=60
+    fps = 60
 
     def __init__(self):
         super().__init__()

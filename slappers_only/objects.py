@@ -1,11 +1,8 @@
 import pygame
-from pygame.sprite import AbstractGroup
 from robingame.input import EventQueue
 from robingame.objects import PhysicalEntity
 
-from slappers_only import images
 from slappers_only.images import character_sprites, character_sprites_flipped
-from slappers_only.inputs import KeyboardPlayer1, KeyboardPlayer2
 
 
 class Character(PhysicalEntity):
@@ -35,7 +32,7 @@ class Character(PhysicalEntity):
 
     def state_windup(self):
         self.image = self.sprites.windup.play_once(self.animation_frame)
-        if not pygame.key.get_pressed()[self.k_slap] or self.tick > 40:
+        if self.tick > 10 and (not pygame.key.get_pressed()[self.k_slap] or self.tick > 40):
             self.state = self.state_slap
 
     def state_slap(self):
@@ -68,7 +65,7 @@ class Character(PhysicalEntity):
         - play swing sound
         """
         print("slap")
-        self.state = self.state_slap
+        self.state = self.state_windup
 
     def dodge(self):
         print("dodge")
