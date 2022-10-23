@@ -1,4 +1,5 @@
 import pygame
+from pygame.sprite import AbstractGroup
 from robingame.input import EventQueue
 from robingame.objects import PhysicalEntity
 
@@ -26,11 +27,16 @@ class Character(PhysicalEntity):
         self.image = self.sprites.stand.loop(self.animation_frame)
         for event in EventQueue.filter(type=pygame.KEYDOWN):
             if event.key == self.k_slap:
-                self.slap()
+                self.state = self.state_windup
             if event.key == self.k_dodge:
                 self.dodge()
             if event.key == self.k_feint:
                 self.feint()
+
+    def state_windup(self):
+        self.image = self.sprites.windup.play_once(self.animation_frame)
+        if not pygame.key.get_pressed()[self.k_slap] or self.tick > 40:
+            self.state = self.state_slap
 
     def state_slap(self):
         self.image = self.sprites.slap.play(self.animation_frame)
@@ -45,6 +51,12 @@ class Character(PhysicalEntity):
 
     def state_dodge_recovery(self):
         self.image = self.sprites.dodge_recovery.play(self.animation_frame)
+        if not self.image:
+            self.image = self.sprites.stand.play(0)
+            self.state = self.state_idle
+
+    def state_get_hit(self):
+        self.image = self.sprites.gethit.play(self.animation_frame)
         if not self.image:
             self.image = self.sprites.stand.play(0)
             self.state = self.state_idle
@@ -64,20 +76,3 @@ class Character(PhysicalEntity):
 
     def feint(self):
         print("feint")
-
-
-class Slap(PhysicalEntity):
-    frame_duration = 5
-
-    def __init__(self, x, y, facing_right=True):
-        super().__init__()
-        self.rect = pygame.Rect((x, y, 200, 100))
-        self.x = x
-        self.y = y
-        self.facing_right = facing_right
-        self.state = self.state_slap
-
-    def state_slap(self):
-        self.image = images.slap.play_once(self.animation_frame)
-        if self.tick == 30:
-            self.kill()
