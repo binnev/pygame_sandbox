@@ -3,6 +3,8 @@ from robingame.input import EventQueue
 from robingame.objects import PhysicalEntity
 
 from slappers_only import images
+from slappers_only.images import character_sprites, character_sprites_flipped
+from slappers_only.inputs import KeyboardPlayer1, KeyboardPlayer2
 
 
 class Character(PhysicalEntity):
@@ -15,33 +17,36 @@ class Character(PhysicalEntity):
         self.y = y
         self.facing_right = facing_right
         self.state = self.state_idle
+        self.sprites = character_sprites if facing_right else character_sprites_flipped
+        self.k_slap = pygame.K_d if facing_right else pygame.K_j
+        self.k_dodge = pygame.K_s if facing_right else pygame.K_k
+        self.k_feint = pygame.K_a if facing_right else pygame.K_l
 
     def state_idle(self):
-        self.image = images.character_stand.loop(self.animation_frame)
+        self.image = self.sprites.stand.loop(self.animation_frame)
         for event in EventQueue.filter(type=pygame.KEYDOWN):
-            match event.key:
-                case pygame.K_d:
-                    self.slap()
-                case pygame.K_s:
-                    self.dodge()
-                case pygame.K_a:
-                    self.feint()
+            if event.key == self.k_slap:
+                self.slap()
+            if event.key == self.k_dodge:
+                self.dodge()
+            if event.key == self.k_feint:
+                self.feint()
 
     def state_slap(self):
-        self.image = images.character_slap.play(self.animation_frame)
+        self.image = self.sprites.slap.play(self.animation_frame)
         if not self.image:
-            self.image = images.character_stand.play(0)
+            self.image = self.sprites.stand.play(0)
             self.state = self.state_idle
 
     def state_dodge(self):
-        self.image = images.character_dodge.play_once(self.animation_frame)
-        if not pygame.key.get_pressed()[pygame.K_s] or self.tick > 40:
+        self.image = self.sprites.dodge.play_once(self.animation_frame)
+        if not pygame.key.get_pressed()[self.k_dodge] or self.tick > 40:
             self.state = self.state_dodge_recovery
 
     def state_dodge_recovery(self):
-        self.image = images.character_dodge_recovery.play(self.animation_frame)
+        self.image = self.sprites.dodge_recovery.play(self.animation_frame)
         if not self.image:
-            self.image = images.character_stand.play(0)
+            self.image = self.sprites.stand.play(0)
             self.state = self.state_idle
 
     def slap(self):

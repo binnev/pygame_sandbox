@@ -8,11 +8,11 @@ class SlappersOnly(Game):
     window_height = 500
     window_caption = "Slappers Only"
     screen_color = (255, 255, 255)
-    fps=10
 
     def __init__(self):
         super().__init__()
         self.scenes.add(Character(x=100, y=100))
+        self.scenes.add(Character(x=180, y=100, facing_right=False))
 
 
 if __name__ == "__main__":
