@@ -6,4 +6,4 @@ matplotlib
 coverage
 pytest-cov
 dataclasses-json
-robingame==0.0.4
+robingame>=0.0.5
