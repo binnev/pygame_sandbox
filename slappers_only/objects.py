@@ -33,6 +33,8 @@ class Character(PhysicalEntity):
 
     def state_windup(self):
         self.image = self.sprites.windup.play_once(self.animation_frame)
+        if self.tick < 10 and self.input.dodge.is_pressed:
+            self.state = self.state_idle
         if self.tick > 10 and (not self.input.slap.is_down or self.tick > 40):
             self.state = self.state_slap
 
@@ -44,11 +46,15 @@ class Character(PhysicalEntity):
 
     def state_dodge(self):
         self.image = self.sprites.dodge.play_once(self.animation_frame)
+        if self.input.slap.is_pressed:
+            self.slap()
         if not self.input.dodge.is_down or self.tick > 40:
             self.state = self.state_dodge_recovery
 
     def state_dodge_recovery(self):
         self.image = self.sprites.dodge_recovery.play(self.animation_frame)
+        if self.input.slap.is_pressed:
+            self.slap()
         if not self.image:
             self.image = self.sprites.stand.play(0)
             self.state = self.state_idle

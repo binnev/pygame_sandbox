@@ -26,6 +26,7 @@ class SlappersOnly(Game):
                 p1.state = p1.state_idle
                 p2.state = p2.state_idle
                 sounds.metal_clang.play()
+                print("clang")
             if p1.state.__name__ == "state_slap" and p2.state.__name__ != "state_get_hit":
                 p2.state = p2.state_get_hit
                 sounds.slap2.play()

@@ -21,7 +21,7 @@ class KeyboardPlayer(KeyboardInputQueue):
 class KeyboardPlayer1(KeyboardPlayer):
     slap = ButtonInput(pygame.K_d)
     dodge = ButtonInput(pygame.K_s)
-    feint = ButtonInput(pygame.K_d)
+    feint = ButtonInput(pygame.K_a)
 
 
 class KeyboardPlayer2(KeyboardPlayer):
