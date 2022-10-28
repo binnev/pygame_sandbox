@@ -5,7 +5,7 @@ from robingame.objects import Entity, Group
 from robingame.text.font import fonts
 from typing import Callable
 
-from slappers_only import sounds, conf
+from slappers_only import sounds, conf, images
 from slappers_only.objects import Character
 
 
@@ -14,12 +14,28 @@ class SlappersOnlyScene(Entity):
         super().__init__()
         self.characters = Group()
         self.gui_elements = Group()
-        self.characters.add(Character(x=100, y=100))
-        self.characters.add(Character(x=180, y=100, facing_right=False))
+        self.characters.add(
+            Character(
+                x=conf.WINDOW_WIDTH // 2 - 40,
+                y=conf.WINDOW_HEIGHT // 2,
+            )
+        )
+        self.characters.add(
+            Character(
+                x=conf.WINDOW_WIDTH // 2 + 40,
+                y=conf.WINDOW_HEIGHT // 2,
+                facing_right=False,
+            )
+        )
 
         self.child_groups = [
             self.characters,
         ]
+
+    def draw(self, surface, debug):
+        img = images.background_desert.loop(self.tick // 5)
+        surface.blit(img, img.get_rect())
+        super().draw(surface, debug)
 
     def update(self):
         super().update()

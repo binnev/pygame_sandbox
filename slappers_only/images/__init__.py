@@ -85,3 +85,10 @@ splash_screen = SpriteAnimation.from_image(
     filename=folder / "splash_screen.png",
     scale=5,
 )
+
+
+background_desert = SpriteAnimation.from_spritesheet(
+    filename=folder / "background_desert.png",
+    image_size=(160, 160),
+    scale=5,
+)
