@@ -6,7 +6,7 @@ from slappers_only.objects import Character
 
 
 class SlappersOnly(Game):
-    window_width = 1000
+    window_width = 500
     window_height = 500
     window_caption = "Slappers Only"
     screen_color = (255, 255, 255)
