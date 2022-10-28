@@ -79,3 +79,9 @@ class character_sprites_flipped:
     slap = character_slap_flipped
     gethit = character_gethit_flipped
     windup = character_windup_flipped
+
+
+splash_screen = SpriteAnimation.from_image(
+    filename=folder / "splash_screen.png",
+    scale=5,
+)
