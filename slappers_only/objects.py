@@ -40,6 +40,11 @@ class Character(PhysicalEntity):
 
     def state_slap(self):
         self.image = self.sprites.slap.play(self.animation_frame)
+        if self.animation_frame > 2:
+            self.state = self.state_slap_recovery
+
+    def state_slap_recovery(self):
+        self.image = self.sprites.slap.play(self.animation_frame+3)
         if not self.image:
             self.image = self.sprites.stand.play(0)
             self.state = self.state_idle
@@ -65,6 +70,10 @@ class Character(PhysicalEntity):
             self.image = self.sprites.stand.play(0)
             self.state = self.state_idle
 
+    def state_feint(self):
+        self.image = self.sprites.slap.play(1)
+        self.state = self.state_idle
+
     def slap(self):
         """
         Todo:
@@ -72,11 +81,11 @@ class Character(PhysicalEntity):
         - play swing sound
         """
         print("slap")
-        self.state = self.state_windup
+        self.state = self.state_slap
 
     def dodge(self):
         print("dodge")
         self.state = self.state_dodge
 
     def feint(self):
-        print("feint")
+        self.state = self.state_feint

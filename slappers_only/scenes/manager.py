@@ -14,7 +14,8 @@ class Manager(Entity):
         super().__init__()
         self.scenes = Group()
         self.child_groups = [self.scenes]
-        self.scenes.add(CharacterSelectScreen(callback=lambda: self.scenes.add(SlapMatch())))
+        # self.scenes.add(CharacterSelectScreen(callback=lambda: self.scenes.add(SlapMatch())))
+        self.scenes.add(SlapMatch())
 
     def update(self):
         super().update()

@@ -15,7 +15,7 @@ from slappers_only.objects import Character
 class SlappersOnlyScene(Entity):
     p1_score = 0
     p2_score = 0
-    win_condition = 3
+    win_condition = 6
     paused = False
 
     def __init__(self):
