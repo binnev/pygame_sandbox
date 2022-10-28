@@ -10,6 +10,7 @@ from robingame.text.font import fonts
 from slappers_only import sounds, conf, images
 from slappers_only.events import UpdateScore, GameOver
 from slappers_only.objects import Character
+from slappers_only.particles import Spittle
 
 
 class SlappersOnlyScene(Entity):
@@ -21,7 +22,13 @@ class SlappersOnlyScene(Entity):
     def __init__(self):
         super().__init__()
         self.characters = Group()
+        self.particles = Group()
         self.gui_elements = Group()
+        self.child_groups = [
+            self.characters,
+            self.particles,
+            self.gui_elements,
+        ]
         self.characters.add(
             Character(
                 x=conf.WINDOW_WIDTH // 2 - 40,
@@ -36,9 +43,6 @@ class SlappersOnlyScene(Entity):
             )
         )
 
-        self.child_groups = [
-            self.characters,
-        ]
 
     def draw(self, surface, debug=False):
         img = images.background_desert.loop(self.tick // 5)
@@ -61,11 +65,13 @@ class SlappersOnlyScene(Entity):
                 self.p1_score += 1
                 p2.state = p2.state_get_hit
                 EventQueue.add(UpdateScore(p1=self.p1_score, p2=self.p2_score))
+                self.particles.add(Spittle(p2.x, p2.y-50, right=True))
                 sounds.slap2.play()
             if p2.state.__name__ == "state_slap" and p1.state.__name__ != "state_get_hit":
                 self.p2_score += 1
                 p1.state = p1.state_get_hit
                 EventQueue.add(UpdateScore(p1=self.p1_score, p2=self.p2_score))
+                self.particles.add(Spittle(p1.x, p1.y-50, right=False))
                 sounds.slap2.play()
             if self.p1_score == self.win_condition:
                 EventQueue.add(GameOver("Player 1"))
