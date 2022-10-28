@@ -1,13 +1,17 @@
+import time
+
 from robingame.input import EventQueue
 from robingame.objects import Entity, Group
 from robingame.text.font import fonts
 
 from slappers_only import images, conf
-from slappers_only.events import UpdateScore, GameOver
+from slappers_only.events import UpdateScore, GameOver, SlowMotion
 from slappers_only.scenes.main import SlappersOnlyScene
 
 
 class SlapMatch(Entity):
+    slow_motion = 0
+
     def __init__(self):
         super().__init__()
         self.background = Group()
@@ -24,13 +28,21 @@ class SlapMatch(Entity):
         self.gui.add(ScoreDisplay(y=50))
         self.state = self.state_main
 
+    def update(self):
+        super().update()
+        if self.slow_motion:
+            self.slow_motion -= 1
+            time.sleep(0.1)
+
     def state_main(self):
         for event in EventQueue.filter(type=GameOver.type):
             self.end_game(event.winner)
+        for event in EventQueue.filter(type=SlowMotion.type):
+            self.slow_motion += event.duration
 
     def end_game(self, winner):
         self.gui.add(GameOverText(winner=winner))
-        self.slappers_only_scene.paused = True
+        # self.slappers_only_scene.paused = True
         self.state = self.state_game_over
 
     def state_game_over(self):

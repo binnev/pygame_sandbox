@@ -21,3 +21,9 @@ class UpdateScore:
 class GameOver:
     type = pygame.event.custom_type()
     winner: str
+
+
+@dataclass
+class SlowMotion:
+    type = pygame.event.custom_type()
+    duration: int

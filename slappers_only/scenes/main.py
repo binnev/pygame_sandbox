@@ -8,7 +8,7 @@ from robingame.objects import Entity, Group
 from robingame.text.font import fonts
 
 from slappers_only import sounds, conf, images
-from slappers_only.events import UpdateScore, GameOver
+from slappers_only.events import UpdateScore, GameOver, SlowMotion
 from slappers_only.objects import Character
 from slappers_only.particles import Spittle
 
@@ -74,9 +74,11 @@ class SlappersOnlyScene(Entity):
                 self.particles.add(Spittle(p1.x, p1.y-50, right=False))
                 sounds.slap2.play()
             if self.p1_score == self.win_condition:
-                EventQueue.add(GameOver("Player 1"))
+                EventQueue.add(GameOver(winner="Player 1"))
+                EventQueue.add(SlowMotion(duration=60))
             if self.p2_score == self.win_condition:
-                EventQueue.add(GameOver("Player 2"))
+                EventQueue.add(GameOver(winner="Player 2"))
+                EventQueue.add(SlowMotion(duration=60))
 
             print("collision")
 
