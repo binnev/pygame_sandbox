@@ -3,7 +3,7 @@ from robingame.objects import Entity, Group
 
 from slappers_only.events import SetValue
 from slappers_only.scenes.character_select import CharacterSelectScreen
-from slappers_only.scenes.main import SlappersOnlyScene
+from slappers_only.scenes.match import SlapMatch
 
 
 class Manager(Entity):
@@ -14,7 +14,7 @@ class Manager(Entity):
         super().__init__()
         self.scenes = Group()
         self.child_groups = [self.scenes]
-        self.scenes.add(CharacterSelectScreen(callback=lambda: self.scenes.add(SlappersOnlyScene())))
+        self.scenes.add(CharacterSelectScreen(callback=lambda: self.scenes.add(SlapMatch())))
 
     def update(self):
         super().update()

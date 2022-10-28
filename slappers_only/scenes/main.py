@@ -1,15 +1,23 @@
+from typing import Callable
+
 import pygame
 from pygame.surface import Surface
 from robingame.animation import ease_out, ease_in
+from robingame.input import EventQueue
 from robingame.objects import Entity, Group
 from robingame.text.font import fonts
-from typing import Callable
 
 from slappers_only import sounds, conf, images
+from slappers_only.events import UpdateScore, GameOver
 from slappers_only.objects import Character
 
 
 class SlappersOnlyScene(Entity):
+    p1_score = 0
+    p2_score = 0
+    win_condition = 3
+    paused = False
+
     def __init__(self):
         super().__init__()
         self.characters = Group()
@@ -38,6 +46,8 @@ class SlappersOnlyScene(Entity):
         super().draw(surface, debug)
 
     def update(self):
+        if self.paused:
+            return
         super().update()
         p1, p2 = self.characters
         collision = pygame.sprite.collide_mask(p1, p2)
@@ -48,11 +58,19 @@ class SlappersOnlyScene(Entity):
                 sounds.metal_clang.play()
                 print("clang")
             if p1.state.__name__ == "state_slap" and p2.state.__name__ != "state_get_hit":
+                self.p1_score += 1
                 p2.state = p2.state_get_hit
+                EventQueue.add(UpdateScore(p1=self.p1_score, p2=self.p2_score))
                 sounds.slap2.play()
             if p2.state.__name__ == "state_slap" and p1.state.__name__ != "state_get_hit":
+                self.p2_score += 1
                 p1.state = p1.state_get_hit
+                EventQueue.add(UpdateScore(p1=self.p1_score, p2=self.p2_score))
                 sounds.slap2.play()
+            if self.p1_score == self.win_condition:
+                EventQueue.add(GameOver("Player 1"))
+            if self.p2_score == self.win_condition:
+                EventQueue.add(GameOver("Player 2"))
 
             print("collision")
 
