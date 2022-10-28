@@ -32,7 +32,7 @@ class SlappersOnlyScene(Entity):
             self.characters,
         ]
 
-    def draw(self, surface, debug):
+    def draw(self, surface, debug=False):
         img = images.background_desert.loop(self.tick // 5)
         surface.blit(img, img.get_rect())
         super().draw(surface, debug)

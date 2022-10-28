@@ -24,15 +24,15 @@ class SlappersOnly(Game):
         self.window.blit(img, rect)
         pygame.display.update()
 
-        from slappers_only.scenes.main import SlappersOnlyScene
         from slappers_only.scenes.splash_screen import SplashScreen
+        from slappers_only.scenes.manager import Manager
 
         x, y = self.window.get_rect().center
         self.scenes.add(
             SplashScreen(
                 x=x,
                 y=y,
-                callback=lambda: self.scenes.add(SlappersOnlyScene()),
+                callback=lambda: self.scenes.add(Manager()),
             )
         )
 
