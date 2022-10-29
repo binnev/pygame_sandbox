@@ -1,4 +1,5 @@
 import pygame
+from numpy import sign
 from robingame.objects import PhysicalEntity
 
 from slappers_only.images import character_sprites, character_sprites_flipped
@@ -7,6 +8,8 @@ from slappers_only.inputs import KeyboardPlayer1, KeyboardPlayer2
 
 class Character(PhysicalEntity):
     frame_duration = 3
+    u = 0
+    friction = 0.1
 
     def __init__(self, x, y, facing_right=True):
         super().__init__()
@@ -21,6 +24,9 @@ class Character(PhysicalEntity):
     def update(self):
         super().update()
         self.input.read_new_inputs()
+        if self.u:
+            self.x += self.u
+            self.u = (abs(self.u) - self.friction) * sign(self.u)
 
     def state_idle(self):
         self.image = self.sprites.stand.loop(self.animation_frame)
@@ -44,7 +50,7 @@ class Character(PhysicalEntity):
             self.state = self.state_slap_recovery
 
     def state_slap_recovery(self):
-        self.image = self.sprites.slap.play(self.animation_frame+3)
+        self.image = self.sprites.slap.play(self.animation_frame + 3)
         if not self.image:
             self.image = self.sprites.stand.play(0)
             self.state = self.state_idle
@@ -73,6 +79,9 @@ class Character(PhysicalEntity):
     def state_feint(self):
         self.image = self.sprites.slap.play(1)
         self.state = self.state_idle
+
+    def state_dead(self):
+        self.image = self.sprites.dead.play_once(self.animation_frame)
 
     def slap(self):
         """

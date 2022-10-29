@@ -43,7 +43,6 @@ class SlappersOnlyScene(Entity):
             )
         )
 
-
     def draw(self, surface, debug=False):
         img = images.background_desert.loop(self.tick // 5)
         surface.blit(img, img.get_rect())
@@ -55,30 +54,34 @@ class SlappersOnlyScene(Entity):
         super().update()
         p1, p2 = self.characters
         collision = pygame.sprite.collide_mask(p1, p2)
-        if collision:
-            if p1.state.__name__ == p2.state.__name__ == "state_slap":
+        if collision and p1.state != p1.state_dead and p2.state != p2.state_dead:
+            if p1.state == p1.state_slap and p2.state == p2.state_slap:
                 p1.state = p1.state_idle
                 p2.state = p2.state_idle
                 sounds.metal_clang.play()
                 print("clang")
-            if p1.state.__name__ == "state_slap" and p2.state.__name__ != "state_get_hit":
+            if p1.state == p1.state_slap and p2.state != p2.state_get_hit:
                 self.p1_score += 1
                 p2.state = p2.state_get_hit
                 EventQueue.add(UpdateScore(p1=self.p1_score, p2=self.p2_score))
-                self.particles.add(Spittle(p2.x, p2.y-50, right=True))
+                self.particles.add(Spittle(p2.x, p2.y - 50, right=True))
                 sounds.slap2.play()
-            if p2.state.__name__ == "state_slap" and p1.state.__name__ != "state_get_hit":
+            if p2.state == p2.state_slap and p1.state != p1.state_get_hit:
                 self.p2_score += 1
                 p1.state = p1.state_get_hit
                 EventQueue.add(UpdateScore(p1=self.p1_score, p2=self.p2_score))
-                self.particles.add(Spittle(p1.x, p1.y-50, right=False))
+                self.particles.add(Spittle(p1.x, p1.y - 50, right=False))
                 sounds.slap2.play()
             if self.p1_score == self.win_condition:
                 EventQueue.add(GameOver(winner="Player 1"))
                 EventQueue.add(SlowMotion(duration=60))
+                p2.state = p2.state_dead
+                p2.u = 3
             if self.p2_score == self.win_condition:
                 EventQueue.add(GameOver(winner="Player 2"))
                 EventQueue.add(SlowMotion(duration=60))
+                p1.state = p1.state_dead
+                p1.u = -3
 
             print("collision")
 

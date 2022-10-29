@@ -29,6 +29,11 @@ character_gethit = SpriteAnimation.from_spritesheet(
     scale=5,
     image_size=(32, 32),
 )
+character_die = SpriteAnimation.from_spritesheet(
+    folder / "character_die.png",
+    scale=5,
+    image_size=(32, 32),
+)
 character_dodge_recovery = SpriteAnimation(
     images=[character_dodge.images[1]],
 )
@@ -36,31 +41,15 @@ character_dodge_recovery = SpriteAnimation(
 
 # ================= flipped ================
 
-character_stand_flipped = SpriteAnimation(
-    images=character_stand.images,
-    flip_x=True,
-)
-character_dodge_flipped = SpriteAnimation(
-    images=character_dodge.images,
-    flip_x=True,
-)
+character_stand_flipped = SpriteAnimation(images=character_stand.images, flip_x=True)
+character_dodge_flipped = SpriteAnimation(images=character_dodge.images, flip_x=True)
 character_dodge_recovery_flipped = SpriteAnimation(
-    images=character_dodge_recovery.images,
-    flip_x=True,
+    images=character_dodge_recovery.images, flip_x=True
 )
-character_slap_flipped = SpriteAnimation(
-    images=character_slap.images,
-    flip_x=True,
-)
-character_gethit_flipped = SpriteAnimation(
-    images=character_gethit.images,
-    flip_x=True,
-)
-
-character_windup_flipped = SpriteAnimation(
-    images=character_windup.images,
-    flip_x=True,
-)
+character_slap_flipped = SpriteAnimation(images=character_slap.images, flip_x=True)
+character_gethit_flipped = SpriteAnimation(images=character_gethit.images, flip_x=True)
+character_die_flipped = SpriteAnimation(images=character_die.images, flip_x=True)
+character_windup_flipped = SpriteAnimation(images=character_windup.images, flip_x=True)
 
 
 class character_sprites:
@@ -70,6 +59,7 @@ class character_sprites:
     slap = character_slap
     gethit = character_gethit
     windup = character_windup
+    dead = character_die
 
 
 class character_sprites_flipped:
@@ -79,6 +69,7 @@ class character_sprites_flipped:
     slap = character_slap_flipped
     gethit = character_gethit_flipped
     windup = character_windup_flipped
+    dead = character_die_flipped
 
 
 splash_screen = SpriteAnimation.from_image(
