@@ -9,7 +9,7 @@ def load_pattern(pattern: str, shift: tuple[int, int] = (0, 0)) -> SparseMatrix:
     )
     arr += shift
     arr = [tuple(item) for item in arr]
-    return SparseMatrix({coord: True for coord in arr})
+    return SparseMatrix({coord: 1 for coord in arr})
 
 
 BLOCK = """

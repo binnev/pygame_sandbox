@@ -2,11 +2,11 @@ from collections import deque
 
 import pygame
 from pygame import Color
+from robingame.input import EventQueue
 
 from automata.game import AutomataGame
 from automata.game_of_life import patterns
 from automata.game_of_life.patterns import load_pattern
-from robingame.input import EventQueue
 
 
 class GameOfLife(AutomataGame):
@@ -87,8 +87,8 @@ if __name__ == "__main__":
                     continue
                 try:
                     GameOfLife(
-                        overpopulation_threshold=o,
                         underpopulation_threshold=u,
+                        overpopulation_threshold=o,
                         reproduction_threshold=r,
                     ).main()
                 except NextGame:

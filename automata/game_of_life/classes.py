@@ -18,12 +18,12 @@ class InfiniteBoard(Entity):
     colormap = matplotlib.cm.viridis_r
 
     def __init__(
-        self,
-        contents=None,
-        overpopulation_threshold=threshold.OVERPOPULATION,
-        underpopulation_threshold=threshold.UNDERPOPULATION,
-        reproduction_threshold=threshold.REPRODUCTION,
-        *groups: AbstractGroup,
+            self,
+            contents=None,
+            overpopulation_threshold=threshold.OVERPOPULATION,
+            underpopulation_threshold=threshold.UNDERPOPULATION,
+            reproduction_threshold=threshold.REPRODUCTION,
+            *groups: AbstractGroup,
     ) -> None:
         super().__init__(*groups)
         self.contents = SparseMatrix(contents or {})
@@ -34,37 +34,33 @@ class InfiniteBoard(Entity):
 
     def update(self):
         super().update()
+
+        live_neighbours_matrix = SparseMatrix()
+        for cell in self.contents:
+            for neighbour in self.neighbours(cell):
+                count = live_neighbours_matrix.get(neighbour, 0)
+                live_neighbours_matrix[neighbour] = count + 1
+
         new = SparseMatrix()
 
-        dead_neighbours = set()
-
-        # iterate over live cells
-        for coord, age in self.contents.items():
-
-            # 1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-            # 2. Any live cell with two or three live neighbours lives on to the next generation.
-            # 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
-            live_neighbours = len(self.live_neighbours(coord))
-            if self.underpopulation_threshold <= live_neighbours <= self.overpopulation_threshold:
-                new[coord] = age + 1
-
-            # Gather dead neighbours for later analysis. Put them in a set to avoid duplicates.
-            # Here because we are using a sparse matrix that doesn't store "dead" values,
-            # we iterate over the neighbours of live cells, since these are the only dead cells
-            # that can become alive
-            dead_neighbours.update(self.dead_neighbours(coord))
-
-        for coord in dead_neighbours:
-            # 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by
-            # reproduction.
-            if len(self.live_neighbours(coord)) == self.reproduction_threshold:
-                new[coord] = 1
+        for cell, live_neighbours in live_neighbours_matrix.items():
+            alive = cell in self.contents
+            if alive:
+                # 2. Any live cell with two or three live neighbours lives on to the next generation.
+                if self.underpopulation_threshold <= live_neighbours <= self.overpopulation_threshold:
+                    age = self.contents[cell]
+                    new[cell] = age + 1
+            else:
+                # 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by
+                # reproduction.
+                if live_neighbours == self.reproduction_threshold:
+                    new[cell] = 1
 
         self.contents = new
 
-    def neighbours(self, coord: Coord) -> dict[Coord:bool]:
+    def neighbours(self, coord: Coord) -> tuple[Coord, ...]:
         x, y = coord
-        directions = [
+        return (
             (x - 1, y - 1),
             (x - 1, y),
             (x - 1, y + 1),
@@ -73,14 +69,7 @@ class InfiniteBoard(Entity):
             (x + 1, y - 1),
             (x + 1, y),
             (x + 1, y + 1),
-        ]
-        return {coord: self.contents.get(coord, False) for coord in directions}
-
-    def live_neighbours(self, coord: Coord) -> dict[Coord:bool]:
-        return {n: alive for n, alive in self.neighbours(coord).items() if alive}
-
-    def dead_neighbours(self, coord: Coord) -> dict[Coord:bool]:
-        return {n: alive for n, alive in self.neighbours(coord).items() if not alive}
+        )
 
     def draw(self, surface: Surface, debug: bool = False):
         screen_width, screen_height = screen_size = surface.get_size()
