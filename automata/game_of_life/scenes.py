@@ -28,7 +28,7 @@ class MainScene(Entity):
                 (1, 4): 1,
                 (0, 5): 1,
             },
-            viewport_center=(2, 2),
+            viewport_center=(0, 0),
             scale=1,
             groups=(self.boards,),
         )
@@ -60,23 +60,26 @@ class MainScene(Entity):
         surface.blit(main_board_surf, (10, 10))
         surface.blit(second_board_surf, (410, 310))
 
+    def zoom_in(self):
+        for board in self.boards:
+            board.scale = max(1, board.scale + 2)
+            print(f"scale increased to {board.scale}")
+
+    def zoom_out(self):
+        for board in self.boards:
+            board.scale = max(1, board.scale - 2)
+            print(f"scale reduced to {board.scale}")
+
     def update(self):
         super().update()
         # print(f"{pygame.mouse.get_pos()=}")
+        if pygame.key.get_pressed()[pygame.K_UP]:
+            self.zoom_in()
+        if pygame.key.get_pressed()[pygame.K_DOWN]:
+            self.zoom_out()
         for event in EventQueue.events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    self.main_board.scale += 1
-                    print(f"scale increased to {self.main_board.scale}")
-                elif event.key == pygame.K_DOWN:
-                    self.main_board.scale -= 1
-                    print(f"scale reduced to {self.main_board.scale}")
-            elif event.type == pygame.MOUSEWHEEL:
+            if event.type == pygame.MOUSEWHEEL:
                 if event.y > 0:
-                    for board in self.boards:
-                        board.scale += 2
-                        print(f"scale increased to {board.scale}")
+                    self.zoom_in()
                 else:
-                    for board in self.boards:
-                        board.scale -= 2
-                        print(f"scale reduced to {board.scale}")
+                    self.zoom_out()
