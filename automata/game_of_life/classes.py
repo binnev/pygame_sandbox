@@ -1,13 +1,17 @@
+import logging
 import math
 
 import matplotlib
 import numpy
+import pygame.mouse
 from pygame import Surface, Color, Rect
 from robingame.image import scale_image
 from robingame.objects import Entity, Group
 from robingame.utils import SparseMatrix, Coord
 
 from automata.game_of_life import threshold
+
+logger = logging.getLogger(__file__)
 
 
 class InfiniteBoard(Entity):
@@ -91,7 +95,7 @@ class InfiniteBoard(Entity):
 
 class InfiniteBoardViewer(InfiniteBoard):
     """
-    Class to draw a Game of Life board onto a surface.
+    Subclass to draw an InfiniteBoard board onto a surface.
     Scaling is absolute:
         1x scale means each cell is 1x1 px.
         10x scale means each cell is 10x10 px.
@@ -102,13 +106,15 @@ class InfiniteBoardViewer(InfiniteBoard):
     scale: int
     num_colors: int
     colormap = matplotlib.cm.viridis_r
+    background_color = Color("black")
 
     def __init__(
         self,
         *args,
         viewport_center_xy: tuple[float, float] = (0.0, 0.0),
-        scale: int = 100,
+        scale: int = 10,
         num_colors: int = 100,
+        rect: Rect | tuple,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -116,6 +122,8 @@ class InfiniteBoardViewer(InfiniteBoard):
         self.num_colors = num_colors
         self.viewport_center_xy = viewport_center_xy
         self.calculate_colors()
+        self.rect = Rect(*rect)
+        self.image = Surface(self.rect.size)
 
     def draw(self, surface: Surface, debug: bool = False):
         """
@@ -129,12 +137,15 @@ class InfiniteBoardViewer(InfiniteBoard):
         """
         super().draw(surface, debug)
 
+        # 0. clear old image
+        self.image.fill(self.background_color)
+
         # 1. Choose viewport in xy coordinates to filter for visible cells
         # 2. Round out to nearest int, record x/y min/max range.
         viewport_center_x, viewport_center_y = self.viewport_center_xy
-        screen_width, screen_height = surface.get_rect().size
-        viewport_width = math.ceil(screen_width / self.scale)
-        viewport_height = math.ceil(screen_height / self.scale)
+        image_width, image_height = self.image.get_rect().size
+        viewport_width = math.ceil(image_width / self.scale)
+        viewport_height = math.ceil(image_height / self.scale)
         viewport = Rect(0, 0, viewport_width, viewport_height)
         viewport = viewport.inflate(2, 2)
         viewport.center = self.viewport_center_xy
@@ -158,7 +169,7 @@ class InfiniteBoardViewer(InfiniteBoard):
             color = self.get_color(age)
             ij = (x - i0, y - j0)  # matrix coords to pixel indices
             small_img.set_at(ij, color)
-        # print(f"Population {len(self.contents)}, drew {len(to_draw)}")
+        logger.info(f"Population {len(self.contents)}, drew {len(to_draw)}")
 
         # 7. Scale small bitmap up to full size
         big_img = scale_image(small_img, self.scale)
@@ -173,10 +184,12 @@ class InfiniteBoardViewer(InfiniteBoard):
         viewport_center_b: float = (self.scale * viewport_center_j) + (self.scale - 1) / 2
 
         # 9. Calculate the uv offset required to position viewport_center_ab on the screen center
-        center_u, center_v = surface.get_rect().center
+        center_u, center_v = self.image.get_rect().center
         delta_u = center_u - viewport_center_a
         delta_v = center_v - viewport_center_b
-        surface.blit(big_img, (delta_u, delta_v))
+        self.image.blit(big_img, (delta_u, delta_v))
+
+        surface.blit(self.image, self.rect)
 
     def calculate_colors(self):
         """Sample a colormap based on the longest ruleset of child ants"""

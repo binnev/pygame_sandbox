@@ -20,33 +20,16 @@ class MainScene(Entity):
 
         self.main_board = InfiniteBoardViewer(
             contents={**load_pattern(patterns.BLOCK)},
-            viewport_center_xy=(1.6, 2.3),
-            scale=10,
+            viewport_center_xy=(0, 0),
+            rect=(10, 10, 210, 320),
             groups=(self.boards,),
         )
         self.second_board = InfiniteBoardViewer(
             contents=load_pattern(patterns.BLOCK),
-            viewport_center_xy=(2, 2),
-            scale=1,
+            viewport_center_xy=(0, 0),
+            rect=(self.main_board.rect.right + 10, self.main_board.rect.top, 300, 200),
             groups=(self.boards,),
         )
-
-    def draw(self, surface: Surface, debug: bool = False):
-        # super().draw(surface, debug)
-        main_board_surf = Surface((210, 320))
-        main_board_surf.fill(Color("pink"))
-        main_rect = main_board_surf.get_rect()
-        main_rect.topleft = (10, 10)
-
-        self.main_board.draw(main_board_surf, debug)
-        surface.blit(main_board_surf, main_rect)
-
-        second_board_surf = Surface((300, 200))
-        second_board_surf.fill(Color("black"))
-        second_rect = second_board_surf.get_rect()
-        second_rect.topleft = (main_rect.right + 10, main_rect.top)
-        self.second_board.draw(second_board_surf, debug)
-        surface.blit(second_board_surf, second_rect)
 
     def zoom_in(self, amount: float):
         for board in self.boards:
@@ -59,6 +42,17 @@ class MainScene(Entity):
             print(f"scale reduced to {board.scale}")
 
     def update(self):
+        """
+        zoom: + / -
+        change ticks_per_update: left / right
+        change updates_per_draw: up / down
+        center on centroid: C
+        pan: WASD / drag w mouse
+        pause: Space
+        forward 1 (when paused): >
+        back 1 (when paused): <
+        place / remove cell: L / R mouse button
+        """
         super().update()
         if pygame.key.get_pressed()[pygame.K_UP]:
             self.zoom_in(0.2)

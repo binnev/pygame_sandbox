@@ -6,7 +6,7 @@ from automata.game_of_life.scenes import MainScene
 
 
 class GameOfLife(Game):
-    fps = 32
+    fps = 16
     window_width = 800
     window_height = 500
     window_caption = "Conway's Game of Life"
