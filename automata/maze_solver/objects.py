@@ -224,7 +224,6 @@ class Maze(Entity):
         return self.path
 
     def string(self, path):
-
         template = [list(map(str, row)) for row in self.rows]
         for node in path:
             template[node.row][node.col] = NodeTypes.PATH

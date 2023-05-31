@@ -459,7 +459,10 @@ def test_get_squares_king_obstructed():
     position.add(Piece(WHITE, PAWN), (1, 1))
     position.add(Piece(BLACK, BISHOP), (0, 1))
     position.add(Piece(WHITE, KING), (0, 0))
-    assert get_squares(current_square=Square(0, 0), position=position,) == {
+    assert get_squares(
+        current_square=Square(0, 0),
+        position=position,
+    ) == {
         (0, 1),  # enemy bishop
         (1, 0),  # empty square
     }

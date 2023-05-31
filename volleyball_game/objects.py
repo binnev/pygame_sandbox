@@ -95,7 +95,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
     attributes_to_remember = ["rect", "x", "y"]
 
     def __init__(self, x, y, facing_right=True, input: GamecubeController = None, groups=[]):
-
         super().__init__(x, y, self.width, self.height, groups=groups)
         HistoryMixin.__init__(self)
 
@@ -183,7 +182,6 @@ class Player(Entity, AnimationMixin, CollisionMixin, HistoryMixin):
             self.double_jump_cooldown -= 1
 
     def update_physics(self):
-
         self.handle_platform_collisions()
 
         # always apply gravity. Other functions can enforce max fall speed
