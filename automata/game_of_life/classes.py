@@ -18,12 +18,12 @@ class InfiniteBoard(Entity):
     colormap = matplotlib.cm.viridis_r
 
     def __init__(
-            self,
-            contents=None,
-            overpopulation_threshold=threshold.OVERPOPULATION,
-            underpopulation_threshold=threshold.UNDERPOPULATION,
-            reproduction_threshold=threshold.REPRODUCTION,
-            *groups: AbstractGroup,
+        self,
+        contents=None,
+        overpopulation_threshold=threshold.OVERPOPULATION,
+        underpopulation_threshold=threshold.UNDERPOPULATION,
+        reproduction_threshold=threshold.REPRODUCTION,
+        *groups: AbstractGroup,
     ) -> None:
         super().__init__(*groups)
         self.contents = SparseMatrix(contents or {})
@@ -35,19 +35,32 @@ class InfiniteBoard(Entity):
     def update(self):
         super().update()
 
-        live_neighbours_matrix = SparseMatrix()
+        # Sparse matrix to store the coordinates of any cell (live or dead) that has live
+        # neighbours, in the form: {coord: number_of_live_neighbours}.
+        live_neighbours_matrix = SparseMatrix[Coord:int]()
+
+        # Iterate once over all the currently live cells, and grab the coordinates of their
+        # neighbours. For each of these neighbours, add +1 to their live neighbour count.
+        # O(n_cells)
         for cell in self.contents:
             for neighbour in self.neighbours(cell):
                 count = live_neighbours_matrix.get(neighbour, 0)
                 live_neighbours_matrix[neighbour] = count + 1
 
+        # sparse matrix to contain the live cells for the next iteration
         new = SparseMatrix()
 
+        # Iterate once over the live_neighbours_matrix, and use each cell's number of live
+        # neighbours to decide if it is alive in the next iteration.
         for cell, live_neighbours in live_neighbours_matrix.items():
             alive = cell in self.contents
             if alive:
                 # 2. Any live cell with two or three live neighbours lives on to the next generation.
-                if self.underpopulation_threshold <= live_neighbours <= self.overpopulation_threshold:
+                if (
+                    self.underpopulation_threshold
+                    <= live_neighbours
+                    <= self.overpopulation_threshold
+                ):
                     age = self.contents[cell]
                     new[cell] = age + 1
             else:
