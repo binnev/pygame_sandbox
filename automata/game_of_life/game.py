@@ -1,11 +1,7 @@
-from collections import deque
-
-import pygame
 from pygame import Color
-from robingame.input import EventQueue
 
 from automata.game import AutomataGame
-from automata.game_of_life import patterns
+from automata.game_of_life import patterns, threshold
 from automata.game_of_life.patterns import load_pattern
 
 
@@ -25,39 +21,15 @@ class GameOfLife(AutomataGame):
 
         self.board = InfiniteBoard(
             {
-                **load_pattern(patterns.BLOCK),
+                # **load_pattern(patterns.BLOCK),
                 # **load_pattern(patterns.HEAVY_SPACESHIP, shift=(0, 50)),
                 # **load_pattern(patterns.MEDIUM_SPACESHIP, shift=(0, 60)),
                 # **load_pattern(patterns.LIGHTWEIGHT_SPACESHIP, shift=(0, 70)),
-                # **load_pattern(patterns.INFINITE_GROWER2, shift=(0, 100)),
+                **load_pattern(patterns.INFINITE_GROWER2, shift=(0, 100)),
             },
             **kwargs,
         )
-        self.add_scene(self.board)
-        self.history = deque(maxlen=50)
-
-    def read_inputs(self):
-        super().read_inputs()
-        for event in EventQueue.events:
-            if event.type == pygame.KEYDOWN:
-                match event.key:
-                    case pygame.K_SPACE:
-                        raise NextGame
-
-    def update(self):
-        super().update()
-        if not self.board.contents:
-            raise NextGame
-
-        for h in self.history:
-            if set(self.board.contents) == h:
-                raise NextGame
-
-        self.history.append(set(self.board.contents))
-
-
-class NextGame(Exception):
-    pass
+        self.scenes.add(self.board)
 
 
 if __name__ == "__main__":
@@ -80,16 +52,8 @@ if __name__ == "__main__":
     363 snowflake like growth
     353 extremely slow growing, rippling edges (483)
     """
-    for r in range(9):
-        for u in range(9):
-            for o in range(9):
-                if u > o:
-                    continue
-                try:
-                    GameOfLife(
-                        underpopulation_threshold=u,
-                        overpopulation_threshold=o,
-                        reproduction_threshold=r,
-                    ).main()
-                except NextGame:
-                    pass
+    GameOfLife(
+        underpopulation_threshold=threshold.UNDERPOPULATION,
+        overpopulation_threshold=threshold.OVERPOPULATION,
+        reproduction_threshold=threshold.REPRODUCTION,
+    ).main()
