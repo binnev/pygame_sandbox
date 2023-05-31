@@ -43,24 +43,16 @@ class MainScene(Entity):
 
     def update(self):
         """
-        zoom: + / -
-        change ticks_per_update: left / right
-        change updates_per_draw: up / down
-        center on centroid: C
-        pan: WASD / drag w mouse
-        pause: Space
-        forward 1 (when paused): >
-        back 1 (when paused): <
-        place / remove cell: L / R mouse button
+        [x] zoom: E / Q
+        [x] zoom: mousewheel
+        [ ] change ticks_per_update: left / right
+        [ ] change updates_per_draw: up / down
+        [ ] center on centroid: C
+        [x] pan: WASD
+        [x] pause: Space
+        [x] forward 1 (when paused): >
+        [ ] back 1 (when paused): <
+        [ ] pan: drag w mouse
+        [ ] place / remove cell: L / R mouse button
         """
         super().update()
-        if pygame.key.get_pressed()[pygame.K_UP]:
-            self.zoom_in(0.2)
-        if pygame.key.get_pressed()[pygame.K_DOWN]:
-            self.zoom_out(0.2)
-        for event in EventQueue.events:
-            if event.type == pygame.MOUSEWHEEL:
-                if event.y > 0:
-                    self.zoom_in(2)
-                else:
-                    self.zoom_out(2)

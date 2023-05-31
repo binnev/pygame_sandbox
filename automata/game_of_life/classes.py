@@ -6,6 +6,7 @@ import numpy
 import pygame.mouse
 from pygame import Surface, Color, Rect
 from robingame.image import scale_image
+from robingame.input import EventQueue
 from robingame.objects import Entity, Group
 from robingame.utils import SparseMatrix, Coord
 
@@ -103,18 +104,21 @@ class InfiniteBoardViewer(InfiniteBoard):
     """
 
     viewport_center_xy: tuple[float, float]  # coordinate on which to center the viewport
-    scale: int
+    scale: float
     num_colors: int
     colormap = matplotlib.cm.viridis_r
-    background_color = Color("black")
+    background_color = (30,) * 3
+    rect: Rect  # position and size of self in screen coordinates
+    paused: bool = False
 
     def __init__(
         self,
         *args,
         viewport_center_xy: tuple[float, float] = (0.0, 0.0),
-        scale: int = 10,
+        scale: float = 10,
         num_colors: int = 100,
         rect: Rect | tuple,
+        paused: bool = False,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -124,6 +128,52 @@ class InfiniteBoardViewer(InfiniteBoard):
         self.calculate_colors()
         self.rect = Rect(*rect)
         self.image = Surface(self.rect.size)
+        self.paused = paused
+
+    def zoom(self, amount: float):
+        self.scale = max(0.1, self.scale + amount)
+
+    def pan(self, x: float = 0, y: float = 0):
+        self.viewport_center_xy = (
+            self.viewport_center_xy[0] + x,
+            self.viewport_center_xy[1] + y,
+        )
+
+    def update(self):
+        PAN_SPEED = 10 / self.scale
+        if not self.paused:
+            super().update()
+        mouse_pos = pygame.mouse.get_pos()
+        is_focused = self.rect.contains((*mouse_pos, 0, 0))
+
+        if is_focused:
+            keys_down = pygame.key.get_pressed()
+            if keys_down[pygame.K_e]:
+                self.zoom(0.2)
+            if keys_down[pygame.K_q]:
+                self.zoom(-0.2)
+            if keys_down[pygame.K_w]:
+                self.pan(y=-PAN_SPEED)
+            if keys_down[pygame.K_s]:
+                self.pan(y=PAN_SPEED)
+            if keys_down[pygame.K_a]:
+                self.pan(x=-PAN_SPEED)
+            if keys_down[pygame.K_d]:
+                self.pan(x=PAN_SPEED)
+
+            for event in EventQueue.events:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        self.paused = not self.paused
+                    if event.key == pygame.K_PERIOD and self.paused:
+                        super().update()
+                    if event.key == pygame.K_COMMA and self.paused:
+                        raise NotImplementedError("No history implemented yet")
+                if event.type == pygame.MOUSEWHEEL:
+                    if event.y > 0:
+                        self.zoom(2)
+                    else:
+                        self.zoom(-2)
 
     def draw(self, surface: Surface, debug: bool = False):
         """
@@ -155,7 +205,7 @@ class InfiniteBoardViewer(InfiniteBoard):
 
         # 4. Create small bitmap on which to draw pixels
         small_img = Surface(viewport.size)
-        small_img.fill(Color("dark grey"))
+        small_img.fill(self.background_color)
 
         # 5. Filter visible cells
         to_draw = {
