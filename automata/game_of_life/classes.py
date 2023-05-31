@@ -1,5 +1,6 @@
 import logging
 import math
+import time
 
 import matplotlib
 import numpy
@@ -8,6 +9,7 @@ from pygame import Surface, Color, Rect
 from robingame.image import scale_image
 from robingame.input import EventQueue
 from robingame.objects import Entity, Group
+from robingame.text.font import fonts
 from robingame.utils import SparseMatrix, Coord
 
 from automata.game_of_life import threshold
@@ -38,9 +40,11 @@ class InfiniteBoard(Entity):
         self.underpopulation_threshold = underpopulation_threshold
         self.reproduction_threshold = reproduction_threshold
 
-    def update(self):
-        super().update()
-
+    def iterate(self):
+        """
+        Can't use .update() for this because that also increments self.tick, and we want to be
+        able to do multiple updates per tick.
+        """
         # Sparse matrix to store the coordinates of any cell (live or dead) that has live
         # neighbours, in the form: {coord: number_of_live_neighbours}.
         live_neighbours_matrix = SparseMatrix[Coord:int]()
@@ -110,15 +114,16 @@ class InfiniteBoardViewer(InfiniteBoard):
     background_color = (30,) * 3
     rect: Rect  # position and size of self in screen coordinates
     paused: bool = False
+    ticks_per_draw: int = 1  # default = draw every game tick. More = slower FPS and game speed
+    updates_per_draw: int = 1  # default = update once per draw. More = faster game speed, same FPS
 
     def __init__(
         self,
         *args,
         viewport_center_xy: tuple[float, float] = (0.0, 0.0),
-        scale: float = 10,
+        scale: float = 4,
         num_colors: int = 100,
         rect: Rect | tuple,
-        paused: bool = False,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -128,7 +133,6 @@ class InfiniteBoardViewer(InfiniteBoard):
         self.calculate_colors()
         self.rect = Rect(*rect)
         self.image = Surface(self.rect.size)
-        self.paused = paused
 
     def zoom(self, amount: float):
         self.scale = max(0.1, self.scale + amount)
@@ -140,13 +144,15 @@ class InfiniteBoardViewer(InfiniteBoard):
         )
 
     def update(self):
-        PAN_SPEED = 10 / self.scale
-        if not self.paused:
-            super().update()
+        super().update()
+        if not self.paused and self.tick % self.ticks_per_draw == 0:
+            for _ in range(self.updates_per_draw):
+                self.iterate()
         mouse_pos = pygame.mouse.get_pos()
         is_focused = self.rect.contains((*mouse_pos, 0, 0))
 
         if is_focused:
+            PAN_SPEED = 10 / self.scale
             keys_down = pygame.key.get_pressed()
             if keys_down[pygame.K_e]:
                 self.zoom(0.2)
@@ -166,9 +172,18 @@ class InfiniteBoardViewer(InfiniteBoard):
                     if event.key == pygame.K_SPACE:
                         self.paused = not self.paused
                     if event.key == pygame.K_PERIOD and self.paused:
-                        super().update()
+                        self.iterate()
                     if event.key == pygame.K_COMMA and self.paused:
                         raise NotImplementedError("No history implemented yet")
+                    if event.key == pygame.K_DOWN:
+                        self.ticks_per_draw = max(1, self.ticks_per_draw // 2)
+                    if event.key == pygame.K_UP:
+                        self.ticks_per_draw *= 2
+                    if event.key == pygame.K_RIGHT:
+                        self.updates_per_draw *= 2
+                    if event.key == pygame.K_LEFT:
+                        self.updates_per_draw = max(1, self.updates_per_draw // 2)
+
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0:
                         self.zoom(2)
@@ -186,6 +201,7 @@ class InfiniteBoardViewer(InfiniteBoard):
         large_img = small_img scaled up to full size
         """
         super().draw(surface, debug)
+        t1 = time.perf_counter()
 
         # 0. clear old image
         self.image.fill(self.background_color)
@@ -219,7 +235,6 @@ class InfiniteBoardViewer(InfiniteBoard):
             color = self.get_color(age)
             ij = (x - i0, y - j0)  # matrix coords to pixel indices
             small_img.set_at(ij, color)
-        logger.info(f"Population {len(self.contents)}, drew {len(to_draw)}")
 
         # 7. Scale small bitmap up to full size
         big_img = scale_image(small_img, self.scale)
@@ -239,7 +254,20 @@ class InfiniteBoardViewer(InfiniteBoard):
         delta_v = center_v - viewport_center_b
         self.image.blit(big_img, (delta_u, delta_v))
 
+        if debug:
+            text = "\n".join(
+                [
+                    f"iterations: {self.tick}",
+                    f"scale: {self.scale:0.2f}",
+                    f"ticks_per_draw: {self.ticks_per_draw}",
+                    f"updates_per_draw: {self.updates_per_draw}",
+                ]
+            )
+            fonts.cellphone_white.render(self.image, text, scale=1.5)
+
         surface.blit(self.image, self.rect)
+        t2 = time.perf_counter()
+        print(f"Population {len(self.contents)}, drew {len(to_draw)} in {t2-t1:.5f} sec")
 
     def calculate_colors(self):
         """Sample a colormap based on the longest ruleset of child ants"""

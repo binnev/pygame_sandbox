@@ -10,7 +10,7 @@ from automata.game_of_life.patterns import load_pattern
 
 
 class MainScene(Entity):
-    def __init__(self, *groups: AbstractGroup) -> None:
+    def __init__(self, *groups: AbstractGroup, **kwargs) -> None:
         super().__init__(*groups)
 
         self.boards = Group()
@@ -21,25 +21,21 @@ class MainScene(Entity):
         self.main_board = InfiniteBoardViewer(
             contents={**load_pattern(patterns.BLOCK)},
             viewport_center_xy=(0, 0),
-            rect=(10, 10, 210, 320),
+            rect=(10, 10, 400, 400),
+            scale=10,
             groups=(self.boards,),
+            **kwargs,
         )
         self.second_board = InfiniteBoardViewer(
             contents=load_pattern(patterns.BLOCK),
             viewport_center_xy=(0, 0),
-            rect=(self.main_board.rect.right + 10, self.main_board.rect.top, 300, 200),
+            rect=(self.main_board.rect.right + 10, self.main_board.rect.top, 400, 400),
+            scale=10,
             groups=(self.boards,),
+            **kwargs,
         )
-
-    def zoom_in(self, amount: float):
-        for board in self.boards:
-            board.scale = max(1, board.scale + amount)
-            print(f"scale increased to {board.scale}")
-
-    def zoom_out(self, amount: float):
-        for board in self.boards:
-            board.scale = max(1, board.scale - amount)
-            print(f"scale reduced to {board.scale}")
+        self.second_board.ticks_per_draw = self.second_board.updates_per_draw = 10
+        # self.main_board.paused = self.second_board.paused = True
 
     def update(self):
         """

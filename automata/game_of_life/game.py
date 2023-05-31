@@ -6,8 +6,8 @@ from automata.game_of_life.scenes import MainScene
 
 
 class GameOfLife(Game):
-    fps = 16
-    window_width = 800
+    fps = 32
+    window_width = 900
     window_height = 500
     window_caption = "Conway's Game of Life"
     screen_color = Color("black")
@@ -17,7 +17,7 @@ class GameOfLife(Game):
 
     def __init__(self, **kwargs):
         super().__init__()
-        self.scenes.add(MainScene())
+        self.scenes.add(MainScene(**kwargs))
 
 
 if __name__ == "__main__":
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     353 extremely slow growing, rippling edges (483)
     """
     GameOfLife(
-        underpopulation_threshold=threshold.UNDERPOPULATION,
-        overpopulation_threshold=threshold.OVERPOPULATION,
-        reproduction_threshold=threshold.REPRODUCTION,
+        underpopulation_threshold=1,  # threshold.UNDERPOPULATION,
+        overpopulation_threshold=3,  # threshold.OVERPOPULATION,
+        reproduction_threshold=3,  # threshold.REPRODUCTION,
     ).main()
