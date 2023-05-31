@@ -1,14 +1,14 @@
 from pygame import Color
+from robingame.objects import Game
 
-from automata.game import AutomataGame
-from automata.game_of_life import patterns, threshold
-from automata.game_of_life.patterns import load_pattern
+from automata.game_of_life import threshold
+from automata.game_of_life.scenes import MainScene
 
 
-class GameOfLife(AutomataGame):
-    fps = 64
-    window_width = 1200
-    window_height = 800
+class GameOfLife(Game):
+    fps = 32
+    window_width = 800
+    window_height = 500
     window_caption = "Conway's Game of Life"
     screen_color = Color("black")
     ticks_per_frame = 1
@@ -17,19 +17,7 @@ class GameOfLife(AutomataGame):
 
     def __init__(self, **kwargs):
         super().__init__()
-        from automata.game_of_life.classes import InfiniteBoard
-
-        self.board = InfiniteBoard(
-            {
-                # **load_pattern(patterns.BLOCK),
-                # **load_pattern(patterns.HEAVY_SPACESHIP, shift=(0, 50)),
-                # **load_pattern(patterns.MEDIUM_SPACESHIP, shift=(0, 60)),
-                # **load_pattern(patterns.LIGHTWEIGHT_SPACESHIP, shift=(0, 70)),
-                **load_pattern(patterns.INFINITE_GROWER2, shift=(0, 100)),
-            },
-            **kwargs,
-        )
-        self.scenes.add(self.board)
+        self.scenes.add(MainScene())
 
 
 if __name__ == "__main__":

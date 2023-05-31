@@ -1,21 +1,23 @@
+import math
+
 import matplotlib
 import numpy
 from pygame import Surface, Color
-from pygame.sprite import AbstractGroup
+from robingame.image import scale_image
+from robingame.objects import Entity, Group
+from robingame.utils import SparseMatrix, Coord
 
 from automata.game_of_life import threshold
-from robingame.objects import Entity
-from robingame.text.font import fonts
-from robingame.utils import SparseMatrix, Coord, draw_text
 
 
 class InfiniteBoard(Entity):
+    """
+    This class is solely responsible for calculating the next state in a Game of Life simulation.
+    It uses a SparseMatrix to represent only the live cells in order to save memory + computation.
+    It is not aware of any meta game stuff like FPS.
+    """
+
     contents: SparseMatrix[Coord:int]
-    scaling = 100
-    x_offset = 50
-    y_offset = 50
-    num_colors = 100
-    colormap = matplotlib.cm.viridis_r
 
     def __init__(
         self,
@@ -23,11 +25,10 @@ class InfiniteBoard(Entity):
         overpopulation_threshold=threshold.OVERPOPULATION,
         underpopulation_threshold=threshold.UNDERPOPULATION,
         reproduction_threshold=threshold.REPRODUCTION,
-        *groups: AbstractGroup,
+        groups: tuple[Group] = (),
     ) -> None:
         super().__init__(*groups)
         self.contents = SparseMatrix(contents or {})
-        self.calculate_colors()
         self.overpopulation_threshold = overpopulation_threshold
         self.underpopulation_threshold = underpopulation_threshold
         self.reproduction_threshold = reproduction_threshold
@@ -72,6 +73,9 @@ class InfiniteBoard(Entity):
         self.contents = new
 
     def neighbours(self, coord: Coord) -> tuple[Coord, ...]:
+        """
+        Get the coordinates of all neighbouring cells, including diagonals.
+        """
         x, y = coord
         return (
             (x - 1, y - 1),
@@ -84,29 +88,70 @@ class InfiniteBoard(Entity):
             (x + 1, y + 1),
         )
 
-    def draw(self, surface: Surface, debug: bool = False):
-        screen_width, screen_height = screen_size = surface.get_size()
-        autoscale = False
-        for xy, age in self.contents.items():
-            sx, sy = self.contents.screen_coords(xy, self.scaling, self.x_offset, self.y_offset)
-            if not autoscale and (sx < 0 or sx > screen_width or sy < 0 or sy > screen_height):
-                autoscale = True
-            pixel = Surface((self.scaling, self.scaling))
-            color = self.get_color(age)
-            pixel.fill(color)
-            surface.blit(pixel, (sx, sy))
-        if autoscale:
-            self.scaling, self.x_offset, self.y_offset = self.contents.scale_to_screen(screen_size)
 
-        text = "\n".join(
-            [
-                f"{self.underpopulation_threshold=}",
-                f"{self.overpopulation_threshold=}",
-                f"{self.reproduction_threshold=}",
-            ]
-        )
-        fonts.cellphone_white.render(surface, text, x=surface.get_rect().centerx - 50, scale=2)
+class InfiniteBoardViewer(InfiniteBoard):
+    """
+    Class to draw a Game of Life board onto a surface.
+    Scaling is absolute:
+        1x scale means each cell is 1x1 px.
+        10x scale means each cell is 10x10 px.
+    where 'px' means screen pixels
+    """
+
+    viewport_center: Coord
+    scale: int
+    num_colors: int
+    colormap = matplotlib.cm.viridis_r
+
+    def __init__(
+        self,
+        *args,
+        viewport_center: Coord = (0, 0),
+        scale: int = 100,
+        num_colors: int = 100,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.scale = scale
+        self.num_colors = num_colors
+        self.viewport_center = viewport_center
+        self.calculate_colors()
+
+    def update(self):
+        pass  # temporarily freeze
+
+    def draw(self, surface: Surface, debug: bool = False):
         super().draw(surface, debug)
+
+        # create a smaller image on which the cells can be drawn with one pixel each
+        width, height = surface.get_rect().size
+        small_img = Surface((math.ceil(width / self.scale), math.ceil(height / self.scale)))
+        small_img.fill(Color("dark grey"))
+        small_rect = small_img.get_rect()
+        small_rect.center = self.viewport_center
+        x_offset = self.viewport_center[0] - (small_rect.width // 2)
+        y_offset = self.viewport_center[1] - (small_rect.height // 2)
+
+        # filter for cells that will be visible
+        to_draw = {
+            coord: age
+            for coord, age in self.contents.items()
+            if small_rect.contains((*coord, 1, 1))  # 1x1 pixel at coord location
+        }
+
+        # draw 1 pixel for each cell in the small image
+        for (x, y), age in to_draw.items():
+            color = self.get_color(age)
+            xy = (
+                x - x_offset,
+                y - y_offset,
+            )
+            small_img.set_at(xy, color)
+
+        big_img = scale_image(small_img, self.scale)  # scale up
+        big_img = big_img.subsurface(surface.get_rect())  # crop to screen size
+
+        surface.blit(big_img, (0, 0))
 
     def calculate_colors(self):
         """Sample a colormap based on the longest ruleset of child ants"""
