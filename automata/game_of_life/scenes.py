@@ -14,72 +14,59 @@ class MainScene(Entity):
         super().__init__(*groups)
 
         self.boards = Group()
-        # self.child_groups += [
-        #     self.boards,
-        # ]
+        self.child_groups += [
+            self.boards,
+        ]
 
         self.main_board = InfiniteBoardViewer(
-            contents={
-                (3, 0): 1,
-                (2, 1): 1,
-                (2, 2): 1,
-                (1, 3): 1,
-                (3, 3): 1,
-                (1, 4): 1,
-                (0, 5): 1,
-            },
-            viewport_center=(0, 0),
-            scale=1,
+            contents={**load_pattern(patterns.BLOCK)},
+            viewport_center_xy=(1.6, 2.3),
+            scale=10,
             groups=(self.boards,),
         )
         self.second_board = InfiniteBoardViewer(
-            contents={
-                (3, 0): 1,
-                (2, 1): 1,
-                (2, 2): 1,
-                (1, 3): 1,
-                (3, 3): 1,
-                (1, 4): 1,
-                (0, 5): 1,
-            },
-            viewport_center=(2, 2),
+            contents=load_pattern(patterns.BLOCK),
+            viewport_center_xy=(2, 2),
             scale=1,
             groups=(self.boards,),
         )
 
     def draw(self, surface: Surface, debug: bool = False):
-        super().draw(surface, debug)
-        main_board_surf = Surface((400, 300))
-        main_board_surf.fill(Color("black"))
-        second_board_surf = Surface((300, 200))
-        second_board_surf.fill(Color("black"))
+        # super().draw(surface, debug)
+        main_board_surf = Surface((210, 320))
+        main_board_surf.fill(Color("pink"))
+        main_rect = main_board_surf.get_rect()
+        main_rect.topleft = (10, 10)
 
         self.main_board.draw(main_board_surf, debug)
+        surface.blit(main_board_surf, main_rect)
+
+        second_board_surf = Surface((300, 200))
+        second_board_surf.fill(Color("black"))
+        second_rect = second_board_surf.get_rect()
+        second_rect.topleft = (main_rect.right + 10, main_rect.top)
         self.second_board.draw(second_board_surf, debug)
+        surface.blit(second_board_surf, second_rect)
 
-        surface.blit(main_board_surf, (10, 10))
-        surface.blit(second_board_surf, (410, 310))
-
-    def zoom_in(self):
+    def zoom_in(self, amount: float):
         for board in self.boards:
-            board.scale = max(1, board.scale + 2)
+            board.scale = max(1, board.scale + amount)
             print(f"scale increased to {board.scale}")
 
-    def zoom_out(self):
+    def zoom_out(self, amount: float):
         for board in self.boards:
-            board.scale = max(1, board.scale - 2)
+            board.scale = max(1, board.scale - amount)
             print(f"scale reduced to {board.scale}")
 
     def update(self):
         super().update()
-        # print(f"{pygame.mouse.get_pos()=}")
         if pygame.key.get_pressed()[pygame.K_UP]:
-            self.zoom_in()
+            self.zoom_in(0.2)
         if pygame.key.get_pressed()[pygame.K_DOWN]:
-            self.zoom_out()
+            self.zoom_out(0.2)
         for event in EventQueue.events:
             if event.type == pygame.MOUSEWHEEL:
                 if event.y > 0:
-                    self.zoom_in()
+                    self.zoom_in(2)
                 else:
-                    self.zoom_out()
+                    self.zoom_out(2)

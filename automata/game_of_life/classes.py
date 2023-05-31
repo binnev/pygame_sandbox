@@ -2,7 +2,7 @@ import math
 
 import matplotlib
 import numpy
-from pygame import Surface, Color
+from pygame import Surface, Color, Rect
 from robingame.image import scale_image
 from robingame.objects import Entity, Group
 from robingame.utils import SparseMatrix, Coord
@@ -98,7 +98,7 @@ class InfiniteBoardViewer(InfiniteBoard):
     where 'px' means screen pixels
     """
 
-    viewport_center: Coord
+    viewport_center_xy: tuple[float, float]  # coordinate on which to center the viewport
     scale: int
     num_colors: int
     colormap = matplotlib.cm.viridis_r
@@ -106,7 +106,7 @@ class InfiniteBoardViewer(InfiniteBoard):
     def __init__(
         self,
         *args,
-        viewport_center: Coord = (0, 0),
+        viewport_center_xy: tuple[float, float] = (0.0, 0.0),
         scale: int = 100,
         num_colors: int = 100,
         **kwargs,
@@ -114,44 +114,69 @@ class InfiniteBoardViewer(InfiniteBoard):
         super().__init__(*args, **kwargs)
         self.scale = scale
         self.num_colors = num_colors
-        self.viewport_center = viewport_center
+        self.viewport_center_xy = viewport_center_xy
         self.calculate_colors()
 
-    def update(self):
-        pass  # temporarily freeze
-
     def draw(self, surface: Surface, debug: bool = False):
+        """
+        xy = sparse matrix coordinates
+        ij = small bitmap pixel indices
+        ab = large bitmap pixel indices
+        uv = screen coordinates
+        viewport = Rect in xy-space to select visible cells. Roughly equal to screen_size/scale
+        small_img = Surface with same dimensions as viewport (pixels are used to display cells)
+        large_img = small_img scaled up to full size
+        """
         super().draw(surface, debug)
 
-        # create a smaller image on which the cells can be drawn with one pixel each
-        width, height = surface.get_rect().size
-        small_img = Surface((math.ceil(width / self.scale), math.ceil(height / self.scale)))
-        small_img.fill(Color("dark grey"))
-        small_rect = small_img.get_rect()
-        small_rect.center = self.viewport_center
-        x_offset = self.viewport_center[0] - (small_rect.width // 2)
-        y_offset = self.viewport_center[1] - (small_rect.height // 2)
+        # 1. Choose viewport in xy coordinates to filter for visible cells
+        # 2. Round out to nearest int, record x/y min/max range.
+        viewport_center_x, viewport_center_y = self.viewport_center_xy
+        screen_width, screen_height = surface.get_rect().size
+        viewport_width = math.ceil(screen_width / self.scale)
+        viewport_height = math.ceil(screen_height / self.scale)
+        viewport = Rect(0, 0, viewport_width, viewport_height)
+        viewport = viewport.inflate(2, 2)
+        viewport.center = self.viewport_center_xy
 
-        # filter for cells that will be visible
+        # 3. Record offset from absolute xy coords to small_img coords (ij)
+        i0, j0 = viewport.topleft
+
+        # 4. Create small bitmap on which to draw pixels
+        small_img = Surface(viewport.size)
+        small_img.fill(Color("dark grey"))
+
+        # 5. Filter visible cells
         to_draw = {
             coord: age
             for coord, age in self.contents.items()
-            if small_rect.contains((*coord, 1, 1))  # 1x1 pixel at coord location
+            if viewport.contains((*coord, 1, 1))  # 1x1 pixel at coord location
         }
 
-        # draw 1 pixel for each cell in the small image
+        # 6. Draw visible cells on small bitmap
         for (x, y), age in to_draw.items():
             color = self.get_color(age)
-            xy = (
-                x - x_offset,
-                y - y_offset,
-            )
-            small_img.set_at(xy, color)
+            ij = (x - i0, y - j0)  # matrix coords to pixel indices
+            small_img.set_at(ij, color)
+        # print(f"Population {len(self.contents)}, drew {len(to_draw)}")
 
-        big_img = scale_image(small_img, self.scale)  # scale up
-        big_img = big_img.subsurface(surface.get_rect())  # crop to screen size
+        # 7. Scale small bitmap up to full size
+        big_img = scale_image(small_img, self.scale)
 
-        surface.blit(big_img, (0, 0))
+        # 8. Calculate viewport center position in large bitmap coords
+        # small_img pixel index to large_img coords
+        # a = scale * i + (scale - 1) / 2
+        # b = scale * j + (scale - 1) / 2
+        viewport_center_i: float = viewport_center_x - i0
+        viewport_center_j: float = viewport_center_y - j0
+        viewport_center_a: float = (self.scale * viewport_center_i) + (self.scale - 1) / 2
+        viewport_center_b: float = (self.scale * viewport_center_j) + (self.scale - 1) / 2
+
+        # 9. Calculate the uv offset required to position viewport_center_ab on the screen center
+        center_u, center_v = surface.get_rect().center
+        delta_u = center_u - viewport_center_a
+        delta_v = center_v - viewport_center_b
+        surface.blit(big_img, (delta_u, delta_v))
 
     def calculate_colors(self):
         """Sample a colormap based on the longest ruleset of child ants"""
