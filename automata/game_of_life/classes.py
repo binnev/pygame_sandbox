@@ -223,6 +223,34 @@ class InfiniteBoardViewer(InfiniteBoard):
                         self.zoom(2)
                     else:
                         self.zoom(-2)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.paused:
+                        if event.button == 1:
+                            uv = event.pos
+                            xy = self.screen_uv_to_board_xy(uv)
+                            print(f"Mouse click at {uv=}, {xy=}")
+                            xy = tuple(map(int, xy))
+                            self.handle_click(xy)
+
+    def handle_click(self, xy: Coord):
+        """
+        If cell is alive, kill it. If cell is dead, make it alive.
+        """
+        if xy in self.contents:
+            self.contents.pop(xy)
+            print(f"Killed cell at {xy}")
+        else:
+            self.contents[xy] = 1
+            print(f"Created cell at {xy}")
+
+    def viewport_rect(self) -> Rect:
+        image_width, image_height = self.image.get_rect().size
+        viewport_width = math.ceil(image_width / self.scale)
+        viewport_height = math.ceil(image_height / self.scale)
+        viewport = Rect(0, 0, viewport_width, viewport_height)
+        viewport = viewport.inflate(2, 2)  # make 1 px bigger on all sides for safety
+        viewport.center = self.viewport_center_xy
+        return viewport
 
     def draw(self, surface: Surface, debug: bool = False):
         """
@@ -243,12 +271,7 @@ class InfiniteBoardViewer(InfiniteBoard):
         # 1. Choose viewport in xy coordinates to filter for visible cells
         # 2. Round out to nearest int, record x/y min/max range.
         viewport_center_x, viewport_center_y = self.viewport_center_xy
-        image_width, image_height = self.image.get_rect().size
-        viewport_width = math.ceil(image_width / self.scale)
-        viewport_height = math.ceil(image_height / self.scale)
-        viewport = Rect(0, 0, viewport_width, viewport_height)
-        viewport = viewport.inflate(2, 2)
-        viewport.center = self.viewport_center_xy
+        viewport = self.viewport_rect()
 
         # 3. Record offset from absolute xy coords to small_img coords (ij)
         i0, j0 = viewport.topleft
@@ -372,6 +395,17 @@ class InfiniteBoardViewer(InfiniteBoard):
         self.paused = data["paused"]
         self.history.clear()
         self.history.extend(map(from_json, data["history"]))
+
+    def screen_uv_to_board_xy(self, uv: Coord) -> Coord:
+        """
+        Convert screen coordinates (u, v) to board coordinates (x, y)
+        """
+        u, v = uv
+        viewport = self.viewport_rect()
+        self_origin_u, self_origin_v = self.rect.topleft
+        x = viewport.x + (u - self_origin_u) / self.scale
+        y = viewport.y + (v - self_origin_v) / self.scale
+        return (x, y)
 
 
 def to_json(matrix: SparseMatrix) -> dict[str:int]:
