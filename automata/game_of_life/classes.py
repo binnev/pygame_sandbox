@@ -1,6 +1,7 @@
 import logging
 import math
 import time
+from collections import deque
 
 import matplotlib
 import numpy
@@ -115,7 +116,7 @@ class InfiniteBoardViewer(InfiniteBoard):
         [x] pan: WASD
         [x] pause: Space
         [x] forward 1 (when paused): >
-        [ ] back 1 (when paused): <
+        [x] back 1 (when paused): <
         [ ] pan: drag w mouse
         [ ] place / remove cell: L / R mouse button
         [ ] save / load to file
@@ -147,6 +148,7 @@ class InfiniteBoardViewer(InfiniteBoard):
         self.calculate_colors()
         self.rect = Rect(*rect)
         self.image = Surface(self.rect.size)
+        self.history: deque[SparseMatrix] = deque(maxlen=50)
 
     def zoom(self, amount: float):
         self.scale = max(0.1, self.scale + amount)
@@ -157,8 +159,13 @@ class InfiniteBoardViewer(InfiniteBoard):
             self.viewport_center_xy[1] + y,
         )
 
+    def iterate(self):
+        self.history.append(self.contents)
+        super().iterate()
+
     def update(self):
         super().update()
+
         if not self.paused and self.tick % self.ticks_per_update == 0:
             for _ in range(self.iterations_per_update):
                 self.iterate()
@@ -190,10 +197,11 @@ class InfiniteBoardViewer(InfiniteBoard):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         self.paused = not self.paused
-                    if event.key == pygame.K_PERIOD and self.paused:
-                        self.iterate()
-                    if event.key == pygame.K_COMMA and self.paused:
-                        raise NotImplementedError("No history implemented yet")
+                    if self.paused:
+                        if event.key == pygame.K_PERIOD:
+                            self.iterate()
+                        if event.key == pygame.K_COMMA:
+                            self.back_one()
                     if event.key == pygame.K_DOWN:
                         self.ticks_per_update *= 2
                     if event.key == pygame.K_UP:
@@ -276,7 +284,7 @@ class InfiniteBoardViewer(InfiniteBoard):
         if debug:
             text = "\n".join(
                 [
-                    f"iterations: {self.tick}",
+                    f"tick: {self.tick}",
                     f"scale: {self.scale:0.2f}",
                     f"ticks_per_update: {self.ticks_per_update}",
                     f"iterations_per_update: {self.iterations_per_update}",
@@ -286,7 +294,7 @@ class InfiniteBoardViewer(InfiniteBoard):
 
         surface.blit(self.image, self.rect)
         t2 = time.perf_counter()
-        print(f"Population {len(self.contents)}, drew {len(to_draw)} in {t2-t1:.5f} sec")
+        logger.info(f"Population {len(self.contents)}, drew {len(to_draw)} in {t2-t1:.5f} sec")
 
     def calculate_colors(self):
         """Sample a colormap based on the longest ruleset of child ants"""
@@ -320,3 +328,7 @@ class InfiniteBoardViewer(InfiniteBoard):
         x_center = sum(x * age for (x, y), age in self.contents.items()) / total_mass
         y_center = sum(x * age for (x, y), age in self.contents.items()) / total_mass
         self.viewport_center_xy = (x_center, y_center)
+
+    def back_one(self):
+        if self.history:
+            self.contents = self.history.pop()
