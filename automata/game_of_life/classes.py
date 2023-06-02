@@ -1,3 +1,4 @@
+import json
 import logging
 import math
 import time
@@ -119,7 +120,7 @@ class InfiniteBoardViewer(InfiniteBoard):
         [x] back 1 (when paused): <
         [ ] pan: drag w mouse
         [ ] place / remove cell: L / R mouse button
-        [ ] save / load to file
+        [x] save / load to file
     """
 
     viewport_center_xy: tuple[float, float]  # coordinate on which to center the viewport
@@ -204,6 +205,10 @@ class InfiniteBoardViewer(InfiniteBoard):
                             self.iterate()
                         if event.key == pygame.K_COMMA:
                             self.back_one()
+                        if event.key == pygame.K_k:
+                            self.save()
+                        if event.key == pygame.K_l:
+                            self.load()
                     if event.key == pygame.K_DOWN:
                         self.ticks_per_update *= 2
                     if event.key == pygame.K_UP:
@@ -344,3 +349,43 @@ class InfiniteBoardViewer(InfiniteBoard):
     def back_one(self):
         if self.history:
             self.contents = self.history.pop()
+
+    def save(self, filename: str = "game_of_life.json"):
+        data = dict(
+            overpopulation_threshold=self.overpopulation_threshold,
+            underpopulation_threshold=self.underpopulation_threshold,
+            reproduction_threshold=self.reproduction_threshold,
+            paused=self.paused,
+            contents=to_json(self.contents),
+            history=list(map(to_json, self.history)),
+        )
+        with open(filename, "w") as file:
+            json.dump(data, file)
+
+    def load(self, filename: str = "game_of_life.json"):
+        with open(filename, "r") as file:
+            data = json.load(file)
+        self.contents = from_json(data["contents"])
+        self.overpopulation_threshold = data["overpopulation_threshold"]
+        self.underpopulation_threshold = data["underpopulation_threshold"]
+        self.reproduction_threshold = data["reproduction_threshold"]
+        self.paused = data["paused"]
+        self.history.clear()
+        self.history.extend(map(from_json, data["history"]))
+
+
+def to_json(matrix: SparseMatrix) -> dict[str:int]:
+    """
+    JSON doesn't allow using tuples as object keys, so we need to convert to string
+    """
+    return {f"{x},{y}": value for (x, y), value in matrix.items()}
+
+
+def from_json(json_: dict[str:int]) -> SparseMatrix:
+    matrix = SparseMatrix()
+    for xy_string, value in json_.items():
+        x, y = xy_string.split(",")
+        x = int(x)
+        y = int(y)
+        matrix[(x, y)] = value
+    return matrix
