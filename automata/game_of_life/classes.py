@@ -190,6 +190,8 @@ class InfiniteBoardViewer(InfiniteBoard):
             if keys_down[pygame.K_c]:
                 if keys_down[pygame.K_LSHIFT]:
                     self.center_on_oldest()
+                elif keys_down[pygame.K_LCTRL]:
+                    self.center_on_middle()
                 else:
                     self.center_on_centroid()
 
@@ -327,6 +329,16 @@ class InfiniteBoardViewer(InfiniteBoard):
         total_mass = sum(self.contents.values())  # use cell age as weight
         x_center = sum(x * age for (x, y), age in self.contents.items()) / total_mass
         y_center = sum(x * age for (x, y), age in self.contents.items()) / total_mass
+        self.viewport_center_xy = (x_center, y_center)
+
+    def center_on_middle(self):
+        """
+        Center the viewport on the middle of the group of cells.
+        """
+        xmin, xmax = self.contents.xlim
+        ymin, ymax = self.contents.ylim
+        x_center = xmin + (xmax - xmin) / 2
+        y_center = ymin + (ymax - ymin) / 2
         self.viewport_center_xy = (x_center, y_center)
 
     def back_one(self):
