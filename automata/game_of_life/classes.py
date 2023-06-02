@@ -105,6 +105,20 @@ class InfiniteBoardViewer(InfiniteBoard):
         1x scale means each cell is 1x1 px.
         10x scale means each cell is 10x10 px.
     where 'px' means screen pixels
+
+    TODO:
+        [x] zoom: E / Q
+        [x] zoom: mousewheel
+        [x] change ticks_per_update: left / right
+        [x] change iterations_per_update: up / down
+        [ ] center on centroid: C
+        [x] pan: WASD
+        [x] pause: Space
+        [x] forward 1 (when paused): >
+        [ ] back 1 (when paused): <
+        [ ] pan: drag w mouse
+        [ ] place / remove cell: L / R mouse button
+        [ ] save / load to file
     """
 
     viewport_center_xy: tuple[float, float]  # coordinate on which to center the viewport
@@ -114,8 +128,8 @@ class InfiniteBoardViewer(InfiniteBoard):
     background_color = (30,) * 3
     rect: Rect  # position and size of self in screen coordinates
     paused: bool = False
-    ticks_per_draw: int = 1  # default = draw every game tick. More = slower FPS and game speed
-    updates_per_draw: int = 1  # default = update once per draw. More = faster game speed, same FPS
+    ticks_per_update: int = 1  # More = slower FPS and game speed
+    iterations_per_update: int = 1  # More = faster game speed, same FPS
 
     def __init__(
         self,
@@ -145,8 +159,8 @@ class InfiniteBoardViewer(InfiniteBoard):
 
     def update(self):
         super().update()
-        if not self.paused and self.tick % self.ticks_per_draw == 0:
-            for _ in range(self.updates_per_draw):
+        if not self.paused and self.tick % self.ticks_per_update == 0:
+            for _ in range(self.iterations_per_update):
                 self.iterate()
         mouse_pos = pygame.mouse.get_pos()
         is_focused = self.rect.contains((*mouse_pos, 0, 0))
@@ -176,13 +190,13 @@ class InfiniteBoardViewer(InfiniteBoard):
                     if event.key == pygame.K_COMMA and self.paused:
                         raise NotImplementedError("No history implemented yet")
                     if event.key == pygame.K_DOWN:
-                        self.ticks_per_draw = max(1, self.ticks_per_draw // 2)
+                        self.ticks_per_update = max(1, self.ticks_per_update // 2)
                     if event.key == pygame.K_UP:
-                        self.ticks_per_draw *= 2
+                        self.ticks_per_update *= 2
                     if event.key == pygame.K_RIGHT:
-                        self.updates_per_draw *= 2
+                        self.iterations_per_update *= 2
                     if event.key == pygame.K_LEFT:
-                        self.updates_per_draw = max(1, self.updates_per_draw // 2)
+                        self.iterations_per_update = max(1, self.iterations_per_update // 2)
 
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0:
@@ -259,8 +273,8 @@ class InfiniteBoardViewer(InfiniteBoard):
                 [
                     f"iterations: {self.tick}",
                     f"scale: {self.scale:0.2f}",
-                    f"ticks_per_draw: {self.ticks_per_draw}",
-                    f"updates_per_draw: {self.updates_per_draw}",
+                    f"ticks_per_update: {self.ticks_per_update}",
+                    f"iterations_per_update: {self.iterations_per_update}",
                 ]
             )
             fonts.cellphone_white.render(self.image, text, scale=1.5)

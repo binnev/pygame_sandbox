@@ -41,7 +41,7 @@ if __name__ == "__main__":
     353 extremely slow growing, rippling edges (483)
     """
     GameOfLife(
-        underpopulation_threshold=1,  # threshold.UNDERPOPULATION,
-        overpopulation_threshold=3,  # threshold.OVERPOPULATION,
-        reproduction_threshold=3,  # threshold.REPRODUCTION,
+        underpopulation_threshold=threshold.UNDERPOPULATION,
+        overpopulation_threshold=threshold.OVERPOPULATION,
+        reproduction_threshold=threshold.REPRODUCTION,
     ).main()

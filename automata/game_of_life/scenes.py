@@ -34,21 +34,3 @@ class MainScene(Entity):
             groups=(self.boards,),
             **kwargs,
         )
-        self.second_board.ticks_per_draw = self.second_board.updates_per_draw = 10
-        # self.main_board.paused = self.second_board.paused = True
-
-    def update(self):
-        """
-        [x] zoom: E / Q
-        [x] zoom: mousewheel
-        [ ] change ticks_per_update: left / right
-        [ ] change updates_per_draw: up / down
-        [ ] center on centroid: C
-        [x] pan: WASD
-        [x] pause: Space
-        [x] forward 1 (when paused): >
-        [ ] back 1 (when paused): <
-        [ ] pan: drag w mouse
-        [ ] place / remove cell: L / R mouse button
-        """
-        super().update()
