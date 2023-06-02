@@ -111,7 +111,7 @@ class InfiniteBoardViewer(InfiniteBoard):
         [x] zoom: mousewheel
         [x] change ticks_per_update: left / right
         [x] change iterations_per_update: up / down
-        [ ] center on centroid: C
+        [x] center on centroid: C
         [x] pan: WASD
         [x] pause: Space
         [x] forward 1 (when paused): >
@@ -180,6 +180,11 @@ class InfiniteBoardViewer(InfiniteBoard):
                 self.pan(x=-PAN_SPEED)
             if keys_down[pygame.K_d]:
                 self.pan(x=PAN_SPEED)
+            if keys_down[pygame.K_c]:
+                if keys_down[pygame.K_LSHIFT]:
+                    self.center_on_oldest()
+                else:
+                    self.center_on_centroid()
 
             for event in EventQueue.events:
                 if event.type == pygame.KEYDOWN:
@@ -190,9 +195,9 @@ class InfiniteBoardViewer(InfiniteBoard):
                     if event.key == pygame.K_COMMA and self.paused:
                         raise NotImplementedError("No history implemented yet")
                     if event.key == pygame.K_DOWN:
-                        self.ticks_per_update = max(1, self.ticks_per_update // 2)
-                    if event.key == pygame.K_UP:
                         self.ticks_per_update *= 2
+                    if event.key == pygame.K_UP:
+                        self.ticks_per_update = max(1, self.ticks_per_update // 2)
                     if event.key == pygame.K_RIGHT:
                         self.iterations_per_update *= 2
                     if event.key == pygame.K_LEFT:
@@ -294,3 +299,24 @@ class InfiniteBoardViewer(InfiniteBoard):
             return self.colors[age]
         except IndexError:
             return self.colors[-1]
+
+    def center_on_centroid(self):
+        """
+        Center the viewport on the center of mass of the cells.
+        Assuming that each cell has a mass of 1.
+        """
+        total_mass = len(self.contents)  # each cell has a mass of 1
+        x_center = sum(x for x, y in self.contents) / total_mass
+        y_center = sum(y for x, y in self.contents) / total_mass
+        self.viewport_center_xy = (x_center, y_center)
+
+    def center_on_oldest(self):
+        """
+        Center the viewport on the center of mass of the cells.
+        Use the cells' age as their mass in this calculation. This should move the viewport
+        closer to older cells.
+        """
+        total_mass = sum(self.contents.values())  # use cell age as weight
+        x_center = sum(x * age for (x, y), age in self.contents.items()) / total_mass
+        y_center = sum(x * age for (x, y), age in self.contents.items()) / total_mass
+        self.viewport_center_xy = (x_center, y_center)
