@@ -1,5 +1,4 @@
 import math
-import time
 from typing import Protocol
 
 import pygame.draw

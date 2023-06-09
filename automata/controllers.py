@@ -46,8 +46,8 @@ class KeyboardController:
                 if backend.paused:
                     if event.key == pygame.K_PERIOD:
                         backend.iterate()
-                    # if event.key == pygame.K_COMMA:
-                    #     backend.back_one()
+                    if event.key == pygame.K_COMMA:
+                        backend.back_one()
                     # if event.key == pygame.K_k:
                     #     self.save()
                     # if event.key == pygame.K_l:

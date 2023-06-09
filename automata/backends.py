@@ -12,6 +12,8 @@ class Backend(Entity):
 
     Inherits Entity
     Contains Automaton
+    Implements update/iterate disconnect
+    Implements history
     """
 
     automaton: Automaton
@@ -36,3 +38,7 @@ class Backend(Entity):
     def iterate(self):
         self.history.append(self.automaton.contents)
         self.automaton.iterate()
+
+    def back_one(self):
+        if self.history:
+            self.automaton.contents = self.history.pop()
