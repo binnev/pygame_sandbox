@@ -1,4 +1,5 @@
 import math
+import time
 from typing import Protocol
 
 import matplotlib
@@ -119,6 +120,12 @@ class GameOfLifeFrontend:
     scale = 4
     viewport_center_xy = (0.0, 0.0)
     background_color = Color("black")
+    num_colors: int = 100
+    colormap = matplotlib.cm.viridis_r
+
+    def __init__(self, num_colors: int = None):
+        self.num_colors = num_colors or self.num_colors
+        self.calculate_colors()
 
     def viewport_rect(self, image: Surface) -> Rect:
         image_width, image_height = image.get_rect().size
@@ -183,22 +190,23 @@ class GameOfLifeFrontend:
         delta_v = center_v - viewport_center_b
         surface.blit(big_img, (delta_u, delta_v))
 
-        if debug:
-            text = "\n".join(
-                [
-                    # f"tick: {self.tick}",  # more introspection could be a problem...
-                    f"scale: {self.scale:0.2f}",
-                    # f"ticks_per_update: {self.ticks_per_update}",
-                    # f"iterations_per_update: {self.iterations_per_update}",
-                ]
-            )
-            fonts.cellphone_white.render(surface, text, scale=1.5)
+    def zoom(self, amount: float):
+        self.scale = max(0.1, self.scale + amount)
 
+    def pan(self, x: float = 0, y: float = 0):
+        self.viewport_center_xy = (
+            self.viewport_center_xy[0] + x,
+            self.viewport_center_xy[1] + y,
+        )
 
-class LangtonsAntFrontend:
-    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
-        ...
+    def calculate_colors(self):
+        """Sample a colormap based on the longest ruleset of child ants"""
+        samples = numpy.linspace(0, 1, self.num_colors)
+        colors = [tuple(map(int, color[:3])) for color in self.colormap(samples) * 256]
+        self.colors = colors
 
-
-def accepts_frontend(a: Frontend):
-    print(a)
+    def get_color(self, age: int):
+        try:
+            return self.colors[age]
+        except IndexError:
+            return self.colors[-1]
