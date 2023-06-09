@@ -30,6 +30,19 @@ GLIDER = """
 xxx
 """
 
+GLIDER_FLIPPED = """
+xxx
+x..
+.x.
+"""
+
+SPINNER = """
+.x.
+.x.
+.x.
+"""
+
+
 LIGHTWEIGHT_SPACESHIP = """
 .xxxx
 x...x
