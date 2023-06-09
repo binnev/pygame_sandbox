@@ -85,15 +85,19 @@ class GameOfLifeAutomaton:
         Get the coordinates of all neighbouring cells, including diagonals.
         """
         x, y = coord
+        left = x - 1
+        right = x + 1
+        up = y - 1
+        down = y + 1
         return (
-            (x - 1, y - 1),
-            (x - 1, y),
-            (x - 1, y + 1),
-            (x, y - 1),
-            (x, y + 1),
-            (x + 1, y - 1),
-            (x + 1, y),
-            (x + 1, y + 1),
+            (left, up),
+            (left, y),
+            (left, down),
+            (x, up),
+            (x, down),
+            (right, up),
+            (right, y),
+            (right, down),
         )
 
 
