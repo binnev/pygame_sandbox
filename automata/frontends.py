@@ -1,6 +1,8 @@
 import math
 from typing import Protocol
 
+import matplotlib
+import numpy
 import pygame.draw
 from pygame import Surface, Color, Rect
 from robingame.image import scale_image
@@ -14,10 +16,16 @@ class Frontend(Protocol):
         """Do something with automaton.contents here"""
 
     def zoom(self, amount: float):
-        """If amount > 0: zoom in. If amount < 0: zoom out."""
+        """
+        If amount > 0: zoom in.
+        If amount < 0: zoom out.
+        """
 
     def pan(self, x: float = 0, y: float = 0):
-        """Change viewport xy location"""
+        """
+        If x > 0: move viewport right. If x < 0: move viewport left.
+        If y > 0: move viewport down. If y < 0: move viewport up.
+        """
 
 
 class DeadSimpleFrontend:
@@ -27,14 +35,20 @@ class DeadSimpleFrontend:
     background_color = Color("dark grey")
     x_offset: int = 0
     y_offset: int = 0
+    num_colors: int = 100
+    colormap = matplotlib.cm.viridis_r
+
+    def __init__(self, num_colors=None):
+        self.num_colors = num_colors or self.num_colors
+        self.calculate_colors()
 
     def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
         surface.fill(self.background_color)
         img = Surface(automaton.contents.size)
         img.fill(self.background_color)
         (x_min, _), (y_min, _) = automaton.contents.limits
-        for (x, y), age in automaton.contents.items():
-            color = Color("white")
+        for (x, y), value in automaton.contents.items():
+            color = self.get_color(value)
             x += self.x_offset - x_min
             y += self.y_offset - y_min
             img.set_at((x, y), color)
@@ -48,8 +62,20 @@ class DeadSimpleFrontend:
 
     def pan(self, x: float = 0, y: float = 0):
         PAN_SPEED = 5
-        self.x_offset += x * PAN_SPEED
-        self.y_offset += y * PAN_SPEED
+        self.x_offset -= x * PAN_SPEED
+        self.y_offset -= y * PAN_SPEED
+
+    def calculate_colors(self):
+        """Sample a colormap based on the longest ruleset of child ants"""
+        samples = numpy.linspace(0, 1, self.num_colors)
+        colors = [tuple(map(int, color[:3])) for color in self.colormap(samples) * 256]
+        self.colors = colors
+
+    def get_color(self, age: int):
+        try:
+            return self.colors[age]
+        except IndexError:
+            return self.colors[-1]
 
 
 class Minimap:

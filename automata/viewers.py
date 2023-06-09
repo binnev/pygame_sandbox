@@ -34,7 +34,9 @@ class Viewer(Entity):
     def update(self):
         super().update()
         self.backend.update()
-        if self.controller:
+        mouse_pos = pygame.mouse.get_pos()
+        is_focused = self.rect.contains((*mouse_pos, 0, 0))
+        if self.controller and is_focused:
             self.controller.update(frontend=self.frontend, backend=self.backend)
 
     def draw(self, surface: Surface, debug: bool = False):
