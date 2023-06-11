@@ -191,12 +191,22 @@ class GameOfLifeFrontend:
         surface.blit(big_img, (delta_u, delta_v))
 
     def zoom(self, amount: float):
+        """
+        NOTE: when zoomed in so far that only 1 pixel is on screen, the draw speed can
+        increase dramatically. I think this is because even though only 1 cell is being drawn,
+        the big_img is many times the size of the surface, with no upper limit on its size. So
+        if using this method, put a sensible limit on how far you can zoom in.
+        """
+        # ignoring the value of amount and multiplying by a speed factor gives more uniform zoom
+        # feel at varying scales
         ZOOM_SPEED = 1.1
         if amount > 0:
             self.scale *= ZOOM_SPEED
         elif amount < 0:
             self.scale /= ZOOM_SPEED
+
         self.scale = max(0.1, self.scale)
+        self.scale = min(1000.0, self.scale)
 
     def pan(self, x: float = 0, y: float = 0):
         PAN_SPEED = 5 / self.scale
