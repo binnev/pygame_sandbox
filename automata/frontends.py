@@ -191,12 +191,18 @@ class GameOfLifeFrontend:
         surface.blit(big_img, (delta_u, delta_v))
 
     def zoom(self, amount: float):
-        self.scale = max(0.1, self.scale + amount)
+        ZOOM_SPEED = 1.1
+        if amount > 0:
+            self.scale *= ZOOM_SPEED
+        elif amount < 0:
+            self.scale /= ZOOM_SPEED
+        self.scale = max(0.1, self.scale)
 
     def pan(self, x: float = 0, y: float = 0):
+        PAN_SPEED = 5 / self.scale
         self.viewport_center_xy = (
-            self.viewport_center_xy[0] + x,
-            self.viewport_center_xy[1] + y,
+            self.viewport_center_xy[0] + x * PAN_SPEED,
+            self.viewport_center_xy[1] + y * PAN_SPEED,
         )
 
     def calculate_colors(self):
