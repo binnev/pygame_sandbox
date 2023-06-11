@@ -4,6 +4,7 @@ from robingame.objects import Entity
 from robingame.utils import SparseMatrix
 
 from automata.automatons import Automaton
+from automata.timer import Timer
 
 
 class Backend(Entity):
@@ -22,6 +23,7 @@ class Backend(Entity):
     iterations_per_update: int = 1
     paused: bool = False
     history: deque[SparseMatrix]
+    _update_time = 0
 
     def __init__(self, automaton: Automaton):
         super().__init__()
@@ -29,11 +31,13 @@ class Backend(Entity):
         self.history = deque(maxlen=50)
 
     def update(self):
-        super().update()
-        if not self.paused and self.tick % self.ticks_per_update == 0:
-            for _ in range(self.iterations_per_update):
-                # delegate iteration to the automaton
-                self.iterate()
+        with Timer() as timer:
+            super().update()
+            if not self.paused and self.tick % self.ticks_per_update == 0:
+                for _ in range(self.iterations_per_update):
+                    # delegate iteration to the automaton
+                    self.iterate()
+        self._update_time = timer.time
 
     def iterate(self):
         self.history.append(self.automaton.contents)

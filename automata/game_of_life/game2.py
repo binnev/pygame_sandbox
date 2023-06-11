@@ -55,7 +55,7 @@ class MainScene2(Entity):
         game_of_life_backend = Backend(
             automaton=GameOfLifeAutomaton(
                 contents={
-                    **load_pattern(patterns.SPINNER),
+                    **load_pattern(patterns.ACORN),
                     **load_pattern(patterns.SPINNER, shift=(10000, 10000)),
                 },
                 **kwargs,
@@ -66,7 +66,6 @@ class MainScene2(Entity):
         for ant in ants:
             langtons_ant_automaton.add_ant(*ant)
         langtons_ant_backend = Backend(automaton=langtons_ant_automaton)
-        langtons_ant_backend.iterations_per_update = 64
 
         keyboard_controller = KeyboardController()
         self.game_of_life_main = Viewer(
