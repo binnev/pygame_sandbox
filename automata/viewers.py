@@ -8,6 +8,7 @@ from robingame.text.font import fonts
 from automata.backends import Backend
 from automata.controllers import Controller
 from automata.frontends import Frontend
+from automata.timer import Timer
 
 
 class Viewer(Entity):
@@ -33,27 +34,30 @@ class Viewer(Entity):
         self.backend = backend
         self.frontend = frontend
         self.controller = controller
+        self._update_time = 0
 
     def update(self):
         """Note: we are not doing self.backend.update() here, because multiple viewers might
         listen to the same backend, and we don't want to update it multiple times."""
-        super().update()
-        mouse_pos = pygame.mouse.get_pos()
-        is_focused = self.rect.contains((*mouse_pos, 0, 0))
-        if self.controller and is_focused:
-            self.controller.update(frontend=self.frontend, backend=self.backend)
+        with Timer() as timer:
+            super().update()
+            mouse_pos = pygame.mouse.get_pos()
+            is_focused = self.rect.contains((*mouse_pos, 0, 0))
+            if self.controller and is_focused:
+                self.controller.update(frontend=self.frontend, backend=self.backend)
+        self._update_time = timer.time
 
     def draw(self, surface: Surface, debug: bool = False):
-        t1 = time.perf_counter()
-        super().draw(surface, debug)
-        self.frontend.draw(surface=self.image, automaton=self.backend.automaton, debug=debug)
-        pygame.draw.rect(self.image, Color("white"), self.image.get_rect(), 1)
-        t2 = time.perf_counter()
+        with Timer() as draw_timer:
+            super().draw(surface, debug)
+            self.frontend.draw(surface=self.image, automaton=self.backend.automaton, debug=debug)
+            pygame.draw.rect(self.image, Color("white"), self.image.get_rect(), 1)
         if debug:
             text = "\n".join(
                 [
                     f"tick: {self.tick}",  # more introspection could be a problem...
-                    f"draw time: {t2-t1:0.5f}",
+                    f"draw time: {draw_timer.time:0.5f}",
+                    f"update time: {self._update_time:0.5f}",
                     f"ticks_per_update: {self.backend.ticks_per_update}",
                     f"iterations_per_update: {self.backend.iterations_per_update}",
                     f"world size: {self.backend.automaton.contents.size}",
