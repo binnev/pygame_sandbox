@@ -13,6 +13,14 @@ from automata.timer import Timer
 
 class Viewer(Entity):
     """
+    A window to view a SparseMatrix-based automaton.
+    The Backend does the iterating (multiple viewers can listen to the same Backend)
+    The Frontend does the drawing
+    The Controller handles user inputs / interaction with the automaton
+
+    Based on the choice of backend/frontend/controller the user can compose various types of
+    viewer -- e.g. a non-interactive minimap or a fully interactive main map.
+
     inherits Entity
     contains Backend
     contains Frontend
@@ -26,7 +34,11 @@ class Viewer(Entity):
     rect: Rect  # to store own position
 
     def __init__(
-        self, rect: Rect, backend: Backend, frontend: Frontend, controller: Controller = None
+        self,
+        rect: Rect,
+        backend: Backend,
+        frontend: Frontend,
+        controller: Controller = None,
     ):
         super().__init__()
         self.rect = Rect(rect)

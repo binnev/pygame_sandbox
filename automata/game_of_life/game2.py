@@ -1,6 +1,6 @@
 import random
 
-from pygame import Color
+from pygame import Color, Rect
 from robingame.objects import Game, Group, Entity
 
 from automata.automatons import GameOfLifeAutomaton, LangtonsAntAutomaton
@@ -69,24 +69,24 @@ class MainScene2(Entity):
 
         keyboard_controller = KeyboardController()
         self.game_of_life_main = Viewer(
-            rect=(10, 10, 500, 500),
+            rect=Rect(10, 10, 500, 500),
             backend=game_of_life_backend,
             frontend=GameOfLifeFrontend(),
             controller=keyboard_controller,
         )
         self.game_of_life_mini = Viewer(
-            rect=(500 - 100, 20, 100, 100),
+            rect=Rect(500 - 100, 20, 100, 100),
             backend=game_of_life_backend,
             frontend=Minimap(),
         )
         self.langtons_ant_main = Viewer(
-            rect=(600, 10, 500, 500),
+            rect=Rect(600, 10, 500, 500),
             backend=langtons_ant_backend,
             frontend=GameOfLifeFrontend(num_colors=num_colours),
             controller=KeyboardController(),
         )
         self.langtons_ant_mini = Viewer(
-            rect=(600 + 500 - 100 - 10, 10 + 10, 100, 100),
+            rect=Rect(600 + 500 - 100 - 10, 10 + 10, 100, 100),
             backend=langtons_ant_backend,
             frontend=Minimap(),
         )
@@ -97,7 +97,7 @@ class MainScene2(Entity):
             self.game_of_life_main,
             # self.game_of_life_mini,
             self.langtons_ant_main,
-            # self.langtons_ant_mini,
+            self.langtons_ant_mini,
         )
 
 

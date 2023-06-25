@@ -1,5 +1,4 @@
 import math
-import time
 from typing import Protocol
 
 import matplotlib
@@ -7,7 +6,6 @@ import numpy
 import pygame.draw
 from pygame import Surface, Color, Rect
 from robingame.image import scale_image
-from robingame.text.font import fonts
 
 from automata.automatons import Automaton
 
@@ -81,6 +79,7 @@ class DeadSimpleFrontend:
 
 class Minimap:
     """
+    Uses bitmap method
     Fixed scale
     Always centered
     """
@@ -115,7 +114,10 @@ class Minimap:
 
 
 class GameOfLifeFrontend:
-    """Draws using the bitmap method. 1 cell = 1 pixel, then scale up the bitmap."""
+    """
+    Draws using the bitmap method.
+    1 cell = 1 pixel, then scale up the bitmap.
+    """
 
     scale = 4
     viewport_center_xy = (0.0, 0.0)
@@ -200,13 +202,15 @@ class GameOfLifeFrontend:
         # ignoring the value of amount and multiplying by a speed factor gives more uniform zoom
         # feel at varying scales
         ZOOM_SPEED = 1.1
+        MIN_ZOOM = 0.1
+        MAX_ZOOM = 1000.0
         if amount > 0:
             self.scale *= ZOOM_SPEED
         elif amount < 0:
             self.scale /= ZOOM_SPEED
 
-        self.scale = max(0.1, self.scale)
-        self.scale = min(1000.0, self.scale)
+        self.scale = max(MIN_ZOOM, self.scale)
+        self.scale = min(MAX_ZOOM, self.scale)
 
     def pan(self, x: float = 0, y: float = 0):
         PAN_SPEED = 5 / self.scale
