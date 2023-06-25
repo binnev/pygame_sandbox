@@ -6,7 +6,7 @@ from robingame.objects import Game, Group, Entity
 from automata.automatons import GameOfLifeAutomaton, LangtonsAntAutomaton
 from automata.backends import Backend
 from automata.controllers import KeyboardController
-from automata.frontends import GameOfLifeFrontend, DeadSimpleFrontend, Minimap
+from automata.frontends import GameOfLifeFrontend, Minimap
 from automata.game_of_life import threshold, patterns
 from automata.game_of_life.patterns import load_pattern
 from automata.viewers import Viewer
