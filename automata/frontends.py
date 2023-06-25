@@ -27,43 +27,7 @@ class Frontend(Protocol):
         """
 
 
-class Minimap:
-    """
-    Uses bitmap method
-    Fixed scale
-    Always centered
-    """
-
-    scale = 1
-    viewport_center_xy = (0, 0)  # not used!
-    background_color = Color("black")
-
-    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
-        surface.fill(self.background_color)
-        img = Surface(automaton.contents.size)
-        img.fill(self.background_color)
-        (x_min, _), (y_min, _) = automaton.contents.limits
-        for (x, y), age in automaton.contents.items():
-            color = Color("white")
-            x -= x_min
-            y -= y_min
-            img.set_at((x, y), color)
-        img = scale_image(img, self.scale)
-        if debug:
-            pygame.draw.rect(img, Color("red"), img.get_rect(), 1)
-
-        rect = img.get_rect()
-        rect.center = surface.get_rect().center
-        surface.blit(img, rect)
-
-    def zoom(self, amount):
-        pass
-
-    def pan(self, x, y):
-        pass
-
-
-class GameOfLifeFrontend:
+class BitmapFrontend:
     """
     Draws using the bitmap method.
     1 cell = 1 pixel, then scale up the bitmap.
@@ -180,3 +144,40 @@ class GameOfLifeFrontend:
             return self.colors[age]
         except IndexError:
             return self.colors[-1]
+
+
+class BitmapMinimap:
+    """
+    Uses bitmap method
+    Fixed scale
+    Always centered
+    """
+
+    scale = 1
+    viewport_center_xy = (0, 0)  # not used!
+    background_color = Color("black")
+
+    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
+        surface.fill(self.background_color)
+        img = Surface(automaton.contents.size)
+        img.fill(self.background_color)
+        (x_min, _), (y_min, _) = automaton.contents.limits
+        for (x, y), age in automaton.contents.items():
+            color = Color("white")
+            x -= x_min
+            y -= y_min
+            img.set_at((x, y), color)
+
+        img = scale_image(img, self.scale)
+        if debug:
+            pygame.draw.rect(img, Color("red"), img.get_rect(), 1)
+
+        rect = img.get_rect()
+        rect.center = surface.get_rect().center
+        surface.blit(img, rect)
+
+    def zoom(self, amount):
+        pass
+
+    def pan(self, x, y):
+        pass
