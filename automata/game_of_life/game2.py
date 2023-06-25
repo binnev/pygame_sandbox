@@ -6,7 +6,7 @@ from robingame.objects import Game, Group, Entity
 from automata.automatons import GameOfLifeAutomaton, LangtonsAntAutomaton
 from automata.backends import Backend
 from automata.controllers import KeyboardController
-from automata.frontends import BitmapFrontend, BitmapMinimap
+from automata.frontends import BitmapFrontend, BitmapMinimap, DrawRectFrontend
 from automata.game_of_life import threshold, patterns
 from automata.game_of_life.patterns import load_pattern
 from automata.viewers import Viewer
@@ -79,15 +79,15 @@ class MainScene2(Entity):
             backend=game_of_life_backend,
             frontend=BitmapMinimap(),
         )
-        self.langtons_ant_main = Viewer(
+        self.game_of_life_second = Viewer(
             rect=Rect(600, 10, 500, 500),
-            backend=langtons_ant_backend,
-            frontend=BitmapFrontend(num_colors=num_colours),
+            backend=game_of_life_backend,
+            frontend=DrawRectFrontend(),
             controller=KeyboardController(),
         )
-        self.langtons_ant_mini = Viewer(
+        self.game_of_life_second_mini = Viewer(
             rect=Rect(600 + 500 - 100 - 10, 10 + 10, 100, 100),
-            backend=langtons_ant_backend,
+            backend=game_of_life_backend,
             frontend=BitmapMinimap(),
         )
 
@@ -96,8 +96,8 @@ class MainScene2(Entity):
             langtons_ant_backend,
             self.game_of_life_main,
             # self.game_of_life_mini,
-            self.langtons_ant_main,
-            self.langtons_ant_mini,
+            self.game_of_life_second,
+            # self.game_of_life_second_mini,
         )
 
 

@@ -44,6 +44,13 @@ class BitmapFrontend:
         self.calculate_colors()
 
     def viewport_rect(self, image: Surface) -> Rect:
+        """
+        Take the image and scale its rect down by self.scale to get the viewport rect in
+        SparseMatrix xy-coords.
+
+        Note that Rect can only have integer values (not float) so using this viewport Rect for
+        drawing purposes can cause choppiness at high zoom values.
+        """
         image_width, image_height = image.get_rect().size
         viewport_width = math.ceil(image_width / self.scale)
         viewport_height = math.ceil(image_height / self.scale)
@@ -77,14 +84,14 @@ class BitmapFrontend:
 
         # 5. Filter visible cells
         to_draw = {
-            coord: age
-            for coord, age in automaton.contents.items()
-            if viewport.contains((*coord, 1, 1))  # 1x1 pixel at coord location
+            coord: value
+            for coord, value in automaton.contents.items()
+            if viewport.collidepoint(*coord)
         }
 
         # 6. Draw visible cells on small bitmap
-        for (x, y), age in to_draw.items():
-            color = self.get_color(age)
+        for (x, y), value in to_draw.items():
+            color = self.get_color(value)
             ij = (x - i0, y - j0)  # matrix coords to pixel indices
             small_img.set_at(ij, color)
 
@@ -144,6 +151,81 @@ class BitmapFrontend:
             return self.colors[age]
         except IndexError:
             return self.colors[-1]
+
+
+class DrawRectFrontend(BitmapFrontend):
+    """
+    Draws each cell using pygame.draw.rect directly onto the Surface passed to the draw method.
+    """
+
+    viewport_width: float
+    viewport_height: float
+
+    def viewport_rect(self, image: Surface) -> Rect:
+        """
+        Take the image and scale its rect down by self.scale to get the viewport rect in
+        SparseMatrix xy-coords.
+
+        Note that Rect can only have integer values (not float) so using this viewport Rect for
+        drawing purposes can cause choppiness at high zoom values.
+        """
+        image_width, image_height = image.get_rect().size
+        viewport_width = image_width / self.scale
+        viewport_height = image_height / self.scale
+        # prevent viewports smaller than 3 pixels (causes cells to disappear at very high zoom
+        # values)
+        viewport_width = max(viewport_width, 3)
+        viewport_height = max(viewport_height, 3)
+
+        viewport = Rect(0, 0, viewport_width, viewport_height)
+        viewport = viewport.inflate(2, 2)  # make 1 px bigger on all sides for safety
+        viewport.center = self.viewport_center_xy
+        return viewport
+
+    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
+        """
+        xy = sparse matrix coordinates
+        uv = screen coordinates
+        viewport = Rect in xy-space to select visible cells. Roughly equal to screen_size/scale
+        small_img = Surface with same dimensions as viewport (pixels are used to display cells)
+        large_img = small_img scaled up to full size
+        """
+
+        surface.fill(self.background_color)
+        # 1. Choose viewport in xy coordinates to filter for visible cells
+        viewport = self.viewport_rect(surface)
+        image_width, image_height = surface.get_rect().size
+        viewport_width = image_width / self.scale
+        viewport_height = image_height / self.scale
+
+        # 5. Filter visible cells
+        visible = {
+            coord: value
+            for coord, value in automaton.contents.items()
+            # if viewport.colliderect((*coord, 1, 1))
+            if viewport.collidepoint(*coord)
+        }
+
+        # 6. Draw visible cells in screen coords
+        for (x, y), value in visible.items():
+            color = self.get_color(value)
+            # get xy coords relative to viewport topleft
+            x = x - (self.viewport_center_xy[0] - viewport_width / 2)
+            y = y - (self.viewport_center_xy[1] - viewport_height / 2)
+            # convert xy to uv
+            u = x * self.scale
+            v = y * self.scale
+            # draw a square centered on the uv coords
+            pygame.draw.rect(
+                surface,
+                color,
+                Rect(
+                    u - self.scale / 2,
+                    v - self.scale / 2,
+                    math.ceil(self.scale),
+                    math.ceil(self.scale),
+                ),
+            )
 
 
 class BitmapMinimap:
