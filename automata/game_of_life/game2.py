@@ -92,6 +92,7 @@ class MainScene2(Entity):
             rect=Rect(600 + 500 - 100 - 10, 10 + 10, 100, 100),
             backend=game_of_life_backend,
             frontend=DrawRectMinimap(),
+            viewport_handler=game_of_life_second.viewport_handler,
         )
 
         self.children.add(
