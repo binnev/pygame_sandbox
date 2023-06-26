@@ -33,12 +33,12 @@ class GameOfLifeAutomaton:
 
     def __init__(
         self,
-        contents=None,
+        contents: SparseMatrix = None,
         underpopulation_threshold=threshold.UNDERPOPULATION,
         overpopulation_threshold=threshold.OVERPOPULATION,
         reproduction_threshold=threshold.REPRODUCTION,
     ):
-        self.contents = contents or SparseMatrix()
+        self.contents = SparseMatrix(contents) or SparseMatrix()
         self.underpopulation_threshold = underpopulation_threshold
         self.overpopulation_threshold = overpopulation_threshold
         self.reproduction_threshold = reproduction_threshold
