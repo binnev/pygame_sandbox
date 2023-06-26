@@ -61,7 +61,7 @@ class MainScene2(Entity):
                 **kwargs,
             )
         )
-        for _ in range(500):
+        for _ in range(100):
             game_of_life_backend.iterate()
         game_of_life_backend.paused = True
         langtons_ant_automaton = LangtonsAntAutomaton()

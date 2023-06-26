@@ -154,8 +154,8 @@ class DrawRectFrontend(BitmapFrontend):
 
         # calculate scale
         image_rect_uv = surface.get_rect()
-        transform = Transform(viewport_rect_xy, image_rect_uv)
-        viewport_rect_uv = transform.rect(viewport_rect_xy)
+        transform = Transform(viewport, image_rect_uv)
+        viewport_rect_uv = transform.rect(viewport)
         world_rect_uv = transform.rect(world_rect_xy)
 
         # 6. Draw visible cells in screen coords
@@ -275,14 +275,25 @@ class Transform:
     """
 
     scale: float
-    u_offset: int
-    v_offset: int
+    u_offset: float
+    v_offset: float
 
     def __init__(self, viewport_rect_xy: Rect, image_rect_uv: Rect):
-        viewport_rect_uv = viewport_rect_xy.fit(image_rect_uv)
-        self.scale = viewport_rect_uv.width / viewport_rect_xy.width
-        self.u_offset = viewport_rect_uv.x - viewport_rect_xy.x * self.scale
-        self.v_offset = viewport_rect_uv.y - viewport_rect_xy.y * self.scale
+        image_u, image_v, image_width_u, image_height_v = image_rect_uv
+        viewport_x, viewport_y, viewport_width_x, viewport_height_y = viewport_rect_xy
+        x_scale = image_width_u / viewport_width_x
+        y_scale = image_height_v / viewport_height_y
+        scale = min(x_scale, y_scale)
+        self.scale = scale
+
+        viewport_width_u = viewport_width_x * scale
+        viewport_height_v = viewport_height_y * scale
+        delta_u = (image_width_u - viewport_width_u) / 2
+        delta_v = (image_height_v - viewport_height_v) / 2
+        u_offset = delta_u / 2
+        v_offset = delta_v / 2
+        self.u_offset = u_offset - viewport_x * self.scale
+        self.v_offset = v_offset - viewport_y * self.scale
 
     def length(self, length_xy: float) -> float:
         return length_xy * self.scale
@@ -291,11 +302,14 @@ class Transform:
         x, y = point_xy
         u = x * self.scale + self.u_offset
         v = y * self.scale + self.v_offset
-        return (u, v)
+        return u, v
 
     def rect(self, rect_xy: Rect) -> Rect:
+        return Rect(*self.floatrect(rect_xy))
+
+    def floatrect(self, rect_xy: FloatRect | Rect) -> FloatRect:
         x, y, width_x, height_y = rect_xy
         u, v = self.point((x, y))
         width_u = self.length(width_x)
         height_v = self.length(height_y)
-        return Rect(u, v, width_u, height_v)
+        return u, v, width_u, height_v
