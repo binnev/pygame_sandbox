@@ -31,13 +31,6 @@ class KeyboardController:
             frontend.pan(x=-1)
         if keys_down[pygame.K_d]:
             frontend.pan(x=1)
-        # if keys_down[pygame.K_c]:
-        #     if keys_down[pygame.K_LSHIFT]:
-        #         self.center_on_oldest()
-        #     elif keys_down[pygame.K_LCTRL]:
-        #         self.center_on_middle()
-        #     else:
-        #         self.center_on_centroid()
 
         for event in EventQueue.events:
             if event.type == pygame.KEYDOWN:
@@ -48,10 +41,6 @@ class KeyboardController:
                         backend.iterate()
                     if event.key == pygame.K_COMMA:
                         backend.back_one()
-                    # if event.key == pygame.K_k:
-                    #     self.save()
-                    # if event.key == pygame.K_l:
-                    #     self.load()
                 if event.key == pygame.K_DOWN:
                     backend.ticks_per_update *= 2
                 if event.key == pygame.K_UP:
