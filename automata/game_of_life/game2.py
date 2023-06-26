@@ -24,13 +24,7 @@ class GameOfLife2(Game):
 
     def __init__(self):
         super().__init__()
-        self.scenes.add(
-            MainScene2(
-                underpopulation_threshold=threshold.UNDERPOPULATION,
-                overpopulation_threshold=threshold.OVERPOPULATION,
-                reproduction_threshold=threshold.REPRODUCTION,
-            )
-        )
+        self.scenes.add(MainScene2())
 
 
 def random_ants(n: int):
@@ -54,8 +48,11 @@ class MainScene2(Entity):
 
         game_of_life_backend = Backend(
             automaton=GameOfLifeAutomaton(
+                underpopulation_threshold=3,
+                overpopulation_threshold=5,
+                reproduction_threshold=3,
                 contents={
-                    **load_pattern(patterns.ACORN),
+                    **load_pattern(patterns.BLOCK),
                     # **load_pattern(patterns.SPINNER, shift=(10000, 10000)),
                 },
                 **kwargs,
@@ -65,7 +62,7 @@ class MainScene2(Entity):
             game_of_life_backend.iterate()
         game_of_life_backend.paused = True
         langtons_ant_automaton = LangtonsAntAutomaton()
-        ants, num_colours = random_ants(5)
+        ants, num_colours = random_ants(15)
         for ant in ants:
             langtons_ant_automaton.add_ant(*ant)
         langtons_ant_backend = Backend(automaton=langtons_ant_automaton)
@@ -73,30 +70,30 @@ class MainScene2(Entity):
         keyboard_controller = KeyboardController()
         game_of_life_main = Viewer(
             rect=Rect(10, 10, 500, 500),
-            backend=game_of_life_backend,
+            backend=langtons_ant_backend,
             frontend=BitmapFrontend(),
             controller=keyboard_controller,
         )
         game_of_life_mini = Viewer(
             rect=Rect(500 - 100, 20, 100, 100),
-            backend=game_of_life_backend,
+            backend=langtons_ant_backend,
             frontend=BitmapMinimap(),
         )
         game_of_life_second = Viewer(
             rect=Rect(600, 10, 500, 500),
-            backend=game_of_life_backend,
+            backend=langtons_ant_backend,
             frontend=DrawRectFrontend(),
             controller=KeyboardController(),
         )
         game_of_life_second_mini = Viewer(
             rect=Rect(600 + 500 - 100 - 10, 10 + 10, 100, 100),
-            backend=game_of_life_backend,
+            backend=langtons_ant_backend,
             frontend=DrawRectMinimap(),
             viewport_handler=game_of_life_second.viewport_handler,
         )
 
         self.children.add(
-            game_of_life_backend,
+            # game_of_life_backend,
             langtons_ant_backend,
             game_of_life_main,
             game_of_life_mini,

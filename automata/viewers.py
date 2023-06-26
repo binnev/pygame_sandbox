@@ -49,8 +49,8 @@ class Viewer(Entity):
         self.viewport_handler = viewport_handler or DefaultViewportHandler(
             x=0,
             y=0,
-            width=self.image.get_width(),
-            height=self.image.get_height(),
+            width=self.image.get_width() // 4,
+            height=self.image.get_height() // 4,
         )
 
     def update(self):
@@ -72,6 +72,7 @@ class Viewer(Entity):
                 debug=debug,
             )
             pygame.draw.rect(self.image, Color("white"), self.image.get_rect(), 1)
+        surface.blit(self.image, self.rect)
         if debug:
             text = "\n".join(
                 [
@@ -85,6 +86,4 @@ class Viewer(Entity):
                     f"matrix len: {len(self.backend.automaton.contents)}",
                 ]
             )
-            fonts.cellphone_white.render(self.image, text, scale=1.5)
-            pygame.draw.rect(self.image, Color("red"), self.image.get_rect(), 1)
-        surface.blit(self.image, self.rect)
+            fonts.cellphone_white.render(surface, text, x=self.rect.x, y=self.rect.y, scale=1.5)
