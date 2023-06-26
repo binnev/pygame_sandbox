@@ -6,7 +6,7 @@ from robingame.objects import Game, Group, Entity
 from automata.automatons import GameOfLifeAutomaton, LangtonsAntAutomaton
 from automata.backends import Backend
 from automata.controllers import KeyboardController
-from automata.frontends import BitmapFrontend, BitmapMinimap, DrawRectFrontend
+from automata.frontends import BitmapFrontend, BitmapMinimap, DrawRectFrontend, DrawRectMinimap
 from automata.game_of_life import threshold, patterns
 from automata.game_of_life.patterns import load_pattern
 from automata.viewers import Viewer
@@ -56,11 +56,13 @@ class MainScene2(Entity):
             automaton=GameOfLifeAutomaton(
                 contents={
                     **load_pattern(patterns.ACORN),
-                    **load_pattern(patterns.SPINNER, shift=(10000, 10000)),
+                    # **load_pattern(patterns.SPINNER, shift=(10000, 10000)),
                 },
                 **kwargs,
             )
         )
+        for _ in range(500): game_of_life_backend.iterate()
+        game_of_life_backend.paused = True
         langtons_ant_automaton = LangtonsAntAutomaton()
         ants, num_colours = random_ants(5)
         for ant in ants:
@@ -88,16 +90,16 @@ class MainScene2(Entity):
         self.game_of_life_second_mini = Viewer(
             rect=Rect(600 + 500 - 100 - 10, 10 + 10, 100, 100),
             backend=game_of_life_backend,
-            frontend=BitmapMinimap(),
+            frontend=DrawRectMinimap(),
         )
 
         self.children.add(
             game_of_life_backend,
             langtons_ant_backend,
             self.game_of_life_main,
-            # self.game_of_life_mini,
+            self.game_of_life_mini,
             self.game_of_life_second,
-            # self.game_of_life_second_mini,
+            self.game_of_life_second_mini,
         )
 
 

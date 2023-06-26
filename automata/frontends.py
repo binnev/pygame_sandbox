@@ -158,9 +158,6 @@ class DrawRectFrontend(BitmapFrontend):
     Draws each cell using pygame.draw.rect directly onto the Surface passed to the draw method.
     """
 
-    viewport_width: float
-    viewport_height: float
-
     def viewport_rect(self, image: Surface) -> Rect:
         """
         Take the image and scale its rect down by self.scale to get the viewport rect in
@@ -224,6 +221,60 @@ class DrawRectFrontend(BitmapFrontend):
                     v - self.scale / 2,
                     math.ceil(self.scale),
                     math.ceil(self.scale),
+                ),
+            )
+
+
+class DrawRectMinimap(DrawRectFrontend):
+    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
+        """
+        1. Draw all cells irrespective of scale
+        2. Draw viewport
+        """
+        surface.fill(self.background_color)
+
+        # 1. Choose viewport in xy coordinates to filter for visible cells
+        image_width, image_height = surface.get_rect().size
+        world_width, world_height = automaton.contents.size
+        # fit viewport as tightly as possible to world limits
+        x_scale = image_width / world_width
+        y_scale = image_height / world_height
+        scale = min(x_scale, y_scale)
+        viewport_width = image_width / scale
+        viewport_height = image_height / scale
+        viewport = Rect(0, 0, viewport_width, viewport_height)
+        # center viewport on world
+        (xmin, xmax), (ymin, ymax) = automaton.contents.limits
+        x_center = xmin + (xmax - xmin) / 2
+        y_center = ymin + (ymax - ymin) / 2
+        self.viewport_center_xy = (x_center, y_center)
+        viewport.center = self.viewport_center_xy
+
+        # 5. Filter visible cells
+        visible = {
+            coord: value
+            for coord, value in automaton.contents.items()
+            if viewport.collidepoint(*coord)
+        }
+
+        # 6. Draw visible cells in screen coords
+        for (x, y), value in visible.items():
+            color = self.get_color(value)
+            # get xy coords relative to viewport topleft
+            x -= x_center - viewport_width / 2
+            y -= y_center - viewport_height / 2
+            # convert xy to uv
+            u = x * scale
+            v = y * scale
+            # draw a square centered on the uv coords
+            pygame.draw.rect(
+                surface,
+                color,
+                Rect(
+                    u - scale / 2,
+                    v - scale / 2,
+                    math.ceil(scale),
+                    math.ceil(scale),
                 ),
             )
 
