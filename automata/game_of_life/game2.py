@@ -61,7 +61,8 @@ class MainScene2(Entity):
                 **kwargs,
             )
         )
-        for _ in range(500): game_of_life_backend.iterate()
+        for _ in range(500):
+            game_of_life_backend.iterate()
         game_of_life_backend.paused = True
         langtons_ant_automaton = LangtonsAntAutomaton()
         ants, num_colours = random_ants(5)

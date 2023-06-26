@@ -7,6 +7,7 @@ from automata.backends import Backend
 from automata.controllers import Controller
 from automata.frontends import Frontend
 from automata.timer import Timer
+from automata.viewport_handler import ViewportHandler, DefaultViewportHandler
 
 
 class Viewer(Entity):
@@ -36,6 +37,7 @@ class Viewer(Entity):
         rect: Rect,
         backend: Backend,
         frontend: Frontend,
+        viewport_handler: ViewportHandler = None,
         controller: Controller = None,
     ):
         super().__init__()
@@ -44,6 +46,12 @@ class Viewer(Entity):
         self.backend = backend
         self.frontend = frontend
         self.controller = controller
+        self.viewport_handler = viewport_handler or DefaultViewportHandler(
+            x=0,
+            y=0,
+            width=self.image.get_width(),
+            height=self.image.get_height(),
+        )
 
     def update(self):
         """Note: we are not doing self.backend.update() here, because multiple viewers might
@@ -52,12 +60,17 @@ class Viewer(Entity):
         mouse_pos = pygame.mouse.get_pos()
         is_focused = self.rect.contains((*mouse_pos, 0, 0))
         if self.controller and is_focused:
-            self.controller.update(frontend=self.frontend, backend=self.backend)
+            self.controller.update(viewport_handler=self.viewport_handler, backend=self.backend)
 
     def draw(self, surface: Surface, debug: bool = False):
         with Timer() as draw_timer:
             super().draw(surface, debug)
-            self.frontend.draw(surface=self.image, automaton=self.backend.automaton, debug=debug)
+            self.frontend.draw(
+                surface=self.image,
+                automaton=self.backend.automaton,
+                viewport=self.viewport_handler.viewport,
+                debug=debug,
+            )
             pygame.draw.rect(self.image, Color("white"), self.image.get_rect(), 1)
         if debug:
             text = "\n".join(

@@ -8,22 +8,16 @@ from pygame import Surface, Color, Rect
 from robingame.image import scale_image
 
 from automata.automatons import Automaton
+from automata.viewport_handler import FloatRect
 
 
 class Frontend(Protocol):
-    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
-        """Do something with automaton.contents here"""
-
-    def zoom(self, amount: float):
+    def draw(
+        self, surface: Surface, automaton: Automaton, viewport: FloatRect, debug: bool = False
+    ):
         """
-        If amount > 0: zoom in.
-        If amount < 0: zoom out.
-        """
-
-    def pan(self, x: float = 0, y: float = 0):
-        """
-        If x > 0: move viewport right. If x < 0: move viewport left.
-        If y > 0: move viewport down. If y < 0: move viewport up.
+        Do something with automaton.contents here.
+        viewport is the subset of the matrix we want to draw.
         """
 
 
@@ -33,8 +27,6 @@ class BitmapFrontend:
     1 cell = 1 pixel, then scale up the bitmap.
     """
 
-    scale = 4
-    viewport_center_xy = (0.0, 0.0)
     background_color = Color("black")
     num_colors: int = 100
     colormap = matplotlib.cm.viridis_r
@@ -43,23 +35,13 @@ class BitmapFrontend:
         self.num_colors = num_colors or self.num_colors
         self.calculate_colors()
 
-    def viewport_rect(self, image: Surface) -> Rect:
-        """
-        Take the image and scale its rect down by self.scale to get the viewport rect in
-        SparseMatrix xy-coords.
-
-        Note that Rect can only have integer values (not float) so using this viewport Rect for
-        drawing purposes can cause choppiness at high zoom values.
-        """
-        image_width, image_height = image.get_rect().size
-        viewport_width = math.ceil(image_width / self.scale)
-        viewport_height = math.ceil(image_height / self.scale)
-        viewport = Rect(0, 0, viewport_width, viewport_height)
-        viewport = viewport.inflate(2, 2)  # make 1 px bigger on all sides for safety
-        viewport.center = self.viewport_center_xy
-        return viewport
-
-    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
+    def draw(
+        self,
+        surface: Surface,
+        automaton: Automaton,
+        viewport: FloatRect,
+        debug: bool = False,
+    ):
         """
         xy = sparse matrix coordinates
         ij = small bitmap pixel indices
@@ -72,8 +54,15 @@ class BitmapFrontend:
 
         # 1. Choose viewport in xy coordinates to filter for visible cells
         # 2. Round out to nearest int, record x/y min/max range.
-        viewport_center_x, viewport_center_y = self.viewport_center_xy
-        viewport = self.viewport_rect(surface)
+        viewport_center_x = viewport[0] + viewport[2] / 2
+        viewport_center_y = viewport[1] + viewport[3] / 2
+        image_width, image_height = surface.get_size()
+        x_scale = image_width / viewport[2]
+        y_scale = image_height / viewport[3]
+        scale = min(x_scale, y_scale)
+        # pad 1 pixel to include any offscreen "halves" of cells, and 1 pixel to account for the
+        # fact that Rect rounds the viewport to ints, possibly further in the wrong direction.
+        viewport = Rect(*viewport).inflate(4, 4)
 
         # 3. Record offset from absolute xy coords to small_img coords (ij)
         i0, j0 = viewport.topleft
@@ -96,7 +85,7 @@ class BitmapFrontend:
             small_img.set_at(ij, color)
 
         # 7. Scale small bitmap up to full size
-        big_img = scale_image(small_img, self.scale)
+        big_img = scale_image(small_img, scale)
 
         # 8. Calculate viewport center position in large bitmap coords
         # small_img pixel index to large_img coords
@@ -104,8 +93,8 @@ class BitmapFrontend:
         # b = scale * j + (scale - 1) / 2
         viewport_center_i: float = viewport_center_x - i0
         viewport_center_j: float = viewport_center_y - j0
-        viewport_center_a: float = (self.scale * viewport_center_i) + (self.scale - 1) / 2
-        viewport_center_b: float = (self.scale * viewport_center_j) + (self.scale - 1) / 2
+        viewport_center_a: float = (scale * viewport_center_i) + (scale - 1) / 2
+        viewport_center_b: float = (scale * viewport_center_j) + (scale - 1) / 2
 
         # 9. Calculate the uv offset required to position viewport_center_ab on the screen center
         center_u, center_v = surface.get_rect().center
@@ -113,42 +102,15 @@ class BitmapFrontend:
         delta_v = center_v - viewport_center_b
         surface.blit(big_img, (delta_u, delta_v))
 
-    def zoom(self, amount: float):
-        """
-        NOTE: when zoomed in so far that only 1 pixel is on screen, the draw speed can
-        increase dramatically. I think this is because even though only 1 cell is being drawn,
-        the big_img is many times the size of the surface, with no upper limit on its size. So
-        if using this method, put a sensible limit on how far you can zoom in.
-        """
-        # ignoring the value of amount and multiplying by a speed factor gives more uniform zoom
-        # feel at varying scales
-        ZOOM_SPEED = 1.1
-        MIN_ZOOM = 0.1
-        MAX_ZOOM = 1000.0
-        if amount > 0:
-            self.scale *= ZOOM_SPEED
-        elif amount < 0:
-            self.scale /= ZOOM_SPEED
-
-        self.scale = max(MIN_ZOOM, self.scale)
-        self.scale = min(MAX_ZOOM, self.scale)
-
-    def pan(self, x: float = 0, y: float = 0):
-        PAN_SPEED = 5 / self.scale
-        self.viewport_center_xy = (
-            self.viewport_center_xy[0] + x * PAN_SPEED,
-            self.viewport_center_xy[1] + y * PAN_SPEED,
-        )
-
     def calculate_colors(self):
         """Sample a colormap based on the longest ruleset of child ants"""
         samples = numpy.linspace(0, 1, self.num_colors)
         colors = [tuple(map(int, color[:3])) for color in self.colormap(samples) * 256]
         self.colors = colors
 
-    def get_color(self, age: int):
+    def get_color(self, value: int):
         try:
-            return self.colors[age]
+            return self.colors[value]
         except IndexError:
             return self.colors[-1]
 
@@ -158,28 +120,13 @@ class DrawRectFrontend(BitmapFrontend):
     Draws each cell using pygame.draw.rect directly onto the Surface passed to the draw method.
     """
 
-    def viewport_rect(self, image: Surface) -> Rect:
-        """
-        Take the image and scale its rect down by self.scale to get the viewport rect in
-        SparseMatrix xy-coords.
-
-        Note that Rect can only have integer values (not float) so using this viewport Rect for
-        drawing purposes can cause choppiness at high zoom values.
-        """
-        image_width, image_height = image.get_rect().size
-        viewport_width = image_width / self.scale
-        viewport_height = image_height / self.scale
-        # prevent viewports smaller than 3 pixels (causes cells to disappear at very high zoom
-        # values)
-        viewport_width = max(viewport_width, 3)
-        viewport_height = max(viewport_height, 3)
-
-        viewport = Rect(0, 0, viewport_width, viewport_height)
-        viewport = viewport.inflate(2, 2)  # make 1 px bigger on all sides for safety
-        viewport.center = self.viewport_center_xy
-        return viewport
-
-    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
+    def draw(
+        self,
+        surface: Surface,
+        automaton: Automaton,
+        viewport: FloatRect,
+        debug: bool = False,
+    ):
         """
         xy = sparse matrix coordinates
         uv = screen coordinates
@@ -190,10 +137,14 @@ class DrawRectFrontend(BitmapFrontend):
 
         surface.fill(self.background_color)
         # 1. Choose viewport in xy coordinates to filter for visible cells
-        viewport = self.viewport_rect(surface)
         image_width, image_height = surface.get_rect().size
-        viewport_width = image_width / self.scale
-        viewport_height = image_height / self.scale
+        viewport_x, viewport_y, viewport_width, viewport_height = viewport
+        viewport_center_x = viewport_x + viewport_width / 2
+        viewport_center_y = viewport_y + viewport_height / 2
+        x_scale = image_width / viewport[2]
+        y_scale = image_height / viewport[3]
+        scale = min(x_scale, y_scale)
+        viewport = Rect(*viewport).inflate(4, 4)
 
         # 5. Filter visible cells
         visible = {
@@ -207,26 +158,28 @@ class DrawRectFrontend(BitmapFrontend):
         for (x, y), value in visible.items():
             color = self.get_color(value)
             # get xy coords relative to viewport topleft
-            x = x - (self.viewport_center_xy[0] - viewport_width / 2)
-            y = y - (self.viewport_center_xy[1] - viewport_height / 2)
+            x = x - (viewport_center_x - viewport_width / 2)
+            y = y - (viewport_center_y - viewport_height / 2)
             # convert xy to uv
-            u = x * self.scale
-            v = y * self.scale
+            u = x * scale
+            v = y * scale
             # draw a square centered on the uv coords
             pygame.draw.rect(
                 surface,
                 color,
                 Rect(
-                    u - self.scale / 2,
-                    v - self.scale / 2,
-                    math.ceil(self.scale),
-                    math.ceil(self.scale),
+                    u - scale / 2,
+                    v - scale / 2,
+                    math.ceil(scale),
+                    math.ceil(scale),
                 ),
             )
 
 
 class DrawRectMinimap(DrawRectFrontend):
-    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
+    def draw(
+        self, surface: Surface, automaton: Automaton, viewport: FloatRect, debug: bool = False
+    ):
         """
         1. Draw all cells irrespective of scale
         2. Draw viewport
@@ -290,7 +243,9 @@ class BitmapMinimap:
     viewport_center_xy = (0, 0)  # not used!
     background_color = Color("black")
 
-    def draw(self, surface: Surface, automaton: Automaton, debug: bool = False):
+    def draw(
+        self, surface: Surface, automaton: Automaton, viewport: FloatRect, debug: bool = False
+    ):
         surface.fill(self.background_color)
         img = Surface(automaton.contents.size)
         img.fill(self.background_color)
