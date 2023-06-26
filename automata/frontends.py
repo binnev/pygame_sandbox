@@ -217,7 +217,7 @@ class DrawRectMinimap(DrawRectFrontend):
         world_rect_xy = Rect(xmin, ymin, world_width, world_height)
         image_rect_uv = surface.get_rect()
         transform = Transform(world_rect_xy, image_rect_uv)
-        viewport_rect_uv = transform.rect(viewport_rect_xy)
+        viewport_rect_uv = transform.rect(viewport)
         world_rect_uv = transform.rect(world_rect_xy)
 
         # 6. Draw all cells in screen coords
