@@ -132,40 +132,38 @@ class DrawRectFrontend(BitmapFrontend):
         xy = sparse matrix coordinates
         uv = screen coordinates
         viewport = Rect in xy-space to select visible cells. Roughly equal to screen_size/scale
-        small_img = Surface with same dimensions as viewport (pixels are used to display cells)
-        large_img = small_img scaled up to full size
         """
 
         surface.fill(self.background_color)
 
-        world_width, world_height = automaton.contents.size
-        (xmin, xmax), (ymin, ymax) = automaton.contents.limits
-        world_rect_xy = Rect(xmin, ymin, world_width, world_height)
-
-        # 1. filter for visible cells using viewport
-        # pad 1 pixel to include any offscreen "halves" of cells, and 1 pixel to account for the
-        # fact that Rect rounds the viewport to ints, possibly further in the wrong direction.
-        viewport_rect_xy = Rect(*viewport)
+        # Filter for visible cells using viewport. Pad viewport 1 pixel to include any offscreen
+        # "halves" of cells, and 1 pixel to account for the fact that Rect rounds the viewport to
+        # ints, possibly further in the wrong direction.
+        viewport_rect_xy = Rect(*viewport).inflate(4, 4)
         visible = {
             coord: value
             for coord, value in automaton.contents.items()
-            if viewport_rect_xy.inflate(4, 4).collidepoint(*coord)
+            if viewport_rect_xy.collidepoint(*coord)
         }
 
-        # calculate scale
+        # Calculate scale
         image_rect_uv = surface.get_rect()
         transform = Transform(viewport, image_rect_uv)
-        viewport_rect_uv = transform.rect(viewport)
-        world_rect_uv = transform.rect(world_rect_xy)
 
-        # 6. Draw visible cells in screen coords
+        # Draw visible cells in screen coords
         for (x, y), value in visible.items():
             color = self.get_color(value)
             u, v = transform.point((x, y))
             draw_square(surface, color, u, v, transform.scale)
 
-        pygame.draw.rect(surface, Color("red"), viewport_rect_uv, 3)
-        pygame.draw.rect(surface, Color("yellow"), world_rect_uv, 3)
+        if debug:
+            world_width, world_height = automaton.contents.size
+            (xmin, xmax), (ymin, ymax) = automaton.contents.limits
+            world_rect_xy = Rect(xmin, ymin, world_width, world_height)
+            world_rect_uv = transform.rect(world_rect_xy)
+            viewport_rect_uv = transform.floatrect(viewport)
+            pygame.draw.rect(surface, Color("red"), viewport_rect_uv, 3)
+            pygame.draw.rect(surface, Color("yellow"), world_rect_uv, 1)
 
 
 def draw_square(surface: Surface, color: Color, u: int, v: int, scale: float):
@@ -179,20 +177,6 @@ def draw_square(surface: Surface, color: Color, u: int, v: int, scale: float):
             math.ceil(scale),
         ),
     )
-
-
-def get_scale_offset(viewport_rect_xy: Rect, image_rect_uv: Rect) -> tuple[float, int, int]:
-    viewport_rect_uv = viewport_rect_xy.fit(image_rect_uv)
-    scale = viewport_rect_uv.width / viewport_rect_xy.width
-    u_offset = viewport_rect_uv.x - viewport_rect_xy.x
-    v_offset = viewport_rect_uv.y - viewport_rect_xy.y
-    return scale, u_offset, v_offset, viewport_rect_uv
-
-
-def xy_to_uv(x: int, y: int, u_offset: int, v_offset: int, scale: float) -> tuple[float, float]:
-    u = x * scale + u_offset
-    v = y * scale + v_offset
-    return (u, v)
 
 
 class DrawRectMinimap(DrawRectFrontend):
@@ -211,14 +195,12 @@ class DrawRectMinimap(DrawRectFrontend):
 
         # 1. Choose viewport in xy coordinates to filter for visible cells
         # fit viewport as tightly as possible to world limits
-        viewport_rect_xy = Rect(*viewport)
         world_width, world_height = automaton.contents.size
         (xmin, xmax), (ymin, ymax) = automaton.contents.limits
         world_rect_xy = Rect(xmin, ymin, world_width, world_height)
         image_rect_uv = surface.get_rect()
         transform = Transform(world_rect_xy, image_rect_uv)
-        viewport_rect_uv = transform.rect(viewport)
-        world_rect_uv = transform.rect(world_rect_xy)
+        viewport_rect_uv = transform.floatrect(viewport)
 
         # 6. Draw all cells in screen coords
         for (x, y), value in automaton.contents.items():
@@ -227,7 +209,9 @@ class DrawRectMinimap(DrawRectFrontend):
             draw_square(surface, color, u, v, transform.scale)
 
         pygame.draw.rect(surface, Color("red"), viewport_rect_uv, 1)
-        pygame.draw.rect(surface, Color("yellow"), world_rect_uv, 1)
+        if debug:
+            world_rect_uv = transform.rect(world_rect_xy)
+            pygame.draw.rect(surface, Color("yellow"), world_rect_uv, 1)
 
 
 class BitmapMinimap:
