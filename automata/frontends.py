@@ -290,10 +290,8 @@ class Transform:
         viewport_height_v = viewport_height_y * scale
         delta_u = (image_width_u - viewport_width_u) / 2
         delta_v = (image_height_v - viewport_height_v) / 2
-        u_offset = delta_u / 2
-        v_offset = delta_v / 2
-        self.u_offset = u_offset - viewport_x * self.scale
-        self.v_offset = v_offset - viewport_y * self.scale
+        self.u_offset = delta_u - viewport_x * self.scale
+        self.v_offset = delta_v - viewport_y * self.scale
 
     def length(self, length_xy: float) -> float:
         return length_xy * self.scale
