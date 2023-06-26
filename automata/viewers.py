@@ -1,5 +1,3 @@
-import time
-
 import pygame.draw
 from pygame import Surface, Rect, Color
 from robingame.objects import Entity

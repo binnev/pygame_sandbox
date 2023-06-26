@@ -20,7 +20,7 @@ class GameOfLife2(Game):
     screen_color = Color("black")
     ticks_per_frame = 1
     debug_color = Color("white")
-    debug = True
+    debug = False
 
     def __init__(self):
         super().__init__()
@@ -70,24 +70,24 @@ class MainScene2(Entity):
         langtons_ant_backend = Backend(automaton=langtons_ant_automaton)
 
         keyboard_controller = KeyboardController()
-        self.game_of_life_main = Viewer(
+        game_of_life_main = Viewer(
             rect=Rect(10, 10, 500, 500),
             backend=game_of_life_backend,
             frontend=BitmapFrontend(),
             controller=keyboard_controller,
         )
-        self.game_of_life_mini = Viewer(
+        game_of_life_mini = Viewer(
             rect=Rect(500 - 100, 20, 100, 100),
             backend=game_of_life_backend,
             frontend=BitmapMinimap(),
         )
-        self.game_of_life_second = Viewer(
+        game_of_life_second = Viewer(
             rect=Rect(600, 10, 500, 500),
             backend=game_of_life_backend,
             frontend=DrawRectFrontend(),
             controller=KeyboardController(),
         )
-        self.game_of_life_second_mini = Viewer(
+        game_of_life_second_mini = Viewer(
             rect=Rect(600 + 500 - 100 - 10, 10 + 10, 100, 100),
             backend=game_of_life_backend,
             frontend=DrawRectMinimap(),
@@ -96,10 +96,10 @@ class MainScene2(Entity):
         self.children.add(
             game_of_life_backend,
             langtons_ant_backend,
-            self.game_of_life_main,
-            self.game_of_life_mini,
-            self.game_of_life_second,
-            self.game_of_life_second_mini,
+            game_of_life_main,
+            game_of_life_mini,
+            game_of_life_second,
+            game_of_life_second_mini,
         )
 
 
