@@ -4,6 +4,7 @@ from typing import Protocol
 import matplotlib
 import numpy
 import pygame.draw
+from matplotlib.colors import Colormap
 from pygame import Surface, Color, Rect
 from robingame.image import scale_image
 
@@ -23,6 +24,11 @@ class Frontend(Protocol):
         Do something with automaton.contents here.
         viewport is the subset of the matrix we want to draw.
         """
+
+
+def linspace_colors(num_colors: int, colormap: Colormap) -> list[tuple]:
+    samples = numpy.linspace(0, 1, num_colors)
+    return [tuple(map(int, color[:3])) for color in colormap(samples) * 256]
 
 
 class BitmapFrontend:
@@ -107,10 +113,7 @@ class BitmapFrontend:
         surface.blit(big_img, (delta_u, delta_v))
 
     def calculate_colors(self):
-        """Sample a colormap based on the longest ruleset of child ants"""
-        samples = numpy.linspace(0, 1, self.num_colors)
-        colors = [tuple(map(int, color[:3])) for color in self.colormap(samples) * 256]
-        self.colors = colors
+        self.colors = linspace_colors(self.num_colors, self.colormap)
 
     def get_color(self, value: int):
         try:
@@ -169,16 +172,25 @@ class DrawRectFrontend(BitmapFrontend):
             pygame.draw.rect(surface, Color("yellow"), world_rect_uv, 1)
 
 
-def draw_square(surface: Surface, color: Color, u: int, v: int, scale: float):
+def draw_square(surface: Surface, color: Color, u: int, v: int, size: float):
     pygame.draw.rect(
         surface,
         color,
         Rect(
-            u - scale / 2,
-            v - scale / 2,
-            math.ceil(scale),
-            math.ceil(scale),
+            u - size / 2,
+            v - size / 2,
+            math.ceil(size),
+            math.ceil(size),
         ),
+    )
+
+
+def draw_circle(surface: Surface, color: Color, u: int, v: int, size: float):
+    pygame.draw.circle(
+        surface,
+        color,
+        (u, v),
+        radius=math.ceil(size) / 2,
     )
 
 
@@ -211,7 +223,7 @@ class DrawRectMinimap(DrawRectFrontend):
             u, v = transform.point((x, y))
             draw_square(surface, color, u, v, transform.scale)
 
-        pygame.draw.rect(surface, Color("red"), viewport_rect_uv, 1)
+        pygame.draw.rect(surface, Color("white"), viewport_rect_uv, 1)
         if debug:
             world_rect_uv = transform.rect(world_rect_xy)
             pygame.draw.rect(surface, Color("yellow"), world_rect_uv, 1)

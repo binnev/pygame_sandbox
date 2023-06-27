@@ -8,6 +8,7 @@ from automata.input_handler import KeyboardHandler
 from automata.langtons_ant.utils import random_ants
 from automata.viewer import Viewer
 from .automaton import LangtonsAntAutomaton
+from .frontend import LangtonsAntFrontend, LangtonsAntMinimap
 
 
 class LangtonsAntScene(Entity):
@@ -17,9 +18,10 @@ class LangtonsAntScene(Entity):
         self.child_groups += [self.children]
 
         langtons_ant_automaton = LangtonsAntAutomaton()
-        ants, num_colours = random_ants(15)
-        for ant in ants:
-            langtons_ant_automaton.add_ant(*ant)
+        # ants, num_colours = random_ants(15)
+        # for ant in ants:
+        #     langtons_ant_automaton.add_ant(*ant)
+        langtons_ant_automaton.add_ant((0,0), "rl", 0)
         langtons_ant_backend = Backend(automaton=langtons_ant_automaton)
         main_rect = Rect(10, 100, 500, 500)
         mini_rect = Rect(0, 0, 100, 100)
@@ -27,13 +29,13 @@ class LangtonsAntScene(Entity):
         main_map = Viewer(
             rect=main_rect,
             backend=langtons_ant_backend,
-            frontend=DrawRectFrontend(),
+            frontend=LangtonsAntFrontend(),
             controller=KeyboardHandler(),
         )
         mini_map = Viewer(
             rect=mini_rect,
             backend=langtons_ant_backend,
-            frontend=DrawRectMinimap(),
+            frontend=LangtonsAntMinimap(),
             viewport_handler=main_map.viewport_handler,
         )
 
