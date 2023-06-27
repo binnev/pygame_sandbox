@@ -24,6 +24,20 @@ class Viewer(Entity):
     contains Backend
     contains Frontend
     contains Controller
+
+    TODO:
+        [x] zoom: E / Q
+        [x] zoom: mousewheel
+        [x] change ticks_per_update: left / right
+        [x] change iterations_per_update: up / down
+        [x] center on centroid: C
+        [x] pan: WASD
+        [x] pause: Space
+        [x] forward 1 (when paused): >
+        [x] back 1 (when paused): <
+        [ ] pan: drag w mouse
+        [ ] place / remove cell: L / R mouse button
+        [x] save / load to file
     """
 
     backend: Backend  # handles game logic

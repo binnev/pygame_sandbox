@@ -13,7 +13,11 @@ from automata.viewport_handler import FloatRect
 
 class Frontend(Protocol):
     def draw(
-        self, surface: Surface, automaton: Automaton, viewport: FloatRect, debug: bool = False
+        self,
+        surface: Surface,
+        automaton: Automaton,
+        viewport: FloatRect,
+        debug: bool = False,
     ):
         """
         Do something with automaton.contents here.
