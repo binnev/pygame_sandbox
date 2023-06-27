@@ -21,7 +21,7 @@ class LangtonsAntScene(Entity):
         # ants, num_colours = random_ants(15)
         # for ant in ants:
         #     langtons_ant_automaton.add_ant(*ant)
-        langtons_ant_automaton.add_ant((0,0), "rl", 0)
+        langtons_ant_automaton.add_ant((0, 0), "rl", 0)
         langtons_ant_backend = Backend(automaton=langtons_ant_automaton)
         main_rect = Rect(10, 100, 500, 500)
         mini_rect = Rect(0, 0, 100, 100)

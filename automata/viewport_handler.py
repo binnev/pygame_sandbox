@@ -50,7 +50,7 @@ class DefaultViewportHandler:
     @property
     def viewport(self) -> FloatRect:
         """Here I treat self.x, self.y as the center of the viewport; this makes sure when we
-        zoom, we zoom on the center of the viewport, not the top left corner. """
+        zoom, we zoom on the center of the viewport, not the top left corner."""
         x = self.x - self.width / 2
         y = self.y - self.height / 2
         return (x, y, self.width, self.height)
