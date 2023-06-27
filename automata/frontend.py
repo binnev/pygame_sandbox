@@ -4,7 +4,6 @@ from typing import Protocol
 import matplotlib
 import numpy
 import pygame.draw
-from matplotlib.colors import Colormap
 from pygame import Surface, Color, Rect
 from robingame.image import scale_image
 
@@ -26,12 +25,25 @@ class Frontend(Protocol):
         """
 
 
-def linspace_colors(num_colors: int, colormap: Colormap) -> list[tuple]:
+class ColormapMixin:
+    colors: list[Color]
+
+    def __init__(self, colors: list[Color]):
+        self.colors = colors
+
+    def get_color(self, value: int):
+        try:
+            return self.colors[value]
+        except IndexError:
+            return self.colors[-1]
+
+
+def sample_colormap(num_colors: int, colormap: matplotlib.colors.Colormap) -> list[Color]:
     samples = numpy.linspace(0, 1, num_colors)
-    return [tuple(map(int, color[:3])) for color in colormap(samples) * 256]
+    return [Color(*map(int, color[:3])) for color in colormap(samples) * 256]
 
 
-class BitmapFrontend:
+class BitmapFrontend(ColormapMixin):
     """
     Draws using the bitmap method.
     1 cell = 1 pixel, then scale up the bitmap.
@@ -43,7 +55,7 @@ class BitmapFrontend:
 
     def __init__(self, num_colors: int = None):
         self.num_colors = num_colors or self.num_colors
-        self.calculate_colors()
+        self.colors = sample_colormap(self.num_colors, self.colormap)
 
     def draw(
         self,
@@ -112,20 +124,13 @@ class BitmapFrontend:
         delta_v = center_v - viewport_center_b
         surface.blit(big_img, (delta_u, delta_v))
 
-    def calculate_colors(self):
-        self.colors = linspace_colors(self.num_colors, self.colormap)
 
-    def get_color(self, value: int):
-        try:
-            return self.colors[value]
-        except IndexError:
-            return self.colors[-1]
-
-
-class DrawRectFrontend(BitmapFrontend):
+class DrawRectFrontend(ColormapMixin):
     """
     Draws each cell using pygame.draw.rect directly onto the Surface passed to the draw method.
     """
+
+    background_color = Color("black")
 
     def draw(
         self,
@@ -208,7 +213,7 @@ class DrawRectMinimap(DrawRectFrontend):
         """
         surface.fill(self.background_color)
 
-        # 1. Choose viewport in xy coordinates to filter for visible cells
+        # Choose viewport in xy coordinates to filter for visible cells
         # fit viewport as tightly as possible to world limits
         world_width, world_height = automaton.contents.size
         (xmin, xmax), (ymin, ymax) = automaton.contents.limits
@@ -217,7 +222,7 @@ class DrawRectMinimap(DrawRectFrontend):
         transform = Transform(world_rect_xy, image_rect_uv)
         viewport_rect_uv = transform.floatrect(viewport)
 
-        # 6. Draw all cells in screen coords
+        # Draw all cells in screen coords
         for (x, y), value in automaton.contents.items():
             color = self.get_color(value)
             u, v = transform.point((x, y))

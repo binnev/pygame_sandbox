@@ -1,10 +1,11 @@
+import matplotlib
 from pygame import Rect
 from pygame import Surface
 from robingame.objects import Group, Entity
 from robingame.text.font import fonts
 
 from automata.backend import Backend
-from automata.frontend import DrawRectFrontend, DrawRectMinimap
+from automata.frontend import DrawRectFrontend, sample_colormap, DrawRectMinimap
 from automata.input_handler import KeyboardHandler
 from automata.viewer import Viewer
 from . import patterns
@@ -50,16 +51,17 @@ class GameOfLifeScene(Entity):
         main_rect = Rect(10, 100, 500, 500)
         mini_rect = Rect(0, 0, 100, 100)
         mini_rect.topright = (main_rect.right - 10, main_rect.top + 10)
+        colors = sample_colormap(colormap=matplotlib.cm.cividis_r, num_colors=50)
         main_map = Viewer(
             rect=main_rect,
             backend=game_of_life_backend,
-            frontend=DrawRectFrontend(),
+            frontend=DrawRectFrontend(colors=colors),
             controller=KeyboardHandler(),
         )
         mini_map = Viewer(
             rect=mini_rect,
             backend=game_of_life_backend,
-            frontend=DrawRectMinimap(),
+            frontend=DrawRectMinimap(colors=colors),
             viewport_handler=main_map.viewport_handler,
         )
 
