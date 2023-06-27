@@ -3,7 +3,7 @@ import numpy
 from robingame.utils import SparseMatrix
 
 
-def load_pattern(pattern: str, shift: tuple[int, int] = (0, 0)) -> SparseMatrix:
+def load(pattern: str, shift: tuple[int, int] = (0, 0)) -> SparseMatrix:
     arr = numpy.array(
         [(x, y) for y, row in enumerate(pattern) for x, value in enumerate(row) if value]
     )
@@ -29,6 +29,19 @@ GLIDER = """
 ..x
 xxx
 """
+
+GLIDER_FLIPPED = """
+xxx
+x..
+.x.
+"""
+
+SPINNER = """
+.x.
+.x.
+.x.
+"""
+
 
 LIGHTWEIGHT_SPACESHIP = """
 .xxxx
