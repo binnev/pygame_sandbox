@@ -3,7 +3,7 @@ from collections import deque
 from robingame.objects import Entity
 from robingame.utils import SparseMatrix
 
-from automata.automatons import Automaton
+from automata.automaton import Automaton
 from automata.timer import Timer
 
 

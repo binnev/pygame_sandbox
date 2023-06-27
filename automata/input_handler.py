@@ -3,16 +3,16 @@ from typing import Protocol
 import pygame
 from robingame.input import EventQueue
 
-from automata.backends import Backend
+from automata.backend import Backend
 from automata.viewport_handler import ViewportHandler
 
 
-class Controller(Protocol):
+class InputHandler(Protocol):
     def update(self, viewport_handler: ViewportHandler, backend: Backend):
         """Handle inputs"""
 
 
-class KeyboardController:
+class KeyboardHandler:
     """
     Implements Controller
     """

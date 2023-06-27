@@ -3,13 +3,13 @@ import random
 from pygame import Color, Rect
 from robingame.objects import Game, Group, Entity
 
-from automata.automatons import GameOfLifeAutomaton, LangtonsAntAutomaton
-from automata.backends import Backend
-from automata.controllers import KeyboardController
-from automata.frontends import BitmapFrontend, BitmapMinimap, DrawRectFrontend, DrawRectMinimap
+from automata.automaton import GameOfLifeAutomaton, LangtonsAntAutomaton
+from automata.backend import Backend
+from automata.input_handler import KeyboardHandler
+from automata.frontend import BitmapFrontend, BitmapMinimap, DrawRectFrontend, DrawRectMinimap
 from automata.game_of_life import threshold, patterns
 from automata.game_of_life.patterns import load_pattern
-from automata.viewers import Viewer
+from automata.viewer import Viewer
 
 
 class GameOfLife2(Game):
@@ -67,7 +67,7 @@ class MainScene2(Entity):
             langtons_ant_automaton.add_ant(*ant)
         langtons_ant_backend = Backend(automaton=langtons_ant_automaton)
 
-        keyboard_controller = KeyboardController()
+        keyboard_controller = KeyboardHandler()
         game_of_life_main = Viewer(
             rect=Rect(10, 10, 500, 500),
             backend=langtons_ant_backend,
@@ -83,7 +83,7 @@ class MainScene2(Entity):
             rect=Rect(600, 10, 500, 500),
             backend=langtons_ant_backend,
             frontend=DrawRectFrontend(),
-            controller=KeyboardController(),
+            controller=KeyboardHandler(),
         )
         game_of_life_second_mini = Viewer(
             rect=Rect(600 + 500 - 100 - 10, 10 + 10, 100, 100),

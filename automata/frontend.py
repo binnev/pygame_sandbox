@@ -6,9 +6,8 @@ import numpy
 import pygame.draw
 from pygame import Surface, Color, Rect
 from robingame.image import scale_image
-from robingame.utils import Coord
 
-from automata.automatons import Automaton
+from automata.automaton import Automaton
 from automata.viewport_handler import FloatRect
 
 

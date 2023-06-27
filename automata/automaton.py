@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Protocol, runtime_checkable, NamedTuple
+from typing import Protocol, runtime_checkable
 
 import numpy
 from robingame.utils import SparseMatrix, Coord
@@ -18,7 +18,7 @@ class Automaton(Protocol):
     contents: SparseMatrix
 
     def iterate(self):
-        ...
+        """Perform 1 iteration of the game rules."""
 
 
 class GameOfLifeAutomaton:

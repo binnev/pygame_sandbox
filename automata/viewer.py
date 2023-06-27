@@ -3,9 +3,9 @@ from pygame import Surface, Rect, Color
 from robingame.objects import Entity
 from robingame.text.font import fonts
 
-from automata.backends import Backend
-from automata.controllers import Controller
-from automata.frontends import Frontend
+from automata.backend import Backend
+from automata.input_handler import InputHandler
+from automata.frontend import Frontend
 from automata.timer import Timer
 from automata.viewport_handler import ViewportHandler, DefaultViewportHandler
 
@@ -28,7 +28,7 @@ class Viewer(Entity):
 
     backend: Backend  # handles game logic
     frontend: Frontend  # handles drawing
-    controller: Controller  # handles user input
+    controller: InputHandler  # handles user input
 
     rect: Rect  # to store own position
 
@@ -38,7 +38,7 @@ class Viewer(Entity):
         backend: Backend,
         frontend: Frontend,
         viewport_handler: ViewportHandler = None,
-        controller: Controller = None,
+        controller: InputHandler = None,
     ):
         super().__init__()
         self.rect = Rect(rect)
