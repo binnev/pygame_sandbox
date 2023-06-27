@@ -1,25 +1,22 @@
-from pygame.color import Color
+from pygame import Color
+from robingame.objects import Game
 
-from automata.game import AutomataGame
+from automata.langtons_ant.scene import LangtonsAntScene
 
 
-class LangtonsAntGame(AutomataGame):
-    window_width = 1200
-    window_height = 800
-    window_caption = "Langton's Ant Simulator"
-    font_name = "ubuntu"
-    font_size = 20
-    parental_name = "game"
-    ticks_per_frame = 512
-    screen_color = Color("white")
+class LangtonsAnt(Game):
+    fps = 64
+    window_width = 600
+    window_height = 600
+    window_caption = "Langton's Ant"
+    screen_color = Color("black")
+    debug_color = Color("white")
+    debug = False
 
     def __init__(self):
         super().__init__()
-        from automata.langtons_ant.classes import Board
-
-        self.board = Board(self)
-        self.add_scene(self.board)
+        self.scenes.add(LangtonsAntScene())
 
 
 if __name__ == "__main__":
-    LangtonsAntGame().main()
+    LangtonsAnt().main()
