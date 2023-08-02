@@ -7,6 +7,7 @@ from automata.gravity.body import Body
 from automata.gravity.frontend import GravityFrontend
 from automata.input_handler import KeyboardHandler
 from automata.viewer import Viewer
+from automata.viewport_handler import DefaultViewportHandler
 
 
 class GravityScene(Entity):
@@ -15,20 +16,27 @@ class GravityScene(Entity):
 
         automaton = GravityAutomaton()
         sun = Body(mass=99999999999999, radius=100)
-        automaton.add_body(x=500, y=500, body=sun)
-        for x in range(700, 900, 7):
+        automaton.add_body(x=0, y=0, body=sun)
+        for x in range(200, 400, 7):
             automaton.add_body(
                 x=x,
-                y=500,
+                y=0,
                 body=Body(mass=sun.mass / 100000, radius=5, v=7),
             )
 
         backend = Backend(automaton=automaton)
+        rect = Rect(0, 0, 1000, 1000)
         viewer = Viewer(
-            rect=Rect(0, 0, 1000, 1000),
+            rect=rect,
             backend=backend,
             frontend=GravityFrontend(),
             controller=KeyboardHandler(),
+            viewport_handler=DefaultViewportHandler(
+                x=0,
+                y=0,
+                width=rect.width,
+                height=rect.height,
+            ),
         )
 
         self.children = Group()
