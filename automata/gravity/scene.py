@@ -16,11 +16,11 @@ class GravityScene(Entity):
         automaton = GravityAutomaton()
         sun = Body(mass=99999999999999, radius=100)
         automaton.add_body(x=500, y=500, body=sun)
-        for x in range(0, 1000, 10):
+        for x in range(700, 900, 7):
             automaton.add_body(
                 x=x,
-                y=0,
-                body=Body(mass=sun.mass / 1000, radius=5, v=10),
+                y=500,
+                body=Body(mass=sun.mass / 100000, radius=5, v=7),
             )
 
         backend = Backend(automaton=automaton)
