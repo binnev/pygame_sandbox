@@ -5,23 +5,25 @@ from .body import Body
 from .vector import Vector2D
 
 
-def euclidian_distance(body1: Body, body2: Body) -> float:
+def euclidian_distance(xy1, xy2) -> float:
     """
     Calculate the Euclidian distance between two objects
     """
-    delta_x = abs(body1.x - body2.x)
-    delta_y = abs(body1.y - body2.y)
+    x1, y1 = xy1
+    x2, y2 = xy2
+    delta_x = abs(x2 - x1)
+    delta_y = abs(y2 - y1)
     return math.sqrt(delta_x**2 + delta_y**2)
 
 
-def attraction_force(body1: Body, body2: Body) -> float:
+def attraction_force(xy1, xy2, mass1: float, mass2: float) -> float:
     """
     Calculate the force of attraction between two bodies according to Newton's law of
     gravitation:
         F = G * (m1 * m2) / R**2
     """
-    distance = euclidian_distance(body1, body2)
-    return constants.GRAVITATIONAL_CONSTANT * (body1.mass * body2.mass) / distance**2
+    distance = euclidian_distance(xy1, xy2)
+    return constants.GRAVITATIONAL_CONSTANT * (mass1 * mass2) / distance**2
 
 
 def newtonian_acceleration(body: Body, force: float) -> float:
@@ -35,7 +37,7 @@ def newtonian_acceleration(body: Body, force: float) -> float:
     return force / body.mass
 
 
-def gravitational_attraction(body1: Body, body2: Body):
+def gravitational_attraction(body1: Body, xy1, body2: Body, xy2):
     """
     1. Calculate the gravitational attraction force between two objects
     2. Calculate the resulting acceleration for each object based on its mass
@@ -44,13 +46,15 @@ def gravitational_attraction(body1: Body, body2: Body):
     """
 
     # 1
-    force = attraction_force(body1, body2)
+    force = attraction_force(xy1, xy2, body1.mass, body2.mass)
     # 2
     acc1 = newtonian_acceleration(body1, force)
     acc2 = newtonian_acceleration(body2, force)
     # 3
-    dx = body2.x - body1.x
-    dy = body2.y - body1.y
+    x1, y1 = xy1
+    x2, y2 = xy2
+    dx = x2 - x1
+    dy = y2 - y1
     vector = Vector2D(dx, dy)  # vector from body1 to body2
     unit = vector.unit()
     acc1_x = acc1 * unit.dx

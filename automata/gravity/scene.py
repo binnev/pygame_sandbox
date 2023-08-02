@@ -14,15 +14,14 @@ class GravityScene(Entity):
         super().__init__()
 
         automaton = GravityAutomaton()
-        sun = Body(
-            x=500,
-            y=500,
-            mass=99999999999999,
-            radius=100,
-        )
-        automaton.add_body(sun)
+        sun = Body(mass=99999999999999, radius=100)
+        automaton.add_body(x=500, y=500, body=sun)
         for x in range(0, 1000, 10):
-            automaton.add_body(Body(x=x, y=0, mass=sun.mass/1000, radius=5, v=10))
+            automaton.add_body(
+                x=x,
+                y=0,
+                body=Body(mass=sun.mass / 1000, radius=5, v=10),
+            )
 
         backend = Backend(automaton=automaton)
         viewer = Viewer(

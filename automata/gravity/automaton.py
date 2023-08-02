@@ -8,10 +8,9 @@ CoordFloat2D = tuple[float, float]
 
 
 class GravityAutomaton:
-    bodies: list[Body]
+    contents: SparseMatrix[CoordFloat2D:Body]
 
     def __init__(self):
-        self.bodies = []
         self.contents = SparseMatrix()
 
     def iterate(self):
@@ -20,16 +19,19 @@ class GravityAutomaton:
         2. Move every object according to the laws of motion
         """
         # 1
-        for body1 in self.bodies:
-            for body2 in self.bodies:
+        for xy1, body1 in self.contents.items():
+            for xy2, body2 in self.contents.items():
                 if body1 is body2:
                     continue  # bodies can't affect themselves
-                physics.gravitational_attraction(body1, body2)
+                physics.gravitational_attraction(body1, xy1, body2, xy2)
 
         # 2
-        for body in self.bodies:
-            body.x += body.u
-            body.y += body.v
+        new = SparseMatrix()
+        for (x, y), body in self.contents.items():
+            x += body.u
+            y += body.v
+            new[(x, y)] = body
+        self.contents = new
 
-    def add_body(self, body: Body):
-        self.bodies.append(body)
+    def add_body(self, x: float, y: float, body: Body):
+        self.contents[(x, y)] = body

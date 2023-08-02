@@ -17,5 +17,5 @@ class GravityFrontend:
         For now just draw everything
         """
         surface.fill(Color("black"))
-        for body in automaton.bodies:
-            pygame.draw.circle(surface, Color("red"), center=(body.x, body.y), radius=body.radius)
+        for xy, body in automaton.contents.items():
+            pygame.draw.circle(surface, Color("red"), center=xy, radius=body.radius)
