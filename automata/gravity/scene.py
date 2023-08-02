@@ -20,10 +20,9 @@ class GravityScene(Entity):
             mass=99999999999999,
             radius=100,
         )
-
-        automaton.bodies.append(sun)
+        automaton.add_body(sun)
         for x in range(0, 1000, 10):
-            automaton.bodies.append(Body(x=x, y=0, mass=sun.mass/1000, radius=5, v=10))
+            automaton.add_body(Body(x=x, y=0, mass=sun.mass/1000, radius=5, v=10))
 
         backend = Backend(automaton=automaton)
         viewer = Viewer(

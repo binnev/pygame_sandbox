@@ -1,3 +1,4 @@
+import numpy
 from robingame.utils import SparseMatrix
 
 from . import physics
@@ -29,3 +30,6 @@ class GravityAutomaton:
         for body in self.bodies:
             body.x += body.u
             body.y += body.v
+
+    def add_body(self, body: Body):
+        self.bodies.append(body)
