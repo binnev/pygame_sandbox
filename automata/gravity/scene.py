@@ -1,6 +1,9 @@
+import random
+
 import numpy
 from pygame import Rect
 from robingame.objects import Entity, Group
+from robingame.utils import random_float
 
 from automata.backend import Backend
 from automata.gravity.automaton import GravityAutomaton
@@ -16,14 +19,14 @@ class GravityScene(Entity):
         super().__init__()
 
         automaton = GravityAutomaton()
-        sun = Body(mass=99999999999999, radius=100)
-        automaton.add_body(x=0, y=0, body=sun)
-        for x in numpy.linspace(150, 500, 100):
-            automaton.add_body(
-                x=x,
-                y=0,
-                body=Body(mass=sun.mass / 100000, radius=5, v=7),
-            )
+        for _ in range(200):
+            x = random_float(-500, 500)
+            y = random_float(-500, 500)
+            u = random_float(-2, 2)
+            v = random_float(-2, 2)
+            radius = random_float(1, 10)
+            mass = radius * 9999999999
+            automaton.add_body(x, y, body=Body(radius=radius, mass=mass, u=u, v=v))
 
         backend = Backend(automaton=automaton)
         main_rect = Rect(0, 0, 1000, 1000)
