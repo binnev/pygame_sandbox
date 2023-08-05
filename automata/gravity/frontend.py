@@ -36,6 +36,7 @@ class GravityFrontend:
             color = self.get_color(body)
             uv = transform.point(xy)
             radius = body.radius * transform.scale
+            radius = max(1, radius)
             pygame.draw.circle(surface, color, center=uv, radius=radius)
 
     def get_color(self, body):

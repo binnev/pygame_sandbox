@@ -30,17 +30,19 @@ class GravityScene(Entity):
 
         backend = Backend(automaton=automaton)
         main_rect = Rect(0, 0, 1000, 1000)
+        viewport_handler = DefaultViewportHandler(
+                x=0,
+                y=0,
+                width=main_rect.width,
+                height=main_rect.height,
+            )
+        viewport_handler.MAX_WIDTH = viewport_handler.MAX_HEIGHT = 10000
         main_map = Viewer(
             rect=main_rect,
             backend=backend,
             frontend=GravityFrontend(),
             controller=KeyboardHandler(),
-            viewport_handler=DefaultViewportHandler(
-                x=0,
-                y=0,
-                width=main_rect.width,
-                height=main_rect.height,
-            ),
+            viewport_handler=viewport_handler,
         )
         mini_rect = Rect(0, 0, 200, 200)
         mini_rect.topright = (main_rect.right - 10, main_rect.top + 100)
